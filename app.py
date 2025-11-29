@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import math
+import random
 from flask_socketio import SocketIO, emit
 import threading
 from flask import Flask, request, jsonify, render_template
@@ -36,6 +38,7 @@ audio_processor = AudioProcessor()
 # Global variables for real-time monitoring
 is_monitoring = False
 monitoring_thread = None
+monitoring_mode = "simulation"  # "simulation" or "real"
 
 # Localization configuration
 class LocalizationConfig:
@@ -1005,31 +1008,37 @@ def monitoring():
     """Real-time monitoring page"""
     return render_template('real_time_monitor.html')
 
+
 @app.route('/api/start-monitoring', methods=['POST'])
 def start_monitoring():
-    """Start real-time monitoring"""
-    global is_monitoring, monitoring_thread
+    """Start real-time monitoring with auto-detection of mode"""
+    global is_monitoring, monitoring_thread, monitoring_mode
     
     if is_monitoring:
         return jsonify({'status': 'error', 'message': 'Monitoring already active'})
     
     try:
+        # Detect available audio hardware
+        monitoring_mode = detect_audio_hardware()
+        
         is_monitoring = True
         
-        # Start monitoring in a separate thread
-        monitoring_thread = threading.Thread(target=monitoring_loop)
+        # Start monitoring in appropriate mode
+        monitoring_thread = threading.Thread(target=monitoring_loop, args=(monitoring_mode,))
         monitoring_thread.daemon = True
         monitoring_thread.start()
         
         socketio.emit('monitoring_started', {
-            'channels': 3,
-            'message': 'Real-time monitoring started'
+            'mode': monitoring_mode,
+            'channels': 3 if monitoring_mode == "real" else 0,
+            'message': f'Real-time monitoring started in {monitoring_mode} mode'
         })
         
         return jsonify({
             'status': 'success',
-            'message': 'Real-time monitoring started',
-            'channels': 3
+            'message': f'Monitoring started in {monitoring_mode} mode',
+            'mode': monitoring_mode,
+            'channels': 3 if monitoring_mode == "real" else 0
         })
         
     except Exception as e:
@@ -1052,47 +1061,270 @@ def stop_monitoring():
         'message': 'Real-time monitoring stopped'
     })
 
-@app.route('/api/monitoring-status', methods=['GET'])
-def monitoring_status():
-    """Get monitoring status"""
-    return jsonify({
-        'active': is_monitoring,
-        'channels': 3 if is_monitoring else 0
-    })
+def detect_audio_hardware():
+    """Detect if real audio hardware is available"""
+    try:
+        import pyaudio
+        audio = pyaudio.PyAudio()
+        
+        # Look for multi-channel audio devices
+        for i in range(audio.get_device_count()):
+            device_info = audio.get_device_info_by_index(i)
+            if device_info['maxInputChannels'] >= 3:
+                print(f"Found multi-channel device: {device_info['name']}")
+                audio.terminate()
+                return "real"
+        
+        audio.terminate()
+        print("No multi-channel audio device found - using simulation mode")
+        return "simulation"
+        
+    except ImportError:
+        print("PyAudio not installed - using simulation mode")
+        return "simulation"
+    except Exception as e:
+        print(f"Audio detection error: {e} - using simulation mode")
+        return "simulation"
 
-def monitoring_loop():
-    """Main monitoring loop (simulated for now)"""
-    import random
+def realistic_simulation_loop():
+    """Realistic simulation that mimics real drone behavior"""
+    print("Starting realistic drone detection simulation")
+    
+    # Simulation parameters
+    detection_interval = random.uniform(10, 30)  # 10-30 seconds between detections
+    last_detection_time = 0
+    simulation_start_time = time.time()
     
     while is_monitoring:
         try:
-            # Simulate drone detection (replace with real audio processing)
-            if random.random() > 0.8:  # 20% chance of detection
-                confidence = random.uniform(0.7, 0.95)
-                position = [
-                    random.uniform(0.5, 1.5),  # x position
-                    random.uniform(0.3, 1.2)   # y position
-                ]
-
-                MICROPHONE_LOCATION = [47.471848,19.019239]; # Default location (Budapest)
-
-                # Add geographical context
-                socketio.emit('drone_detected', {
-                    'timestamp': time.time(),
-                    'confidence': confidence,
-                    'position': position,  # Relative coordinates
-                    'localized': True,
-                    'geographical': {
-                        'lat': MICROPHONE_LOCATION[0] + (position[1] * 0.000009),
-                        'lng': MICROPHONE_LOCATION[1] + (position[0] * 0.000009)
-                    }
+            current_time = time.time()
+            elapsed_time = current_time - simulation_start_time
+            
+            # Send system status every 10 seconds
+            if int(current_time) % 10 == 0:
+                socketio.emit('system_status', {
+                    'timestamp': current_time,
+                    'mode': 'simulation',
+                    'uptime': elapsed_time,
+                    'message': 'System monitoring in simulation mode'
                 })
             
-            time.sleep(2)  # Process every 2 seconds
+            # Simulate realistic drone detection patterns
+            time_since_last_detection = current_time - last_detection_time
+            
+            # Increased chance of detection over time to simulate drone approach
+            base_detection_prob = 0.01  # 1% base probability
+            time_factor = min(elapsed_time / 300, 1.0)  # Increase over 5 minutes
+            current_probability = base_detection_prob * (1 + time_factor * 4)  # Up to 5% max
+            
+            # Check for detection
+            if (time_since_last_detection > detection_interval and 
+                random.random() < current_probability):
+                
+                # Simulate drone behavior
+                confidence = random.uniform(0.75, 0.95)
+                
+                # Drone positions change over time to simulate movement
+                base_x = 1.0 + math.sin(elapsed_time / 30) * 0.8  # Oscillating movement
+                base_y = 0.8 + math.cos(elapsed_time / 45) * 0.6
+                
+                # Add some random variation
+                position = [
+                    base_x + random.uniform(-0.2, 0.2),
+                    base_y + random.uniform(-0.15, 0.15)
+                ]
+                
+                # Higher confidence for positions near the center
+                distance_from_center = math.sqrt(position[0]**2 + position[1]**2)
+                if distance_from_center < 1.0:
+                    confidence = max(confidence, 0.85)
+                
+                socketio.emit('drone_detected', {
+                    'timestamp': current_time,
+                    'confidence': confidence,
+                    'position': position,
+                    'localized': True,
+                    'mode': 'simulation',
+                    'distance': distance_from_center
+                })
+                
+                last_detection_time = current_time
+                detection_interval = random.uniform(15, 45)  # Reset interval
+                
+                print(f"Simulated drone detection at position {position} with confidence {confidence:.2f}")
+            
+            # Small chance of false positive (much lower)
+            if random.random() < 0.002:  # 0.2% chance
+                confidence = random.uniform(0.55, 0.70)  # Lower confidence
+                position = [
+                    random.uniform(-1.5, 2.0),
+                    random.uniform(-1.0, 1.8)
+                ]
+                
+                socketio.emit('drone_detected', {
+                    'timestamp': current_time,
+                    'confidence': confidence,
+                    'position': position,
+                    'localized': True,
+                    'mode': 'simulation',
+                    'false_positive': True
+                })
+                
+                print(f"Simulated false positive at position {position}")
+            
+            time.sleep(1)  # Check every second
             
         except Exception as e:
-            print(f"Monitoring error: {e}")
-            time.sleep(1)
+            print(f"Simulation error: {e}")
+            time.sleep(5)
+
+def real_audio_monitoring_loop():
+    """Real audio processing monitoring loop"""
+    print("Starting real audio monitoring")
+    
+    try:
+        import pyaudio
+        import numpy as np
+        
+        # Audio configuration
+        CHUNK = 1024
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 3
+        RATE = 22050
+        
+        audio = pyaudio.PyAudio()
+        
+        # Find and use multi-channel device
+        device_index = None
+        for i in range(audio.get_device_count()):
+            device_info = audio.get_device_info_by_index(i)
+            if device_info['maxInputChannels'] >= CHANNELS:
+                device_index = i
+                print(f"Using real audio device: {device_info['name']}")
+                break
+        
+        if device_index is None:
+            print("No audio device found - falling back to simulation")
+            realistic_simulation_loop()
+            return
+        
+        # Open stream
+        stream = audio.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            input_device_index=device_index,
+            frames_per_buffer=CHUNK
+        )
+        
+        # Send device connected message
+        socketio.emit('hardware_connected', {
+            'message': 'Multi-channel audio hardware detected and active',
+            'channels': CHANNELS,
+            'sample_rate': RATE
+        })
+        
+        audio_buffer = np.array([], dtype=np.float32).reshape(0, CHANNELS)
+        samples_needed = int(RATE * 3.0)  # 3-second chunks
+        
+        while is_monitoring:
+            try:
+                # Read audio data
+                data = stream.read(CHUNK, exception_on_overflow=False)
+                audio_data = np.frombuffer(data, dtype=np.int16)
+                audio_data = audio_data.reshape(-1, CHANNELS).astype(np.float32) / 32768.0
+                
+                # Add to buffer
+                audio_buffer = np.vstack([audio_buffer, audio_data]) if audio_buffer.size else audio_data
+                
+                # Process when we have enough data
+                if len(audio_buffer) >= samples_needed:
+                    process_data = audio_buffer[:samples_needed]
+                    audio_buffer = audio_buffer[samples_needed:]
+                    
+                    # Process with your real detection logic
+                    result = process_real_audio_chunk(process_data, RATE)
+                    
+                    if result and result.get('detected'):
+                        socketio.emit('drone_detected', {
+                            'timestamp': time.time(),
+                            'confidence': result['confidence'],
+                            'position': result.get('position', [1.0, 1.0]),
+                            'localized': result.get('localized', False),
+                            'mode': 'real',
+                            'real_detection': True
+                        })
+                
+                time.sleep(0.01)
+                
+            except Exception as e:
+                print(f"Real audio processing error: {e}")
+                time.sleep(1)
+        
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()
+        
+    except Exception as e:
+        print(f"Real audio monitoring setup failed: {e}")
+        # Fall back to simulation
+        socketio.emit('monitoring_error', {
+            'message': f'Real audio processing failed: {str(e)}. Falling back to simulation.'
+        })
+        realistic_simulation_loop()
+
+def process_real_audio_chunk(audio_data, sample_rate):
+    """Process real audio data for drone detection"""
+    try:
+        # Use your actual detection logic here
+        # For now, simulate detection based on audio characteristics
+        rms = np.sqrt(np.mean(audio_data**2))
+        
+        # Simple energy-based detection (replace with your ML model)
+        if rms > 0.02:  # Threshold for "interesting" audio
+            confidence = min(rms * 10, 0.95)  # Scale RMS to confidence
+            
+            # Simple "localization" based on channel differences
+            if audio_data.shape[1] >= 3:
+                chan_diff_1 = np.mean(np.abs(audio_data[:, 0] - audio_data[:, 1]))
+                chan_diff_2 = np.mean(np.abs(audio_data[:, 0] - audio_data[:, 2]))
+                
+                position = [
+                    0.8 + chan_diff_1 * 10,
+                    0.6 + chan_diff_2 * 8
+                ]
+            else:
+                position = [1.0, 1.0]
+            
+            return {
+                'detected': True,
+                'confidence': confidence,
+                'position': position,
+                'localized': audio_data.shape[1] >= 3
+            }
+        
+        return None
+        
+    except Exception as e:
+        print(f"Real audio processing error: {e}")
+        return None
+
+@app.route('/api/monitoring-status', methods=['GET'])
+def monitoring_status():
+    """Get detailed monitoring status"""
+    return jsonify({
+        'active': is_monitoring,
+        'mode': monitoring_mode if is_monitoring else 'inactive',
+        'channels': 3 if (is_monitoring and monitoring_mode == "real") else 0
+    })
+
+def monitoring_loop(mode):
+    """Main monitoring loop that works in both simulation and real modes"""
+    if mode == "real":
+        real_audio_monitoring_loop()
+    else:
+        realistic_simulation_loop()
 
 # Error handlers
 @app.errorhandler(413)

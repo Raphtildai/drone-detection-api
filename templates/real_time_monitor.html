@@ -26,6 +26,7 @@
                         <div class="status-indicator">
                             <span class="status-dot" id="statusDot"></span>
                             <span id="statusText">Monitoring: INACTIVE</span>
+                            <span class="mode-indicator inactive-mode" id="monitoringMode">INACTIVE</span>
                         </div>
                         <div class="monitoring-controls">
                             <button class="btn-monitor btn-start" id="startMonitorBtn" onclick="startMonitoring()">
@@ -121,12 +122,100 @@
         let detectionCount = 0;
         let monitoringStartTime = null;
         let uptimeInterval = null;
-        
+        let currentMode = 'inactive';
+
         // Map variables
         let map = null;
         let droneMarkers = [];
         let microphoneMarker = null;
-        const MICROPHONE_LOCATION = [47.471848,19.019239]; // Default location (Budapest)
+        const MICROPHONE_LOCATION = [47.471848, 19.019239]; // Default microphone array location (Budapest)
+
+        function showHardwareAlert(data) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = 'alert-item hardware-alert';
+            alert.innerHTML = `
+                <div class="alert-header">
+                    <span class="alert-icon">🎤</span>
+                    <strong>HARDWARE CONNECTED</strong>
+                    <span class="alert-time">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="alert-details">
+                    <div>Multi-channel audio device detected</div>
+                    <div><small>Channels: ${data.channels}, Rate: ${data.sample_rate}Hz</small></div>
+                </div>
+            `;
+            alertsContainer.insertBefore(alert, alertsContainer.firstChild);
+        }
+
+        function showErrorAlert(message) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = 'alert-item error-alert';
+            alert.innerHTML = `
+                <div class="alert-header">
+                    <span class="alert-icon">⚠️</span>
+                    <strong>SYSTEM ERROR</strong>
+                    <span class="alert-time">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="alert-details">
+                    <div>${message}</div>
+                </div>
+            `;
+            alertsContainer.insertBefore(alert, alertsContainer.firstChild);
+        }
+
+        function updateSystemStatus(data) {
+            // Update any system status indicators if needed
+            console.log('System status:', data);
+        }
+
+        function addDroneToMap(relativePosition, confidence, mode) {
+            if (!map) return;
+
+            const meterToDegree = 0.000009;
+            const droneLat = MICROPHONE_LOCATION[0] + (relativePosition[1] * meterToDegree);
+            const droneLng = MICROPHONE_LOCATION[1] + (relativePosition[0] * meterToDegree);
+
+            const isReal = mode === 'real';
+            
+            const droneIcon = L.divIcon({
+                className: `drone-marker ${isReal ? 'real-marker' : 'simulation-marker'}`,
+                html: isReal ? '🚁' : '🔮',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const droneMarker = L.marker([droneLat, droneLng], { icon: droneIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <strong>${isReal ? '🚁 Drone Detected' : '🔮 Simulation'}</strong><br>
+                    Mode: ${isReal ? 'Real Hardware' : 'Demo'}<br>
+                    Confidence: ${(confidence * 100).toFixed(1)}%<br>
+                    Position: ${relativePosition[0].toFixed(1)}, ${relativePosition[1].toFixed(1)}m<br>
+                    Time: ${new Date().toLocaleTimeString()}
+                `);
+
+            // Color code accuracy circles
+            const accuracyRadius = 50 + (100 * (1 - confidence));
+            const circleColor = isReal ? 
+                (confidence > 0.8 ? 'red' : 'orange') :
+                (confidence > 0.8 ? 'purple' : 'blue');
+            
+            L.circle([droneLat, droneLng], {
+                color: circleColor,
+                fillColor: circleColor,
+                fillOpacity: 0.2,
+                radius: accuracyRadius
+            }).addTo(map).bindPopup(`Estimated Accuracy: ±${accuracyRadius.toFixed(0)}m`);
+
+            droneMarkers.push(droneMarker);
+
+            // Auto-pan to new drone if it's the first detection
+            if (droneMarkers.length === 1) {
+                map.setView([droneLat, droneLng], 16);
+            }
+        }
 
         function initializeSocket() {
             try {
@@ -140,22 +229,38 @@
                     detectionCount++;
                     showDetectionAlert(data);
                     updateRealTimeVisualization(data.position, data.confidence);
-                    addDroneToMap(data.position, data.confidence);
+                    addDroneToMap(data.position, data.confidence, data.mode);
                     updateMonitoringStats();
                 });
 
                 socket.on('monitoring_started', function(data) {
-                    updateMonitoringStatus(true);
-                    document.getElementById('channelCount').textContent = data.channels + '/3';
+                    currentMode = data.mode;
+                    updateMonitoringStatus(true, data.mode);
+                    document.getElementById('channelCount').textContent = 
+                        data.mode === 'real' ? '3/3' : '0/3 (Simulation)';
+                    document.getElementById('monitoringMode').textContent = 
+                        data.mode === 'real' ? 'REAL HARDWARE' : 'DEMO MODE';
                 });
 
                 socket.on('monitoring_stopped', function(data) {
-                    updateMonitoringStatus(false);
+                    updateMonitoringStatus(false, 'inactive');
+                });
+
+                socket.on('system_status', function(data) {
+                    updateSystemStatus(data);
+                });
+
+                socket.on('hardware_connected', function(data) {
+                    showHardwareAlert(data);
+                });
+
+                socket.on('monitoring_error', function(data) {
+                    showErrorAlert(data.message);
                 });
 
                 socket.on('disconnect', function() {
                     console.log('Disconnected from real-time monitoring');
-                    updateMonitoringStatus(false);
+                    updateMonitoringStatus(false, 'inactive');
                 });
 
             } catch (error) {
@@ -260,15 +365,20 @@
             }
         }
 
+        // Update the startMonitoring function
         function startMonitoring() {
             if (!socket || !socket.connected) {
                 initializeSocket();
             }
 
-            // Initialize map if not already done
             if (!map) {
                 initializeMap();
             }
+
+            // Show loading state
+            const startBtn = document.getElementById('startMonitorBtn');
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="loading-spinner"></span> Initializing...';
 
             fetch('/api/start-monitoring', { method: 'POST' })
                 .then(response => response.json())
@@ -278,17 +388,29 @@
                         startUptimeCounter();
                         document.getElementById('startMonitorBtn').disabled = true;
                         document.getElementById('stopMonitorBtn').disabled = false;
+                        document.getElementById('startMonitorBtn').innerHTML = 'Monitoring Active';
                         document.getElementById('alertsSection').style.display = 'block';
                         document.getElementById('mapSection').style.display = 'block';
                         document.getElementById('realtimeVisualization').style.display = 'block';
+                        
+                        // Show mode information
+                        document.getElementById('monitoringMode').textContent = 
+                            data.mode === 'real' ? 'REAL HARDWARE' : 'DEMO MODE';
                     } else {
                         alert('Failed to start monitoring: ' + data.message);
+                        resetStartButton();
                     }
                 })
                 .catch(error => {
                     console.error('Error starting monitoring:', error);
-                    alert('Error starting monitoring. Make sure the server supports real-time monitoring.');
+                    alert('Error starting monitoring: ' + error.message);
+                    resetStartButton();
                 });
+        }
+
+        function resetStartButton() {
+            document.getElementById('startMonitorBtn').disabled = false;
+            document.getElementById('startMonitorBtn').innerHTML = 'Start Real-time Monitoring';
         }
 
         function stopMonitoring() {
@@ -309,18 +431,29 @@
                 });
         }
 
-        function updateMonitoringStatus(active) {
+        function updateMonitoringStatus(active, mode) {
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
+            const modeIndicator = document.getElementById('monitoringMode');
             
             if (active) {
                 statusDot.className = 'status-dot active';
                 statusText.textContent = 'Monitoring: ACTIVE';
-                statusDot.style.backgroundColor = '#28a745';
+                statusDot.style.backgroundColor = mode === 'real' ? '#28a745' : '#ffc107';
+                
+                if (mode === 'real') {
+                    modeIndicator.textContent = 'REAL HARDWARE';
+                    modeIndicator.className = 'mode-indicator real-mode';
+                } else {
+                    modeIndicator.textContent = 'DEMO MODE';
+                    modeIndicator.className = 'mode-indicator simulation-mode';
+                }
             } else {
                 statusDot.className = 'status-dot inactive';
                 statusText.textContent = 'Monitoring: INACTIVE';
                 statusDot.style.backgroundColor = '#dc3545';
+                modeIndicator.textContent = 'INACTIVE';
+                modeIndicator.className = 'mode-indicator inactive-mode';
                 detectionCount = 0;
                 updateMonitoringStats();
             }
@@ -329,11 +462,17 @@
         function showDetectionAlert(data) {
             const alertsContainer = document.getElementById('alertsContainer');
             const alert = document.createElement('div');
-            alert.className = 'alert-item';
+            
+            const isReal = data.mode === 'real';
+            const isFalsePositive = data.false_positive;
+            
+            alert.className = `alert-item ${isReal ? 'real-detection' : 'simulation-detection'} ${isFalsePositive ? 'false-positive' : ''}`;
+            
             alert.innerHTML = `
                 <div class="alert-header">
-                    <span class="alert-icon">🚁</span>
-                    <strong>DRONE DETECTED</strong>
+                    <span class="alert-icon">${isReal ? '🚁' : '🔮'}</span>
+                    <strong>${isFalsePositive ? 'FALSE POSITIVE' : 'DRONE DETECTED'}</strong>
+                    <span class="alert-mode">${isReal ? 'REAL' : 'SIM'}</span>
                     <span class="alert-time">${new Date().toLocaleTimeString()}</span>
                 </div>
                 <div class="alert-details">
@@ -342,14 +481,14 @@
                         `<div>Position: (${data.position[0].toFixed(2)}, ${data.position[1].toFixed(2)})m</div>` : 
                         '<div>Position: Not localized</div>'
                     }
-                    <div><small>📍 Marker added to map</small></div>
+                    <div><small>${isReal ? '🎤 Real audio detection' : '💻 Simulation mode'}</small></div>
                 </div>
             `;
             
             alertsContainer.insertBefore(alert, alertsContainer.firstChild);
             
-            // Limit to 5 most recent alerts
-            if (alertsContainer.children.length > 5) {
+            // Limit to 8 most recent alerts
+            if (alertsContainer.children.length > 8) {
                 alertsContainer.removeChild(alertsContainer.lastChild);
             }
             

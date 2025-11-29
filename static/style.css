@@ -798,4 +798,86 @@ footer {
         height: 300px;
     }
 }
+
+/* Mode Detector */
+.mode-indicator {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.real-mode {
+    background: #28a745;
+    color: white;
+}
+
+.simulation-mode {
+    background: #ffc107;
+    color: black;
+}
+
+.inactive-mode {
+    background: #6c757d;
+    color: white;
+}
+
+.alert-item.real-detection {
+    border-left: 4px solid #28a745;
+}
+
+.alert-item.simulation-detection {
+    border-left: 4px solid #ffc107;
+}
+
+.alert-item.false-positive {
+    border-left: 4px solid #dc3545;
+    background: #f8d7da;
+}
+
+.alert-item.hardware-alert {
+    border-left: 4px solid #17a2b8;
+    background: #d1ecf1;
+}
+
+.alert-item.error-alert {
+    border-left: 4px solid #dc3545;
+    background: #f8d7da;
+}
+
+.alert-mode {
+    background: #6c757d;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.7em;
+    margin-left: 8px;
+}
+
+.drone-marker.real-marker {
+    font-size: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.drone-marker.simulation-marker {
+    font-size: 18px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    opacity: 0.8;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
 /* End of Monitoring styles */
