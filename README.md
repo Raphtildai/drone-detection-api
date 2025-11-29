@@ -278,5 +278,3 @@ For support and questions:
 ---
 
 **Note**: This system is designed for research and educational purposes. Always comply with local regulations regarding drone detection and privacy laws.
-
-*Last updated: ${new Date().toLocaleDateString()}*

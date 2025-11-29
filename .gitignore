@@ -9,3 +9,6 @@ venv/
 
 # Untrack app_logs file
 app.log
+
+# untrack local requirements file
+requirements_local.txt
