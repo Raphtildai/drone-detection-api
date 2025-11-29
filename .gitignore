@@ -1,0 +1,11 @@
+# Untrack venv folder
+venv/
+
+# Untrack __pycache__ folders
+**/__pycache__/
+
+# Untrack .vscode folder
+.vscode/
+
+# Untrack app_logs file
+app.log

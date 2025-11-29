@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add Plotly for visualization -->
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚁 Drone Detection & Localization System</h1>
+            <p>Upload audio files to detect drone presence and visualize location</p>
+        </header>
+
+        <main>
+            <!-- Existing upload section remains the same -->
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <div class="upload-icon">🎵</div>
+                        <h3>Upload Audio File</h3>
+                        <p>Supported formats: WAV, MP3, M4A, FLAC</p>
+                        <input type="file" id="audioFile" accept="audio/*" hidden>
+                        <button class="btn-primary" onclick="document.getElementById('audioFile').click()">
+                            Choose File
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Threshold Controls Section -->
+                <div class="threshold-section">
+                    <h3>Detection Settings</h3>
+                    <div class="threshold-controls">
+                        <div class="threshold-slider">
+                            <label for="thresholdSlider">Detection Threshold: <span id="thresholdValue">0.70</span></label>
+                            <input type="range" id="thresholdSlider" min="0.1" max="1.0" step="0.05" value="0.70" class="slider">
+                            <div class="threshold-labels">
+                                <span>Low Sensitivity</span>
+                                <span>High Sensitivity</span>
+                            </div>
+                        </div>
+                        <div class="threshold-presets">
+                            <button class="btn-preset" onclick="setThreshold(0.50)">High Sensitivity (0.50)</button>
+                            <button class="btn-preset" onclick="setThreshold(0.70)">Balanced (0.70)</button>
+                            <button class="btn-preset" onclick="setThreshold(0.85)">Low Sensitivity (0.85)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-options">
+                    <h3>Analysis Options</h3>
+                    <div class="option-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="analyzeLong" checked>
+                            <span class="checkmark"></span>
+                            Analyze entire file (for long audio)
+                        </label>
+                        <div class="option-help">
+                            <small>Recommended for files longer than 10 seconds. Analyzes multiple segments to find drone activity.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="selected-file" id="selectedFile" style="display: none;">
+                    <div class="file-info">
+                        <span id="fileName"></span>
+                        <button class="btn-remove" onclick="clearFile()">×</button>
+                    </div>
+                    <audio id="audioPreview" controls style="width: 100%; margin-top: 10px;"></audio>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-detect" id="detectBtn" onclick="analyzeAudioEnhanced()" disabled>
+                    Detect Drone & Localize
+                </button>
+                <button class="btn-secondary" onclick="clearAll()">
+                    Clear
+                </button>
+            </div>
+
+            <!-- Enhanced Results Section with Visualization -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3>Detection & Localization Results</h3>
+                <div class="result-card" id="resultCard">
+                    <div class="result-header">
+                        <span id="resultIcon">🔍</span>
+                        <span id="resultText">Analyzing...</span>
+                    </div>
+                    <div class="result-details">
+                        <div class="confidence-meter">
+                            <div class="confidence-label">Confidence:</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill"></div>
+                            </div>
+                            <div class="confidence-value" id="confidenceValue">0%</div>
+                        </div>
+                        <div class="probabilities">
+                            <div class="prob-item">
+                                <span class="prob-label">Non-Drone:</span>
+                                <span class="prob-value" id="probNonDrone">0%</span>
+                            </div>
+                            <div class="prob-item">
+                                <span class="prob-label">Drone:</span>
+                                <span class="prob-value" id="probDrone">0%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Localization Information -->
+                        <div class="localization-info" id="localizationInfo" style="display: none;">
+                            <div class="info-item">
+                                <span>Estimated Position:</span>
+                                <span id="positionInfo">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Localization Error:</span>
+                                <span id="errorInfo">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="audio-info">
+                            <div class="info-item">
+                                <span>Duration:</span>
+                                <span id="audioDuration">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span>Sample Rate:</span>
+                                <span id="sampleRate">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Section -->
+                <div class="visualization-section" id="visualizationSection" style="display: none;">
+                    <h4>Drone Localization Map</h4>
+                    <div id="localization-plot"></div>
+                    <div class="visualization-info">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: green;"></span>
+                                <span>True Position (if provided)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: red;"></span>
+                                <span>Estimated Position</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: blue;"></span>
+                                <span>Microphone Array</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="debug-section" id="debugSection" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                <h4>Debug Information</h4>
+                <pre id="debugInfo">No debug information available</pre>
+            </div>
+
+            <!-- Existing batch section remains the same -->
+            <div class="batch-section">
+                <h3>Batch Processing</h3>
+                <div class="batch-upload">
+                    <input type="file" id="batchFiles" accept="audio/*" multiple hidden>
+                    <button class="btn-secondary" onclick="document.getElementById('batchFiles').click()">
+                        Select Multiple Files
+                    </button>
+                    <span id="batchCount">0 files selected</span>
+                </div>
+                <button class="btn-detect" id="batchDetectBtn" onclick="analyzeBatch()" disabled>
+                    Process Batch
+                </button>
+                <div class="batch-results" id="batchResults"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by PyTorch & Flask | Drone Detection & Localization API</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
