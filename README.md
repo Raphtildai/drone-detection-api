@@ -1,17 +1,19 @@
 # 🚁 Drone Detection & Localization System
 
-A comprehensive web-based system for detecting drone presence in audio recordings and visualizing their estimated positions using microphone array technology.
+A comprehensive web-based system for detecting drone presence in audio recordings and **real-time monitoring** with geographical mapping capabilities using microphone array technology.
 
 ## 🌟 Features
 
 ### 🎯 Core Capabilities
 - **AI-Powered Detection**: Deep learning model for accurate drone audio classification
-- **Real-time Localization**: Estimate drone position using Time Difference of Arrival (TDOA)
+- **Real-time Monitoring**: Live audio stream analysis with WebSocket communication
+- **Geographical Mapping**: OpenStreetMap integration for real-world location tracking
 - **Multi-format Support**: Process WAV, MP3, M4A, and FLAC audio files
 - **Long Audio Analysis**: Segment-based processing for files longer than 10 seconds
-- **Interactive Visualization**: Plotly-based maps showing drone positions and microphone arrays
+- **Interactive Visualization**: Plotly-based maps and geographical mapping
 
 ### 🎨 User Interface
+- **Dual Interface**: File analysis AND real-time monitoring modes
 - **Responsive Design**: Works on desktop and mobile devices
 - **Real-time Feedback**: Live confidence meters and probability displays
 - **Audio Preview**: Built-in audio player for uploaded files
@@ -20,9 +22,10 @@ A comprehensive web-based system for detecting drone presence in audio recording
 
 ### 🔧 Technical Features
 - **Multi-channel Support**: 3+ channel audio for accurate localization
+- **Real-time WebSockets**: Live data streaming with Socket.IO
+- **Geographical Positioning**: Convert relative coordinates to real-world locations
 - **Simulated Localization**: Fallback visualization for mono/stereo files
 - **Segment Analysis**: Identify drone activity in specific time segments
-- **Debug Mode**: Detailed technical information for development
 - **RESTful API**: Clean API endpoints for integration
 
 ## 🚀 Quick Start
@@ -30,8 +33,8 @@ A comprehensive web-based system for detecting drone presence in audio recording
 ### Prerequisites
 - Python 3.8+
 - PyTorch
-- Flask
-- Modern web browser
+- Flask & Flask-SocketIO
+- Modern web browser with WebSocket support
 
 ### Installation
 
@@ -60,15 +63,17 @@ A comprehensive web-based system for detecting drone presence in audio recording
 
 ```
 drone-detection-api/
-├── app.py                 # Main Flask application
+├── app.py                 # Main Flask application with WebSocket support
 ├── model_loader.py        # Neural network model management
 ├── audio_processor.py     # Audio feature extraction
+├── real_time_audio.py     # Real-time audio capture and processing
 ├── requirements.txt       # Python dependencies
 ├── static/
 │   ├── style.css         # Frontend styling
 │   └── script.js         # Frontend functionality
 ├── templates/
-│   └── index.html        # Main web interface
+│   ├── index.html        # File analysis interface
+│   └── real_time_monitor.html   # Real-time monitoring interface
 ├── models/
 │   └── best_model.pth    # Trained drone detection model
 └── README.md
@@ -76,7 +81,29 @@ drone-detection-api/
 
 ## 🎮 Usage Guide
 
-### Basic Detection
+### 📡 Real-time Monitoring Mode
+
+1. **Access Real-time Monitoring**
+   - Navigate to `/monitoring` or click "Real-time Monitoring" from main page
+   - System requires 3+ channel audio input for accurate localization
+
+2. **Start Monitoring**
+   - Click "Start Real-time Monitoring" to begin continuous audio analysis
+   - System processes audio in 3-second windows with real-time feedback
+
+3. **Monitor Detections**
+   - **Live Map**: Geographical display of drone positions on OpenStreetMap
+   - **Real-time Alerts**: Instant notifications with confidence scores
+   - **Technical View**: Detailed localization plot with microphone array
+   - **Status Panel**: Active channels, detection count, and system uptime
+
+4. **Geographical Features**
+   - **Drone Markers**: 🚁 icons show detected drone positions
+   - **Accuracy Circles**: Visual representation of localization confidence
+   - **Detection Range**: 500-meter operational radius display
+   - **Interactive Controls**: Pan, zoom, and marker management
+
+### 📁 File Analysis Mode
 
 1. **Upload Audio File**
    - Click "Choose File" and select an audio recording
@@ -110,6 +137,11 @@ For accurate position estimation:
 - Position microphones in known geometric patterns
 - System calculates Time Difference of Arrival (TDOA) between channels
 
+#### Real-time Hardware Requirements
+- **3+ Microphone Array**: Synchronized multi-channel input
+- **USB Audio Interface**: Multi-channel capable (e.g., Behringer UMC202HD)
+- **Spatial Configuration**: L-shaped array with 0.5m spacing recommended
+
 #### Batch Processing
 - Upload multiple files simultaneously
 - Process all files in one operation
@@ -125,9 +157,19 @@ curl -X POST -F "audio=@drone_audio.wav" http://localhost:5000/api/detect
 
 # Batch processing
 curl -X POST -F "audio_files=@file1.wav" -F "audio_files=@file2.wav" http://localhost:5000/api/batch-detect
+
+# Real-time monitoring control
+curl -X POST http://localhost:5000/api/start-monitoring
+curl -X POST http://localhost:5000/api/stop-monitoring
 ```
 
 ## 🔬 Technical Details
+
+### Real-time Architecture
+- **WebSocket Communication**: Bidirectional real-time data streaming
+- **Audio Buffering**: 3-second analysis windows with overlap
+- **Geographical Conversion**: Meter-to-degree coordinate transformation
+- **Multi-threading**: Separate processing thread for continuous monitoring
 
 ### Detection Algorithm
 - **Model Architecture**: CNN-based classifier (3, 64, 259 input shape)
@@ -159,6 +201,12 @@ MIC_POSITIONS = [
 ]
 ```
 
+### Geographical Location
+Set your actual location in `monitoring.html`:
+```javascript
+const MICROPHONE_LOCATION = [YOUR_LATITUDE, YOUR_LONGITUDE]; // Replace with actual coordinates
+```
+
 ### Detection Thresholds
 - **Default**: 0.70 (70% confidence)
 - **Range**: 0.10 to 1.00
@@ -166,7 +214,13 @@ MIC_POSITIONS = [
 
 ## 📊 Output Interpretation
 
-### Detection Results
+### Real-time Monitoring
+- **🚁 Map Markers**: Drone positions on geographical map
+- **Confidence Circles**: Visual accuracy indicators (smaller = better)
+- **Live Alerts**: Timestamped detection notifications
+- **System Metrics**: Uptime, active detections, channel status
+
+### File Analysis Results
 - **🚁 DRONE DETECTED**: High confidence of drone presence
 - **🌳 NO DRONE DETECTED**: Background noise or no drone activity
 - **Confidence Values**: 0-100% certainty of classification
@@ -183,7 +237,21 @@ MIC_POSITIONS = [
 
 ## 🔧 Troubleshooting
 
-### Common Issues
+### Real-time Monitoring Issues
+
+1. **"WebSocket connection failed"**
+   - Cause: Firewall blocking WebSocket connections
+   - Solution: Ensure port 5000 is open, check browser WebSocket support
+
+2. **"No audio input detected"**
+   - Cause: No multi-channel audio device available
+   - Solution: Connect USB audio interface with 3+ inputs
+
+3. **"Map not loading"**
+   - Cause: Internet connection required for OpenStreetMap tiles
+   - Solution: Check internet connection, use offline map tiles as alternative
+
+### File Analysis Issues
 
 1. **"No localization data available"**
    - Cause: Mono or stereo audio file
@@ -206,6 +274,7 @@ MIC_POSITIONS = [
 - Keep files under 5 minutes for quick analysis
 - Enable long audio analysis for files >30 seconds
 - Close other browser tabs during processing
+- For real-time: Use dedicated audio interface, minimize system load
 
 ## 🚀 API Reference
 
@@ -213,12 +282,26 @@ MIC_POSITIONS = [
 
 | Endpoint | Method | Description | Parameters |
 |----------|--------|-------------|------------|
-| `/` | GET | Web interface | - |
+| `/` | GET | File analysis interface | - |
+| `/monitoring` | GET | Real-time monitoring interface | - |
 | `/health` | GET | System status | - |
 | `/api/detect` | POST | Single file detection | `audio` (file) |
 | `/api/detect-with-localization` | POST | Enhanced detection | `audio`, `threshold`, `analyze_long` |
 | `/api/batch-detect` | POST | Multiple file processing | `audio_files` (multiple) |
+| `/api/start-monitoring` | POST | Start real-time monitoring | - |
+| `/api/stop-monitoring` | POST | Stop real-time monitoring | - |
+| `/api/monitoring-status` | GET | Get monitoring status | - |
 | `/api/debug-detect` | POST | Detailed analysis info | `audio` (file) |
+
+### WebSocket Events
+
+| Event | Direction | Description | Data |
+|-------|-----------|-------------|------|
+| `drone_detected` | Server → Client | New drone detection | position, confidence, timestamp |
+| `monitoring_started` | Server → Client | Monitoring activated | channels, message |
+| `monitoring_stopped` | Server → Client | Monitoring deactivated | message |
+| `connect` | Bidirectional | WebSocket connection established | - |
+| `disconnect` | Bidirectional | WebSocket connection closed | - |
 
 ### Response Format
 ```json
@@ -241,7 +324,7 @@ MIC_POSITIONS = [
 
 ## 🤝 Contributing
 
-I welcome contributions! Just let me know by contacting me in any of my contact options
+I welcome contributions! Just let me know by contacting me in any of my contact options.
 
 ### Development Setup
 1. Fork the repository
@@ -253,9 +336,11 @@ I welcome contributions! Just let me know by contacting me in any of my contact 
 ### Areas for Improvement
 - Additional model architectures
 - Enhanced localization algorithms
-- Real-time streaming support
 - Mobile app development
 - Cloud deployment options
+- Additional map providers (Google Maps, Mapbox)
+- Historical data analysis and trending
+- Multi-array sensor fusion
 
 ## 📄 License
 
@@ -265,7 +350,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - PyTorch team for deep learning framework
 - Plotly for interactive visualization
-- Flask community for web framework
+- Leaflet & OpenStreetMap for geographical mapping
+- Flask & Socket.IO communities for web framework
 - Contributors and testers
 
 ## 📞 Support
@@ -277,4 +363,4 @@ For support and questions:
 
 ---
 
-**Note**: This system is designed for research and educational purposes. Always comply with local regulations regarding drone detection and privacy laws.
+**Note**: This system is designed for research and educational purposes. Always comply with local regulations regarding drone detection, privacy laws, and airspace regulations. Real-time monitoring requires appropriate hardware setup for accurate results.
