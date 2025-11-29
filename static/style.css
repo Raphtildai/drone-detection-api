@@ -524,3 +524,278 @@ footer {
     padding-top: 0.5rem;
     margin-top: 0.5rem;
 }
+
+/* Monitoring styles */
+.monitoring-section {
+    margin-bottom: 2rem;
+}
+
+.monitoring-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #3498db;
+}
+
+.map-section {
+    margin: 2rem 0;
+}
+
+.map-container {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+#drone-map {
+    height: 500px;
+    width: 100%;
+}
+
+.map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.map-btn {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.map-btn:hover {
+    background: #f8f9fa;
+}
+
+.map-scale {
+    background: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+}
+
+.drone-marker {
+    text-align: center;
+    font-size: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Rest of your existing styles remain the same */
+.monitoring-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-dot.active {
+    background-color: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+}
+
+.status-dot.inactive {
+    background-color: #dc3545;
+}
+
+.monitoring-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-monitor {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1em;
+}
+
+.btn-start {
+    background: #28a745;
+    color: white;
+}
+
+.btn-start:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-stop {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-stop:hover:not(:disabled) {
+    background: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-monitor:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.monitoring-info {
+    margin: 1.5rem 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-value {
+    font-weight: 700;
+    color: #007bff;
+}
+
+.alerts-section {
+    margin-top: 1.5rem;
+}
+
+.alerts-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.alert-item {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    animation: highlight 2s ease-in-out;
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.alert-icon {
+    font-size: 1.3em;
+}
+
+.alert-time {
+    margin-left: auto;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.alert-details {
+    font-size: 0.95em;
+    color: #856404;
+}
+
+.system-info {
+    margin-top: 2rem;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.info-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.info-card h4 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.info-card p {
+    color: #666;
+    line-height: 1.5;
+}
+
+@keyframes highlight {
+    0% { 
+        background-color: #ffeb3b;
+        transform: scale(1.02);
+    }
+    100% { 
+        background-color: #fff3cd;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .monitoring-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .monitoring-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    #drone-map {
+        height: 300px;
+    }
+}
+/* End of Monitoring styles */
