@@ -1073,12 +1073,19 @@ def monitoring_loop():
                     random.uniform(0.5, 1.5),  # x position
                     random.uniform(0.3, 1.2)   # y position
                 ]
-                
+
+                MICROPHONE_LOCATION = [47.471848,19.019239]; # Default location (Budapest)
+
+                # Add geographical context
                 socketio.emit('drone_detected', {
                     'timestamp': time.time(),
                     'confidence': confidence,
-                    'position': position,
-                    'localized': True
+                    'position': position,  # Relative coordinates
+                    'localized': True,
+                    'geographical': {
+                        'lat': MICROPHONE_LOCATION[0] + (position[1] * 0.000009),
+                        'lng': MICROPHONE_LOCATION[1] + (position[0] * 0.000009)
+                    }
                 })
             
             time.sleep(2)  # Process every 2 seconds
