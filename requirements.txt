@@ -11,3 +11,4 @@ matplotlib>=3.7.0
 plotly>=5.14.0
 pydub>=0.25.1
 gunicorn>=21.0.0
+flask-socketio>=5.3.1

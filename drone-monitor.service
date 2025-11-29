@@ -1,0 +1,15 @@
+# /etc/systemd/system/drone-monitor.service
+[Unit]
+Description=Real-time Drone Monitoring Service
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/drone-detection-system
+ExecStart=/usr/bin/python3 real_time_api.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

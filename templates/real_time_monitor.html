@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Drone Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚁 Real-time Drone Monitoring System</h1>
+            <p>Live monitoring with 3-channel microphone array for drone detection and localization</p>
+        </header>
+
+        <main>
+            <!-- Real-time Monitoring Section -->
+            <div class="monitoring-section">
+                <div class="monitoring-card">
+                    <div class="monitoring-header">
+                        <div class="status-indicator">
+                            <span class="status-dot" id="statusDot"></span>
+                            <span id="statusText">Monitoring: INACTIVE</span>
+                        </div>
+                        <div class="monitoring-controls">
+                            <button class="btn-monitor btn-start" id="startMonitorBtn" onclick="startMonitoring()">
+                                Start Real-time Monitoring
+                            </button>
+                            <button class="btn-monitor btn-stop" id="stopMonitorBtn" onclick="stopMonitoring()" disabled>
+                                Stop Monitoring
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="monitoring-info">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Channels Active:</span>
+                                <span class="info-value" id="channelCount">0/3</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Detection:</span>
+                                <span class="info-value" id="lastDetection">Never</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Active Detections:</span>
+                                <span class="info-value" id="activeDetections">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Uptime:</span>
+                                <span class="info-value" id="monitoringUptime">00:00:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Alerts -->
+                    <div class="alerts-section" id="alertsSection" style="display: none;">
+                        <h4>Recent Detections</h4>
+                        <div class="alerts-container" id="alertsContainer">
+                            <!-- Alerts will be dynamically added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Visualization -->
+                <div class="visualization-section" id="realtimeVisualization" style="display: none;">
+                    <h4>Real-time Drone Localization</h4>
+                    <div id="realtime-plot"></div>
+                    <div class="visualization-info">
+                        <div class="legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: red;"></span>
+                                <span>Estimated Position</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: blue;"></span>
+                                <span>Microphone Array</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: orange;"></span>
+                                <span>Confidence Region</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="system-info">
+                <h3>System Information</h3>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h4>🔄 Real-time Processing</h4>
+                        <p>Continuous audio stream analysis with 3-second windows</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🎯 Multi-channel Localization</h4>
+                        <p>Uses 3-microphone array for accurate position estimation</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>🚨 Instant Alerts</h4>
+                        <p>Real-time notifications when drones are detected</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by PyTorch & Flask | Real-time Drone Detection & Localization</p>
+            <a href="/">← Back to File Analysis</a>
+        </footer>
+    </div>
+
+    <script>
+        // Real-time monitoring functionality
+        let socket = null;
+        let detectionCount = 0;
+        let monitoringStartTime = null;
+        let uptimeInterval = null;
+
+        function initializeSocket() {
+            try {
+                socket = io();
+                
+                socket.on('connect', function() {
+                    console.log('Connected to real-time monitoring');
+                });
+
+                socket.on('drone_detected', function(data) {
+                    detectionCount++;
+                    showDetectionAlert(data);
+                    updateRealTimeVisualization(data.position, data.confidence);
+                    updateMonitoringStats();
+                });
+
+                socket.on('monitoring_started', function(data) {
+                    updateMonitoringStatus(true);
+                    document.getElementById('channelCount').textContent = data.channels + '/3';
+                });
+
+                socket.on('monitoring_stopped', function(data) {
+                    updateMonitoringStatus(false);
+                });
+
+                socket.on('disconnect', function() {
+                    console.log('Disconnected from real-time monitoring');
+                    updateMonitoringStatus(false);
+                });
+
+            } catch (error) {
+                console.error('Socket.IO initialization failed:', error);
+                alert('Real-time monitoring requires WebSocket support. Please try a different browser.');
+            }
+        }
+
+        function startMonitoring() {
+            if (!socket || !socket.connected) {
+                initializeSocket();
+            }
+
+            fetch('/api/start-monitoring', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        monitoringStartTime = new Date();
+                        startUptimeCounter();
+                        document.getElementById('startMonitorBtn').disabled = true;
+                        document.getElementById('stopMonitorBtn').disabled = false;
+                        document.getElementById('alertsSection').style.display = 'block';
+                        document.getElementById('realtimeVisualization').style.display = 'block';
+                    } else {
+                        alert('Failed to start monitoring: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error starting monitoring:', error);
+                    alert('Error starting monitoring. Make sure the server supports real-time monitoring.');
+                });
+        }
+
+        function stopMonitoring() {
+            fetch('/api/stop-monitoring', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        stopUptimeCounter();
+                        document.getElementById('startMonitorBtn').disabled = false;
+                        document.getElementById('stopMonitorBtn').disabled = true;
+                        document.getElementById('alertsSection').style.display = 'none';
+                        document.getElementById('realtimeVisualization').style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error stopping monitoring:', error);
+                });
+        }
+
+        function updateMonitoringStatus(active) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (active) {
+                statusDot.className = 'status-dot active';
+                statusText.textContent = 'Monitoring: ACTIVE';
+                statusDot.style.backgroundColor = '#28a745';
+            } else {
+                statusDot.className = 'status-dot inactive';
+                statusText.textContent = 'Monitoring: INACTIVE';
+                statusDot.style.backgroundColor = '#dc3545';
+                detectionCount = 0;
+                updateMonitoringStats();
+            }
+        }
+
+        function showDetectionAlert(data) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = 'alert-item';
+            alert.innerHTML = `
+                <div class="alert-header">
+                    <span class="alert-icon">🚁</span>
+                    <strong>DRONE DETECTED</strong>
+                    <span class="alert-time">${new Date().toLocaleTimeString()}</span>
+                </div>
+                <div class="alert-details">
+                    <div>Confidence: <strong>${(data.confidence * 100).toFixed(1)}%</strong></div>
+                    ${data.localized ? 
+                        `<div>Position: (${data.position[0].toFixed(2)}, ${data.position[1].toFixed(2)})</div>` : 
+                        '<div>Position: Not localized</div>'
+                    }
+                </div>
+            `;
+            
+            alertsContainer.insertBefore(alert, alertsContainer.firstChild);
+            
+            // Limit to 5 most recent alerts
+            if (alertsContainer.children.length > 5) {
+                alertsContainer.removeChild(alertsContainer.lastChild);
+            }
+            
+            // Add visual effect
+            alert.style.animation = 'highlight 2s ease-in-out';
+            setTimeout(() => {
+                alert.style.animation = '';
+            }, 2000);
+        }
+
+        function updateRealTimeVisualization(position, confidence) {
+            if (!position) return;
+            
+            const plotDiv = document.getElementById('realtime-plot');
+            const traces = [
+                {
+                    x: [0, 0.5, 0], y: [0, 0, 0.5],
+                    mode: 'markers+text',
+                    marker: { size: 20, color: ['red', 'blue', 'green'] },
+                    text: ['Mic 1', 'Mic 2', 'Mic 3'],
+                    textposition: 'top center',
+                    name: 'Microphone Array',
+                    hoverinfo: 'text'
+                },
+                {
+                    x: [position[0]], y: [position[1]],
+                    mode: 'markers',
+                    marker: { 
+                        size: 25, 
+                        color: 'red', 
+                        symbol: 'x',
+                        line: { width: 2, color: 'black' }
+                    },
+                    name: 'Estimated Position',
+                    hoverinfo: 'x+y+text',
+                    text: [`Position: (${position[0].toFixed(2)}, ${position[1].toFixed(2)})`]
+                }
+            ];
+
+            if (confidence) {
+                const radius = 0.1 + (confidence * 0.3);
+                const center = position;
+                const theta = Array.from({length: 100}, (_, i) => i * 2 * Math.PI / 100);
+                const x = theta.map(t => center[0] + radius * Math.cos(t));
+                const y = theta.map(t => center[1] + radius * Math.sin(t));
+                
+                traces.push({
+                    x: x, y: y,
+                    mode: 'lines',
+                    line: { dash: 'dash', color: 'orange', width: 2 },
+                    name: `Confidence: ${(confidence * 100).toFixed(1)}%`,
+                    hoverinfo: 'name',
+                    showlegend: true
+                });
+            }
+
+            const layout = {
+                title: 'Real-time Drone Localization',
+                xaxis: { 
+                    title: 'X Position (meters)', 
+                    range: [-2, 3],
+                    gridcolor: 'lightgray'
+                },
+                yaxis: { 
+                    title: 'Y Position (meters)', 
+                    range: [-1, 2],
+                    gridcolor: 'lightgray'
+                },
+                showlegend: true,
+                legend: { x: 0, y: 1.1, orientation: 'h' },
+                width: plotDiv.clientWidth,
+                height: 500,
+                plot_bgcolor: 'white'
+            };
+
+            Plotly.react(plotDiv, traces, layout);
+        }
+
+        function updateMonitoringStats() {
+            document.getElementById('lastDetection').textContent = new Date().toLocaleTimeString();
+            document.getElementById('activeDetections').textContent = detectionCount;
+        }
+
+        function startUptimeCounter() {
+            uptimeInterval = setInterval(() => {
+                if (monitoringStartTime) {
+                    const now = new Date();
+                    const diff = now - monitoringStartTime;
+                    const hours = Math.floor(diff / 3600000);
+                    const minutes = Math.floor((diff % 3600000) / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    
+                    document.getElementById('monitoringUptime').textContent = 
+                        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopUptimeCounter() {
+            if (uptimeInterval) {
+                clearInterval(uptimeInterval);
+                uptimeInterval = null;
+            }
+            document.getElementById('monitoringUptime').textContent = '00:00:00';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocket();
+            
+            fetch('/api/monitoring-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.active) {
+                        updateMonitoringStatus(true);
+                        document.getElementById('startMonitorBtn').disabled = true;
+                        document.getElementById('stopMonitorBtn').disabled = false;
+                        document.getElementById('alertsSection').style.display = 'block';
+                        document.getElementById('realtimeVisualization').style.display = 'block';
+                        document.getElementById('channelCount').textContent = data.channels + '/3';
+                    }
+                })
+                .catch(error => {
+                    console.log('Monitoring not active');
+                document.getElementById('channelCount').textContent = 'Real-time monitoring not available';
+                document.getElementById('startMonitorBtn').disabled = true;
+                document.getElementById('startMonitorBtn').textContent = 'Monitoring Unavailable';
+                document.getElementById('startMonitorBtn').style.backgroundColor = '#6c757d';
+                document.getElementById('statusText').textContent = 'Monitoring: UNAVAILABLE';
+                    document.getElementById('statusDot').style.backgroundColor = '#6c757d';
+                });
+        });
+    </script>
+
+    <style>
+        .monitoring-section {
+            margin-bottom: 2rem;
+        }
+
+        .monitoring-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .monitoring-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.active {
+            background-color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+
+        .status-dot.inactive {
+            background-color: #dc3545;
+        }
+
+        .monitoring-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-monitor {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+
+        .btn-start {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn-stop {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-monitor:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .monitoring-info {
+            margin: 1.5rem 0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .info-value {
+            font-weight: 700;
+            color: #007bff;
+        }
+
+        .alerts-section {
+            margin-top: 1.5rem;
+        }
+
+        .alerts-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            animation: highlight 2s ease-in-out;
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-icon {
+            font-size: 1.3em;
+        }
+
+        .alert-time {
+            margin-left: auto;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .alert-details {
+            font-size: 0.95em;
+            color: #856404;
+        }
+
+        .system-info {
+            margin-top: 2rem;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .info-card h4 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .info-card p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        @keyframes highlight {
+            0% { 
+                background-color: #ffeb3b;
+                transform: scale(1.02);
+            }
+            100% { 
+                background-color: #fff3cd;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .monitoring-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .monitoring-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>

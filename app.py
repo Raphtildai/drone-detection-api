@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from flask_socketio import SocketIO, emit
+import threading
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
@@ -24,9 +26,16 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize Socket.IO
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 # Initialize components
 model_loader = ModelLoader()
 audio_processor = AudioProcessor()
+
+# Global variables for real-time monitoring
+is_monitoring = False
+monitoring_thread = None
 
 # Localization configuration
 class LocalizationConfig:
@@ -989,6 +998,94 @@ def model_input_shape():
             
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+# Monitoring
+@app.route('/monitoring')
+def monitoring():
+    """Real-time monitoring page"""
+    return render_template('real_time_monitor.html')
+
+@app.route('/api/start-monitoring', methods=['POST'])
+def start_monitoring():
+    """Start real-time monitoring"""
+    global is_monitoring, monitoring_thread
+    
+    if is_monitoring:
+        return jsonify({'status': 'error', 'message': 'Monitoring already active'})
+    
+    try:
+        is_monitoring = True
+        
+        # Start monitoring in a separate thread
+        monitoring_thread = threading.Thread(target=monitoring_loop)
+        monitoring_thread.daemon = True
+        monitoring_thread.start()
+        
+        socketio.emit('monitoring_started', {
+            'channels': 3,
+            'message': 'Real-time monitoring started'
+        })
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Real-time monitoring started',
+            'channels': 3
+        })
+        
+    except Exception as e:
+        is_monitoring = False
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@app.route('/api/stop-monitoring', methods=['POST'])
+def stop_monitoring():
+    """Stop real-time monitoring"""
+    global is_monitoring
+    
+    is_monitoring = False
+    
+    socketio.emit('monitoring_stopped', {
+        'message': 'Real-time monitoring stopped'
+    })
+    
+    return jsonify({
+        'status': 'success',
+        'message': 'Real-time monitoring stopped'
+    })
+
+@app.route('/api/monitoring-status', methods=['GET'])
+def monitoring_status():
+    """Get monitoring status"""
+    return jsonify({
+        'active': is_monitoring,
+        'channels': 3 if is_monitoring else 0
+    })
+
+def monitoring_loop():
+    """Main monitoring loop (simulated for now)"""
+    import random
+    
+    while is_monitoring:
+        try:
+            # Simulate drone detection (replace with real audio processing)
+            if random.random() > 0.8:  # 20% chance of detection
+                confidence = random.uniform(0.7, 0.95)
+                position = [
+                    random.uniform(0.5, 1.5),  # x position
+                    random.uniform(0.3, 1.2)   # y position
+                ]
+                
+                socketio.emit('drone_detected', {
+                    'timestamp': time.time(),
+                    'confidence': confidence,
+                    'position': position,
+                    'localized': True
+                })
+            
+            time.sleep(2)  # Process every 2 seconds
+            
+        except Exception as e:
+            print(f"Monitoring error: {e}")
+            time.sleep(1)
 
 # Error handlers
 @app.errorhandler(413)

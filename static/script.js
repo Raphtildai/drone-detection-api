@@ -231,7 +231,7 @@ async function analyzeAudioEnhanced() {
 
     try {
         console.log('Sending request to enhanced endpoint...');
-        const response = await fetch('/api/detect-with-localization-enhanced', {  // Call enhanced endpoint
+        const response = await fetch('/api/detect-with-localization', {  // Call enhanced endpoint
             method: 'POST',
             body: formData
         });
