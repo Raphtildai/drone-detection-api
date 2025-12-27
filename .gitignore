@@ -12,3 +12,9 @@ app.log
 
 # untrack local requirements file
 requirements_local.txt
+
+# Untrack datasets folder
+model_training_and_testing/venv
+model_training_and_testing/drone_project_local/mel_cache/
+model_training_and_testing/drone_project_local/processed/
+model_training_and_testing/drone_project_local/raw/
