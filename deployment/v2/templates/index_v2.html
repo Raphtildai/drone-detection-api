@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drone Detection v2</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #0a0e1a;
+      --surface: #111827;
+      --surface2:#162033;
+      --border:  #1e2a3a;
+      --accent:  #00d4ff;
+      --accent2: #7c3aed;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --orange:  #f59e0b;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --radius:  10px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; font-size: 13px; min-height: 100vh; }
+
+    header { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; gap: 16px; }
+    .logo { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
+    .badge { background: var(--accent2); color: #fff; font-size: 10px; padding: 3px 8px; border-radius: 20px; letter-spacing: 1px; }
+    .ws-indicator { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .3s; }
+    .dot.connected { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot.alert { background: var(--red); box-shadow: 0 0 8px var(--red); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+    .layout { display: grid; grid-template-columns: 240px 1fr 280px; height: calc(100vh - 57px); }
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+    .sidebar-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .sidebar-section h3 { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+    .nav-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border-radius: var(--radius); background: transparent; border: none; color: var(--text); cursor: pointer; font-family: inherit; font-size: 12px; text-align: left; transition: all .2s; }
+    .nav-btn:hover { background: rgba(0,212,255,.08); color: var(--accent); }
+    .nav-btn.active { background: rgba(0,212,255,.15); color: var(--accent); border-left: 3px solid var(--accent); }
+    .nav-btn.realtime-btn { border: 1px solid rgba(239,68,68,.3); margin-top: 2px; }
+    .nav-btn.realtime-btn.active { background: rgba(239,68,68,.15); color: var(--red); border-color: var(--red); border-left: 3px solid var(--red); }
+    .nav-btn .icon { font-size: 15px; width: 18px; text-align: center; }
+
+    .main { overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+    .live-panel { background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    .live-header { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+    .live-feed { flex: 1; overflow-y: auto; padding: 10px; }
+    .event-item { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 6px; padding: 9px; margin-bottom: 7px; font-size: 11px; }
+    .event-item.detected { border-left: 3px solid var(--green); }
+    .event-item.realtime { border-left: 3px solid var(--red); }
+    .event-time { color: var(--muted); font-size: 10px; margin-bottom: 3px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+    .card h2 { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 14px; letter-spacing: 1px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .form-group input[type=number], .form-group input[type=range], .form-group select { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 6px 10px; font-family: inherit; font-size: 12px; outline: none; transition: border .2s; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+    .range-val { color: var(--accent); font-size: 11px; }
+    .dropzone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 24px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+    .dropzone:hover { border-color: var(--accent); background: rgba(0,212,255,.05); }
+    .dropzone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .dropzone .dz-icon { font-size: 24px; margin-bottom: 6px; }
+    .dropzone .dz-text { color: var(--muted); font-size: 11px; }
+    .dropzone .dz-files { margin-top: 8px; color: var(--accent); font-size: 11px; }
+    .btn { padding: 8px 18px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: .5px; transition: all .2s; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger:hover { filter: brightness(1.1); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .spinner { display:inline-block; width:13px; height:13px; border:2px solid rgba(255,255,255,.2); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .hidden { display: none !important; }
+
+    /* ═══ Shared result styles ═══ */
+    .detection-banner { border-radius: var(--radius); padding: 18px 22px; display: flex; align-items: center; gap: 18px; margin-bottom: 14px; }
+    .detection-banner.detected { background: linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.05)); border:1px solid rgba(34,197,94,.4); }
+    .detection-banner.not-detected { background: linear-gradient(135deg,rgba(100,116,139,.12),rgba(100,116,139,.04)); border:1px solid rgba(100,116,139,.3); }
+    .verdict-icon { font-size: 36px; }
+    .verdict-text { flex: 1; }
+    .verdict-label { font-size: 18px; font-weight: 700; letter-spacing: 2px; }
+    .detection-banner.detected .verdict-label { color: var(--green); }
+    .detection-banner.not-detected .verdict-label { color: var(--muted); }
+    .verdict-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .conf-ring-wrap { position: relative; width: 72px; height: 72px; flex-shrink: 0; }
+    .conf-ring-wrap svg { transform: rotate(-90deg); }
+    .conf-ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(100px,1fr)); gap: 9px; margin-bottom: 14px; }
+    .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+    .stat-box .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+    .stat-box .stat-val { font-size: 16px; font-weight: 700; }
+    .stat-box .stat-unit { font-size: 10px; color: var(--muted); margin-left: 2px; }
+    .stat-box.green .stat-val { color: var(--green); }
+    .stat-box.orange .stat-val { color: var(--orange); }
+    .stat-box.red .stat-val { color: var(--red); }
+    .stat-box.accent .stat-val { color: var(--accent); }
+    .map-container { background: #07090f; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .map-container canvas { display: block; width: 100%; }
+    .map-legend { display: flex; gap: 12px; padding: 7px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,.3); flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .legend-tri { width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-bottom:8px solid #2c3e50; flex-shrink:0; }
+    .tdoa-table { width:100%; border-collapse:collapse; font-size:11px; margin-top:8px; }
+    .tdoa-table th { color:var(--muted); font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:5px 9px; text-align:left; border-bottom:1px solid var(--border); }
+    .tdoa-table td { padding:6px 9px; border-bottom:1px solid rgba(30,42,58,.5); }
+    .tdoa-match { color:var(--green); }
+    .tdoa-mismatch { color:var(--orange); }
+    .snr-bar-wrap { margin-top:4px; }
+    .snr-row { display:flex; align-items:center; gap:9px; margin-bottom:5px; font-size:11px; }
+    .snr-label { width:48px; text-align:right; color:var(--muted); }
+    .snr-bar-bg { flex:1; height:19px; background:var(--bg); border-radius:3px; overflow:hidden; }
+    .snr-bar { height:100%; border-radius:3px; transition:width .6s; display:flex; align-items:center; padding-left:7px; font-size:10px; font-weight:600; color:#000; }
+    .snr-val { width:40px; text-align:right; font-weight:600; }
+    .rel-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:12px; font-size:10px; font-weight:600; }
+    .rel-badge.ok { background:rgba(34,197,94,.15); color:var(--green); border:1px solid rgba(34,197,94,.3); }
+    .rel-badge.warn { background:rgba(245,158,11,.15); color:var(--orange); border:1px solid rgba(245,158,11,.3); }
+    .json-toggle { font-size:10px; color:var(--muted); cursor:pointer; text-decoration:underline; margin-top:8px; display:inline-block; }
+    .raw-json { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:10px; font-size:10px; line-height:1.7; white-space:pre-wrap; max-height:180px; overflow-y:auto; margin-top:7px; }
+    .raw-json .key { color:var(--accent); }
+    .raw-json .val { color:var(--text); }
+    .raw-json .ok { color:var(--green); }
+    .result-section { margin-bottom:16px; }
+    .result-section-title { font-size:10px; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:9px; display:flex; align-items:center; gap:7px; }
+    .result-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+    .drone-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:9px; display:flex; gap:14px; align-items:flex-start; }
+    .drone-num { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .drone-info { flex:1; }
+    .drone-pos { font-size:15px; font-weight:700; margin-bottom:4px; }
+    .drone-meta { font-size:11px; color:var(--muted); display:flex; gap:12px; flex-wrap:wrap; }
+    .conf-bar-row { display:flex; align-items:center; gap:7px; margin-top:7px; }
+    .conf-bar-bg { flex:1; height:5px; background:rgba(255,255,255,.07); border-radius:3px; overflow:hidden; }
+    .conf-bar-fill { height:100%; border-radius:3px; }
+    .path-table { width:100%; border-collapse:collapse; font-size:11px; }
+    .path-table th { color:var(--muted); font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:6px 9px; text-align:left; border-bottom:1px solid var(--border); }
+    .path-table td { padding:6px 9px; border-bottom:1px solid rgba(30,42,58,.4); }
+    .path-table .ok { color:var(--green); }
+    .path-table .warn { color:var(--orange); }
+    .status-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .status-item { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:11px; }
+    .status-item .key { font-size:10px; color:var(--muted); margin-bottom:3px; }
+    .status-item .val { font-size:12px; font-weight:600; }
+
+    /* ═══ REALTIME PANEL ═══ */
+    .rt-layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+    .rt-radar-wrap { background: #07090f; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; position: relative; }
+    .rt-radar-wrap canvas { display: block; width: 100%; }
+    .rt-radar-overlay { position: absolute; top: 10px; left: 12px; font-size: 10px; color: rgba(0,212,255,.6); letter-spacing: 1px; }
+    .rt-radar-overlay .frame-num { color: var(--accent); font-weight: 700; }
+    .rt-radar-overlay .sim-label { background: rgba(124,58,237,.3); border: 1px solid rgba(124,58,237,.5); padding: 2px 8px; border-radius: 12px; font-size: 9px; margin-left: 6px; color: #a78bfa; }
+    .rt-radar-overlay .real-label { background: rgba(239,68,68,.3); border: 1px solid rgba(239,68,68,.5); padding: 2px 8px; border-radius: 12px; font-size: 9px; margin-left: 6px; color: #fca5a5; }
+
+    .rt-side { display: flex; flex-direction: column; gap: 12px; }
+
+    .rt-stats-bar { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+    .rt-stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 9px 11px; text-align: center; }
+    .rt-stat .rs-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+    .rt-stat .rs-val { font-size: 18px; font-weight: 700; margin-top: 3px; }
+
+    .rt-controls { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .rt-controls h3 { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 11px; }
+    .mode-toggle { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 12px; }
+    .mode-btn { flex: 1; padding: 7px; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: inherit; font-size: 11px; font-weight: 600; transition: all .2s; }
+    .mode-btn.active { background: var(--surface); color: var(--text); }
+    .mode-btn.active.sim { color: #a78bfa; }
+    .mode-btn.active.real { color: #fca5a5; }
+
+    .rt-log { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; height: 220px; overflow-y: auto; padding: 8px; }
+    .rt-log-item { border-bottom: 1px solid rgba(30,42,58,.5); padding: 6px 8px; font-size: 11px; }
+    .rt-log-item:last-child { border-bottom: none; }
+    .rt-log-item .rl-time { color: var(--muted); font-size: 10px; }
+    .rt-log-item .rl-detected { color: var(--green); }
+    .rt-log-item .rl-missed { color: var(--muted); }
+    .rt-log-item .rl-error { color: var(--red); }
+    .rt-log-item .rl-pos { color: var(--accent); }
+    .rt-log-item .rl-true { color: var(--muted); }
+
+    .rt-track-list { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto; }
+    .rt-track-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(30,42,58,.4); font-size: 11px; }
+    .rt-track-item:last-child { border-bottom: none; }
+    .rt-track-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .rt-track-confirmed { color: var(--green); font-size: 10px; }
+    .rt-track-pending { color: var(--orange); font-size: 10px; }
+
+    .pulse-ring { animation: pulseRing 1.5s ease-out infinite; }
+    @keyframes pulseRing { 0%{opacity:.8;transform:scale(1)} 100%{opacity:0;transform:scale(2.5)} }
+
+    @media (max-width:1100px) { .rt-layout { grid-template-columns: 1fr; } }
+    @media (max-width:900px) { .layout { grid-template-columns: 1fr; } .sidebar,.live-panel { display:none; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">🚁 DRONE.DETECT</span>
+  <span class="badge">v2</span>
+  <div class="ws-indicator">
+    <div class="dot" id="wsDot"></div>
+    <span id="wsLabel">Connecting…</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <h3>Detection Modes</h3>
+      <button class="nav-btn active" onclick="switchPanel('single',this)"><span class="icon">🎵</span> Single File</button>
+      <button class="nav-btn" onclick="switchPanel('threemic',this)"><span class="icon">📡</span> 3-Mic Array</button>
+      <button class="nav-btn" onclick="switchPanel('multi',this)"><span class="icon">🚁🚁</span> Multi-Drone</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>Analysis</h3>
+      <button class="nav-btn" onclick="switchPanel('noise',this)"><span class="icon">🔊</span> Noise SNR</button>
+      <button class="nav-btn" onclick="switchPanel('path',this)"><span class="icon">🛤️</span> Path Simulate</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>Live Operations</h3>
+      <button class="nav-btn realtime-btn" onclick="switchPanel('realtime',this)"><span class="icon">🔴</span> Real-Time</button>
+    </div>
+    <div class="sidebar-section">
+      <h3>System</h3>
+      <button class="nav-btn" onclick="switchPanel('status',this)"><span class="icon">⚙️</span> Status</button>
+    </div>
+    <div class="sidebar-section" style="margin-top:auto">
+      <h3>v2 Fixes Active</h3>
+      <div style="font-size:10px;color:var(--muted);line-height:1.9">
+        ✅ Fractional sinc delay<br>✅ Cap-hit guard (15m)<br>✅ NaN-safe GCC-PHAT<br>
+        ✅ Error chart populated<br>✅ Short-file hop clamp<br>✅ NaN band skip<br>
+        ✅ Synthetic SNR fallback<br>✅ Real-time sim + live mic
+      </div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ── SINGLE FILE ── -->
+    <div id="panel-single">
+      <div class="card">
+        <h2>🎵 SINGLE FILE DETECTION</h2>
+        <div class="dropzone"><input type="file" id="file-single" accept=".wav,.mp3,.flac,.ogg,.m4a" /><div class="dz-icon">📂</div><div class="dz-text">Click to select audio</div><div class="dz-files" id="dz-single-name"></div></div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group"><label>Drone X (m)</label><input type="number" id="sgl-x" value="1.0" step="0.1" min="-5" max="5" /></div>
+          <div class="form-group"><label>Drone Y (m)</label><input type="number" id="sgl-y" value="0.8" step="0.1" min="-5" max="5" /></div>
+          <div class="form-group"><label>Threshold <span class="range-val" id="sgl-thresh-val">0.70</span></label><input type="range" id="sgl-thresh" min="0.1" max="0.99" step="0.01" value="0.70" oninput="document.getElementById('sgl-thresh-val').textContent=parseFloat(this.value).toFixed(2)" /></div>
+          <div class="form-group"><label>Segments</label><input type="number" id="sgl-segs" value="5" min="1" max="20" /></div>
+        </div>
+        <div style="margin-top:10px"><label style="font-size:11px;color:var(--muted);cursor:pointer"><input type="checkbox" id="sgl-force" style="margin-right:5px" />Force detect</label></div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runSingleDetect()" id="btn-single">Run Detection</button>
+      </div>
+      <div class="card hidden" id="result-single-card"><h2>RESULTS</h2><div id="result-single-viz"></div></div>
+    </div>
+
+    <!-- ── 3-MIC ── -->
+    <div id="panel-threemic" class="hidden">
+      <div class="card">
+        <h2>📡 3-MIC PRECISE LOCALIZATION</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 1 (origin)</div><div class="dropzone" style="padding:14px"><input type="file" id="file-m1" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-m1-name" style="font-size:10px">No file</div></div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 2 (0.2m,0)</div><div class="dropzone" style="padding:14px"><input type="file" id="file-m2" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-m2-name" style="font-size:10px">No file</div></div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 3 (0.1,0.17m)</div><div class="dropzone" style="padding:14px"><input type="file" id="file-m3" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-m3-name" style="font-size:10px">No file</div></div></div>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group"><label>Threshold <span class="range-val" id="m3-thresh-val">0.70</span></label><input type="range" id="m3-thresh" min="0.1" max="0.99" step="0.01" value="0.70" oninput="document.getElementById('m3-thresh-val').textContent=parseFloat(this.value).toFixed(2)" /></div>
+          <div class="form-group"><label>Hint X (opt)</label><input type="number" id="m3-hint-x" placeholder="e.g. 1.0" step="0.1" /></div>
+          <div></div>
+          <div class="form-group"><label>Hint Y (opt)</label><input type="number" id="m3-hint-y" placeholder="e.g. 0.8" step="0.1" /></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="run3Mic()" id="btn-3mic">Localize</button>
+      </div>
+      <div class="card hidden" id="result-3mic-card"><h2>LOCALIZATION RESULTS</h2><div id="result-3mic-viz"></div></div>
+    </div>
+
+    <!-- ── MULTI ── -->
+    <div id="panel-multi" class="hidden">
+      <div class="card">
+        <h2>🚁🚁 MULTI-DRONE DETECTION</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 1</div><div class="dropzone" style="padding:14px"><input type="file" id="file-mm1" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-mm1-name" style="font-size:10px">No file</div></div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 2</div><div class="dropzone" style="padding:14px"><input type="file" id="file-mm2" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-mm2-name" style="font-size:10px">No file</div></div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:4px">MIC 3</div><div class="dropzone" style="padding:14px"><input type="file" id="file-mm3" accept=".wav,.mp3" /><div class="dz-icon" style="font-size:16px">🎙️</div><div class="dz-files" id="dz-mm3-name" style="font-size:10px">No file</div></div></div>
+        </div>
+        <div class="form-grid" style="margin-top:14px">
+          <div class="form-group"><label>Threshold <span class="range-val" id="mm-thresh-val">0.70</span></label><input type="range" id="mm-thresh" min="0.1" max="0.99" step="0.01" value="0.70" oninput="document.getElementById('mm-thresh-val').textContent=parseFloat(this.value).toFixed(2)" /></div>
+          <div class="form-group"><label>Max drones</label><input type="number" id="mm-max" value="3" min="1" max="6" /></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runMulti()" id="btn-multi">Detect</button>
+      </div>
+      <div class="card hidden" id="result-multi-card"><h2>MULTI-DRONE RESULTS</h2><div id="result-multi-viz"></div></div>
+    </div>
+
+    <!-- ── NOISE ── -->
+    <div id="panel-noise" class="hidden">
+      <div class="card">
+        <h2>🔊 NOISE ROBUSTNESS — SNR SWEEP</h2>
+        <div class="form-grid">
+          <div class="form-group"><label>SNR Min (dB)</label><input type="number" id="snr-min" value="-5" min="-20" max="0" /></div>
+          <div class="form-group"><label>SNR Max (dB)</label><input type="number" id="snr-max" value="20" min="0" max="40" /></div>
+          <div class="form-group"><label>Step (dB)</label><input type="number" id="snr-step" value="5" min="1" max="10" /></div>
+          <div class="form-group"><label>Clips per level</label><input type="number" id="snr-clips" value="20" min="5" max="100" /></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runNoise()" id="btn-noise">Run SNR Sweep</button>
+      </div>
+      <div class="card hidden" id="result-noise-card"><h2>SNR RESULTS</h2><div id="result-noise-viz"></div></div>
+    </div>
+
+    <!-- ── PATH ── -->
+    <div id="panel-path" class="hidden">
+      <div class="card">
+        <h2>🛤️ PATH TRACKING SIMULATION</h2>
+        <div class="form-grid">
+          <div class="form-group"><label>Waypoints</label><input type="number" id="path-n" value="8" min="3" max="20" /></div>
+          <div class="form-group"><label>Spread (m)</label><input type="number" id="path-spread" value="2.0" min="0.3" max="2.5" step="0.1" /></div>
+        </div>
+        <p style="font-size:10px;color:var(--muted);margin-top:7px">⚠️ Reliable zone ≤ 2.5m.</p>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runPath()" id="btn-path">Simulate</button>
+      </div>
+      <div class="card hidden" id="result-path-card"><h2>PATH RESULTS</h2><div id="result-path-viz"></div></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         REAL-TIME PANEL
+    ══════════════════════════════════════════════════════ -->
+    <div id="panel-realtime" class="hidden">
+
+      <!-- Stats bar -->
+      <div class="rt-stats-bar" id="rt-stats-bar">
+        <div class="rt-stat"><div class="rs-label">Frames</div><div class="rs-val" id="rs-frames" style="color:var(--accent)">0</div></div>
+        <div class="rt-stat"><div class="rs-label">Detected</div><div class="rs-val" id="rs-detected" style="color:var(--green)">0</div></div>
+        <div class="rt-stat"><div class="rs-label">Det. Rate</div><div class="rs-val" id="rs-rate" style="color:var(--orange)">0%</div></div>
+        <div class="rt-stat"><div class="rs-label">Tracks</div><div class="rs-val" id="rs-tracks" style="color:var(--accent2)">0</div></div>
+      </div>
+
+      <div class="rt-layout">
+
+        <!-- LEFT: Radar + log -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <!-- Radar canvas -->
+          <div class="rt-radar-wrap">
+            <canvas id="rt-radar" width="600" height="460"></canvas>
+            <div class="rt-radar-overlay">
+              <span>FRAME <span class="frame-num" id="rt-frame-disp">—</span></span>
+              <span id="rt-mode-badge" class="sim-label">SIM</span>
+            </div>
+          </div>
+
+          <!-- Detection log -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">DETECTION LOG</h2>
+            <div class="rt-log" id="rt-log">
+              <div style="color:var(--muted);font-size:11px;text-align:center;padding-top:20px">No events yet…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Controls + tracks -->
+        <div class="rt-side">
+
+          <!-- Controls card -->
+          <div class="rt-controls">
+            <h3>Session Config</h3>
+
+            <div class="mode-toggle">
+              <button class="mode-btn active sim" id="mode-btn-sim" onclick="setRtMode('simulated')">🔮 Simulated</button>
+              <button class="mode-btn real" id="mode-btn-real" onclick="setRtMode('real')">🎙️ Live Mic</button>
+            </div>
+
+            <!-- Simulated options -->
+            <div id="rt-sim-opts">
+              <div class="form-grid" style="gap:8px">
+                <div class="form-group">
+                  <label>Drones</label>
+                  <select id="rt-n-drones">
+                    <option value="1">1 drone</option>
+                    <option value="2">2 drones</option>
+                    <option value="3">3 drones</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Pattern</label>
+                  <select id="rt-pattern">
+                    <option value="circle">Circle</option>
+                    <option value="figure8">Figure-8</option>
+                    <option value="linear">Linear</option>
+                    <option value="random">Random</option>
+                    <option value="multi">Multi (mixed)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Tick rate (Hz) <span class="range-val" id="rt-tick-val">1.0</span></label>
+                  <input type="range" id="rt-tick" min="0.2" max="3" step="0.1" value="1.0"
+                    oninput="document.getElementById('rt-tick-val').textContent=parseFloat(this.value).toFixed(1)" />
+                </div>
+                <div class="form-group">
+                  <label>Spread (m) <span class="range-val" id="rt-spread-val">1.5</span></label>
+                  <input type="range" id="rt-spread" min="0.3" max="2.5" step="0.1" value="1.5"
+                    oninput="document.getElementById('rt-spread-val').textContent=parseFloat(this.value).toFixed(1)" />
+                </div>
+                <div class="form-group">
+                  <label>Noise <span class="range-val" id="rt-noise-val">0.04</span></label>
+                  <input type="range" id="rt-noise" min="0.001" max="0.2" step="0.005" value="0.04"
+                    oninput="document.getElementById('rt-noise-val').textContent=parseFloat(this.value).toFixed(3)" />
+                </div>
+                <div class="form-group">
+                  <label>Threshold <span class="range-val" id="rt-thresh-val">0.70</span></label>
+                  <input type="range" id="rt-thresh" min="0.1" max="0.99" step="0.01" value="0.70"
+                    oninput="document.getElementById('rt-thresh-val').textContent=parseFloat(this.value).toFixed(2)" />
+                </div>
+              </div>
+              <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:7px;padding:9px 11px;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7">
+                🔮 <strong style="color:#a78bfa">Simulated mode</strong> uses the <em>exact same pipeline</em>
+                as live deployment: <code>generate_synthetic_drone</code> → <code>localize_precise</code>
+                → <code>PathTracker</code>. Same thresholds, same cap-hit guard, same outlier rejection.
+                Noise level, spread and pattern control the acoustic environment.
+              </div>
+            </div>
+
+            <!-- Real mic options -->
+            <div id="rt-real-opts" class="hidden">
+              <div class="form-grid" style="gap:8px">
+                <div class="form-group" style="grid-column:1/-1">
+                  <label>Audio Device</label>
+                  <select id="rt-device-sel"><option value="">Loading…</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Window (s) <span class="range-val" id="rt-segdur-val">3.0</span></label>
+                  <input type="range" id="rt-segdur" min="1" max="8" step="0.5" value="3.0"
+                    oninput="document.getElementById('rt-segdur-val').textContent=parseFloat(this.value).toFixed(1)" />
+                </div>
+                <div class="form-group">
+                  <label>Threshold <span class="range-val" id="rt-thresh-real-val">0.70</span></label>
+                  <input type="range" id="rt-thresh-real" min="0.1" max="0.99" step="0.01" value="0.70"
+                    oninput="document.getElementById('rt-thresh-real-val').textContent=parseFloat(this.value).toFixed(2)" />
+                </div>
+              </div>
+              <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:9px 11px;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7">
+                🎙️ <strong style="color:#fca5a5">Live mic mode</strong> captures from your microphone,
+                runs the same <code>detect_from_single_audio</code> + <code>localize_precise</code>
+                pipeline, and streams results via SocketIO. Requires PyAudio on the server.
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" id="rt-start-btn" onclick="startRealtime()" style="flex:1">▶ Start</button>
+              <button class="btn btn-danger hidden" id="rt-stop-btn" onclick="stopRealtime()" style="flex:1">■ Stop</button>
+            </div>
+
+            <!-- Session duration -->
+            <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center">
+              Session: <span id="rt-duration">0</span>s &nbsp;|&nbsp; Avg conf: <span id="rt-avg-conf">—</span>
+            </div>
+          </div>
+
+          <!-- Active tracks -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">ACTIVE TRACKS <span id="rt-track-count" style="color:var(--muted);font-size:11px;font-weight:400">(0)</span></h2>
+            <div class="rt-track-list" id="rt-track-list">
+              <div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No confirmed tracks yet</div>
+            </div>
+          </div>
+
+          <!-- Last detection detail -->
+          <div class="card" style="padding:14px" id="rt-last-det-card">
+            <h2 style="margin-bottom:10px">LAST DETECTION</h2>
+            <div id="rt-last-det" style="color:var(--muted);font-size:11px">Waiting…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATUS ── -->
+    <div id="panel-status" class="hidden">
+      <div class="card"><h2>⚙️ SYSTEM STATUS</h2><button class="btn btn-ghost" onclick="fetchStatus()">Refresh</button><div id="result-status" style="margin-top:14px"></div></div>
+      <div class="card"><h2>API REFERENCE</h2>
+        <div class="raw-json" style="max-height:none">
+<span class="key">GET </span> <span class="val">/api/v2/status</span>                    Health check
+<span class="key">GET </span> <span class="val">/api/v2/version</span>                   Version + fixes
+<span class="key">POST</span> <span class="val">/api/v2/detect</span>                    Single file detection
+<span class="key">POST</span> <span class="val">/api/v2/detect-3mic</span>               3-mic localization
+<span class="key">POST</span> <span class="val">/api/v2/detect-multi</span>              Multi-drone detection
+<span class="key">POST</span> <span class="val">/api/v2/noise-test</span>                SNR sweep
+<span class="key">POST</span> <span class="val">/api/v2/path-simulate</span>             Path tracking
+<span class="key">POST</span> <span class="val">/api/v2/realtime/start</span>            Start RT session
+<span class="key">POST</span> <span class="val">/api/v2/realtime/stop</span>             Stop RT session
+<span class="key">GET </span> <span class="val">/api/v2/realtime/status</span>           Session status
+<span class="key">GET </span> <span class="val">/api/v2/realtime/audio-devices</span>    List mic devices
+<span class="key">WS  </span> <span class="val">realtime_frame</span>  {frame,detections,tracks,sim_positions}
+<span class="key">WS  </span> <span class="val">realtime_stats</span>  {total_frames,detected_frames,detection_rate}
+<span class="key">WS  </span> <span class="val">realtime_status</span> {running,mode,error}</div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="live-panel">
+    <div class="live-header">Live Events</div>
+    <div class="live-feed" id="live-feed">
+      <div style="color:var(--muted);font-size:11px;text-align:center;padding-top:20px">Waiting…</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// WEBSOCKET
+// ══════════════════════════════════════════════════════════════════════════════
+const BASE = window.location.origin;
+const socket = io(BASE, { path: '/socket.io', transports: ['websocket','polling'] });
+
+socket.on('connect', () => {
+  document.getElementById('wsDot').className = 'dot connected';
+  document.getElementById('wsLabel').textContent = 'Live';
+});
+socket.on('disconnect', () => {
+  document.getElementById('wsDot').className = 'dot';
+  document.getElementById('wsLabel').textContent = 'Disconnected';
+});
+socket.on('drone_detected_v2', data => { addLiveEvent(data, 'detected'); flashDot('green'); });
+
+// ── Real-time events ──────────────────────────────────────────────────────────
+socket.on('realtime_frame',  onRtFrame);
+socket.on('realtime_stats',  onRtStats);
+socket.on('realtime_status', onRtStatus);
+
+function flashDot(color='green') {
+  const d = document.getElementById('wsDot');
+  d.className = color === 'red' ? 'dot alert' : 'dot connected';
+  setTimeout(() => d.className = 'dot connected', 2000);
+}
+
+function addLiveEvent(data, type='detected') {
+  const feed = document.getElementById('live-feed');
+  if (feed.children.length === 1 && feed.children[0].style.textAlign === 'center')
+    feed.innerHTML = '';
+  const t = new Date((data.timestamp||Date.now()/1000)*1000).toLocaleTimeString();
+  const el = document.createElement('div');
+  el.className = `event-item ${type}`;
+  const pos = data.position ? `(${data.position[0]?.toFixed(2)},${data.position[1]?.toFixed(2)})` : '—';
+  el.innerHTML = `<div class="event-time">${t}</div>🚁 conf=${(data.confidence||0).toFixed(3)} pos=${pos}${data.n_drones?'  n='+data.n_drones:''}
+    <div style="color:var(--muted);font-size:10px">${data.source||type}</div>`;
+  feed.insertBefore(el, feed.firstChild);
+  while (feed.children.length > 40) feed.removeChild(feed.lastChild);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PANEL SWITCHING
+// ══════════════════════════════════════════════════════════════════════════════
+const PANELS = ['single','threemic','multi','noise','path','realtime','status'];
+function switchPanel(id, btn) {
+  PANELS.forEach(p => document.getElementById('panel-'+p).classList.add('hidden'));
+  document.getElementById('panel-'+id).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (id === 'realtime') { startRadarIdle(); loadAudioDevices(); }
+}
+
+// File dropzones
+['single','m1','m2','m3','mm1','mm2','mm3'].forEach(id => {
+  const inp = document.getElementById('file-'+id);
+  const nm  = document.getElementById('dz-'+id+'-name');
+  if (inp && nm) inp.addEventListener('change', () => nm.textContent = inp.files[0]?.name || '');
+});
+
+// Helpers
+function setBusy(btnId, busy) {
+  const b = document.getElementById(btnId);
+  if (!b._orig) b._orig = b.textContent.trim();
+  b.disabled = busy;
+  b.innerHTML = busy ? '<span class="spinner"></span> Running…' : b._orig;
+}
+function colorForConf(c) { return c>=0.8?'var(--green)':c>=0.5?'var(--orange)':'var(--red)'; }
+function reliabilityBadge(r) { return r?`<span class="rel-badge ok">✓ Reliable</span>`:`<span class="rel-badge warn">⚠ Low</span>`; }
+function rawJsonHtml(obj) {
+  const txt = JSON.stringify(obj,null,2).replace(/"([^"]+)":/g,'<span class="key">"$1":</span>').replace(/: (true|false)/g,': <span class="ok">$1</span>').replace(/: "([^"]+)"/g,': <span class="val">"$1"</span>');
+  return `<span class="json-toggle" onclick="this.nextElementSibling.classList.toggle('hidden')">▶ Show raw JSON</span><div class="raw-json hidden">${txt}</div>`;
+}
+function confRing(prob) {
+  const pct=Math.round(prob*100), r=27, stroke=4.5, circ=2*Math.PI*r;
+  const dash=(prob*circ).toFixed(1), col=colorForConf(prob);
+  return `<div class="conf-ring-wrap"><svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="${r}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="${stroke}"/><circle cx="36" cy="36" r="${r}" fill="none" stroke="${col}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/></svg><div class="conf-ring-val" style="color:${col}">${pct}%</div></div>`;
+}
+function detectionBanner(detected, prob, sub) {
+  const cls=detected?'detected':'not-detected', icon=detected?'🚁':'🌳', lbl=detected?'DRONE DETECTED':'NO DRONE DETECTED';
+  return `<div class="detection-banner ${cls}"><div class="verdict-icon">${icon}</div><div class="verdict-text"><div class="verdict-label">${lbl}</div><div class="verdict-sub">${sub||''}</div></div>${confRing(prob)}</div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CANVAS MAP (shared)
+// ══════════════════════════════════════════════════════════════════════════════
+const MICS = [[0,0],[0.2,0],[0.1,0.173]];
+const MIC_CTR = [MICS.reduce((s,m)=>s+m[0],0)/3, MICS.reduce((s,m)=>s+m[1],0)/3];
+
+function drawPositionMap(canvas, positions, opts={}) {
+  const {truePos=null,tracks=[],showZone=true,title=''} = opts;
+  const W=canvas.width, H=canvas.height;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const allPts=[...MICS,...positions];
+  if(truePos) allPts.push(truePos);
+  tracks.forEach(t=>t.forEach(p=>allPts.push(p)));
+  const xs=allPts.map(p=>p[0]),ys=allPts.map(p=>p[1]);
+  let mnX=Math.min(...xs)-0.5,mxX=Math.max(...xs)+0.5,mnY=Math.min(...ys)-0.5,mxY=Math.max(...ys)+0.5;
+  const pad=28,scale=Math.min((W-2*pad)/(mxX-mnX||1),(H-2*pad)/(mxY-mnY||1));
+  const toC=(x,y)=>[pad+(x-mnX)*scale,H-pad-(y-mnY)*scale];
+  ctx.fillStyle='#07090f'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(30,42,58,.8)'; ctx.lineWidth=0.5;
+  for(let gx=Math.floor(mnX/0.5)*0.5;gx<=mxX;gx+=0.5){const[cx]=toC(gx,mnY);ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();}
+  for(let gy=Math.floor(mnY/0.5)*0.5;gy<=mxY;gy+=0.5){const[,cy]=toC(mnX,gy);ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();}
+  if(showZone){const[zx,zy]=toC(MIC_CTR[0],MIC_CTR[1]);const zr=2.5*scale;ctx.beginPath();ctx.arc(zx,zy,zr,0,2*Math.PI);ctx.strokeStyle='rgba(34,197,94,.3)';ctx.lineWidth=1;ctx.setLineDash([5,4]);ctx.stroke();ctx.fillStyle='rgba(34,197,94,.05)';ctx.fill();ctx.setLineDash([]);}
+  const tcols=['#00d4ff','#7c3aed','#f59e0b','#ec4899','#10b981'];
+  tracks.forEach((track,ti)=>{if(track.length<2)return;const col=tcols[ti%tcols.length];ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2;const[tx0,ty0]=toC(track[0][0],track[0][1]);ctx.moveTo(tx0,ty0);track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.lineTo(tx,ty);});ctx.stroke();track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.beginPath();ctx.arc(tx,ty,3,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();});});
+  if(truePos){const[tx,ty]=toC(truePos[0],truePos[1]);ctx.beginPath();const s=8;ctx.moveTo(tx,ty-s);ctx.lineTo(tx+s,ty+s);ctx.lineTo(tx-s,ty+s);ctx.closePath();ctx.fillStyle='#2980b9';ctx.fill();ctx.strokeStyle='#1a5276';ctx.lineWidth=1;ctx.stroke();}
+  positions.forEach(pos=>{const[ex,ey]=toC(pos[0],pos[1]);const g=ctx.createRadialGradient(ex,ey,0,ex,ey,16);g.addColorStop(0,'rgba(239,68,68,.4)');g.addColorStop(1,'rgba(239,68,68,0)');ctx.beginPath();ctx.arc(ex,ey,16,0,2*Math.PI);ctx.fillStyle=g;ctx.fill();ctx.font='18px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',ex,ey);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle='#ef4444';ctx.font='10px monospace';ctx.fillText(`(${pos[0].toFixed(2)},${pos[1].toFixed(2)})`,ex+12,ey+4);});
+  MICS.forEach((mic,i)=>{const[mx,my]=toC(mic[0],mic[1]);ctx.beginPath();ctx.moveTo(mx,my-9);ctx.lineTo(mx+7.5,my+4.5);ctx.lineTo(mx-7.5,my+4.5);ctx.closePath();ctx.fillStyle='#2c3e50';ctx.strokeStyle='#00d4ff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();ctx.fillStyle='#00d4ff';ctx.font='bold 9px monospace';ctx.fillText(`M${i+1}`,mx+10,my+3);});
+  if(title){ctx.fillStyle='rgba(100,116,139,.7)';ctx.font='10px monospace';ctx.fillText(title,8,14);}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REALTIME RADAR
+// ══════════════════════════════════════════════════════════════════════════════
+let rtState = {
+  running: false,
+  mode: 'simulated',
+  frame: 0,
+  sweepAngle: 0,
+  idleAnim: null,
+  tracks: {},       // track_id -> {positions, speed, hits, confirmed, color}
+  lastDetections: [],
+  simTruePositions: [],
+  totalFrames: 0,
+  detectedFrames: 0,
+  avgConf: 0,
+  sessionStart: null,
+  durationTimer: null,
+};
+
+const TRACK_COLORS = ['#00d4ff','#7c3aed','#f59e0b','#ec4899','#10b981','#f97316'];
+
+function startRadarIdle() {
+  if (rtState.idleAnim) return;
+  rtState.idleAnim = requestAnimationFrame(radarIdleTick);
+}
+
+function radarIdleTick() {
+  if (!document.getElementById('panel-realtime').classList.contains('hidden')) {
+    drawRadar();
+    rtState.sweepAngle = (rtState.sweepAngle + 0.015) % (2*Math.PI);
+    rtState.idleAnim = requestAnimationFrame(radarIdleTick);
+  } else {
+    rtState.idleAnim = null;
+  }
+}
+
+function drawRadar() {
+  const canvas = document.getElementById('rt-radar');
+  if (!canvas) return;
+  const W=canvas.width, H=canvas.height;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#07090f'; ctx.fillRect(0,0,W,H);
+
+  // Map params — fixed view ±3m from mic centre
+  const VIEW = 3.2; // metres each side
+  const cx=W/2, cy=H/2;
+  const scale = Math.min(W,H)*0.5/VIEW;
+  const toC=(x,y)=>[cx+(x-MIC_CTR[0])*scale, cy-(y-MIC_CTR[1])*scale];
+
+  // Radar grid rings
+  [0.5,1.0,1.5,2.0,2.5,3.0].forEach(r=>{
+    ctx.beginPath(); ctx.arc(cx,cy,r*scale,0,2*Math.PI);
+    const alpha = r<=2.5?0.18:0.08;
+    ctx.strokeStyle=`rgba(0,212,255,${alpha})`; ctx.lineWidth=r===2.5?1.5:0.7; ctx.stroke();
+    if(r<=2.5){ctx.fillStyle='rgba(0,212,255,.25)';ctx.font='9px monospace';ctx.fillText(`${r}m`,cx+r*scale+3,cy-3);}
+  });
+
+  // Crosshairs
+  ctx.strokeStyle='rgba(0,212,255,.1)'; ctx.lineWidth=0.5;
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+
+  // Reliable zone fill
+  ctx.beginPath(); ctx.arc(cx,cy,2.5*scale,0,2*Math.PI);
+  ctx.fillStyle='rgba(34,197,94,.04)'; ctx.fill();
+  ctx.strokeStyle='rgba(34,197,94,.25)'; ctx.lineWidth=1; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Sweep
+  if (rtState.running) {
+    const grad = ctx.createConicalGradient
+      ? null  // not standard
+      : null;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rtState.sweepAngle);
+    const sweepGrad = ctx.createLinearGradient(0, 0, Math.min(W,H)*0.5, 0);
+    sweepGrad.addColorStop(0, 'rgba(0,212,255,.4)');
+    sweepGrad.addColorStop(0.7, 'rgba(0,212,255,.1)');
+    sweepGrad.addColorStop(1, 'rgba(0,212,255,0)');
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, Math.min(W,H)*0.5, -0.35, 0);
+    ctx.fillStyle = sweepGrad;
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // Static crosshair glow when idle
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,2*Math.PI);
+    ctx.fillStyle='rgba(0,212,255,.4)'; ctx.fill();
+  }
+
+  // Simulated true positions (ghost circles)
+  if (rtState.mode==='simulated') {
+    rtState.simTruePositions.forEach((pos,i)=>{
+      const[px,py]=toC(pos[0],pos[1]);
+      ctx.beginPath(); ctx.arc(px,py,8,0,2*Math.PI);
+      ctx.strokeStyle='rgba(124,58,237,.5)'; ctx.lineWidth=1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle='rgba(124,58,237,.15)'; ctx.fill();
+      ctx.fillStyle='rgba(124,58,237,.7)'; ctx.font='9px monospace';
+      ctx.fillText(`T${i+1}`,px+9,py-4);
+    });
+  }
+
+  // Tracks
+  Object.values(rtState.tracks).forEach(track=>{
+    const pts=track.positions;
+    if(!pts||pts.length===0) return;
+    const col=track.color;
+
+    // Trail
+    if(pts.length>1){
+      ctx.beginPath();
+      const[x0,y0]=toC(pts[0][0],pts[0][1]);
+      ctx.moveTo(x0,y0);
+      pts.forEach((p,i)=>{
+        const[px2,py2]=toC(p[0],p[1]);
+        const alpha=0.2+(i/pts.length)*0.7;
+        ctx.strokeStyle=col.replace(')',`,${alpha})`).replace('rgb(','rgba(').replace('#',`rgba(${hexToRgb(col)},${alpha})`);
+        ctx.lineTo(px2,py2);
+      });
+      ctx.strokeStyle=col+'bb'; ctx.lineWidth=2; ctx.stroke();
+    }
+
+    // Current pos
+    const last=pts[pts.length-1];
+    const[lx,ly]=toC(last[0],last[1]);
+    if(track.confirmed){
+      // Pulse ring for confirmed tracks
+      const pAlpha=0.3+0.2*Math.sin(Date.now()/400);
+      ctx.beginPath(); ctx.arc(lx,ly,14,0,2*Math.PI);
+      ctx.strokeStyle=col.includes('#')?hexToRgbaStr(col, pAlpha):`${col}${Math.round(pAlpha*255).toString(16).padStart(2,'0')}`;
+      ctx.lineWidth=2; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(lx,ly,6,0,2*Math.PI);
+    ctx.fillStyle=col; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font=`bold 9px monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(track.id, lx, ly);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle=col; ctx.font='9px monospace';
+    ctx.fillText(`(${last[0].toFixed(2)},${last[1].toFixed(2)})`,lx+10,ly-4);
+    if(track.speed>0){ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(`${track.speed.toFixed(2)}m/s`,lx+10,ly+6);}
+  });
+
+  // Latest detection flash
+  rtState.lastDetections.forEach(det=>{
+    if(!det.position) return;
+    const[dx,dy]=toC(det.position[0],det.position[1]);
+    const age=Date.now()-det._ts;
+    if(age<1500){
+      const alpha=1-age/1500;
+      ctx.beginPath(); ctx.arc(dx,dy,3+age/200,0,2*Math.PI);
+      ctx.fillStyle=det.reliable?`rgba(34,197,94,${alpha})`:`rgba(245,158,11,${alpha})`;
+      ctx.fill();
+    }
+  });
+
+  // Microphones
+  MICS.forEach((mic,i)=>{
+    const[mx,my]=toC(mic[0],mic[1]);
+    ctx.beginPath();ctx.moveTo(mx,my-9);ctx.lineTo(mx+7,my+4);ctx.lineTo(mx-7,my+4);ctx.closePath();
+    ctx.fillStyle='#2c3e50';ctx.strokeStyle='#00d4ff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
+    ctx.fillStyle='#00d4ff';ctx.font='bold 9px monospace';ctx.fillText(`M${i+1}`,mx+9,my+3);
+  });
+
+  // Not running overlay
+  if(!rtState.running){
+    ctx.fillStyle='rgba(10,14,26,.6)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(0,212,255,.3)';ctx.font='bold 16px monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('▶ START SESSION TO BEGIN',W/2,H/2);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  }
+}
+
+function hexToRgb(hex) {
+  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r?`${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}`:'0,212,255';
+}
+function hexToRgbaStr(hex, alpha) {
+  return `rgba(${hexToRgb(hex)},${alpha})`;
+}
+
+// ── Incoming realtime events ──────────────────────────────────────────────────
+function onRtFrame(data) {
+  if (!rtState.running) return;
+  rtState.frame = data.frame;
+  rtState.totalFrames = data.frame;
+
+  // Update true positions (sim mode)
+  if (data.sim_positions) rtState.simTruePositions = data.sim_positions;
+
+  // Update tracks
+  (data.tracks||[]).forEach(t=>{
+    if(!rtState.tracks[t.id]) rtState.tracks[t.id]={...t,color:TRACK_COLORS[(t.id-1)%TRACK_COLORS.length]};
+    else Object.assign(rtState.tracks[t.id],t);
+    rtState.tracks[t.id].color = TRACK_COLORS[(t.id-1)%TRACK_COLORS.length];
+  });
+
+  // Detection log
+  const dets = data.detections||[];
+  if(dets.length>0){
+    rtState.detectedFrames++;
+    dets.forEach(det=>{
+      det._ts = Date.now();
+      rtState.lastDetections.unshift(det);
+    });
+    rtState.lastDetections = rtState.lastDetections.slice(0,20);
+    updateRtLog(data, dets);
+    updateLastDetection(dets[0]);
+    // Sidebar live feed
+    dets.forEach(det=>{
+      if(det.position) addLiveEvent({
+        timestamp: data.timestamp,
+        confidence: det.confidence,
+        position: det.position,
+        source: `realtime[${data.mode}]`
+      }, 'realtime');
+    });
+  }
+
+  // Update radar frame counter
+  const fd = document.getElementById('rt-frame-disp');
+  if (fd) fd.textContent = data.frame;
+
+  // Update track count stats
+  const confirmed = Object.values(rtState.tracks).filter(t=>t.confirmed).length;
+  document.getElementById('rs-tracks').textContent = confirmed;
+  document.getElementById('rs-frames').textContent = data.frame;
+  document.getElementById('rs-detected').textContent = rtState.detectedFrames;
+  const rate = data.frame>0 ? Math.round(rtState.detectedFrames/data.frame*100) : 0;
+  document.getElementById('rs-rate').textContent = rate+'%';
+  document.getElementById('rs-rate').style.color = rate>=70?'var(--green)':rate>=40?'var(--orange)':'var(--red)';
+
+  updateTrackList();
+}
+
+function onRtStats(stats) {
+  document.getElementById('rt-avg-conf').textContent = stats.avg_confidence?.toFixed(3)||'—';
+  document.getElementById('rt-duration').textContent = stats.session_duration?.toFixed(0)||'0';
+}
+
+function onRtStatus(data) {
+  if (!data.running && rtState.running) {
+    // Session ended externally
+    rtState.running = false;
+    setRtUiStopped();
+  }
+  if (data.error) {
+    addRtLog(`<span class="rl-error">❌ ${data.error}</span>`);
+  }
+}
+
+function updateRtLog(data, dets) {
+  const t = new Date(data.timestamp*1000).toLocaleTimeString();
+  dets.forEach(det=>{
+    const pos = det.position ? `<span class="rl-pos">(${det.position[0].toFixed(3)},${det.position[1].toFixed(3)})</span>` : '—';
+    const trueP = det.true_pos ? `<span class="rl-true"> true:(${det.true_pos[0].toFixed(2)},${det.true_pos[1].toFixed(2)})</span>` : '';
+    const errStr = det.error_m!=null ? ` err=${det.error_m.toFixed(3)}m` : '';
+    const capHit = det.cap_hit ? ' <span style="color:var(--red)">⚠CAP</span>' : '';
+    const rel = det.reliable ? '<span style="color:var(--green)">✓</span>' : '<span style="color:var(--orange)">~</span>';
+    addRtLog(`<span class="rl-time">${t}</span> 🚁 f${data.frame} ${rel} conf=${det.confidence.toFixed(3)} pos=${pos}${trueP}${errStr}${capHit}`);
+  });
+}
+
+function addRtLog(html) {
+  const log = document.getElementById('rt-log');
+  if(log.children.length===1 && log.children[0].style.textAlign==='center') log.innerHTML='';
+  const el=document.createElement('div');
+  el.className='rt-log-item';
+  el.innerHTML=html;
+  log.insertBefore(el, log.firstChild);
+  while(log.children.length>80) log.removeChild(log.lastChild);
+}
+
+function updateTrackList() {
+  const list = document.getElementById('rt-track-list');
+  const tracks = Object.values(rtState.tracks).sort((a,b)=>b.hits-a.hits);
+  if(tracks.length===0){
+    list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks yet</div>';
+    document.getElementById('rt-track-count').textContent='(0)';
+    return;
+  }
+  const confirmed = tracks.filter(t=>t.confirmed);
+  document.getElementById('rt-track-count').textContent=`(${confirmed.length} confirmed)`;
+  list.innerHTML = tracks.map(t=>{
+    const last=t.positions&&t.positions.length?t.positions[t.positions.length-1]:null;
+    const posStr = last?`(${last[0].toFixed(2)},${last[1].toFixed(2)})m`:'—';
+    return `<div class="rt-track-item">
+      <div class="rt-track-dot" style="background:${t.color}"></div>
+      <div style="flex:1">
+        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'}</div>
+        <div style="color:var(--muted);font-size:10px">${posStr} &nbsp; ${t.speed.toFixed(2)}m/s &nbsp; hits:${t.hits}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateLastDetection(det) {
+  const el = document.getElementById('rt-last-det');
+  if(!det) return;
+  const pos=det.position?`(${det.position[0].toFixed(4)}, ${det.position[1].toFixed(4)}) m`:'—';
+  const trueP=det.true_pos?`<div style="color:var(--muted)">True: (${det.true_pos[0].toFixed(4)}, ${det.true_pos[1].toFixed(4)}) m</div>`:'';
+  const err=det.error_m!=null?`<div style="color:${det.error_m<0.3?'var(--green)':det.error_m<0.7?'var(--orange)':'var(--red)'}">Error: ${det.error_m.toFixed(4)} m</div>`:'';
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="stat-box ${det.confidence>=0.7?'green':det.confidence>=0.5?'orange':'red'}">
+        <div class="stat-label">Confidence</div>
+        <div class="stat-val">${(det.confidence*100).toFixed(1)}<span class="stat-unit">%</span></div>
+      </div>
+      <div class="stat-box ${det.reliable?'green':'orange'}">
+        <div class="stat-label">Reliable</div>
+        <div class="stat-val" style="font-size:13px">${det.reliable?'✓ Yes':'⚠ Low'}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;line-height:1.8">
+      <div style="color:var(--accent)">Est: ${pos}</div>
+      ${trueP}${err}
+      ${det.cap_hit?'<div style="color:var(--red)">⚠ Cap-hit detected (optimizer hit 15m boundary)</div>':''}
+      ${det.cr?`<div style="color:var(--muted)">Confidence radius: ±${det.cr.toFixed(4)} m</div>`:''}
+    </div>`;
+}
+
+// ── Session control ───────────────────────────────────────────────────────────
+let _rtMode = 'simulated';
+
+function setRtMode(mode) {
+  _rtMode = mode;
+  document.getElementById('mode-btn-sim').className  = 'mode-btn' + (mode==='simulated'?' active sim':'');
+  document.getElementById('mode-btn-real').className = 'mode-btn' + (mode==='real'?' active real':'');
+  document.getElementById('rt-sim-opts').classList.toggle('hidden', mode!=='simulated');
+  document.getElementById('rt-real-opts').classList.toggle('hidden', mode==='simulated');
+  const badge=document.getElementById('rt-mode-badge');
+  if(badge){ badge.textContent=mode==='simulated'?'SIM':'LIVE'; badge.className=mode==='simulated'?'sim-label':'real-label'; }
+}
+
+async function startRealtime() {
+  const fd = new FormData();
+  fd.append('mode', _rtMode);
+  fd.append('session_id', 'default');
+
+  if(_rtMode==='simulated'){
+    fd.append('n_drones',    document.getElementById('rt-n-drones').value);
+    fd.append('pattern',     document.getElementById('rt-pattern').value);
+    fd.append('tick_rate',   document.getElementById('rt-tick').value);
+    fd.append('noise_level', document.getElementById('rt-noise').value);
+    fd.append('spread',      document.getElementById('rt-spread').value);
+    fd.append('threshold',   document.getElementById('rt-thresh').value);
+  } else {
+    const sel = document.getElementById('rt-device-sel');
+    const devIdx = sel.value;
+    if(devIdx) fd.append('device_indices', devIdx);
+    fd.append('segment_dur', document.getElementById('rt-segdur').value);
+    fd.append('threshold',   document.getElementById('rt-thresh-real').value);
+  }
+
+  document.getElementById('rt-start-btn').disabled = true;
+  document.getElementById('rt-start-btn').innerHTML = '<span class="spinner"></span> Starting…';
+
+  try {
+    const r = await fetch(`${BASE}/api/v2/realtime/start`, {method:'POST', body:fd});
+    const d = await r.json();
+    if(d.error){ alert(`Failed: ${d.error}`); return; }
+
+    // Reset state
+    rtState.running=true; rtState.frame=0; rtState.tracks={}; rtState.lastDetections=[];
+    rtState.simTruePositions=[]; rtState.totalFrames=0; rtState.detectedFrames=0;
+    rtState.sessionStart=Date.now();
+
+    document.getElementById('rt-start-btn').classList.add('hidden');
+    document.getElementById('rt-stop-btn').classList.remove('hidden');
+    document.getElementById('rt-stop-btn').disabled=false;
+
+    const badge=document.getElementById('rt-mode-badge');
+    if(badge){ badge.textContent=_rtMode==='simulated'?'SIM':'LIVE'; badge.className=_rtMode==='simulated'?'sim-label':'real-label'; }
+
+    // Duration ticker
+    rtState.durationTimer = setInterval(()=>{
+      const dur=Math.round((Date.now()-rtState.sessionStart)/1000);
+      const el=document.getElementById('rt-duration');
+      if(el) el.textContent=dur;
+    }, 1000);
+
+    addRtLog(`<span style="color:var(--green)">▶ Session started — mode: ${_rtMode}</span>`);
+  } catch(e) {
+    alert(`Error: ${e.message}`);
+    document.getElementById('rt-start-btn').disabled=false;
+    document.getElementById('rt-start-btn').innerHTML='▶ Start';
+  }
+}
+
+async function stopRealtime() {
+  document.getElementById('rt-stop-btn').disabled=true;
+  try {
+    const fd=new FormData(); fd.append('session_id','default');
+    const r=await fetch(`${BASE}/api/v2/realtime/stop`,{method:'POST',body:fd});
+    const d=await r.json();
+    rtState.running=false;
+    setRtUiStopped();
+    if(d.stats) addRtLog(`<span style="color:var(--muted)">■ Stopped — frames:${d.stats.total_frames} det:${d.stats.detected_frames} rate:${d.stats.detection_rate}% dur:${d.stats.session_duration}s</span>`);
+  } catch(e) {
+    rtState.running=false; setRtUiStopped();
+  }
+}
+
+function setRtUiStopped() {
+  document.getElementById('rt-stop-btn').classList.add('hidden');
+  document.getElementById('rt-start-btn').classList.remove('hidden');
+  document.getElementById('rt-start-btn').disabled=false;
+  document.getElementById('rt-start-btn').innerHTML='▶ Start';
+  if(rtState.durationTimer){ clearInterval(rtState.durationTimer); rtState.durationTimer=null; }
+}
+
+async function loadAudioDevices() {
+  try {
+    const r=await fetch(`${BASE}/api/v2/realtime/audio-devices`);
+    const d=await r.json();
+    const sel=document.getElementById('rt-device-sel');
+    sel.innerHTML='';
+    if(d.devices&&d.devices.length>0){
+      d.devices.forEach(dev=>{
+        const opt=document.createElement('option');
+        opt.value=dev.index;
+        opt.textContent=`[${dev.index}] ${dev.name} (${dev.channels}ch @ ${dev.rate}Hz)`;
+        sel.appendChild(opt);
+      });
+    } else {
+      sel.innerHTML=`<option value="">No input devices found${d.error?' — '+d.error:''}</option>`;
+    }
+  } catch(e) { /* silent */ }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RESULT RENDERERS (existing panels)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function renderSingleResult(d) {
+  const viz=document.getElementById('result-single-viz');
+  const prob=d.probability||0, summary=d.summary||d.detection_summary||{}, pos=d.position;
+  let html=detectionBanner(d.detected,prob,`${summary.detected_segments||0}/${summary.total_segments||0} segments`);
+  html+=`<div class="stat-grid"><div class="stat-box ${prob>=0.7?'green':prob>=0.5?'orange':'red'}"><div class="stat-label">Confidence</div><div class="stat-val">${(prob*100).toFixed(1)}<span class="stat-unit">%</span></div></div><div class="stat-box accent"><div class="stat-label">Seg Hit</div><div class="stat-val">${summary.detected_segments||0}<span class="stat-unit">/${summary.total_segments||'?'}</span></div></div><div class="stat-box accent"><div class="stat-label">Tracks</div><div class="stat-val">${d.n_tracks||0}</div></div>${pos?`<div class="stat-box"><div class="stat-label">Position</div><div class="stat-val" style="font-size:12px">(${pos[0].toFixed(2)},${pos[1].toFixed(2)})<span class="stat-unit">m</span></div></div>`:''}</div>`;
+  if(pos){html+=`<div class="result-section"><div class="result-section-title">Position Map</div><div class="map-container"><canvas id="map-single-canvas" width="560" height="280"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Estimated</div></div></div></div>`;}
+  html+=rawJsonHtml(d); viz.innerHTML=html;
+  if(pos){const c=document.getElementById('map-single-canvas');drawPositionMap(c,[pos],{showZone:true});}
+}
+
+function render3MicResult(d) {
+  const viz=document.getElementById('result-3mic-viz');
+  const prob=d.probability||0, loc=d.localization;
+  let html=detectionBanner(d.detected,prob,loc?`±${loc.confidence_radius?.toFixed(3)}m radius`:'');
+  if(loc){
+    const pos=loc.position;
+    html+=`<div class="stat-grid"><div class="stat-box ${loc.reliable?'green':'orange'}"><div class="stat-label">Reliability</div><div class="stat-val" style="font-size:12px">${loc.reliable?'✓ OK':'⚠ Low'}</div></div><div class="stat-box accent"><div class="stat-label">Conf Radius</div><div class="stat-val">${(loc.confidence_radius||0).toFixed(3)}<span class="stat-unit">m</span></div></div><div class="stat-box"><div class="stat-label">X</div><div class="stat-val">${pos[0].toFixed(3)}<span class="stat-unit">m</span></div></div><div class="stat-box"><div class="stat-label">Y</div><div class="stat-val">${pos[1].toFixed(3)}<span class="stat-unit">m</span></div></div></div>`;
+    html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:14px;font-size:11px;color:var(--muted)">${reliabilityBadge(loc.reliable)} &nbsp; ${loc.quality_message||''}</div>`;
+    const meas=loc.measured_tdoas_ms||[], est=loc.estimated_tdoas_ms||[];
+    html+=`<div class="result-section"><div class="result-section-title">TDOA Analysis</div><table class="tdoa-table"><thead><tr><th>Pair</th><th>Measured</th><th>Estimated</th><th>Δ</th><th>Match</th></tr></thead><tbody>`;
+    ['M1→M2','M1→M3'].forEach((pair,i)=>{const m=meas[i]||0,e=est[i]||0,delta=Math.abs(m-e),match=delta<0.05;html+=`<tr><td>${pair}</td><td class="${match?'tdoa-match':'tdoa-mismatch'}">${m.toFixed(4)}ms</td><td>${e.toFixed(4)}ms</td><td class="${match?'tdoa-match':'tdoa-mismatch'}">${delta.toFixed(4)}ms</td><td>${match?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--orange)">~</span>'}</td></tr>`;});
+    html+=`</tbody></table></div>`;
+    html+=`<div class="result-section"><div class="result-section-title">Position Map</div><div class="map-container"><canvas id="map-3mic-canvas" width="560" height="280"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Estimated</div></div></div></div>`;
+  }
+  html+=rawJsonHtml(d); viz.innerHTML=html;
+  if(loc){const c=document.getElementById('map-3mic-canvas');drawPositionMap(c,[loc.position],{showZone:false});}
+}
+
+function renderMultiResult(d) {
+  const viz=document.getElementById('result-multi-viz'), prob=d.probability||0;
+  let html=detectionBanner(d.detected,prob,`${d.n_drones||0} drone(s)`);
+  html+=`<div class="stat-grid"><div class="stat-box ${d.detected?'green':'red'}"><div class="stat-label">Drones</div><div class="stat-val">${d.n_drones||0}</div></div><div class="stat-box ${prob>=0.7?'green':prob>=0.5?'orange':'red'}"><div class="stat-label">Confidence</div><div class="stat-val">${(prob*100).toFixed(1)}<span class="stat-unit">%</span></div></div></div>`;
+  const drones=d.drones||[], dColors=['#00d4ff','#7c3aed','#f59e0b','#ec4899','#10b981'];
+  if(drones.length>0){
+    html+=`<div class="result-section"><div class="result-section-title">Drone Locations</div>`;
+    drones.forEach((dr,i)=>{const pos=dr.position,col=dColors[i%dColors.length];html+=`<div class="drone-card"><div class="drone-num" style="border:1px solid ${col}30;color:${col};background:${col}11">🚁</div><div class="drone-info"><div class="drone-pos" style="color:${col}">#${dr.id} — (${pos[0].toFixed(3)},${pos[1].toFixed(3)}) m</div><div class="drone-meta"><span>±${dr.confidence_radius?.toFixed(3)||'?'}m</span><span>${dr.band_hz?`${dr.band_hz[0]}–${dr.band_hz[1]}Hz`:'?'}</span><span>${reliabilityBadge(dr.reliable)}</span></div></div></div>`;});
+    html+=`</div><div class="result-section"><div class="result-section-title">Multi-Drone Map</div><div class="map-container"><canvas id="map-multi-canvas" width="560" height="300"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div>${drones.map((dr,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${dColors[i%dColors.length]}"></div>Drone #${dr.id}</div>`).join('')}</div></div></div>`;
+  }
+  html+=rawJsonHtml(d); viz.innerHTML=html;
+  if(drones.length>0){const c=document.getElementById('map-multi-canvas');drawPositionMap(c,drones.map(dr=>dr.position),{showZone:true});}
+}
+
+function renderNoiseResult(d) {
+  const viz=document.getElementById('result-noise-viz'), results=d.results||{}, levels=d.snr_levels||[];
+  let maxRate=0,minRate=100;
+  levels.forEach(s=>{const r=results[s]||{};const rate=r.detection_rate??(r.accuracy!=null?r.accuracy*100:null);if(rate!=null){maxRate=Math.max(maxRate,rate);minRate=Math.min(minRate,rate);}});
+  let html=`<div class="stat-grid"><div class="stat-box green"><div class="stat-label">Peak Rate</div><div class="stat-val">${maxRate.toFixed(1)}<span class="stat-unit">%</span></div></div><div class="stat-box ${minRate>=50?'orange':'red'}"><div class="stat-label">Min Rate</div><div class="stat-val">${minRate.toFixed(1)}<span class="stat-unit">%</span></div></div><div class="stat-box accent"><div class="stat-label">SNR Range</div><div class="stat-val" style="font-size:12px">${Math.min(...levels)}–${Math.max(...levels)}<span class="stat-unit">dB</span></div></div></div>`;
+  html+=`<div class="result-section"><div class="result-section-title">Detection Rate vs SNR</div><div class="snr-bar-wrap">`;
+  levels.forEach(snr=>{const r=results[snr]||{};const rate=r.detection_rate??(r.accuracy!=null?r.accuracy*100:0);const conf=r.avg_confidence??r.average_confidence??0;const pct=Math.min(Math.round(rate),100);const color=pct>=80?'var(--green)':pct>=50?'var(--orange)':'var(--red)';html+=`<div class="snr-row"><div class="snr-label">${snr>=0?'+':''}${snr}dB</div><div class="snr-bar-bg"><div class="snr-bar" style="width:${pct}%;background:${color}">${pct>=15?pct+'%':''}</div></div><div class="snr-val" style="color:${color}">${pct}%</div><div style="width:55px;font-size:10px;color:var(--muted)">c=${conf.toFixed(2)}</div></div>`;});
+  html+=`</div></div>`;
+  const tol=levels.filter(s=>{const r=results[s]||{};return(r.detection_rate??(r.accuracy!=null?r.accuracy*100:0))>=50;});
+  if(tol.length) html+=`<div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:11px 14px;font-size:11px;color:var(--green);margin-bottom:12px">💡 Tolerates noise down to <strong>${Math.min(...tol)} dB</strong> SNR</div>`;
+  html+=rawJsonHtml(d); viz.innerHTML=html;
+}
+
+function renderPathResult(d) {
+  const viz=document.getElementById('result-path-viz'), tracks=d.tracks||[];
+  let html=`<div class="stat-grid"><div class="stat-box accent"><div class="stat-label">Waypoints</div><div class="stat-val">${d.n_waypoints||0}</div></div><div class="stat-box ${d.n_tracks>0?'green':'orange'}"><div class="stat-label">Tracks</div><div class="stat-val">${d.n_tracks||0}</div></div><div class="stat-box"><div class="stat-label">Spread</div><div class="stat-val">${(d.spread||0).toFixed(1)}<span class="stat-unit">m</span></div></div></div>`;
+  if(tracks.length>0){
+    html+=`<div class="result-section"><div class="result-section-title">Track Map</div><div class="map-container"><canvas id="map-path-canvas" width="560" height="300"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>Track</div></div></div></div>`;
+    html+=`<div class="result-section"><div class="result-section-title">Track Details</div>`;
+    const tColors=['#00d4ff','#7c3aed','#f59e0b','#ec4899'];
+    tracks.forEach((track,i)=>{const col=tColors[i%tColors.length],speed=track.speed_m_s;html+=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:9px"><div style="display:flex;align-items:center;gap:9px;margin-bottom:9px"><span style="background:${col}22;border:1px solid ${col};color:${col};font-size:10px;padding:2px 8px;border-radius:12px;font-weight:700">Track #${track.id}</span><span style="color:var(--muted);font-size:11px">${track.waypoints} waypoints</span>${speed!=null?`<span style="color:${col};font-size:11px">⚡ ${speed.toFixed(2)} m/s</span>`:''}</div><table class="path-table"><thead><tr><th>#</th><th>X (m)</th><th>Y (m)</th><th>Dist</th></tr></thead><tbody>${(track.positions||[]).map((pos,pi)=>{const dist=Math.sqrt((pos[0]-MIC_CTR[0])**2+(pos[1]-MIC_CTR[1])**2);return`<tr><td style="color:${col}">${pi+1}</td><td>${pos[0].toFixed(3)}</td><td>${pos[1].toFixed(3)}</td><td class="${dist<=2.5?'ok':'warn'}">${dist.toFixed(3)}m</td></tr>`;}).join('')}</tbody></table></div>`;});
+    html+=`</div>`;
+  }
+  html+=rawJsonHtml(d); viz.innerHTML=html;
+  if(tracks.length>0){const c=document.getElementById('map-path-canvas');drawPositionMap(c,[],{tracks:tracks.map(t=>t.positions||[]),showZone:true});}
+}
+
+function renderStatus(d) {
+  const el=document.getElementById('result-status');
+  if(!d){el.innerHTML='<div style="color:var(--muted)">No data</div>';return;}
+  const ok=d.status==='ok';
+  el.innerHTML=`<div class="detection-banner ${ok?'detected':'not-detected'}" style="margin-bottom:14px"><div class="verdict-icon">${ok?'✅':'❌'}</div><div class="verdict-text"><div class="verdict-label" style="font-size:14px">${ok?'SYSTEM ONLINE':'SYSTEM ERROR'}</div><div class="verdict-sub">v${d.version||'?'} · ${new Date((d.timestamp||Date.now()/1000)*1000).toLocaleTimeString()}</div></div></div>
+  <div class="status-grid">
+    <div class="status-item"><div class="key">MODEL</div><div class="val" style="color:${d.model_loaded?'var(--green)':'var(--red)'}">${d.model_loaded?'Loaded':'Not Loaded'}</div></div>
+    <div class="status-item"><div class="key">DEVICE</div><div class="val">${d.device||'?'}</div></div>
+    <div class="status-item"><div class="key">SAMPLE RATE</div><div class="val">${d.sample_rate||'?'} Hz</div></div>
+    <div class="status-item"><div class="key">ACTIVE SESSIONS</div><div class="val">${Object.keys(d.active_sessions||{}).length}</div></div>
+  </div>
+  ${d.fixes_applied?`<div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:3px">${d.fixes_applied.map(f=>`<div style="font-size:10px;color:var(--green)">✅ ${f}</div>`).join('')}</div>`:''}`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// API CALLS
+// ══════════════════════════════════════════════════════════════════════════════
+async function runSingleDetect() {
+  const f=document.getElementById('file-single').files[0];
+  if(!f){alert('Select a file');return;}
+  setBusy('btn-single',true);
+  const fd=new FormData();
+  fd.append('file',f);fd.append('drone_x',document.getElementById('sgl-x').value);fd.append('drone_y',document.getElementById('sgl-y').value);fd.append('threshold',document.getElementById('sgl-thresh').value);fd.append('n_segments',document.getElementById('sgl-segs').value);fd.append('force_detect',document.getElementById('sgl-force').checked?'true':'false');
+  try{const r=await fetch(`${BASE}/api/v2/detect`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-single-card').classList.remove('hidden');renderSingleResult(d);}catch(e){document.getElementById('result-single-card').classList.remove('hidden');document.getElementById('result-single-viz').innerHTML=`<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;}finally{setBusy('btn-single',false);}
+}
+async function run3Mic() {
+  const f1=document.getElementById('file-m1').files[0],f2=document.getElementById('file-m2').files[0],f3=document.getElementById('file-m3').files[0];
+  if(!f1||!f2||!f3){alert('Upload all 3 files');return;}
+  setBusy('btn-3mic',true);
+  const fd=new FormData();fd.append('mic1',f1);fd.append('mic2',f2);fd.append('mic3',f3);fd.append('threshold',document.getElementById('m3-thresh').value);const hx=document.getElementById('m3-hint-x').value,hy=document.getElementById('m3-hint-y').value;if(hx&&hy){fd.append('hint_x',hx);fd.append('hint_y',hy);}
+  try{const r=await fetch(`${BASE}/api/v2/detect-3mic`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-3mic-card').classList.remove('hidden');render3MicResult(d);}catch(e){document.getElementById('result-3mic-card').classList.remove('hidden');document.getElementById('result-3mic-viz').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}finally{setBusy('btn-3mic',false);}
+}
+async function runMulti() {
+  const f1=document.getElementById('file-mm1').files[0],f2=document.getElementById('file-mm2').files[0],f3=document.getElementById('file-mm3').files[0];
+  if(!f1||!f2||!f3){alert('Upload all 3 files');return;}
+  setBusy('btn-multi',true);
+  const fd=new FormData();fd.append('mic1',f1);fd.append('mic2',f2);fd.append('mic3',f3);fd.append('threshold',document.getElementById('mm-thresh').value);fd.append('max_drones',document.getElementById('mm-max').value);
+  try{const r=await fetch(`${BASE}/api/v2/detect-multi`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-multi-card').classList.remove('hidden');renderMultiResult(d);}catch(e){document.getElementById('result-multi-card').classList.remove('hidden');document.getElementById('result-multi-viz').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}finally{setBusy('btn-multi',false);}
+}
+async function runNoise() {
+  setBusy('btn-noise',true);
+  const fd=new FormData();fd.append('snr_min',document.getElementById('snr-min').value);fd.append('snr_max',document.getElementById('snr-max').value);fd.append('snr_step',document.getElementById('snr-step').value);fd.append('n_clips',document.getElementById('snr-clips').value);
+  try{const r=await fetch(`${BASE}/api/v2/noise-test`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-noise-card').classList.remove('hidden');renderNoiseResult(d);}catch(e){document.getElementById('result-noise-card').classList.remove('hidden');document.getElementById('result-noise-viz').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}finally{setBusy('btn-noise',false);}
+}
+async function runPath() {
+  setBusy('btn-path',true);
+  const fd=new FormData();fd.append('n_waypoints',document.getElementById('path-n').value);fd.append('spread',document.getElementById('path-spread').value);
+  try{const r=await fetch(`${BASE}/api/v2/path-simulate`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-path-card').classList.remove('hidden');renderPathResult(d);}catch(e){document.getElementById('result-path-card').classList.remove('hidden');document.getElementById('result-path-viz').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}finally{setBusy('btn-path',false);}
+}
+async function fetchStatus() {
+  try{const[rs,rv]=await Promise.all([fetch(`${BASE}/api/v2/status`).then(r=>r.json()),fetch(`${BASE}/api/v2/version`).then(r=>r.json())]);renderStatus({...rs,...rv});}
+  catch(e){document.getElementById('result-status').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}
+}
+
+window.addEventListener('load',()=>{ setTimeout(fetchStatus,600); startRadarIdle(); });
+</script>
+</body>
+</html>
