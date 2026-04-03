@@ -1,0 +1,86 @@
+[
+  {
+    "source_file": "output_v3/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0016229_0020229.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/DJI_drones_noise_comparson_seg_003_0016229_0020229_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_0002000_0004000.wav",
+    "start_s": 2.0,
+    "end_s": 4.0,
+    "duration_s": 2.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328_0001000_0003900.wav",
+    "start_s": 1.0,
+    "end_s": 3.9,
+    "duration_s": 2.9
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_0001600_0004000.wav",
+    "start_s": 1.6,
+    "end_s": 4.0,
+    "duration_s": 2.4
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_0001000_0004000.wav",
+    "start_s": 1.0,
+    "end_s": 4.0,
+    "duration_s": 3.0
+  },
+  {
+    "source_file": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+    "output_file": "output_v3/manual_review/clean_drone_sections/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_0001000_0003529.wav",
+    "start_s": 1.0,
+    "end_s": 3.5294,
+    "duration_s": 2.5294
+  }
+]

@@ -1,0 +1,1682 @@
+[
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_001_0004399_0008399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold3_146714_38.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_001_0004399_0008399_00_air_conditioner_fold3_146714_38.wav",
+    "split": "train",
+    "snr_db": -3.161
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_001_0004399_0008399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_001_0004399_0008399_01_engine_idling_fold1_176787_15.wav",
+    "split": "train",
+    "snr_db": 9.162
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_001_0004399_0008399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold8_113202_28.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_001_0004399_0008399_02_engine_idling_fold8_113202_28.wav",
+    "split": "train",
+    "snr_db": 7.958
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_001_0004399_0008399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_195969_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_001_0004399_0008399_03_air_conditioner_fold4_195969_10.wav",
+    "split": "train",
+    "snr_db": 4.339
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_002_0008149_0011899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_32.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_002_0008149_0011899_00_drilling_fold10_99192_32.wav",
+    "split": "train",
+    "snr_db": 10.402
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_002_0008149_0011899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_32.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_002_0008149_0011899_01_drilling_fold10_99192_32.wav",
+    "split": "train",
+    "snr_db": -3.799
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_002_0008149_0011899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_50629_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_002_0008149_0011899_02_drilling_fold7_50629_1.wav",
+    "split": "train",
+    "snr_db": 7.206
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_002_0008149_0011899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_002_0008149_0011899_03_drilling_fold10_99192_17.wav",
+    "split": "train",
+    "snr_db": 7.867
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0012099_0016099.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold4_144007_20.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_003_0012099_0016099_00_engine_idling_fold4_144007_20.wav",
+    "split": "train",
+    "snr_db": 0.012
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0012099_0016099.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_32.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_003_0012099_0016099_01_siren_fold3_22601_32.wav",
+    "split": "train",
+    "snr_db": 0.329
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0012099_0016099.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold4_144007_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_003_0012099_0016099_02_engine_idling_fold4_144007_7.wav",
+    "split": "train",
+    "snr_db": 4.814
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0012099_0016099.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold6_188004_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_003_0012099_0016099_03_siren_fold6_188004_1.wav",
+    "split": "train",
+    "snr_db": 11.36
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_004_0015849_0019849.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_39.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_004_0015849_0019849_00_siren_fold3_22601_39.wav",
+    "split": "train",
+    "snr_db": -3.896
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_004_0015849_0019849.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold4_110621_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_004_0015849_0019849_01_jackhammer_fold4_110621_3.wav",
+    "split": "train",
+    "snr_db": -3.391
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_004_0015849_0019849.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_187075_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_004_0015849_0019849_02_engine_idling_fold9_187075_0.wav",
+    "split": "train",
+    "snr_db": 2.683
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_004_0015849_0019849.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_39856_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_004_0015849_0019849_03_engine_idling_fold9_39856_8.wav",
+    "split": "train",
+    "snr_db": -3.303
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_005_0019599_0021348.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_130961_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_005_0019599_0021348_00_drilling_fold7_130961_5.wav",
+    "split": "val",
+    "snr_db": 6.859
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_005_0019599_0021348.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold5_178260_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_005_0019599_0021348_01_jackhammer_fold5_178260_11.wav",
+    "split": "train",
+    "snr_db": 11.685
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_005_0019599_0021348.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_118278_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_005_0019599_0021348_02_drilling_fold10_118278_1.wav",
+    "split": "train",
+    "snr_db": -4.144
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_005_0019599_0021348.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold10_74364_13.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_005_0019599_0021348_03_siren_fold10_74364_13.wav",
+    "split": "train",
+    "snr_db": 5.731
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_006_0022948_0026948.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold1_30823_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_006_0022948_0026948_00_siren_fold1_30823_0.wav",
+    "split": "train",
+    "snr_db": 8.077
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_006_0022948_0026948.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold9_188823_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_006_0022948_0026948_01_jackhammer_fold9_188823_0.wav",
+    "split": "train",
+    "snr_db": -4.713
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_006_0022948_0026948.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold5_26184_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_006_0022948_0026948_02_engine_idling_fold5_26184_0.wav",
+    "split": "val",
+    "snr_db": 6.821
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_006_0022948_0026948.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_63.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_006_0022948_0026948_03_siren_fold4_24347_63.wav",
+    "split": "train",
+    "snr_db": -3.738
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_007_0026698_0029748.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_54898_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_007_0026698_0029748_00_siren_fold3_54898_6.wav",
+    "split": "train",
+    "snr_db": 5.918
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_007_0026698_0029748.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_63724_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_007_0026698_0029748_01_air_conditioner_fold6_63724_14.wav",
+    "split": "train",
+    "snr_db": -3.736
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_007_0026698_0029748.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_146690_115.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_007_0026698_0029748_02_air_conditioner_fold2_146690_115.wav",
+    "split": "val",
+    "snr_db": -0.127
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_007_0026698_0029748.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold7_202516_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_007_0026698_0029748_03_air_conditioner_fold7_202516_11.wav",
+    "split": "val",
+    "snr_db": -4.873
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_008_0030298_0034298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_119455_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_008_0030298_0034298_00_engine_idling_fold1_119455_3.wav",
+    "split": "train",
+    "snr_db": 10.451
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_008_0030298_0034298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold1_43806_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_008_0030298_0034298_01_siren_fold1_43806_0.wav",
+    "split": "val",
+    "snr_db": 13.762
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_008_0030298_0034298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_42117_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_008_0030298_0034298_02_siren_fold3_42117_3.wav",
+    "split": "train",
+    "snr_db": -3.24
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_008_0030298_0034298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold10_102857_12.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_008_0030298_0034298_03_engine_idling_fold10_102857_12.wav",
+    "split": "val",
+    "snr_db": -2.65
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_009_0034048_0038048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold2_104817_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_009_0034048_0038048_00_drilling_fold2_104817_2.wav",
+    "split": "train",
+    "snr_db": 5.151
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_009_0034048_0038048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold6_58005_68.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_009_0034048_0038048_01_drilling_fold6_58005_68.wav",
+    "split": "train",
+    "snr_db": 10.932
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_009_0034048_0038048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_144068_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_009_0034048_0038048_02_engine_idling_fold3_144068_7.wav",
+    "split": "train",
+    "snr_db": 13.453
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_009_0034048_0038048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_146186_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_009_0034048_0038048_03_engine_idling_fold1_146186_2.wav",
+    "split": "val",
+    "snr_db": 11.103
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_010_0037798_0041798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_185709_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_010_0037798_0041798_00_air_conditioner_fold4_185709_5.wav",
+    "split": "train",
+    "snr_db": 4.701
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_010_0037798_0041798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_010_0037798_0041798_01_air_conditioner_fold5_100852_10.wav",
+    "split": "train",
+    "snr_db": 9.942
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_010_0037798_0041798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_195969_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_010_0037798_0041798_02_air_conditioner_fold4_195969_10.wav",
+    "split": "train",
+    "snr_db": 3.252
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_010_0037798_0041798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold3_30204_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_010_0037798_0041798_03_air_conditioner_fold3_30204_9.wav",
+    "split": "train",
+    "snr_db": 3.717
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_012_0043247_0047247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_97.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_012_0043247_0047247_00_drilling_fold8_76085_97.wav",
+    "split": "train",
+    "snr_db": 9.396
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_012_0043247_0047247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_187075_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_012_0043247_0047247_01_engine_idling_fold9_187075_0.wav",
+    "split": "val",
+    "snr_db": 6.373
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_012_0043247_0047247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold9_137815_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_012_0043247_0047247_02_drilling_fold9_137815_5.wav",
+    "split": "train",
+    "snr_db": 1.872
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_012_0043247_0047247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold3_62837_64.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_012_0043247_0047247_03_jackhammer_fold3_62837_64.wav",
+    "split": "train",
+    "snr_db": -0.406
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_013_0046997_0050997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold2_73623_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_013_0046997_0050997_00_jackhammer_fold2_73623_0.wav",
+    "split": "train",
+    "snr_db": 0.583
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_013_0046997_0050997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_013_0046997_0050997_01_engine_idling_fold1_176787_6.wav",
+    "split": "train",
+    "snr_db": -0.552
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_013_0046997_0050997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold1_151977_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_013_0046997_0050997_02_air_conditioner_fold1_151977_7.wav",
+    "split": "train",
+    "snr_db": -4.116
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_013_0046997_0050997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_189023_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_013_0046997_0050997_03_air_conditioner_fold2_189023_7.wav",
+    "split": "train",
+    "snr_db": 4.585
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_014_0050747_0054747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_42117_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_014_0050747_0054747_00_siren_fold3_42117_10.wav",
+    "split": "train",
+    "snr_db": 10.062
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_014_0050747_0054747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_014_0050747_0054747_01_engine_idling_fold1_176787_15.wav",
+    "split": "train",
+    "snr_db": 7.953
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_014_0050747_0054747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold7_202516_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_014_0050747_0054747_02_air_conditioner_fold7_202516_9.wav",
+    "split": "train",
+    "snr_db": 6.408
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_014_0050747_0054747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_178686_46.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_014_0050747_0054747_03_air_conditioner_fold5_178686_46.wav",
+    "split": "train",
+    "snr_db": 3.107
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_015_0054497_0058497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_178686_46.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_015_0054497_0058497_00_air_conditioner_fold5_178686_46.wav",
+    "split": "train",
+    "snr_db": 7.546
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_015_0054497_0058497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold1_180937_22.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_015_0054497_0058497_01_jackhammer_fold1_180937_22.wav",
+    "split": "train",
+    "snr_db": 0.396
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_015_0054497_0058497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold6_58005_68.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_015_0054497_0058497_02_drilling_fold6_58005_68.wav",
+    "split": "val",
+    "snr_db": 12.617
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_015_0054497_0058497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold9_157866_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_015_0054497_0058497_03_siren_fold9_157866_26.wav",
+    "split": "train",
+    "snr_db": 2.312
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_016_0058247_0062247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_167464_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_016_0058247_0062247_00_air_conditioner_fold10_167464_7.wav",
+    "split": "val",
+    "snr_db": 6.215
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_016_0058247_0062247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_144068_12.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_016_0058247_0062247_01_engine_idling_fold3_144068_12.wav",
+    "split": "train",
+    "snr_db": 4.57
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_016_0058247_0062247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_146186_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_016_0058247_0062247_02_engine_idling_fold1_146186_2.wav",
+    "split": "train",
+    "snr_db": 1.409
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_016_0058247_0062247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_016_0058247_0062247_03_siren_fold3_22601_26.wav",
+    "split": "train",
+    "snr_db": 1.905
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_017_0061997_0065997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_017_0061997_0065997_00_siren_fold3_22601_7.wav",
+    "split": "train",
+    "snr_db": 11.508
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_017_0061997_0065997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_144351_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_017_0061997_0065997_01_drilling_fold4_144351_10.wav",
+    "split": "val",
+    "snr_db": 11.176
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_017_0061997_0065997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold8_125678_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_017_0061997_0065997_02_jackhammer_fold8_125678_6.wav",
+    "split": "val",
+    "snr_db": -1.424
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_017_0061997_0065997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold10_188813_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_017_0061997_0065997_03_jackhammer_fold10_188813_3.wav",
+    "split": "train",
+    "snr_db": 4.927
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_018_0065747_0069747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_71.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_018_0065747_0069747_00_siren_fold4_24347_71.wav",
+    "split": "train",
+    "snr_db": 5.829
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_018_0065747_0069747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_018_0065747_0069747_01_air_conditioner_fold5_100852_10.wav",
+    "split": "train",
+    "snr_db": -1.219
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_018_0065747_0069747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_144068_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_018_0065747_0069747_02_engine_idling_fold3_144068_2.wav",
+    "split": "train",
+    "snr_db": 1.856
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_018_0065747_0069747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold1_180937_22.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_018_0065747_0069747_03_jackhammer_fold1_180937_22.wav",
+    "split": "train",
+    "snr_db": 1.082
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_019_0069497_0073497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold3_62837_64.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_019_0069497_0073497_00_jackhammer_fold3_62837_64.wav",
+    "split": "train",
+    "snr_db": 2.438
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_019_0069497_0073497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_162103_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_019_0069497_0073497_01_air_conditioner_fold8_162103_11.wav",
+    "split": "train",
+    "snr_db": -1.673
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_019_0069497_0073497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_62.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_019_0069497_0073497_02_drilling_fold8_76085_62.wav",
+    "split": "train",
+    "snr_db": 9.162
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_019_0069497_0073497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold5_21187_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_019_0069497_0073497_03_engine_idling_fold5_21187_0.wav",
+    "split": "train",
+    "snr_db": 1.333
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_020_0073247_0077247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_27.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_020_0073247_0077247_00_siren_fold4_24347_27.wav",
+    "split": "val",
+    "snr_db": 8.311
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_020_0073247_0077247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold9_157866_20.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_020_0073247_0077247_01_siren_fold9_157866_20.wav",
+    "split": "train",
+    "snr_db": 1.031
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_020_0073247_0077247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_73524_127.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_020_0073247_0077247_02_air_conditioner_fold10_73524_127.wav",
+    "split": "train",
+    "snr_db": 13.556
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_020_0073247_0077247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_42117_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_020_0073247_0077247_03_siren_fold3_42117_5.wav",
+    "split": "train",
+    "snr_db": 9.109
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_021_0076997_0080997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold1_151977_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_021_0076997_0080997_00_air_conditioner_fold1_151977_7.wav",
+    "split": "train",
+    "snr_db": 9.571
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_021_0076997_0080997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_12812_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_021_0076997_0080997_01_engine_idling_fold9_12812_1.wav",
+    "split": "train",
+    "snr_db": -2.212
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_021_0076997_0080997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_54898_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_021_0076997_0080997_02_siren_fold3_54898_6.wav",
+    "split": "train",
+    "snr_db": 2.148
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_021_0076997_0080997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189985_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_021_0076997_0080997_03_air_conditioner_fold10_189985_5.wav",
+    "split": "val",
+    "snr_db": 13.713
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_022_0080747_0084747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold2_152908_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_022_0080747_0084747_00_engine_idling_fold2_152908_8.wav",
+    "split": "train",
+    "snr_db": 14.152
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_022_0080747_0084747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_103249_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_022_0080747_0084747_01_engine_idling_fold9_103249_8.wav",
+    "split": "train",
+    "snr_db": 13.868
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_022_0080747_0084747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_162103_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_022_0080747_0084747_02_air_conditioner_fold8_162103_11.wav",
+    "split": "train",
+    "snr_db": 2.722
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_022_0080747_0084747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold1_180937_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_022_0080747_0084747_03_jackhammer_fold1_180937_1.wav",
+    "split": "train",
+    "snr_db": -3.248
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_023_0084497_0088497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_023_0084497_0088497_00_air_conditioner_fold5_100852_3.wav",
+    "split": "train",
+    "snr_db": 11.113
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_023_0084497_0088497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_023_0084497_0088497_01_air_conditioner_fold5_100852_3.wav",
+    "split": "train",
+    "snr_db": -3.278
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_023_0084497_0088497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_146690_155.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_023_0084497_0088497_02_air_conditioner_fold2_146690_155.wav",
+    "split": "val",
+    "snr_db": 14.202
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_023_0084497_0088497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_31.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_023_0084497_0088497_03_siren_fold4_24347_31.wav",
+    "split": "train",
+    "snr_db": -1.502
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_024_0088247_0092247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_177726_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_024_0088247_0092247_00_air_conditioner_fold8_177726_9.wav",
+    "split": "train",
+    "snr_db": 0.789
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_024_0088247_0092247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_169466_18.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_024_0088247_0092247_01_drilling_fold4_169466_18.wav",
+    "split": "val",
+    "snr_db": 6.186
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_024_0088247_0092247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_178686_72.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_024_0088247_0092247_02_air_conditioner_fold5_178686_72.wav",
+    "split": "val",
+    "snr_db": 7.811
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_024_0088247_0092247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_024_0088247_0092247_03_drilling_fold10_99192_15.wav",
+    "split": "val",
+    "snr_db": 8.757
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_025_0091997_0095997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_32.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_025_0091997_0095997_00_drilling_fold10_99192_32.wav",
+    "split": "train",
+    "snr_db": 6.978
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_025_0091997_0095997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_46918_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_025_0091997_0095997_01_engine_idling_fold1_46918_0.wav",
+    "split": "val",
+    "snr_db": 4.521
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_025_0091997_0095997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_184805_16.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_025_0091997_0095997_02_air_conditioner_fold6_184805_16.wav",
+    "split": "val",
+    "snr_db": 0.191
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_025_0091997_0095997.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_94636_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_025_0091997_0095997_03_siren_fold3_94636_4.wav",
+    "split": "train",
+    "snr_db": -1.734
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_026_0095747_0099747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_167464_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_026_0095747_0099747_00_air_conditioner_fold10_167464_2.wav",
+    "split": "train",
+    "snr_db": 7.779
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_026_0095747_0099747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold1_40722_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_026_0095747_0099747_01_siren_fold1_40722_7.wav",
+    "split": "train",
+    "snr_db": -1.657
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_026_0095747_0099747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_169466_18.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_026_0095747_0099747_02_drilling_fold4_169466_18.wav",
+    "split": "train",
+    "snr_db": 2.25
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_026_0095747_0099747.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_026_0095747_0099747_03_drilling_fold10_99192_17.wav",
+    "split": "train",
+    "snr_db": 2.46
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_027_0099497_0103497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_178686_16.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_027_0099497_0103497_00_air_conditioner_fold5_178686_16.wav",
+    "split": "train",
+    "snr_db": -0.578
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_027_0099497_0103497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_146709_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_027_0099497_0103497_01_air_conditioner_fold4_146709_3.wav",
+    "split": "train",
+    "snr_db": 9.045
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_027_0099497_0103497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_144068_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_027_0099497_0103497_02_engine_idling_fold3_144068_0.wav",
+    "split": "train",
+    "snr_db": -4.652
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_027_0099497_0103497.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_130961_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_027_0099497_0103497_03_drilling_fold7_130961_5.wav",
+    "split": "train",
+    "snr_db": 6.953
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_028_0103247_0107247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_028_0103247_0107247_00_drilling_fold8_76085_14.wav",
+    "split": "val",
+    "snr_db": -0.553
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_028_0103247_0107247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold10_74364_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_028_0103247_0107247_01_siren_fold10_74364_7.wav",
+    "split": "train",
+    "snr_db": 14.622
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_028_0103247_0107247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_12812_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_028_0103247_0107247_02_engine_idling_fold9_12812_1.wav",
+    "split": "val",
+    "snr_db": 10.147
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_028_0103247_0107247.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_184805_16.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_028_0103247_0107247_03_air_conditioner_fold6_184805_16.wav",
+    "split": "train",
+    "snr_db": 13.171
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_029_0106997_0109542.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_104625_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_029_0106997_0109542_00_drilling_fold7_104625_15.wav",
+    "split": "train",
+    "snr_db": -0.892
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_029_0106997_0109542.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold2_46668_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_029_0106997_0109542_01_drilling_fold2_46668_1.wav",
+    "split": "train",
+    "snr_db": 13.837
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_029_0106997_0109542.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold5_21187_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_029_0106997_0109542_02_engine_idling_fold5_21187_0.wav",
+    "split": "val",
+    "snr_db": 7.259
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_029_0106997_0109542.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold6_131918_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_029_0106997_0109542_03_jackhammer_fold6_131918_1.wav",
+    "split": "train",
+    "snr_db": 14.285
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_030_0109742_0113742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold10_102857_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_030_0109742_0113742_00_engine_idling_fold10_102857_6.wav",
+    "split": "train",
+    "snr_db": 12.026
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_030_0109742_0113742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_27.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_030_0109742_0113742_01_siren_fold4_24347_27.wav",
+    "split": "train",
+    "snr_db": 11.695
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_030_0109742_0113742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_103258_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_030_0109742_0113742_02_engine_idling_fold1_103258_15.wav",
+    "split": "train",
+    "snr_db": 1.286
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_030_0109742_0113742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold6_74726_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_030_0109742_0113742_03_siren_fold6_74726_14.wav",
+    "split": "val",
+    "snr_db": -4.188
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_031_0113492_0114792.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_119455_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_031_0113492_0114792_00_engine_idling_fold1_119455_3.wav",
+    "split": "train",
+    "snr_db": 14.524
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_031_0113492_0114792.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold4_50661_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_031_0113492_0114792_01_engine_idling_fold4_50661_5.wav",
+    "split": "train",
+    "snr_db": 11.821
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_031_0113492_0114792.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_97.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_031_0113492_0114792_02_drilling_fold8_76085_97.wav",
+    "split": "train",
+    "snr_db": -2.897
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_031_0113492_0114792.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold3_13230_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_031_0113492_0114792_03_air_conditioner_fold3_13230_26.wav",
+    "split": "train",
+    "snr_db": 6.811
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_032_0114992_0118992.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_146690_115.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_032_0114992_0118992_00_air_conditioner_fold2_146690_115.wav",
+    "split": "train",
+    "snr_db": -0.995
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_032_0114992_0118992.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold9_75743_19.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_032_0114992_0118992_01_air_conditioner_fold9_75743_19.wav",
+    "split": "train",
+    "snr_db": 9.27
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_032_0114992_0118992.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_158608_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_032_0114992_0118992_02_siren_fold4_158608_3.wav",
+    "split": "train",
+    "snr_db": 3.089
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_032_0114992_0118992.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189985_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_032_0114992_0118992_03_air_conditioner_fold10_189985_0.wav",
+    "split": "val",
+    "snr_db": -0.384
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_033_0118742_0122742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold10_159742_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_033_0118742_0122742_00_siren_fold10_159742_9.wav",
+    "split": "train",
+    "snr_db": -4.465
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_033_0118742_0122742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold8_113216_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_033_0118742_0122742_01_engine_idling_fold8_113216_3.wav",
+    "split": "train",
+    "snr_db": -3.073
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_033_0118742_0122742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold6_39884_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_033_0118742_0122742_02_engine_idling_fold6_39884_3.wav",
+    "split": "train",
+    "snr_db": 8.242
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_033_0118742_0122742.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold5_156869_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_033_0118742_0122742_03_siren_fold5_156869_2.wav",
+    "split": "train",
+    "snr_db": -4.647
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_034_0122492_0126492.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold8_148632_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_034_0122492_0126492_00_siren_fold8_148632_6.wav",
+    "split": "val",
+    "snr_db": 2.527
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_034_0122492_0126492.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_178686_60.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_034_0122492_0126492_01_air_conditioner_fold5_178686_60.wav",
+    "split": "train",
+    "snr_db": 12.694
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_034_0122492_0126492.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_169466_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_034_0122492_0126492_02_drilling_fold4_169466_2.wav",
+    "split": "train",
+    "snr_db": -2.812
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_034_0122492_0126492.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold5_178260_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_034_0122492_0126492_03_jackhammer_fold5_178260_11.wav",
+    "split": "train",
+    "snr_db": 12.087
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_035_0126242_0130191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold6_74726_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_035_0126242_0130191_00_siren_fold6_74726_14.wav",
+    "split": "train",
+    "snr_db": 2.055
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_035_0126242_0130191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_121285_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_035_0126242_0130191_01_air_conditioner_fold6_121285_6.wav",
+    "split": "val",
+    "snr_db": 1.978
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_035_0126242_0130191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_161129_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_035_0126242_0130191_02_drilling_fold8_161129_2.wav",
+    "split": "train",
+    "snr_db": 2.147
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_035_0126242_0130191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_035_0126242_0130191_03_engine_idling_fold1_176787_6.wav",
+    "split": "train",
+    "snr_db": 13.208
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_036_0138441_0142441.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_39856_28.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_036_0138441_0142441_00_engine_idling_fold9_39856_28.wav",
+    "split": "train",
+    "snr_db": -4.252
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_036_0138441_0142441.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_103258_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_036_0138441_0142441_01_engine_idling_fold1_103258_15.wav",
+    "split": "train",
+    "snr_db": 8.919
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_036_0138441_0142441.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_45.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_036_0138441_0142441_02_siren_fold4_24347_45.wav",
+    "split": "train",
+    "snr_db": -3.045
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_036_0138441_0142441.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_99192_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_036_0138441_0142441_03_drilling_fold10_99192_26.wav",
+    "split": "train",
+    "snr_db": 10.298
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_037_0142191_0146191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold9_157866_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_037_0142191_0146191_00_siren_fold9_157866_26.wav",
+    "split": "val",
+    "snr_db": 7.709
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_037_0142191_0146191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_184805_5_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_037_0142191_0146191_01_air_conditioner_fold6_184805_5_1.wav",
+    "split": "train",
+    "snr_db": 0.946
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_037_0142191_0146191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_195969_20.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_037_0142191_0146191_02_air_conditioner_fold4_195969_20.wav",
+    "split": "train",
+    "snr_db": 6.837
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_037_0142191_0146191.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold1_180937_22.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_037_0142191_0146191_03_jackhammer_fold1_180937_22.wav",
+    "split": "train",
+    "snr_db": 10.913
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_038_0145941_0149941.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_177726_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_038_0145941_0149941_00_air_conditioner_fold8_177726_17.wav",
+    "split": "train",
+    "snr_db": -0.998
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_038_0145941_0149941.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189985_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_038_0145941_0149941_01_air_conditioner_fold10_189985_0.wav",
+    "split": "train",
+    "snr_db": 12.618
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_038_0145941_0149941.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_16.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_038_0145941_0149941_02_air_conditioner_fold5_100852_16.wav",
+    "split": "train",
+    "snr_db": 14.242
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_038_0145941_0149941.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold1_157867_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_038_0145941_0149941_03_siren_fold1_157867_15.wav",
+    "split": "train",
+    "snr_db": 13.137
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_039_0149691_0153691.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_039_0149691_0153691_00_engine_idling_fold1_176787_4.wav",
+    "split": "train",
+    "snr_db": -0.193
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_039_0149691_0153691.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold8_157868_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_039_0149691_0153691_01_siren_fold8_157868_0.wav",
+    "split": "train",
+    "snr_db": -3.711
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_039_0149691_0153691.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_62.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_039_0149691_0153691_02_drilling_fold8_76085_62.wav",
+    "split": "val",
+    "snr_db": -0.277
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_039_0149691_0153691.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_121285_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_039_0149691_0153691_03_air_conditioner_fold6_121285_6.wav",
+    "split": "train",
+    "snr_db": 4.708
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_040_0153441_0155040.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold10_118278_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_040_0153441_0155040_00_drilling_fold10_118278_1.wav",
+    "split": "train",
+    "snr_db": 0.168
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_040_0153441_0155040.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold7_189981_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_040_0153441_0155040_01_air_conditioner_fold7_189981_11.wav",
+    "split": "val",
+    "snr_db": -4.602
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_040_0153441_0155040.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold5_203913_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_040_0153441_0155040_02_siren_fold5_203913_3.wav",
+    "split": "val",
+    "snr_db": 2.269
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_040_0153441_0155040.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_130961_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_040_0153441_0155040_03_drilling_fold7_130961_5.wav",
+    "split": "train",
+    "snr_db": 13.659
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_041_0161539_0165539.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_146690_155.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_041_0161539_0165539_00_air_conditioner_fold2_146690_155.wav",
+    "split": "train",
+    "snr_db": 6.996
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_041_0161539_0165539.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_29722_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_041_0161539_0165539_01_drilling_fold4_29722_4.wav",
+    "split": "val",
+    "snr_db": 13.71
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_041_0161539_0165539.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_63724_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_041_0161539_0165539_02_air_conditioner_fold6_63724_14.wav",
+    "split": "train",
+    "snr_db": 6.79
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_041_0161539_0165539.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_12812_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_041_0161539_0165539_03_engine_idling_fold9_12812_1.wav",
+    "split": "train",
+    "snr_db": -0.073
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_042_0165289_0169289.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_204240_35.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_042_0165289_0169289_00_air_conditioner_fold6_204240_35.wav",
+    "split": "train",
+    "snr_db": 1.163
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_042_0165289_0169289.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold5_62566_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_042_0165289_0169289_01_engine_idling_fold5_62566_4.wav",
+    "split": "train",
+    "snr_db": -0.206
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_042_0165289_0169289.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold2_104817_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_042_0165289_0169289_02_drilling_fold2_104817_2.wav",
+    "split": "train",
+    "snr_db": 3.848
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_042_0165289_0169289.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/us8k_siren_siren_fold4_159751_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_042_0165289_0169289_03_us8k_siren_siren_fold4_159751_11.wav",
+    "split": "train",
+    "snr_db": -0.291
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_043_0169039_0171838.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_74507_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_043_0169039_0171838_00_air_conditioner_fold2_74507_4.wav",
+    "split": "train",
+    "snr_db": 7.889
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_043_0169039_0171838.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold4_154758_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_043_0169039_0171838_01_engine_idling_fold4_154758_14.wav",
+    "split": "train",
+    "snr_db": 9.739
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_043_0169039_0171838.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_043_0169039_0171838_02_siren_fold3_22601_26.wav",
+    "split": "val",
+    "snr_db": -1.793
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_043_0169039_0171838.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/us8k_drilling_drilling_fold9_137815_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_043_0169039_0171838_03_us8k_drilling_drilling_fold9_137815_9.wav",
+    "split": "train",
+    "snr_db": 1.535
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_044_0172038_0174988.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_27.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_044_0172038_0174988_00_siren_fold4_24347_27.wav",
+    "split": "train",
+    "snr_db": -4.938
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_044_0172038_0174988.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold4_144007_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_044_0172038_0174988_01_engine_idling_fold4_144007_7.wav",
+    "split": "train",
+    "snr_db": 9.271
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_044_0172038_0174988.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold8_113202_28.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_044_0172038_0174988_02_engine_idling_fold8_113202_28.wav",
+    "split": "train",
+    "snr_db": 13.788
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_044_0172038_0174988.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold6_124389_18.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_044_0172038_0174988_03_siren_fold6_124389_18.wav",
+    "split": "val",
+    "snr_db": 1.552
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_045_0175538_0178488.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold4_144351_10.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_045_0175538_0178488_00_drilling_fold4_144351_10.wav",
+    "split": "val",
+    "snr_db": 11.694
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_045_0175538_0178488.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_71.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_045_0175538_0178488_01_siren_fold4_24347_71.wav",
+    "split": "train",
+    "snr_db": -1.035
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_045_0175538_0178488.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_54898_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_DJI_drones_noise_comparson_seg_045_0175538_0178488_02_siren_fold3_54898_6.wav",
+    "split": "train",
+    "snr_db": 14.161
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/DJI_drones_noise_comparson_seg_045_0175538_0178488.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold5_90013_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_DJI_drones_noise_comparson_seg_045_0175538_0178488_03_jackhammer_fold5_90013_5.wav",
+    "split": "val",
+    "snr_db": 4.074
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold2_159747_18.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899_00_siren_fold2_159747_18.wav",
+    "split": "train",
+    "snr_db": 0.324
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold1_134717_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899_01_air_conditioner_fold1_134717_5.wav",
+    "split": "train",
+    "snr_db": 0.659
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_31.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899_02_siren_fold4_24347_31.wav",
+    "split": "train",
+    "snr_db": -0.29
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold1_46669_33_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000899_0004899_03_drilling_fold1_46669_33_1.wav",
+    "split": "train",
+    "snr_db": 4.378
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_74677_13.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649_00_air_conditioner_fold8_74677_13.wav",
+    "split": "train",
+    "snr_db": 9.169
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_189991_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649_01_air_conditioner_fold2_189991_2.wav",
+    "split": "train",
+    "snr_db": 13.621
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold9_188823_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649_02_jackhammer_fold9_188823_0.wav",
+    "split": "train",
+    "snr_db": 2.619
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004649_0008649_03_siren_fold4_24347_26.wav",
+    "split": "train",
+    "snr_db": 6.61
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold7_149193_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_00_engine_idling_fold7_149193_3.wav",
+    "split": "val",
+    "snr_db": 1.346
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold7_177537_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_01_jackhammer_fold7_177537_1.wav",
+    "split": "train",
+    "snr_db": 4.984
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold6_78651_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_02_engine_idling_fold6_78651_2.wav",
+    "split": "train",
+    "snr_db": 12.539
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold7_107357_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_03_siren_fold7_107357_14.wav",
+    "split": "train",
+    "snr_db": -1.7
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_76085_37.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_00_drilling_fold8_76085_37.wav",
+    "split": "train",
+    "snr_db": 7.733
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold10_159742_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_01_siren_fold10_159742_9.wav",
+    "split": "train",
+    "snr_db": 0.204
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold6_74726_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_02_siren_fold6_74726_14.wav",
+    "split": "train",
+    "snr_db": 9.181
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_162103_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_03_air_conditioner_fold8_162103_11.wav",
+    "split": "train",
+    "snr_db": 12.363
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold3_177742_178.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498_00_air_conditioner_fold3_177742_178.wav",
+    "split": "val",
+    "snr_db": -0.752
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold5_77774_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498_01_drilling_fold5_77774_3.wav",
+    "split": "train",
+    "snr_db": 10.365
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold3_62837_20.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498_02_jackhammer_fold3_62837_20.wav",
+    "split": "train",
+    "snr_db": 2.883
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold8_54383_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015899_0017498_03_air_conditioner_fold8_54383_1.wav",
+    "split": "train",
+    "snr_db": 9.154
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189982_30.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048_00_air_conditioner_fold10_189982_30.wav",
+    "split": "train",
+    "snr_db": 14.395
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold4_55018_148.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048_01_air_conditioner_fold4_55018_148.wav",
+    "split": "val",
+    "snr_db": 13.138
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold1_157867_24.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048_02_siren_fold1_157867_24.wav",
+    "split": "train",
+    "snr_db": 10.963
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold9_58937_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018048_0022048_03_drilling_fold9_58937_0.wav",
+    "split": "train",
+    "snr_db": -0.198
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_176787_13.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_00_engine_idling_fold1_176787_13.wav",
+    "split": "train",
+    "snr_db": 0.699
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_189991_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_01_air_conditioner_fold2_189991_4.wav",
+    "split": "train",
+    "snr_db": 11.127
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_24347_26.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_02_siren_fold4_24347_26.wav",
+    "split": "train",
+    "snr_db": 5.253
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_195451_9.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_03_engine_idling_fold3_195451_9.wav",
+    "split": "train",
+    "snr_db": 10.13
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold8_157868_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_00_siren_fold8_157868_0.wav",
+    "split": "train",
+    "snr_db": 5.267
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold1_78360_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_01_drilling_fold1_78360_17.wav",
+    "split": "train",
+    "snr_db": 7.945
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold6_204240_15.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_02_air_conditioner_fold6_204240_15.wav",
+    "split": "train",
+    "snr_db": -2.028
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold4_159751_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_03_siren_fold4_159751_17.wav",
+    "split": "val",
+    "snr_db": -4.045
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold3_62837_22.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_00_jackhammer_fold3_62837_22.wav",
+    "split": "train",
+    "snr_db": 8.217
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/us8k_siren_siren_fold4_159751_11.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_01_us8k_siren_siren_fold4_159751_11.wav",
+    "split": "train",
+    "snr_db": 9.81
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold7_201988_14.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_02_engine_idling_fold7_201988_14.wav",
+    "split": "train",
+    "snr_db": 0.953
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold8_156358_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_03_engine_idling_fold8_156358_0.wav",
+    "split": "val",
+    "snr_db": 11.2
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold1_119455_5.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_00_engine_idling_fold1_119455_5.wav",
+    "split": "val",
+    "snr_db": 5.688
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold3_62837_64.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_01_jackhammer_fold3_62837_64.wav",
+    "split": "train",
+    "snr_db": 3.102
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_167464_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_02_air_conditioner_fold10_167464_8.wav",
+    "split": "train",
+    "snr_db": 7.335
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold9_54976_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_03_drilling_fold9_54976_0.wav",
+    "split": "train",
+    "snr_db": -2.298
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold3_17853_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_00_engine_idling_fold3_17853_8.wav",
+    "split": "train",
+    "snr_db": 7.972
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold2_152908_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_01_engine_idling_fold2_152908_8.wav",
+    "split": "val",
+    "snr_db": 4.269
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold1_55020_6.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_02_drilling_fold1_55020_6.wav",
+    "split": "val",
+    "snr_db": 3.905
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold8_156358_0.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_03_engine_idling_fold8_156358_0.wav",
+    "split": "val",
+    "snr_db": 6.389
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold1_78360_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_00_drilling_fold1_78360_2.wav",
+    "split": "train",
+    "snr_db": 3.636
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold6_131918_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_01_jackhammer_fold6_131918_1.wav",
+    "split": "train",
+    "snr_db": 0.815
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_167464_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_02_air_conditioner_fold10_167464_8.wav",
+    "split": "train",
+    "snr_db": -4.62
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189982_30.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_03_air_conditioner_fold10_189982_30.wav",
+    "split": "train",
+    "snr_db": 4.467
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_189982_17.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_00_air_conditioner_fold10_189982_17.wav",
+    "split": "train",
+    "snr_db": -1.773
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold2_74507_4.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_01_air_conditioner_fold2_74507_4.wav",
+    "split": "train",
+    "snr_db": 13.181
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold3_29721_13.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_02_drilling_fold3_29721_13.wav",
+    "split": "train",
+    "snr_db": 9.228
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold6_78651_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_03_engine_idling_fold6_78651_2.wav",
+    "split": "train",
+    "snr_db": 11.891
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_31.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_00_siren_fold3_22601_31.wav",
+    "split": "val",
+    "snr_db": -1.01
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold5_100852_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_01_air_conditioner_fold5_100852_3.wav",
+    "split": "train",
+    "snr_db": -0.306
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_39.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_02_siren_fold3_22601_39.wav",
+    "split": "train",
+    "snr_db": -1.828
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold5_187920_1.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_03_jackhammer_fold5_187920_1.wav",
+    "split": "train",
+    "snr_db": -2.721
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/air_conditioner_fold10_167464_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_00_air_conditioner_fold10_167464_8.wav",
+    "split": "train",
+    "snr_db": 2.105
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold7_127443_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_01_drilling_fold7_127443_8.wav",
+    "split": "val",
+    "snr_db": 12.474
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/jackhammer_fold1_180937_24.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/val/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_02_jackhammer_fold1_180937_24.wav",
+    "split": "val",
+    "snr_db": 4.143
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold9_39856_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_03_engine_idling_fold9_39856_8.wav",
+    "split": "train",
+    "snr_db": 12.168
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold9_14111_3.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_00_drilling_fold9_14111_3.wav",
+    "split": "train",
+    "snr_db": -0.892
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/engine_idling_fold6_94632_8.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_01_engine_idling_fold6_94632_8.wav",
+    "split": "train",
+    "snr_db": -1.914
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/siren_fold3_22601_7.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_02_siren_fold3_22601_7.wav",
+    "split": "train",
+    "snr_db": 10.381
+  },
+  {
+    "source_clean": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548.wav",
+    "background": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/background_pool/drilling_fold8_161129_2.wav",
+    "output": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/output/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_03_drilling_fold8_161129_2.wav",
+    "split": "train",
+    "snr_db": 2.449
+  }
+]

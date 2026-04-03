@@ -1,0 +1,756 @@
+{
+  "rows": [
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_165454_8.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929_00_air_conditioner_fold9_165454_8.wav",
+      "split": "train",
+      "snr_db": 14.956,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "background": "output_v3/background_pool/drilling_fold2_76086_36.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929_01_drilling_fold2_76086_36.wav",
+      "split": "train",
+      "snr_db": -4.522,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "background": "output_v3/background_pool/engine_idling_fold2_201652_3.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929_02_engine_idling_fold2_201652_3.wav",
+      "split": "train",
+      "snr_db": 11.98,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929.wav",
+      "background": "output_v3/background_pool/drilling_fold5_180125_0.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_001_0000929_0004929_03_drilling_fold5_180125_0.wav",
+      "split": "train",
+      "snr_db": 4.841,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold1_134717_18.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679_00_air_conditioner_fold1_134717_18.wav",
+      "split": "train",
+      "snr_db": 13.425,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "background": "output_v3/background_pool/siren_fold8_96657_2.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679_01_siren_fold8_96657_2.wav",
+      "split": "train",
+      "snr_db": 4.169,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "background": "output_v3/background_pool/engine_idling_fold2_177592_4.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679_02_engine_idling_fold2_177592_4.wav",
+      "split": "train",
+      "snr_db": 11.399,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679.wav",
+      "background": "output_v3/background_pool/siren_fold2_159750_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_002_0004679_0008679_03_siren_fold2_159750_5.wav",
+      "split": "train",
+      "snr_db": -2.386,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "background": "output_v3/background_pool/drilling_fold10_187863_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_00_drilling_fold10_187863_5.wav",
+      "split": "train",
+      "snr_db": 11.638,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "background": "output_v3/background_pool/engine_idling_fold9_187075_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_01_engine_idling_fold9_187075_5.wav",
+      "split": "train",
+      "snr_db": -0.946,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "background": "output_v3/background_pool/drilling_fold6_66623_6.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_02_drilling_fold6_66623_6.wav",
+      "split": "train",
+      "snr_db": 3.991,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_101729_11.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_03_air_conditioner_fold9_101729_11.wav",
+      "split": "train",
+      "snr_db": -0.847,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_79089_115.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_00_air_conditioner_fold9_79089_115.wav",
+      "split": "train",
+      "snr_db": 11.152,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "background": "output_v3/background_pool/drilling_fold1_55020_13.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_01_drilling_fold1_55020_13.wav",
+      "split": "train",
+      "snr_db": -2.034,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "background": "output_v3/background_pool/jackhammer_fold6_30206_12.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_02_jackhammer_fold6_30206_12.wav",
+      "split": "train",
+      "snr_db": 0.977,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold3_177742_203.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_03_air_conditioner_fold3_177742_203.wav",
+      "split": "train",
+      "snr_db": 4.044,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "background": "output_v3/background_pool/siren_fold3_22601_47.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468_00_siren_fold3_22601_47.wav",
+      "split": "train",
+      "snr_db": -2.204,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "background": "output_v3/background_pool/jackhammer_fold1_180937_30.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468_01_jackhammer_fold1_180937_30.wav",
+      "split": "train",
+      "snr_db": 8.726,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold4_195969_22.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468_02_air_conditioner_fold4_195969_22.wav",
+      "split": "train",
+      "snr_db": -3.5,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468.wav",
+      "background": "output_v3/background_pool/jackhammer_fold3_62837_64.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_005_0015929_0017468_03_jackhammer_fold3_62837_64.wav",
+      "split": "train",
+      "snr_db": 13.102,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "background": "output_v3/background_pool/engine_idling_fold9_39856_0.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078_00_engine_idling_fold9_39856_0.wav",
+      "split": "train",
+      "snr_db": -1.64,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_101729_23.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078_01_air_conditioner_fold9_101729_23.wav",
+      "split": "train",
+      "snr_db": -1.544,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "background": "output_v3/background_pool/jackhammer_fold10_188813_0.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078_02_jackhammer_fold10_188813_0.wav",
+      "split": "train",
+      "snr_db": -2.027,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_165454_8.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_006_0018078_0022078_03_air_conditioner_fold9_165454_8.wav",
+      "split": "train",
+      "snr_db": 4.581,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "background": "output_v3/background_pool/siren_fold3_94636_10.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_00_siren_fold3_94636_10.wav",
+      "split": "train",
+      "snr_db": 12.693,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "background": "output_v3/background_pool/drilling_fold2_76086_36.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_01_drilling_fold2_76086_36.wav",
+      "split": "train",
+      "snr_db": 10.638,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "background": "output_v3/background_pool/drilling_fold2_76086_36.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_02_drilling_fold2_76086_36.wav",
+      "split": "train",
+      "snr_db": 6.313,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828.wav",
+      "background": "output_v3/background_pool/engine_idling_fold9_62567_6.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_03_engine_idling_fold9_62567_6.wav",
+      "split": "train",
+      "snr_db": -0.62,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "background": "output_v3/background_pool/siren_fold2_102871_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_00_siren_fold2_102871_5.wav",
+      "split": "train",
+      "snr_db": 5.589,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "background": "output_v3/background_pool/engine_idling_fold7_194962_1.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_01_engine_idling_fold7_194962_1.wav",
+      "split": "train",
+      "snr_db": 8.137,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "background": "output_v3/background_pool/siren_fold9_157866_8.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_02_siren_fold9_157866_8.wav",
+      "split": "train",
+      "snr_db": 6.514,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578.wav",
+      "background": "output_v3/background_pool/engine_idling_fold9_119449_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_03_engine_idling_fold9_119449_5.wav",
+      "split": "train",
+      "snr_db": 11.904,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "background": "output_v3/background_pool/siren_fold10_159742_13.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328_00_siren_fold10_159742_13.wav",
+      "split": "train",
+      "snr_db": 9.011,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "background": "output_v3/background_pool/drilling_fold6_58005_24.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328_01_drilling_fold6_58005_24.wav",
+      "split": "train",
+      "snr_db": 14.76,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "background": "output_v3/background_pool/engine_idling_fold5_23219_9.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328_02_engine_idling_fold5_23219_9.wav",
+      "split": "train",
+      "snr_db": -3.877,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold5_100852_24.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029328_0033328_03_air_conditioner_fold5_100852_24.wav",
+      "split": "train",
+      "snr_db": 7.283,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "background": "output_v3/background_pool/siren_fold8_133473_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078_00_siren_fold8_133473_5.wav",
+      "split": "train",
+      "snr_db": 11.886,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold5_100852_24.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078_01_air_conditioner_fold5_100852_24.wav",
+      "split": "train",
+      "snr_db": -2.167,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "background": "output_v3/background_pool/siren_fold10_159742_12.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078_02_siren_fold10_159742_12.wav",
+      "split": "train",
+      "snr_db": 2.472,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold9_101729_23.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033078_0037078_03_air_conditioner_fold9_101729_23.wav",
+      "split": "train",
+      "snr_db": 1.452,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "background": "output_v3/background_pool/siren_fold9_157866_20.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_00_siren_fold9_157866_20.wav",
+      "split": "train",
+      "snr_db": 7.984,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold1_57320_13.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_01_air_conditioner_fold1_57320_13.wav",
+      "split": "train",
+      "snr_db": 10.74,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold3_177742_203.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_02_air_conditioner_fold3_177742_203.wav",
+      "split": "train",
+      "snr_db": 0.89,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828.wav",
+      "background": "output_v3/background_pool/drilling_fold6_66623_4.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_03_drilling_fold6_66623_4.wav",
+      "split": "train",
+      "snr_db": 2.832,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "background": "output_v3/background_pool/siren_fold2_159750_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_00_siren_fold2_159750_5.wav",
+      "split": "train",
+      "snr_db": 13.421,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "background": "output_v3/background_pool/jackhammer_fold1_180937_30.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_01_jackhammer_fold1_180937_30.wav",
+      "split": "train",
+      "snr_db": 4.924,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "background": "output_v3/background_pool/siren_fold3_94636_3.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_02_siren_fold3_94636_3.wav",
+      "split": "train",
+      "snr_db": -1.642,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578.wav",
+      "background": "output_v3/background_pool/engine_idling_fold8_113202_10.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_03_engine_idling_fold8_113202_10.wav",
+      "split": "train",
+      "snr_db": 9.586,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "background": "output_v3/background_pool/engine_idling_fold2_201652_3.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_00_engine_idling_fold2_201652_3.wav",
+      "split": "train",
+      "snr_db": -3.644,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "background": "output_v3/background_pool/air_conditioner_fold7_177729_83.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_01_air_conditioner_fold7_177729_83.wav",
+      "split": "train",
+      "snr_db": 3.764,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "air_conditioner_air"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "background": "output_v3/background_pool/jackhammer_fold9_105029_14.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_02_jackhammer_fold9_105029_14.wav",
+      "split": "train",
+      "snr_db": 2.574,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328.wav",
+      "background": "output_v3/background_pool/engine_idling_fold10_15544_14.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_03_engine_idling_fold10_15544_14.wav",
+      "split": "train",
+      "snr_db": 6.561,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "background": "output_v3/background_pool/jackhammer_fold3_31884_2.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_00_jackhammer_fold3_31884_2.wav",
+      "split": "train",
+      "snr_db": 11.915,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "jackhammer_jackhammer"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "background": "output_v3/background_pool/siren_fold10_159742_13.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_01_siren_fold10_159742_13.wav",
+      "split": "train",
+      "snr_db": 1.836,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "background": "output_v3/background_pool/engine_idling_fold6_39884_7.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_02_engine_idling_fold6_39884_7.wav",
+      "split": "train",
+      "snr_db": 12.962,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078.wav",
+      "background": "output_v3/background_pool/drilling_fold7_71529_2.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_03_drilling_fold7_71529_2.wav",
+      "split": "train",
+      "snr_db": 8.073,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "background": "output_v3/background_pool/siren_fold9_157866_20.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_00_siren_fold9_157866_20.wav",
+      "split": "train",
+      "snr_db": -0.889,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "background": "output_v3/background_pool/us8k_siren_siren_fold2_102871_0.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_01_us8k_siren_siren_fold2_102871_0.wav",
+      "split": "train",
+      "snr_db": 0.305,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "us8k_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "background": "output_v3/background_pool/drilling_fold4_144351_3.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_02_drilling_fold4_144351_3.wav",
+      "split": "train",
+      "snr_db": 5.993,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828.wav",
+      "background": "output_v3/background_pool/engine_idling_fold10_39847_5.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_03_engine_idling_fold10_39847_5.wav",
+      "split": "train",
+      "snr_db": 0.891,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "engine_idling_engine"
+    },
+    {
+      "kind": "clean",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "output_v3": "output_v3/train/drone/clean_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "split": "train",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "background": "output_v3/background_pool/drilling_fold10_99192_28.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_00_drilling_fold10_99192_28.wav",
+      "split": "train",
+      "snr_db": 7.764,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "drilling_drilling"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "background": "output_v3/background_pool/siren_fold8_117181_6.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_01_siren_fold8_117181_6.wav",
+      "split": "train",
+      "snr_db": 4.782,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "background": "output_v3/background_pool/siren_fold8_157868_12.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_02_siren_fold8_157868_12.wav",
+      "split": "train",
+      "snr_db": 2.629,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    },
+    {
+      "kind": "augmented",
+      "source_clean": "output_v3/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466.wav",
+      "background": "output_v3/background_pool/siren_fold6_124389_1.wav",
+      "output_v3": "output_v3/train/drone/aug_Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_03_siren_fold6_124389_1.wav",
+      "split": "train",
+      "snr_db": 11.742,
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared",
+      "background_group": "siren_siren"
+    }
+  ]
+}

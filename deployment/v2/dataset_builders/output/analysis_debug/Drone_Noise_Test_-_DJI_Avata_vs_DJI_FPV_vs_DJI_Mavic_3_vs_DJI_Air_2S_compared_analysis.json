@@ -1,0 +1,5784 @@
+{
+  "file": "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dataset_builders/source/Drone Noise Test - DJI Avata vs DJI FPV vs DJI Mavic 3 vs DJI Air 2S compared.mp3",
+  "duration_s": 69.12580498866213,
+  "windows_total": 195,
+  "detected_regions": [
+    {
+      "start_s": 1.0499319727891157,
+      "end_s": 17.348934240362812,
+      "max_score": 0.866251379173499,
+      "mean_score": 0.8253739895284132,
+      "windows": 44,
+      "duration_s": 16.299002267573698
+    },
+    {
+      "start_s": 18.198820861678005,
+      "end_s": 60.04616780045352,
+      "max_score": 0.9667229639888385,
+      "mean_score": 0.5791530712996327,
+      "windows": 114,
+      "duration_s": 41.847346938775516
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0.8999319727891156,
+      "end_s": 4.8999319727891155,
+      "duration_s": 4.0,
+      "score": 0.866251379173499
+    },
+    {
+      "start_s": 4.6499319727891155,
+      "end_s": 8.649931972789116,
+      "duration_s": 4.0,
+      "score": 0.866251379173499
+    },
+    {
+      "start_s": 8.399931972789116,
+      "end_s": 12.399931972789116,
+      "duration_s": 4.0,
+      "score": 0.866251379173499
+    },
+    {
+      "start_s": 12.149931972789116,
+      "end_s": 16.149931972789116,
+      "duration_s": 4.0,
+      "score": 0.866251379173499
+    },
+    {
+      "start_s": 15.899931972789116,
+      "end_s": 17.49893424036281,
+      "duration_s": 1.5990022675736952,
+      "score": 0.866251379173499
+    },
+    {
+      "start_s": 18.048820861678006,
+      "end_s": 22.048820861678006,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 21.798820861678006,
+      "end_s": 25.798820861678006,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 25.548820861678006,
+      "end_s": 29.548820861678006,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 29.298820861678006,
+      "end_s": 33.29882086167801,
+      "duration_s": 4.0000000000000036,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 33.04882086167801,
+      "end_s": 37.04882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 36.79882086167801,
+      "end_s": 40.79882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 40.54882086167801,
+      "end_s": 44.54882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 44.29882086167801,
+      "end_s": 48.29882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 48.04882086167801,
+      "end_s": 52.04882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 51.79882086167801,
+      "end_s": 55.79882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 55.54882086167801,
+      "end_s": 59.54882086167801,
+      "duration_s": 4.0,
+      "score": 0.9667229639888385
+    },
+    {
+      "start_s": 59.29882086167801,
+      "end_s": 60.196167800453516,
+      "duration_s": 0.897346938775506,
+      "score": 0.9667229639888385
+    }
+  ],
+  "window_details": [
+    {
+      "window_index": 0,
+      "start_s": 0.0,
+      "end_s": 1.2499773242630385,
+      "score": 0.5404306054079171,
+      "quality": {
+        "rms_db": -48.558700413632266,
+        "peak": 0.049754638224840164,
+        "active_ratio": 0.024390243902439025,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -48.558700413632266,
+        "centroid_hz": 2648.5557045079154,
+        "rolloff_hz": 4823.4375,
+        "bandwidth_hz": 2369.8315400479983,
+        "flatness": 0.0845184326171875,
+        "zcr": 0.16092484085648148,
+        "voiced_ratio": 0.05555555555555555,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 2.1591756343841553,
+        "low_mid_ratio": 0.10641928017139435,
+        "drone_band_ratio": 0.9023944139480591,
+        "speech_band_ratio": 0.9726811051368713
+      }
+    },
+    {
+      "window_index": 1,
+      "start_s": 0.34997732426303857,
+      "end_s": 1.5999546485260772,
+      "score": 0.5918503918480913,
+      "quality": {
+        "rms_db": -43.29066633980263,
+        "peak": 0.056406375020742416,
+        "active_ratio": 0.13821138211382114,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -43.29066633980263,
+        "centroid_hz": 2561.896966709439,
+        "rolloff_hz": 4413.1103515625,
+        "bandwidth_hz": 2210.869342086426,
+        "flatness": 0.045722369104623795,
+        "zcr": 0.15938765914351852,
+        "voiced_ratio": 0.2222222222222222,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 2.0013034343719482,
+        "low_mid_ratio": 0.03206817805767059,
+        "drone_band_ratio": 0.9158397912979126,
+        "speech_band_ratio": 0.9873329997062683
+      }
+    },
+    {
+      "window_index": 2,
+      "start_s": 0.6999546485260771,
+      "end_s": 1.9499319727891156,
+      "score": 0.6224041162212739,
+      "quality": {
+        "rms_db": -38.55364265035986,
+        "peak": 0.22796238958835602,
+        "active_ratio": 0.16260162601626016,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -38.55364265035986,
+        "centroid_hz": 2634.8076649869263,
+        "rolloff_hz": 4596.541341145833,
+        "bandwidth_hz": 2233.764318810601,
+        "flatness": 0.048925451934337616,
+        "zcr": 0.16377314814814814,
+        "voiced_ratio": 0.2222222222222222,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 1.6299160718917847,
+        "low_mid_ratio": 0.05942472070455551,
+        "drone_band_ratio": 0.7723586559295654,
+        "speech_band_ratio": 0.8770124912261963
+      }
+    },
+    {
+      "window_index": 3,
+      "start_s": 1.0499319727891157,
+      "end_s": 2.2999092970521544,
+      "score": 0.6539667174290417,
+      "quality": {
+        "rms_db": -33.531581739797986,
+        "peak": 0.22796238958835602,
+        "active_ratio": 0.44715447154471544,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -33.531581739797986,
+        "centroid_hz": 2944.8964138648716,
+        "rolloff_hz": 5078.446451822917,
+        "bandwidth_hz": 2251.8921297766715,
+        "flatness": 0.05471133813261986,
+        "zcr": 0.20926468460648148,
+        "voiced_ratio": 0.2222222222222222,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 1.6299160718917847,
+        "low_mid_ratio": 0.06873254477977753,
+        "drone_band_ratio": 0.6502758264541626,
+        "speech_band_ratio": 0.7751226425170898
+      }
+    },
+    {
+      "window_index": 4,
+      "start_s": 1.3999092970521543,
+      "end_s": 2.6498866213151926,
+      "score": 0.6335416802187328,
+      "quality": {
+        "rms_db": -32.53801506654932,
+        "peak": 0.22796238958835602,
+        "active_ratio": 0.6666666666666666,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.53801506654932,
+        "centroid_hz": 3217.169420629567,
+        "rolloff_hz": 5579.890950520833,
+        "bandwidth_hz": 2344.36355920328,
+        "flatness": 0.06330975145101547,
+        "zcr": 0.2574146412037037,
+        "voiced_ratio": 0.10185185185185185,
+        "f0_median_hz": 489.6214294433594,
+        "f0_std_hz": 1.4041802883148193,
+        "low_mid_ratio": 0.09067217260599136,
+        "drone_band_ratio": 0.5676611065864563,
+        "speech_band_ratio": 0.6957293152809143
+      }
+    },
+    {
+      "window_index": 5,
+      "start_s": 1.7498866213151927,
+      "end_s": 2.999863945578231,
+      "score": 0.7087946734360222,
+      "quality": {
+        "rms_db": -31.589819565963346,
+        "peak": 0.22796238958835602,
+        "active_ratio": 0.8861788617886179,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.589819565963346,
+        "centroid_hz": 3503.0367983481824,
+        "rolloff_hz": 6040.861002604167,
+        "bandwidth_hz": 2434.944377088453,
+        "flatness": 0.07352495938539505,
+        "zcr": 0.31131546585648145,
+        "voiced_ratio": 0.2037037037037037,
+        "f0_median_hz": 53.89910888671875,
+        "f0_std_hz": 2.4149532318115234,
+        "low_mid_ratio": 0.1055401936173439,
+        "drone_band_ratio": 0.5086910724639893,
+        "speech_band_ratio": 0.6358838677406311
+      }
+    },
+    {
+      "window_index": 6,
+      "start_s": 2.0998639455782313,
+      "end_s": 3.34984126984127,
+      "score": 0.6588107571369612,
+      "quality": {
+        "rms_db": -32.786064392663754,
+        "peak": 0.09811510890722275,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.786064392663754,
+        "centroid_hz": 3587.311346729365,
+        "rolloff_hz": 5919.83642578125,
+        "bandwidth_hz": 2417.4292035072003,
+        "flatness": 0.07003545761108398,
+        "zcr": 0.34935619212962965,
+        "voiced_ratio": 0.12962962962962962,
+        "f0_median_hz": 53.89910888671875,
+        "f0_std_hz": 0.3240160048007965,
+        "low_mid_ratio": 0.1448073387145996,
+        "drone_band_ratio": 0.3546909987926483,
+        "speech_band_ratio": 0.4722742438316345
+      }
+    },
+    {
+      "window_index": 7,
+      "start_s": 2.44984126984127,
+      "end_s": 3.6998185941043085,
+      "score": 0.4252393894997065,
+      "quality": {
+        "rms_db": -32.34179138919714,
+        "peak": 0.10254762321710587,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.34179138919714,
+        "centroid_hz": 3606.212342287702,
+        "rolloff_hz": 5792.032877604167,
+        "bandwidth_hz": 2406.1172344097135,
+        "flatness": 0.06619033217430115,
+        "zcr": 0.360107421875,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.1443507820367813,
+        "drone_band_ratio": 0.33861178159713745,
+        "speech_band_ratio": 0.4540764093399048
+      }
+    },
+    {
+      "window_index": 8,
+      "start_s": 2.7998185941043086,
+      "end_s": 4.049795918367347,
+      "score": 0.7726881285002568,
+      "quality": {
+        "rms_db": -32.22821048733976,
+        "peak": 0.10254762321710587,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.22821048733976,
+        "centroid_hz": 3603.277917099598,
+        "rolloff_hz": 5785.652669270833,
+        "bandwidth_hz": 2408.8640739144,
+        "flatness": 0.06538704037666321,
+        "zcr": 0.359619140625,
+        "voiced_ratio": 0.8611111111111112,
+        "f0_median_hz": 90.12504577636719,
+        "f0_std_hz": 33.237918853759766,
+        "low_mid_ratio": 0.14482805132865906,
+        "drone_band_ratio": 0.34021368622779846,
+        "speech_band_ratio": 0.4542512595653534
+      }
+    },
+    {
+      "window_index": 9,
+      "start_s": 3.1497959183673467,
+      "end_s": 4.399773242630386,
+      "score": 0.815704549447247,
+      "quality": {
+        "rms_db": -32.27314759270155,
+        "peak": 0.10254762321710587,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.27314759270155,
+        "centroid_hz": 3618.9919010002186,
+        "rolloff_hz": 5840.681966145833,
+        "bandwidth_hz": 2415.73431277877,
+        "flatness": 0.06550010293722153,
+        "zcr": 0.35892288773148145,
+        "voiced_ratio": 0.8611111111111112,
+        "f0_median_hz": 83.6053237915039,
+        "f0_std_hz": 3.7917327880859375,
+        "low_mid_ratio": 0.1438693255186081,
+        "drone_band_ratio": 0.33746883273124695,
+        "speech_band_ratio": 0.44844356179237366
+      }
+    },
+    {
+      "window_index": 10,
+      "start_s": 3.4997732426303854,
+      "end_s": 4.749750566893424,
+      "score": 0.8057706042390382,
+      "quality": {
+        "rms_db": -32.324718754407684,
+        "peak": 0.0975915789604187,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.324718754407684,
+        "centroid_hz": 3619.1883027501754,
+        "rolloff_hz": 5850.052897135417,
+        "bandwidth_hz": 2416.992947190213,
+        "flatness": 0.06653553247451782,
+        "zcr": 0.35954680266203703,
+        "voiced_ratio": 0.8796296296296297,
+        "f0_median_hz": 81.2252426147461,
+        "f0_std_hz": 10.257068634033203,
+        "low_mid_ratio": 0.14501824975013733,
+        "drone_band_ratio": 0.33810415863990784,
+        "speech_band_ratio": 0.44872742891311646
+      }
+    },
+    {
+      "window_index": 11,
+      "start_s": 3.849750566893424,
+      "end_s": 5.099727891156463,
+      "score": 0.8187604640498956,
+      "quality": {
+        "rms_db": -32.381220119355454,
+        "peak": 0.09777707606554031,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.381220119355454,
+        "centroid_hz": 3615.2673991256197,
+        "rolloff_hz": 5858.426920572917,
+        "bandwidth_hz": 2418.4675639803168,
+        "flatness": 0.0681237056851387,
+        "zcr": 0.35646339699074076,
+        "voiced_ratio": 0.8240740740740741,
+        "f0_median_hz": 83.6053237915039,
+        "f0_std_hz": 2.2343485355377197,
+        "low_mid_ratio": 0.14679740369319916,
+        "drone_band_ratio": 0.34284910559654236,
+        "speech_band_ratio": 0.4565737843513489
+      }
+    },
+    {
+      "window_index": 12,
+      "start_s": 4.199727891156463,
+      "end_s": 5.449705215419501,
+      "score": 0.8186789215632675,
+      "quality": {
+        "rms_db": -32.41114811979446,
+        "peak": 0.09777707606554031,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.41114811979446,
+        "centroid_hz": 3612.4211015689575,
+        "rolloff_hz": 5837.691243489583,
+        "bandwidth_hz": 2415.592814089873,
+        "flatness": 0.06834543496370316,
+        "zcr": 0.3559841579861111,
+        "voiced_ratio": 0.8148148148148148,
+        "f0_median_hz": 83.6053237915039,
+        "f0_std_hz": 2.519315481185913,
+        "low_mid_ratio": 0.14700061082839966,
+        "drone_band_ratio": 0.3446478843688965,
+        "speech_band_ratio": 0.45930495858192444
+      }
+    },
+    {
+      "window_index": 13,
+      "start_s": 4.549705215419501,
+      "end_s": 5.799682539682539,
+      "score": 0.816419938146641,
+      "quality": {
+        "rms_db": -32.46098674012603,
+        "peak": 0.09777707606554031,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.46098674012603,
+        "centroid_hz": 3618.750664074014,
+        "rolloff_hz": 5859.025065104167,
+        "bandwidth_hz": 2410.593710032251,
+        "flatness": 0.06991817057132721,
+        "zcr": 0.3547634548611111,
+        "voiced_ratio": 0.8703703703703703,
+        "f0_median_hz": 81.2252426147461,
+        "f0_std_hz": 3.006847620010376,
+        "low_mid_ratio": 0.14318008720874786,
+        "drone_band_ratio": 0.34126824140548706,
+        "speech_band_ratio": 0.46116313338279724
+      }
+    },
+    {
+      "window_index": 14,
+      "start_s": 4.89968253968254,
+      "end_s": 6.149659863945578,
+      "score": 0.8174210135577221,
+      "quality": {
+        "rms_db": -32.403323475921866,
+        "peak": 0.09368226677179337,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.403323475921866,
+        "centroid_hz": 3618.857504278712,
+        "rolloff_hz": 5819.746907552083,
+        "bandwidth_hz": 2399.25498108542,
+        "flatness": 0.06869035959243774,
+        "zcr": 0.3565628616898148,
+        "voiced_ratio": 0.9907407407407407,
+        "f0_median_hz": 78.45841217041016,
+        "f0_std_hz": 2.9747154712677,
+        "low_mid_ratio": 0.13843870162963867,
+        "drone_band_ratio": 0.3427501916885376,
+        "speech_band_ratio": 0.4581226110458374
+      }
+    },
+    {
+      "window_index": 15,
+      "start_s": 5.2496598639455785,
+      "end_s": 6.499637188208617,
+      "score": 0.8203107660657849,
+      "quality": {
+        "rms_db": -32.42577273740095,
+        "peak": 0.09368226677179337,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.42577273740095,
+        "centroid_hz": 3615.277302849864,
+        "rolloff_hz": 5811.771647135417,
+        "bandwidth_hz": 2398.1032962052013,
+        "flatness": 0.06884899735450745,
+        "zcr": 0.3560474537037037,
+        "voiced_ratio": 0.75,
+        "f0_median_hz": 78.45841217041016,
+        "f0_std_hz": 2.1780989170074463,
+        "low_mid_ratio": 0.13867942988872528,
+        "drone_band_ratio": 0.34871065616607666,
+        "speech_band_ratio": 0.46184155344963074
+      }
+    },
+    {
+      "window_index": 16,
+      "start_s": 5.599637188208617,
+      "end_s": 6.849614512471655,
+      "score": 0.8184567256612684,
+      "quality": {
+        "rms_db": -32.379314434666426,
+        "peak": 0.09333529323339462,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.379314434666426,
+        "centroid_hz": 3600.578451204952,
+        "rolloff_hz": 5840.482584635417,
+        "bandwidth_hz": 2407.1597234716755,
+        "flatness": 0.06825142353773117,
+        "zcr": 0.35227683738425924,
+        "voiced_ratio": 0.7129629629629629,
+        "f0_median_hz": 78.45841217041016,
+        "f0_std_hz": 6.784032344818115,
+        "low_mid_ratio": 0.14992348849773407,
+        "drone_band_ratio": 0.36381062865257263,
+        "speech_band_ratio": 0.47382718324661255
+      }
+    },
+    {
+      "window_index": 17,
+      "start_s": 5.949614512471656,
+      "end_s": 7.199591836734694,
+      "score": 0.7342090008478817,
+      "quality": {
+        "rms_db": -32.40148174063385,
+        "peak": 0.09274977445602417,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.40148174063385,
+        "centroid_hz": 3588.8809780853035,
+        "rolloff_hz": 5878.365071614583,
+        "bandwidth_hz": 2418.7701957785125,
+        "flatness": 0.07025526463985443,
+        "zcr": 0.3480631510416667,
+        "voiced_ratio": 0.4722222222222222,
+        "f0_median_hz": 69.49591064453125,
+        "f0_std_hz": 6.175374984741211,
+        "low_mid_ratio": 0.15655790269374847,
+        "drone_band_ratio": 0.3771539032459259,
+        "speech_band_ratio": 0.48516741394996643
+      }
+    },
+    {
+      "window_index": 18,
+      "start_s": 6.2995918367346935,
+      "end_s": 7.5495691609977325,
+      "score": 0.7807964369444703,
+      "quality": {
+        "rms_db": -31.909496666418793,
+        "peak": 0.141556516289711,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.909496666418793,
+        "centroid_hz": 3582.1565876736076,
+        "rolloff_hz": 5856.632486979167,
+        "bandwidth_hz": 2408.2253084949475,
+        "flatness": 0.06919938325881958,
+        "zcr": 0.3382613570601852,
+        "voiced_ratio": 0.6481481481481481,
+        "f0_median_hz": 64.09720611572266,
+        "f0_std_hz": 3.708564043045044,
+        "low_mid_ratio": 0.13721652328968048,
+        "drone_band_ratio": 0.45109543204307556,
+        "speech_band_ratio": 0.5531719326972961
+      }
+    },
+    {
+      "window_index": 19,
+      "start_s": 6.649569160997732,
+      "end_s": 7.899546485260771,
+      "score": 0.7788588682055679,
+      "quality": {
+        "rms_db": -31.974380764382676,
+        "peak": 0.141556516289711,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.974380764382676,
+        "centroid_hz": 3592.7791458614165,
+        "rolloff_hz": 5883.748372395833,
+        "bandwidth_hz": 2408.912581427706,
+        "flatness": 0.0694814994931221,
+        "zcr": 0.33860496238425924,
+        "voiced_ratio": 0.8796296296296297,
+        "f0_median_hz": 64.09720611572266,
+        "f0_std_hz": 4.5267133712768555,
+        "low_mid_ratio": 0.1333705484867096,
+        "drone_band_ratio": 0.449142187833786,
+        "speech_band_ratio": 0.5510616302490234
+      }
+    },
+    {
+      "window_index": 20,
+      "start_s": 6.999546485260771,
+      "end_s": 8.24952380952381,
+      "score": 0.7887252797042263,
+      "quality": {
+        "rms_db": -30.31403421649503,
+        "peak": 0.18707330524921417,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -30.31403421649503,
+        "centroid_hz": 3575.6560694767895,
+        "rolloff_hz": 5924.222819010417,
+        "bandwidth_hz": 2411.1364754784436,
+        "flatness": 0.06917671114206314,
+        "zcr": 0.3233326099537037,
+        "voiced_ratio": 0.7037037037037037,
+        "f0_median_hz": 64.09720611572266,
+        "f0_std_hz": 5.231486797332764,
+        "low_mid_ratio": 0.10993173718452454,
+        "drone_band_ratio": 0.5906960368156433,
+        "speech_band_ratio": 0.6926425099372864
+      }
+    },
+    {
+      "window_index": 21,
+      "start_s": 7.349523809523809,
+      "end_s": 8.599501133786848,
+      "score": 0.8324706944329571,
+      "quality": {
+        "rms_db": -17.98171988374412,
+        "peak": 0.996346652507782,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.98171988374412,
+        "centroid_hz": 3633.047899534032,
+        "rolloff_hz": 6347.111002604167,
+        "bandwidth_hz": 2493.0156887218477,
+        "flatness": 0.08782468736171722,
+        "zcr": 0.3001392505787037,
+        "voiced_ratio": 0.4537037037037037,
+        "f0_median_hz": 59.46035385131836,
+        "f0_std_hz": 4.824490547180176,
+        "low_mid_ratio": 0.2355971485376358,
+        "drone_band_ratio": 0.7265186309814453,
+        "speech_band_ratio": 0.8410279154777527
+      }
+    },
+    {
+      "window_index": 22,
+      "start_s": 7.699501133786848,
+      "end_s": 8.949478458049887,
+      "score": 0.7586691807216466,
+      "quality": {
+        "rms_db": -12.601264783170995,
+        "peak": 1.1236097812652588,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.601264783170995,
+        "centroid_hz": 3731.267107367988,
+        "rolloff_hz": 6807.084147135417,
+        "bandwidth_hz": 2588.7167980623867,
+        "flatness": 0.10656208544969559,
+        "zcr": 0.2803005642361111,
+        "voiced_ratio": 0.2962962962962963,
+        "f0_median_hz": 59.46035385131836,
+        "f0_std_hz": 1.8807169198989868,
+        "low_mid_ratio": 0.24232357740402222,
+        "drone_band_ratio": 0.6570092439651489,
+        "speech_band_ratio": 0.8491929769515991
+      }
+    },
+    {
+      "window_index": 23,
+      "start_s": 8.049478458049887,
+      "end_s": 9.299455782312926,
+      "score": 0.6716037048911206,
+      "quality": {
+        "rms_db": -11.934369222872835,
+        "peak": 1.1236097812652588,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.934369222872835,
+        "centroid_hz": 3850.3175336766703,
+        "rolloff_hz": 7313.114420572917,
+        "bandwidth_hz": 2708.111267146658,
+        "flatness": 0.10845790058374405,
+        "zcr": 0.2499095775462963,
+        "voiced_ratio": 0.4351851851851852,
+        "f0_median_hz": 277.983642578125,
+        "f0_std_hz": 82.76026916503906,
+        "low_mid_ratio": 0.28825169801712036,
+        "drone_band_ratio": 0.665189802646637,
+        "speech_band_ratio": 0.8568260073661804
+      }
+    },
+    {
+      "window_index": 24,
+      "start_s": 8.399455782312925,
+      "end_s": 9.649433106575964,
+      "score": 0.8068235616385937,
+      "quality": {
+        "rms_db": -11.569280300278775,
+        "peak": 1.1236097812652588,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.569280300278775,
+        "centroid_hz": 3762.0121090468424,
+        "rolloff_hz": 7390.275065104167,
+        "bandwidth_hz": 2758.1472110831205,
+        "flatness": 0.09134889394044876,
+        "zcr": 0.21425600405092593,
+        "voiced_ratio": 0.6296296296296297,
+        "f0_median_hz": 275.586669921875,
+        "f0_std_hz": 7.694365978240967,
+        "low_mid_ratio": 0.35758399963378906,
+        "drone_band_ratio": 0.6888031363487244,
+        "speech_band_ratio": 0.8698074817657471
+      }
+    },
+    {
+      "window_index": 25,
+      "start_s": 8.749433106575964,
+      "end_s": 9.999410430839003,
+      "score": 0.8043986674547196,
+      "quality": {
+        "rms_db": -13.520168985530178,
+        "peak": 1.0758777856826782,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -13.520168985530178,
+        "centroid_hz": 3616.1721980054967,
+        "rolloff_hz": 7340.828450520833,
+        "bandwidth_hz": 2779.610625975277,
+        "flatness": 0.0651983916759491,
+        "zcr": 0.185546875,
+        "voiced_ratio": 0.9907407407407407,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 11.054328918457031,
+        "low_mid_ratio": 0.5404103398323059,
+        "drone_band_ratio": 0.7231972217559814,
+        "speech_band_ratio": 0.902686357498169
+      }
+    },
+    {
+      "window_index": 26,
+      "start_s": 9.099410430839002,
+      "end_s": 10.349387755102041,
+      "score": 0.818679925262928,
+      "quality": {
+        "rms_db": -14.711808001085345,
+        "peak": 0.7137960195541382,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -14.711808001085345,
+        "centroid_hz": 3504.0255257327512,
+        "rolloff_hz": 7289.786783854167,
+        "bandwidth_hz": 2801.957516313146,
+        "flatness": 0.04509316384792328,
+        "zcr": 0.16071686921296297,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 2.8738389015197754,
+        "low_mid_ratio": 0.7433876991271973,
+        "drone_band_ratio": 0.8502424955368042,
+        "speech_band_ratio": 0.9415439963340759
+      }
+    },
+    {
+      "window_index": 27,
+      "start_s": 9.449387755102041,
+      "end_s": 10.69936507936508,
+      "score": 0.8187549902498722,
+      "quality": {
+        "rms_db": -14.577974865449733,
+        "peak": 0.869306206703186,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -14.577974865449733,
+        "centroid_hz": 3562.810471387655,
+        "rolloff_hz": 7348.006184895833,
+        "bandwidth_hz": 2802.7816143503014,
+        "flatness": 0.04910137504339218,
+        "zcr": 0.17213722511574073,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 2.556581497192383,
+        "low_mid_ratio": 0.7010639905929565,
+        "drone_band_ratio": 0.8107856512069702,
+        "speech_band_ratio": 0.9328948855400085
+      }
+    },
+    {
+      "window_index": 28,
+      "start_s": 9.79936507936508,
+      "end_s": 11.049342403628119,
+      "score": 0.8114539918154479,
+      "quality": {
+        "rms_db": -14.744818285569579,
+        "peak": 0.869306206703186,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -14.744818285569579,
+        "centroid_hz": 3788.059941200551,
+        "rolloff_hz": 7479.19921875,
+        "bandwidth_hz": 2806.3489951915835,
+        "flatness": 0.061920929700136185,
+        "zcr": 0.19494176793981483,
+        "voiced_ratio": 0.8703703703703703,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 6.569276809692383,
+        "low_mid_ratio": 0.6393659710884094,
+        "drone_band_ratio": 0.7525138258934021,
+        "speech_band_ratio": 0.9106847047805786
+      }
+    },
+    {
+      "window_index": 29,
+      "start_s": 10.149342403628118,
+      "end_s": 11.399319727891157,
+      "score": 0.7979621975123882,
+      "quality": {
+        "rms_db": -15.542878299555314,
+        "peak": 0.869306206703186,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -15.542878299555314,
+        "centroid_hz": 3894.4266604772974,
+        "rolloff_hz": 7448.69384765625,
+        "bandwidth_hz": 2757.381838319461,
+        "flatness": 0.07632995396852493,
+        "zcr": 0.22321686921296297,
+        "voiced_ratio": 0.8055555555555556,
+        "f0_median_hz": 277.983642578125,
+        "f0_std_hz": 14.603204727172852,
+        "low_mid_ratio": 0.5415593385696411,
+        "drone_band_ratio": 0.6717063188552856,
+        "speech_band_ratio": 0.8926238417625427
+      }
+    },
+    {
+      "window_index": 30,
+      "start_s": 10.499319727891157,
+      "end_s": 11.749297052154194,
+      "score": 0.7566991107463836,
+      "quality": {
+        "rms_db": -16.518205458215576,
+        "peak": 0.869306206703186,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -16.518205458215576,
+        "centroid_hz": 3895.563120202295,
+        "rolloff_hz": 7366.748046875,
+        "bandwidth_hz": 2717.525611596363,
+        "flatness": 0.07981282472610474,
+        "zcr": 0.2240668402777778,
+        "voiced_ratio": 0.7962962962962963,
+        "f0_median_hz": 271.6344909667969,
+        "f0_std_hz": 41.879737854003906,
+        "low_mid_ratio": 0.48629623651504517,
+        "drone_band_ratio": 0.6409973502159119,
+        "speech_band_ratio": 0.8857861161231995
+      }
+    },
+    {
+      "window_index": 31,
+      "start_s": 10.849297052154196,
+      "end_s": 12.099274376417233,
+      "score": 0.7594948453605175,
+      "quality": {
+        "rms_db": -17.533816126455164,
+        "peak": 0.6424740552902222,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.533816126455164,
+        "centroid_hz": 3859.884275398331,
+        "rolloff_hz": 7300.752766927083,
+        "bandwidth_hz": 2691.1033934114453,
+        "flatness": 0.07882267981767654,
+        "zcr": 0.22281901041666666,
+        "voiced_ratio": 0.8888888888888888,
+        "f0_median_hz": 271.6344909667969,
+        "f0_std_hz": 40.08192443847656,
+        "low_mid_ratio": 0.4532455503940582,
+        "drone_band_ratio": 0.6343081593513489,
+        "speech_band_ratio": 0.8874976634979248
+      }
+    },
+    {
+      "window_index": 32,
+      "start_s": 11.199274376417234,
+      "end_s": 12.449251700680271,
+      "score": 0.7568332927525044,
+      "quality": {
+        "rms_db": -18.32910735999463,
+        "peak": 0.4975849390029907,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.32910735999463,
+        "centroid_hz": 3859.7552893676425,
+        "rolloff_hz": 7347.607421875,
+        "bandwidth_hz": 2698.353537167326,
+        "flatness": 0.07797478884458542,
+        "zcr": 0.229736328125,
+        "voiced_ratio": 0.8518518518518519,
+        "f0_median_hz": 273.2080383300781,
+        "f0_std_hz": 41.912818908691406,
+        "low_mid_ratio": 0.4319119155406952,
+        "drone_band_ratio": 0.6324516534805298,
+        "speech_band_ratio": 0.8990880250930786
+      }
+    },
+    {
+      "window_index": 33,
+      "start_s": 11.549251700680273,
+      "end_s": 12.79922902494331,
+      "score": 0.8149547084867955,
+      "quality": {
+        "rms_db": -18.335299601483808,
+        "peak": 0.4795413613319397,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.335299601483808,
+        "centroid_hz": 3872.256159052603,
+        "rolloff_hz": 7386.287434895833,
+        "bandwidth_hz": 2707.506732378643,
+        "flatness": 0.07051300257444382,
+        "zcr": 0.21744791666666666,
+        "voiced_ratio": 0.8425925925925926,
+        "f0_median_hz": 274.7907409667969,
+        "f0_std_hz": 3.662660837173462,
+        "low_mid_ratio": 0.4796328842639923,
+        "drone_band_ratio": 0.6576284766197205,
+        "speech_band_ratio": 0.9064645171165466
+      }
+    },
+    {
+      "window_index": 34,
+      "start_s": 11.899229024943311,
+      "end_s": 13.149206349206349,
+      "score": 0.8150102604031563,
+      "quality": {
+        "rms_db": -18.393966278237077,
+        "peak": 0.5463771820068359,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.393966278237077,
+        "centroid_hz": 3853.3381698644816,
+        "rolloff_hz": 7380.50537109375,
+        "bandwidth_hz": 2698.676289636147,
+        "flatness": 0.0682249516248703,
+        "zcr": 0.22465458622685186,
+        "voiced_ratio": 0.8981481481481481,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 3.778162956237793,
+        "low_mid_ratio": 0.4511897563934326,
+        "drone_band_ratio": 0.6513771414756775,
+        "speech_band_ratio": 0.9120827317237854
+      }
+    },
+    {
+      "window_index": 35,
+      "start_s": 12.249206349206348,
+      "end_s": 13.499183673469387,
+      "score": 0.8153624645620585,
+      "quality": {
+        "rms_db": -17.470341196537966,
+        "peak": 0.6224493980407715,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.470341196537966,
+        "centroid_hz": 3747.4722668524364,
+        "rolloff_hz": 7301.151529947917,
+        "bandwidth_hz": 2704.171082000637,
+        "flatness": 0.058026012033224106,
+        "zcr": 0.20692274305555555,
+        "voiced_ratio": 0.9351851851851852,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 4.223289489746094,
+        "low_mid_ratio": 0.5116270184516907,
+        "drone_band_ratio": 0.7030084729194641,
+        "speech_band_ratio": 0.9290722608566284
+      }
+    },
+    {
+      "window_index": 36,
+      "start_s": 12.599183673469387,
+      "end_s": 13.849160997732426,
+      "score": 0.8156573092639446,
+      "quality": {
+        "rms_db": -17.31938011480892,
+        "peak": 0.6387146711349487,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.31938011480892,
+        "centroid_hz": 3681.8178818539304,
+        "rolloff_hz": 7273.238118489583,
+        "bandwidth_hz": 2721.154070109293,
+        "flatness": 0.05524057894945145,
+        "zcr": 0.19548430266203703,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 4.212421894073486,
+        "low_mid_ratio": 0.5386074781417847,
+        "drone_band_ratio": 0.7354570031166077,
+        "speech_band_ratio": 0.9318075776100159
+      }
+    },
+    {
+      "window_index": 37,
+      "start_s": 12.949160997732426,
+      "end_s": 14.199138321995465,
+      "score": 0.8144645572006703,
+      "quality": {
+        "rms_db": -17.364204775132144,
+        "peak": 0.6387146711349487,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.364204775132144,
+        "centroid_hz": 3648.503031658169,
+        "rolloff_hz": 7258.48388671875,
+        "bandwidth_hz": 2722.512877436353,
+        "flatness": 0.06193792074918747,
+        "zcr": 0.19779911747685186,
+        "voiced_ratio": 0.9722222222222222,
+        "f0_median_hz": 277.983642578125,
+        "f0_std_hz": 4.561100482940674,
+        "low_mid_ratio": 0.5097562670707703,
+        "drone_band_ratio": 0.733767569065094,
+        "speech_band_ratio": 0.9269469976425171
+      }
+    },
+    {
+      "window_index": 38,
+      "start_s": 13.299138321995464,
+      "end_s": 14.549115646258503,
+      "score": 0.815509340018034,
+      "quality": {
+        "rms_db": -17.911977396731817,
+        "peak": 0.6387146711349487,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -17.911977396731817,
+        "centroid_hz": 3685.807211751622,
+        "rolloff_hz": 7250.508626302083,
+        "bandwidth_hz": 2702.85826203936,
+        "flatness": 0.06914318352937698,
+        "zcr": 0.20947265625,
+        "voiced_ratio": 0.9537037037037037,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 3.384227752685547,
+        "low_mid_ratio": 0.4700578451156616,
+        "drone_band_ratio": 0.7127928137779236,
+        "speech_band_ratio": 0.9220746755599976
+      }
+    },
+    {
+      "window_index": 39,
+      "start_s": 13.649115646258503,
+      "end_s": 14.899092970521542,
+      "score": 0.8136957997977735,
+      "quality": {
+        "rms_db": -18.19683790806725,
+        "peak": 0.5054073333740234,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.19683790806725,
+        "centroid_hz": 3766.184342356785,
+        "rolloff_hz": 7271.64306640625,
+        "bandwidth_hz": 2677.7020144432695,
+        "flatness": 0.07797230035066605,
+        "zcr": 0.22816297743055555,
+        "voiced_ratio": 0.6944444444444444,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 4.0046467781066895,
+        "low_mid_ratio": 0.35537758469581604,
+        "drone_band_ratio": 0.6297693848609924,
+        "speech_band_ratio": 0.9078265428543091
+      }
+    },
+    {
+      "window_index": 40,
+      "start_s": 13.999092970521541,
+      "end_s": 15.24907029478458,
+      "score": 0.8154871582388877,
+      "quality": {
+        "rms_db": -18.14164728170433,
+        "peak": 0.5250215530395508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.14164728170433,
+        "centroid_hz": 3795.7909085208626,
+        "rolloff_hz": 7240.53955078125,
+        "bandwidth_hz": 2661.7003960974203,
+        "flatness": 0.080633744597435,
+        "zcr": 0.23291015625,
+        "voiced_ratio": 0.8518518518518519,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 2.6329782009124756,
+        "low_mid_ratio": 0.3464497923851013,
+        "drone_band_ratio": 0.6169115304946899,
+        "speech_band_ratio": 0.9077979326248169
+      }
+    },
+    {
+      "window_index": 41,
+      "start_s": 14.34907029478458,
+      "end_s": 15.599047619047619,
+      "score": 0.8172292522490024,
+      "quality": {
+        "rms_db": -18.366640342122274,
+        "peak": 0.5250215530395508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.366640342122274,
+        "centroid_hz": 3805.3098962398653,
+        "rolloff_hz": 7271.044921875,
+        "bandwidth_hz": 2678.560238564838,
+        "flatness": 0.08237852901220322,
+        "zcr": 0.2289767795138889,
+        "voiced_ratio": 0.8425925925925926,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 1.3552632331848145,
+        "low_mid_ratio": 0.36950013041496277,
+        "drone_band_ratio": 0.6288461089134216,
+        "speech_band_ratio": 0.9088580012321472
+      }
+    },
+    {
+      "window_index": 42,
+      "start_s": 14.699047619047619,
+      "end_s": 15.949024943310658,
+      "score": 0.8169760518670083,
+      "quality": {
+        "rms_db": -18.671022101731044,
+        "peak": 0.5250215530395508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.671022101731044,
+        "centroid_hz": 3823.311295471125,
+        "rolloff_hz": 7332.853190104167,
+        "bandwidth_hz": 2705.769528483143,
+        "flatness": 0.0808078795671463,
+        "zcr": 0.224609375,
+        "voiced_ratio": 0.9907407407407407,
+        "f0_median_hz": 276.382568359375,
+        "f0_std_hz": 1.6287734508514404,
+        "low_mid_ratio": 0.40678808093070984,
+        "drone_band_ratio": 0.654910147190094,
+        "speech_band_ratio": 0.9092490673065186
+      }
+    },
+    {
+      "window_index": 43,
+      "start_s": 15.049024943310657,
+      "end_s": 16.299002267573695,
+      "score": 0.8159987105429172,
+      "quality": {
+        "rms_db": -19.092356668371743,
+        "peak": 0.46532177925109863,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -19.092356668371743,
+        "centroid_hz": 3840.691440084809,
+        "rolloff_hz": 7388.081868489583,
+        "bandwidth_hz": 2729.5682452653705,
+        "flatness": 0.08314260095357895,
+        "zcr": 0.22362377025462962,
+        "voiced_ratio": 0.9351851851851852,
+        "f0_median_hz": 274.7907409667969,
+        "f0_std_hz": 2.1246862411499023,
+        "low_mid_ratio": 0.4378299117088318,
+        "drone_band_ratio": 0.6654895544052124,
+        "speech_band_ratio": 0.9062713384628296
+      }
+    },
+    {
+      "window_index": 44,
+      "start_s": 15.399002267573696,
+      "end_s": 16.648979591836735,
+      "score": 0.8147413684860793,
+      "quality": {
+        "rms_db": -20.388600744991138,
+        "peak": 0.46532177925109863,
+        "active_ratio": 0.7723577235772358,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -20.388600744991138,
+        "centroid_hz": 3500.306937994898,
+        "rolloff_hz": 6770.99609375,
+        "bandwidth_hz": 2677.001853282714,
+        "flatness": 0.07257344573736191,
+        "zcr": 0.1970847800925926,
+        "voiced_ratio": 0.6574074074074074,
+        "f0_median_hz": 274.7907409667969,
+        "f0_std_hz": 2.0094947814941406,
+        "low_mid_ratio": 0.4368955194950104,
+        "drone_band_ratio": 0.6596826314926147,
+        "speech_band_ratio": 0.9022194743156433
+      }
+    },
+    {
+      "window_index": 45,
+      "start_s": 15.748979591836735,
+      "end_s": 16.99895691609977,
+      "score": 0.866251379173499,
+      "quality": {
+        "rms_db": -22.279394783335697,
+        "peak": 0.46532177925109863,
+        "active_ratio": 0.4878048780487805,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -22.279394783335697,
+        "centroid_hz": 3105.190946997431,
+        "rolloff_hz": 6071.366373697917,
+        "bandwidth_hz": 2626.143569108323,
+        "flatness": 0.06223073601722717,
+        "zcr": 0.16700122974537038,
+        "voiced_ratio": 0.37962962962962965,
+        "f0_median_hz": 273.2080383300781,
+        "f0_std_hz": 2.5104689598083496,
+        "low_mid_ratio": 0.4293096959590912,
+        "drone_band_ratio": 0.6473062634468079,
+        "speech_band_ratio": 0.9009411334991455
+      }
+    },
+    {
+      "window_index": 46,
+      "start_s": 16.098956916099773,
+      "end_s": 17.348934240362812,
+      "score": 0.8098760530959223,
+      "quality": {
+        "rms_db": -26.342165499144052,
+        "peak": 0.39353078603744507,
+        "active_ratio": 0.2032520325203252,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.342165499144052,
+        "centroid_hz": 2539.5121732228663,
+        "rolloff_hz": 5099.580891927083,
+        "bandwidth_hz": 2510.2415374680136,
+        "flatness": 0.04473366215825081,
+        "zcr": 0.1217357494212963,
+        "voiced_ratio": 0.25925925925925924,
+        "f0_median_hz": 61.558250427246094,
+        "f0_std_hz": 6.417585372924805,
+        "low_mid_ratio": 0.42099636793136597,
+        "drone_band_ratio": 0.6156058311462402,
+        "speech_band_ratio": 0.8878525495529175
+      }
+    },
+    {
+      "window_index": 47,
+      "start_s": 16.44893424036281,
+      "end_s": 17.69891156462585,
+      "score": 0.7224040725891188,
+      "quality": {
+        "rms_db": -48.849811139349804,
+        "peak": 0.04024532809853554,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -48.849811139349804,
+        "centroid_hz": 2167.9821666552098,
+        "rolloff_hz": 4387.589518229167,
+        "bandwidth_hz": 2394.1527511424024,
+        "flatness": 0.02593402750790119,
+        "zcr": 0.0933521412037037,
+        "voiced_ratio": 0.39814814814814814,
+        "f0_median_hz": 62.27248001098633,
+        "f0_std_hz": 6.580807685852051,
+        "low_mid_ratio": 0.4087657332420349,
+        "drone_band_ratio": 0.5437620878219604,
+        "speech_band_ratio": 0.5035039186477661
+      }
+    },
+    {
+      "window_index": 48,
+      "start_s": 16.79891156462585,
+      "end_s": 18.04888888888889,
+      "score": 0.7120374234791357,
+      "quality": {
+        "rms_db": -45.84338526265408,
+        "peak": 0.04024532809853554,
+        "active_ratio": 0.016260162601626018,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -45.84338526265408,
+        "centroid_hz": 2064.5272621597096,
+        "rolloff_hz": 4095.6949869791665,
+        "bandwidth_hz": 2284.541955445997,
+        "flatness": 0.0167841836810112,
+        "zcr": 0.08641673900462964,
+        "voiced_ratio": 0.3425925925925926,
+        "f0_median_hz": 66.35758972167969,
+        "f0_std_hz": 6.021088600158691,
+        "low_mid_ratio": 0.4064631760120392,
+        "drone_band_ratio": 0.6190336346626282,
+        "speech_band_ratio": 0.5187357664108276
+      }
+    },
+    {
+      "window_index": 49,
+      "start_s": 17.148888888888887,
+      "end_s": 18.398866213151926,
+      "score": 0.7356284303203354,
+      "quality": {
+        "rms_db": -44.34937185644456,
+        "peak": 0.04024532809853554,
+        "active_ratio": 0.04065040650406504,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -44.34937185644456,
+        "centroid_hz": 2200.5665620838417,
+        "rolloff_hz": 4536.328125,
+        "bandwidth_hz": 2399.060409008651,
+        "flatness": 0.013800016604363918,
+        "zcr": 0.10006148726851852,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 66.35758972167969,
+        "f0_std_hz": 5.389920711517334,
+        "low_mid_ratio": 0.37250223755836487,
+        "drone_band_ratio": 0.572872519493103,
+        "speech_band_ratio": 0.4581666886806488
+      }
+    },
+    {
+      "window_index": 50,
+      "start_s": 17.498866213151928,
+      "end_s": 18.748843537414967,
+      "score": 0.6082661029807965,
+      "quality": {
+        "rms_db": -41.34734933797057,
+        "peak": 0.05197018012404442,
+        "active_ratio": 0.24390243902439024,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -41.34734933797057,
+        "centroid_hz": 2730.5568476610383,
+        "rolloff_hz": 5879.561360677083,
+        "bandwidth_hz": 2625.076605967032,
+        "flatness": 0.018860379233956337,
+        "zcr": 0.1657081886574074,
+        "voiced_ratio": 0.25925925925925924,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 6.526986598968506,
+        "low_mid_ratio": 0.18834863603115082,
+        "drone_band_ratio": 0.6678280830383301,
+        "speech_band_ratio": 0.651887059211731
+      }
+    },
+    {
+      "window_index": 51,
+      "start_s": 17.848843537414965,
+      "end_s": 19.098820861678004,
+      "score": 0.7758012078850491,
+      "quality": {
+        "rms_db": -40.03233709329412,
+        "peak": 0.08345860987901688,
+        "active_ratio": 0.2682926829268293,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -40.03233709329412,
+        "centroid_hz": 3105.167240893965,
+        "rolloff_hz": 6687.056477864583,
+        "bandwidth_hz": 2734.87832710192,
+        "flatness": 0.03719963878393173,
+        "zcr": 0.20934606481481483,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 70.91548919677734,
+        "f0_std_hz": 15.467442512512207,
+        "low_mid_ratio": 0.14453524351119995,
+        "drone_band_ratio": 0.6763430237770081,
+        "speech_band_ratio": 0.7101646661758423
+      }
+    },
+    {
+      "window_index": 52,
+      "start_s": 18.198820861678005,
+      "end_s": 19.448798185941044,
+      "score": 0.656139753686226,
+      "quality": {
+        "rms_db": -39.68273537915217,
+        "peak": 0.08345860987901688,
+        "active_ratio": 0.2601626016260163,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -39.68273537915217,
+        "centroid_hz": 3633.455314265681,
+        "rolloff_hz": 7618.367513020833,
+        "bandwidth_hz": 2831.380156163175,
+        "flatness": 0.05648014321923256,
+        "zcr": 0.27366355613425924,
+        "voiced_ratio": 0.37037037037037035,
+        "f0_median_hz": 53.58867263793945,
+        "f0_std_hz": 0.3672042489051819,
+        "low_mid_ratio": 0.10182132571935654,
+        "drone_band_ratio": 0.6519590616226196,
+        "speech_band_ratio": 0.7682116031646729
+      }
+    },
+    {
+      "window_index": 53,
+      "start_s": 18.548798185941042,
+      "end_s": 19.79877551020408,
+      "score": 0.6816706145065309,
+      "quality": {
+        "rms_db": -38.59060180745537,
+        "peak": 0.1409805864095688,
+        "active_ratio": 0.2682926829268293,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -38.59060180745537,
+        "centroid_hz": 3788.7779859872903,
+        "rolloff_hz": 7494.7509765625,
+        "bandwidth_hz": 2714.2142465346087,
+        "flatness": 0.07360874861478806,
+        "zcr": 0.28492115162037035,
+        "voiced_ratio": 0.46296296296296297,
+        "f0_median_hz": 53.58867263793945,
+        "f0_std_hz": 0.3325067162513733,
+        "low_mid_ratio": 0.10023634135723114,
+        "drone_band_ratio": 0.5188168883323669,
+        "speech_band_ratio": 0.7619037628173828
+      }
+    },
+    {
+      "window_index": 54,
+      "start_s": 18.898775510204082,
+      "end_s": 20.14875283446712,
+      "score": 0.6755334621388231,
+      "quality": {
+        "rms_db": -38.6728270858183,
+        "peak": 0.1409805864095688,
+        "active_ratio": 0.42276422764227645,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -38.6728270858183,
+        "centroid_hz": 3729.7678793045234,
+        "rolloff_hz": 7106.55517578125,
+        "bandwidth_hz": 2623.629866674553,
+        "flatness": 0.08152980357408524,
+        "zcr": 0.2766384548611111,
+        "voiced_ratio": 0.46296296296296297,
+        "f0_median_hz": 53.280025482177734,
+        "f0_std_hz": 0.3044918477535248,
+        "low_mid_ratio": 0.15358291566371918,
+        "drone_band_ratio": 0.43437591195106506,
+        "speech_band_ratio": 0.7906541228294373
+      }
+    },
+    {
+      "window_index": 55,
+      "start_s": 19.24875283446712,
+      "end_s": 20.498730158730158,
+      "score": 0.6128144413133353,
+      "quality": {
+        "rms_db": -37.89094635128624,
+        "peak": 0.1409805864095688,
+        "active_ratio": 0.7073170731707317,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -37.89094635128624,
+        "centroid_hz": 3653.3796548933,
+        "rolloff_hz": 6933.09326171875,
+        "bandwidth_hz": 2601.826016915872,
+        "flatness": 0.07876776903867722,
+        "zcr": 0.2680121527777778,
+        "voiced_ratio": 0.14814814814814814,
+        "f0_median_hz": 53.280025482177734,
+        "f0_std_hz": 0.07471158355474472,
+        "low_mid_ratio": 0.17640070617198944,
+        "drone_band_ratio": 0.43547821044921875,
+        "speech_band_ratio": 0.809215784072876
+      }
+    },
+    {
+      "window_index": 56,
+      "start_s": 19.59873015873016,
+      "end_s": 20.8487074829932,
+      "score": 0.3836674244269066,
+      "quality": {
+        "rms_db": -37.217523007586394,
+        "peak": 0.1409805864095688,
+        "active_ratio": 0.991869918699187,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -37.217523007586394,
+        "centroid_hz": 3567.572926745323,
+        "rolloff_hz": 6746.073404947917,
+        "bandwidth_hz": 2587.3348725058972,
+        "flatness": 0.07703278958797455,
+        "zcr": 0.25709816261574076,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.20014093816280365,
+        "drone_band_ratio": 0.44377344846725464,
+        "speech_band_ratio": 0.8212183713912964
+      }
+    },
+    {
+      "window_index": 57,
+      "start_s": 19.948707482993196,
+      "end_s": 21.198684807256235,
+      "score": 0.5808186575249545,
+      "quality": {
+        "rms_db": -34.78089784187419,
+        "peak": 0.11359298974275589,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -34.78089784187419,
+        "centroid_hz": 3481.575573263445,
+        "rolloff_hz": 6511.4013671875,
+        "bandwidth_hz": 2545.7716449955997,
+        "flatness": 0.07320012897253036,
+        "zcr": 0.2509494357638889,
+        "voiced_ratio": 0.12037037037037036,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 1.0174731016159058,
+        "low_mid_ratio": 0.1197354644536972,
+        "drone_band_ratio": 0.7281774878501892,
+        "speech_band_ratio": 0.9308885931968689
+      }
+    },
+    {
+      "window_index": 58,
+      "start_s": 20.298684807256237,
+      "end_s": 21.548662131519276,
+      "score": 0.5811802306131434,
+      "quality": {
+        "rms_db": -34.79286553905193,
+        "peak": 0.11359298974275589,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -34.79286553905193,
+        "centroid_hz": 3475.315222682517,
+        "rolloff_hz": 6500.435384114583,
+        "bandwidth_hz": 2550.579683653567,
+        "flatness": 0.07280875742435455,
+        "zcr": 0.25053349247685186,
+        "voiced_ratio": 0.12037037037037036,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 0.7514536380767822,
+        "low_mid_ratio": 0.12051599472761154,
+        "drone_band_ratio": 0.7303282022476196,
+        "speech_band_ratio": 0.9309796690940857
+      }
+    },
+    {
+      "window_index": 59,
+      "start_s": 20.648662131519274,
+      "end_s": 21.898639455782313,
+      "score": 0.688877828110493,
+      "quality": {
+        "rms_db": -31.70216434783476,
+        "peak": 0.11934216320514679,
+        "active_ratio": 0.959349593495935,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.70216434783476,
+        "centroid_hz": 3463.281118764118,
+        "rolloff_hz": 6302.250162760417,
+        "bandwidth_hz": 2477.475189696559,
+        "flatness": 0.06230669096112251,
+        "zcr": 0.2533004195601852,
+        "voiced_ratio": 0.32407407407407407,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 0.4698144495487213,
+        "low_mid_ratio": 0.05342860892415047,
+        "drone_band_ratio": 0.8631036877632141,
+        "speech_band_ratio": 0.9682211875915527
+      }
+    },
+    {
+      "window_index": 60,
+      "start_s": 20.998639455782314,
+      "end_s": 22.248616780045353,
+      "score": 0.5908154105579315,
+      "quality": {
+        "rms_db": -31.896859637776704,
+        "peak": 0.11934216320514679,
+        "active_ratio": 0.7398373983739838,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.896859637776704,
+        "centroid_hz": 3541.920323283611,
+        "rolloff_hz": 6505.419921875,
+        "bandwidth_hz": 2490.9382196882516,
+        "flatness": 0.0633564367890358,
+        "zcr": 0.2639793113425926,
+        "voiced_ratio": 0.3425925925925926,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 0.6376792192459106,
+        "low_mid_ratio": 0.04083312675356865,
+        "drone_band_ratio": 0.881149411201477,
+        "speech_band_ratio": 0.9717633724212646
+      }
+    },
+    {
+      "window_index": 61,
+      "start_s": 21.34861678004535,
+      "end_s": 22.59859410430839,
+      "score": 0.577423054939174,
+      "quality": {
+        "rms_db": -32.393576834962815,
+        "peak": 0.11934216320514679,
+        "active_ratio": 0.45528455284552843,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.393576834962815,
+        "centroid_hz": 3647.466373186037,
+        "rolloff_hz": 6794.32373046875,
+        "bandwidth_hz": 2529.769698952778,
+        "flatness": 0.06668519228696823,
+        "zcr": 0.2723524305555556,
+        "voiced_ratio": 0.2962962962962963,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 0.49066582322120667,
+        "low_mid_ratio": 0.0315668061375618,
+        "drone_band_ratio": 0.9001339673995972,
+        "speech_band_ratio": 0.9724881052970886
+      }
+    },
+    {
+      "window_index": 62,
+      "start_s": 21.69859410430839,
+      "end_s": 22.94857142857143,
+      "score": 0.5562352375642812,
+      "quality": {
+        "rms_db": -33.56091216194336,
+        "peak": 0.11934216320514679,
+        "active_ratio": 0.17073170731707318,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -33.56091216194336,
+        "centroid_hz": 3755.430846673605,
+        "rolloff_hz": 7229.77294921875,
+        "bandwidth_hz": 2598.227962156362,
+        "flatness": 0.0697997510433197,
+        "zcr": 0.28638599537037035,
+        "voiced_ratio": 0.23148148148148148,
+        "f0_median_hz": 486.8013916015625,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.028070388361811638,
+        "drone_band_ratio": 0.898652195930481,
+        "speech_band_ratio": 0.964271605014801
+      }
+    },
+    {
+      "window_index": 63,
+      "start_s": 22.048571428571428,
+      "end_s": 23.298548752834467,
+      "score": 0.3390764088753354,
+      "quality": {
+        "rms_db": -38.9968576490751,
+        "peak": 0.2541249990463257,
+        "active_ratio": 0.024390243902439025,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -38.9968576490751,
+        "centroid_hz": 3883.394898791239,
+        "rolloff_hz": 7729.423014322917,
+        "bandwidth_hz": 2700.334644893665,
+        "flatness": 0.08040609955787659,
+        "zcr": 0.2958984375,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.09369725733995438,
+        "drone_band_ratio": 0.33813291788101196,
+        "speech_band_ratio": 0.7414920330047607
+      }
+    },
+    {
+      "window_index": 64,
+      "start_s": 22.39854875283447,
+      "end_s": 23.648526077097507,
+      "score": 0.49547478145360946,
+      "quality": {
+        "rms_db": -19.290313290358196,
+        "peak": 1.0325900316238403,
+        "active_ratio": 0.3089430894308943,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -19.290313290358196,
+        "centroid_hz": 3869.984250601315,
+        "rolloff_hz": 7631.925455729167,
+        "bandwidth_hz": 2673.817836532058,
+        "flatness": 0.08025218546390533,
+        "zcr": 0.28324833622685186,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.16603070497512817,
+        "drone_band_ratio": 0.7032020688056946,
+        "speech_band_ratio": 0.9111195802688599
+      }
+    },
+    {
+      "window_index": 65,
+      "start_s": 22.748526077097505,
+      "end_s": 23.998503401360544,
+      "score": 0.7402044882256577,
+      "quality": {
+        "rms_db": -13.285990400835828,
+        "peak": 1.1511962413787842,
+        "active_ratio": 0.5934959349593496,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -13.285990400835828,
+        "centroid_hz": 4001.921129216914,
+        "rolloff_hz": 7768.900553385417,
+        "bandwidth_hz": 2722.3095479136773,
+        "flatness": 0.07699552178382874,
+        "zcr": 0.27784107349537035,
+        "voiced_ratio": 0.18518518518518517,
+        "f0_median_hz": 53.58867263793945,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.051268320530653,
+        "drone_band_ratio": 0.6696652173995972,
+        "speech_band_ratio": 0.8612596392631531
+      }
+    },
+    {
+      "window_index": 66,
+      "start_s": 23.098503401360546,
+      "end_s": 24.34848072562358,
+      "score": 0.8489908753829171,
+      "quality": {
+        "rms_db": -11.062768936206577,
+        "peak": 1.1511962413787842,
+        "active_ratio": 0.8780487804878049,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.062768936206577,
+        "centroid_hz": 4241.878627786382,
+        "rolloff_hz": 7951.534016927083,
+        "bandwidth_hz": 2780.91995026037,
+        "flatness": 0.07493991404771805,
+        "zcr": 0.27567093460648145,
+        "voiced_ratio": 0.46296296296296297,
+        "f0_median_hz": 243.40069580078125,
+        "f0_std_hz": 16.016822814941406,
+        "low_mid_ratio": 0.03294914960861206,
+        "drone_band_ratio": 0.6351754069328308,
+        "speech_band_ratio": 0.8369731903076172
+      }
+    },
+    {
+      "window_index": 67,
+      "start_s": 23.448480725623583,
+      "end_s": 24.69845804988662,
+      "score": 0.8689783355593681,
+      "quality": {
+        "rms_db": -9.750997398436498,
+        "peak": 1.1511962413787842,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -9.750997398436498,
+        "centroid_hz": 4449.62594963093,
+        "rolloff_hz": 8104.060872395833,
+        "bandwidth_hz": 2828.3726404207528,
+        "flatness": 0.07059355080127716,
+        "zcr": 0.27275028935185186,
+        "voiced_ratio": 0.6574074074074074,
+        "f0_median_hz": 251.9842071533203,
+        "f0_std_hz": 15.641539573669434,
+        "low_mid_ratio": 0.02507564052939415,
+        "drone_band_ratio": 0.6269864439964294,
+        "speech_band_ratio": 0.8290928602218628
+      }
+    },
+    {
+      "window_index": 68,
+      "start_s": 23.798458049886623,
+      "end_s": 25.04843537414966,
+      "score": 0.8517739564180374,
+      "quality": {
+        "rms_db": -9.561428045381552,
+        "peak": 1.1421399116516113,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -9.561428045381552,
+        "centroid_hz": 4573.4734698763305,
+        "rolloff_hz": 8379.40673828125,
+        "bandwidth_hz": 2898.231647316329,
+        "flatness": 0.06674215197563171,
+        "zcr": 0.2693504050925926,
+        "voiced_ratio": 0.8888888888888888,
+        "f0_median_hz": 254.91212463378906,
+        "f0_std_hz": 27.36788558959961,
+        "low_mid_ratio": 0.00695447251200676,
+        "drone_band_ratio": 0.6604690551757812,
+        "speech_band_ratio": 0.8335972428321838
+      }
+    },
+    {
+      "window_index": 69,
+      "start_s": 24.14843537414966,
+      "end_s": 25.3984126984127,
+      "score": 0.8544959912896157,
+      "quality": {
+        "rms_db": -9.913447035579145,
+        "peak": 1.1421399116516113,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -9.913447035579145,
+        "centroid_hz": 4527.803619151727,
+        "rolloff_hz": 8259.578450520834,
+        "bandwidth_hz": 2854.6554672619764,
+        "flatness": 0.06409810483455658,
+        "zcr": 0.25489185474537035,
+        "voiced_ratio": 0.8981481481481481,
+        "f0_median_hz": 256.3888244628906,
+        "f0_std_hz": 25.72946548461914,
+        "low_mid_ratio": 0.006425694562494755,
+        "drone_band_ratio": 0.6839895248413086,
+        "speech_band_ratio": 0.8453962802886963
+      }
+    },
+    {
+      "window_index": 70,
+      "start_s": 24.498412698412697,
+      "end_s": 25.748390022675736,
+      "score": 0.8543358364850283,
+      "quality": {
+        "rms_db": -10.450966372128336,
+        "peak": 1.0831046104431152,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -10.450966372128336,
+        "centroid_hz": 4435.313349781305,
+        "rolloff_hz": 8181.221516927083,
+        "bandwidth_hz": 2824.35006154422,
+        "flatness": 0.0588039867579937,
+        "zcr": 0.2473415798611111,
+        "voiced_ratio": 0.9722222222222222,
+        "f0_median_hz": 257.8740539550781,
+        "f0_std_hz": 26.189176559448242,
+        "low_mid_ratio": 0.00643073208630085,
+        "drone_band_ratio": 0.7123416662216187,
+        "speech_band_ratio": 0.8656727075576782
+      }
+    },
+    {
+      "window_index": 71,
+      "start_s": 24.848390022675737,
+      "end_s": 26.098367346938776,
+      "score": 0.8530952634960413,
+      "quality": {
+        "rms_db": -10.956254840508159,
+        "peak": 1.0831046104431152,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -10.956254840508159,
+        "centroid_hz": 4390.68812808421,
+        "rolloff_hz": 8096.484375,
+        "bandwidth_hz": 2771.896030333288,
+        "flatness": 0.05650600418448448,
+        "zcr": 0.24943033854166666,
+        "voiced_ratio": 0.9722222222222222,
+        "f0_median_hz": 253.44393920898438,
+        "f0_std_hz": 27.169424057006836,
+        "low_mid_ratio": 0.0062105972319841385,
+        "drone_band_ratio": 0.6837512850761414,
+        "speech_band_ratio": 0.8775874972343445
+      }
+    },
+    {
+      "window_index": 72,
+      "start_s": 25.198367346938774,
+      "end_s": 26.448344671201813,
+      "score": 0.8570227807164192,
+      "quality": {
+        "rms_db": -11.316494219032462,
+        "peak": 1.0257596969604492,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.316494219032462,
+        "centroid_hz": 4453.564022462678,
+        "rolloff_hz": 8104.459635416667,
+        "bandwidth_hz": 2720.692404792818,
+        "flatness": 0.06223993003368378,
+        "zcr": 0.26978443287037035,
+        "voiced_ratio": 0.7037037037037037,
+        "f0_median_hz": 253.44393920898438,
+        "f0_std_hz": 24.1688175201416,
+        "low_mid_ratio": 0.005813594441860914,
+        "drone_band_ratio": 0.5441671013832092,
+        "speech_band_ratio": 0.8662546277046204
+      }
+    },
+    {
+      "window_index": 73,
+      "start_s": 25.548344671201814,
+      "end_s": 26.798321995464853,
+      "score": 0.8256054514402691,
+      "quality": {
+        "rms_db": -11.213290082295016,
+        "peak": 1.0501092672348022,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.213290082295016,
+        "centroid_hz": 4570.998302346466,
+        "rolloff_hz": 8234.256998697916,
+        "bandwidth_hz": 2712.441116479501,
+        "flatness": 0.07920937985181808,
+        "zcr": 0.29439742476851855,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 253.44393920898438,
+        "f0_std_hz": 22.369943618774414,
+        "low_mid_ratio": 0.005820926278829575,
+        "drone_band_ratio": 0.4328100383281708,
+        "speech_band_ratio": 0.8419000506401062
+      }
+    },
+    {
+      "window_index": 74,
+      "start_s": 25.89832199546485,
+      "end_s": 27.14829931972789,
+      "score": 0.557186914571006,
+      "quality": {
+        "rms_db": -11.47301646410844,
+        "peak": 1.0501092672348022,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.47301646410844,
+        "centroid_hz": 4656.067822256854,
+        "rolloff_hz": 8206.144205729166,
+        "bandwidth_hz": 2683.2547804676788,
+        "flatness": 0.09861160814762115,
+        "zcr": 0.3198875144675926,
+        "voiced_ratio": 0.08333333333333333,
+        "f0_median_hz": 483.9976501464844,
+        "f0_std_hz": 1.3141005039215088,
+        "low_mid_ratio": 0.007550518494099379,
+        "drone_band_ratio": 0.29358452558517456,
+        "speech_band_ratio": 0.800456702709198
+      }
+    },
+    {
+      "window_index": 75,
+      "start_s": 26.24829931972789,
+      "end_s": 27.49827664399093,
+      "score": 0.5732050196648849,
+      "quality": {
+        "rms_db": -11.591271481262417,
+        "peak": 1.0501092672348022,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.591271481262417,
+        "centroid_hz": 4736.836566799955,
+        "rolloff_hz": 8256.787109375,
+        "bandwidth_hz": 2695.003338042801,
+        "flatness": 0.1102394387125969,
+        "zcr": 0.3310818142361111,
+        "voiced_ratio": 0.2222222222222222,
+        "f0_median_hz": 462.1410827636719,
+        "f0_std_hz": 0.8853855729103088,
+        "low_mid_ratio": 0.008210361003875732,
+        "drone_band_ratio": 0.24933919310569763,
+        "speech_band_ratio": 0.7752475142478943
+      }
+    },
+    {
+      "window_index": 76,
+      "start_s": 26.59827664399093,
+      "end_s": 27.848253968253967,
+      "score": 0.5845426049590714,
+      "quality": {
+        "rms_db": -12.089998297299902,
+        "peak": 0.9347110986709595,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.089998297299902,
+        "centroid_hz": 4733.258310756514,
+        "rolloff_hz": 8262.17041015625,
+        "bandwidth_hz": 2726.0477065373966,
+        "flatness": 0.11740215867757797,
+        "zcr": 0.3260904947916667,
+        "voiced_ratio": 0.3148148148148148,
+        "f0_median_hz": 462.1410827636719,
+        "f0_std_hz": 12.026829719543457,
+        "low_mid_ratio": 0.010000675916671753,
+        "drone_band_ratio": 0.2768663465976715,
+        "speech_band_ratio": 0.7622188329696655
+      }
+    },
+    {
+      "window_index": 77,
+      "start_s": 26.94825396825397,
+      "end_s": 28.198231292517008,
+      "score": 0.6343833343440837,
+      "quality": {
+        "rms_db": -12.194954425301487,
+        "peak": 0.9347110986709595,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.194954425301487,
+        "centroid_hz": 4681.209401374181,
+        "rolloff_hz": 8221.895345052084,
+        "bandwidth_hz": 2748.1014270931273,
+        "flatness": 0.11308661103248596,
+        "zcr": 0.3137839988425926,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 462.1410827636719,
+        "f0_std_hz": 11.824766159057617,
+        "low_mid_ratio": 0.013706140220165253,
+        "drone_band_ratio": 0.35678523778915405,
+        "speech_band_ratio": 0.7818920612335205
+      }
+    },
+    {
+      "window_index": 78,
+      "start_s": 27.298231292517006,
+      "end_s": 28.548208616780045,
+      "score": 0.6531110889113914,
+      "quality": {
+        "rms_db": -12.182884766924966,
+        "peak": 0.9263104200363159,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.182884766924966,
+        "centroid_hz": 4663.676301437674,
+        "rolloff_hz": 8220.699055989584,
+        "bandwidth_hz": 2764.364194142416,
+        "flatness": 0.10884442180395126,
+        "zcr": 0.3058539496527778,
+        "voiced_ratio": 0.46296296296296297,
+        "f0_median_hz": 459.4793395996094,
+        "f0_std_hz": 13.292508125305176,
+        "low_mid_ratio": 0.012676647864282131,
+        "drone_band_ratio": 0.39672061800956726,
+        "speech_band_ratio": 0.7937527298927307
+      }
+    },
+    {
+      "window_index": 79,
+      "start_s": 27.648208616780046,
+      "end_s": 28.898185941043085,
+      "score": 0.604205363006905,
+      "quality": {
+        "rms_db": -12.019356431282578,
+        "peak": 1.010627269744873,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.019356431282578,
+        "centroid_hz": 4627.980912607238,
+        "rolloff_hz": 8250.20751953125,
+        "bandwidth_hz": 2789.631318605287,
+        "flatness": 0.10610450804233551,
+        "zcr": 0.2977249710648148,
+        "voiced_ratio": 0.23148148148148148,
+        "f0_median_hz": 459.4793395996094,
+        "f0_std_hz": 16.929725646972656,
+        "low_mid_ratio": 0.01224544458091259,
+        "drone_band_ratio": 0.41851720213890076,
+        "speech_band_ratio": 0.8132175803184509
+      }
+    },
+    {
+      "window_index": 80,
+      "start_s": 27.998185941043083,
+      "end_s": 29.248163265306122,
+      "score": 0.5871931945458807,
+      "quality": {
+        "rms_db": -12.259775843419149,
+        "peak": 1.010627269744873,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.259775843419149,
+        "centroid_hz": 4690.818242632884,
+        "rolloff_hz": 8316.800944010416,
+        "bandwidth_hz": 2791.5839976164725,
+        "flatness": 0.11570978164672852,
+        "zcr": 0.31023039641203703,
+        "voiced_ratio": 0.1388888888888889,
+        "f0_median_hz": 451.58575439453125,
+        "f0_std_hz": 4.681521892547607,
+        "low_mid_ratio": 0.010667317546904087,
+        "drone_band_ratio": 0.37280386686325073,
+        "speech_band_ratio": 0.7971639037132263
+      }
+    },
+    {
+      "window_index": 81,
+      "start_s": 28.348163265306123,
+      "end_s": 29.598140589569162,
+      "score": 0.5565713007766189,
+      "quality": {
+        "rms_db": -12.078139016213644,
+        "peak": 1.088733434677124,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.078139016213644,
+        "centroid_hz": 4804.502768347315,
+        "rolloff_hz": 8442.81005859375,
+        "bandwidth_hz": 2819.299449576502,
+        "flatness": 0.12280521541833878,
+        "zcr": 0.3328812210648148,
+        "voiced_ratio": 0.07407407407407407,
+        "f0_median_hz": 456.83294677734375,
+        "f0_std_hz": 4.774012565612793,
+        "low_mid_ratio": 0.02723357081413269,
+        "drone_band_ratio": 0.3225575089454651,
+        "speech_band_ratio": 0.7632071375846863
+      }
+    },
+    {
+      "window_index": 82,
+      "start_s": 28.69814058956916,
+      "end_s": 29.9481179138322,
+      "score": 0.4394642346865601,
+      "quality": {
+        "rms_db": -11.224334807072314,
+        "peak": 1.088733434677124,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.224334807072314,
+        "centroid_hz": 4835.146893879074,
+        "rolloff_hz": 8446.797688802084,
+        "bandwidth_hz": 2791.896791435353,
+        "flatness": 0.12008675187826157,
+        "zcr": 0.3424660011574074,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.025289643555879593,
+        "drone_band_ratio": 0.2827700674533844,
+        "speech_band_ratio": 0.7677228450775146
+      }
+    },
+    {
+      "window_index": 83,
+      "start_s": 29.0481179138322,
+      "end_s": 30.29809523809524,
+      "score": 0.4322835334903664,
+      "quality": {
+        "rms_db": -10.523167855171122,
+        "peak": 1.088733434677124,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -10.523167855171122,
+        "centroid_hz": 4870.989802255953,
+        "rolloff_hz": 8425.862630208334,
+        "bandwidth_hz": 2763.542645099502,
+        "flatness": 0.1154150441288948,
+        "zcr": 0.34786422164351855,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.026578333228826523,
+        "drone_band_ratio": 0.2581876218318939,
+        "speech_band_ratio": 0.7599022388458252
+      }
+    },
+    {
+      "window_index": 84,
+      "start_s": 29.398095238095237,
+      "end_s": 30.648072562358276,
+      "score": 0.593495730286897,
+      "quality": {
+        "rms_db": -9.934930767203342,
+        "peak": 1.088733434677124,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -9.934930767203342,
+        "centroid_hz": 4826.948493581134,
+        "rolloff_hz": 8369.83642578125,
+        "bandwidth_hz": 2739.9116425715815,
+        "flatness": 0.09802933037281036,
+        "zcr": 0.3363624855324074,
+        "voiced_ratio": 0.3148148148148148,
+        "f0_median_hz": 393.12823486328125,
+        "f0_std_hz": 1.4645367860794067,
+        "low_mid_ratio": 0.02690710686147213,
+        "drone_band_ratio": 0.24849192798137665,
+        "speech_band_ratio": 0.7792580723762512
+      }
+    },
+    {
+      "window_index": 85,
+      "start_s": 29.748072562358278,
+      "end_s": 30.998049886621317,
+      "score": 0.5858096248937978,
+      "quality": {
+        "rms_db": -10.554095470951573,
+        "peak": 1.0238373279571533,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -10.554095470951573,
+        "centroid_hz": 4908.754379828459,
+        "rolloff_hz": 8382.3974609375,
+        "bandwidth_hz": 2742.0345000465295,
+        "flatness": 0.10836207121610641,
+        "zcr": 0.35595703125,
+        "voiced_ratio": 0.3055555555555556,
+        "f0_median_hz": 393.12823486328125,
+        "f0_std_hz": 1.401713490486145,
+        "low_mid_ratio": 0.023167217150330544,
+        "drone_band_ratio": 0.2332984358072281,
+        "speech_band_ratio": 0.7589297294616699
+      }
+    },
+    {
+      "window_index": 86,
+      "start_s": 30.098049886621315,
+      "end_s": 31.348027210884354,
+      "score": 0.6107824153093376,
+      "quality": {
+        "rms_db": -11.625375642903396,
+        "peak": 1.0157983303070068,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -11.625375642903396,
+        "centroid_hz": 5003.041109384741,
+        "rolloff_hz": 8541.902669270834,
+        "bandwidth_hz": 2807.577209221947,
+        "flatness": 0.11644697189331055,
+        "zcr": 0.3779839409722222,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 395.4056091308594,
+        "f0_std_hz": 2.7101876735687256,
+        "low_mid_ratio": 0.03139258548617363,
+        "drone_band_ratio": 0.23805996775627136,
+        "speech_band_ratio": 0.70988529920578
+      }
+    },
+    {
+      "window_index": 87,
+      "start_s": 30.448027210884355,
+      "end_s": 31.698004535147394,
+      "score": 0.5725674750901233,
+      "quality": {
+        "rms_db": -12.52674164803504,
+        "peak": 1.0062528848648071,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -12.52674164803504,
+        "centroid_hz": 4977.108232060338,
+        "rolloff_hz": 8590.751139322916,
+        "bandwidth_hz": 2857.018236709918,
+        "flatness": 0.115362748503685,
+        "zcr": 0.36872468171296297,
+        "voiced_ratio": 0.1574074074074074,
+        "f0_median_hz": 393.12823486328125,
+        "f0_std_hz": 0.8631781339645386,
+        "low_mid_ratio": 0.030683189630508423,
+        "drone_band_ratio": 0.2942841947078705,
+        "speech_band_ratio": 0.7060333490371704
+      }
+    },
+    {
+      "window_index": 88,
+      "start_s": 30.798004535147392,
+      "end_s": 32.04798185941043,
+      "score": 0.46847288331389425,
+      "quality": {
+        "rms_db": -13.662128758972273,
+        "peak": 0.9058300256729126,
+        "active_ratio": 0.8943089430894309,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -13.662128758972273,
+        "centroid_hz": 4660.618977597326,
+        "rolloff_hz": 8185.009765625,
+        "bandwidth_hz": 2831.117798735536,
+        "flatness": 0.1079820767045021,
+        "zcr": 0.3384964554398148,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.025314664468169212,
+        "drone_band_ratio": 0.3721213638782501,
+        "speech_band_ratio": 0.7009230852127075
+      }
+    },
+    {
+      "window_index": 89,
+      "start_s": 31.147981859410432,
+      "end_s": 32.39795918367347,
+      "score": 0.7217995907321121,
+      "quality": {
+        "rms_db": -15.33844007088802,
+        "peak": 0.8741586804389954,
+        "active_ratio": 0.6341463414634146,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -15.33844007088802,
+        "centroid_hz": 3899.736396680594,
+        "rolloff_hz": 7118.717447916667,
+        "bandwidth_hz": 2688.374309533556,
+        "flatness": 0.0853729397058487,
+        "zcr": 0.24974681712962962,
+        "voiced_ratio": 0.12037037037037036,
+        "f0_median_hz": 52.364707946777344,
+        "f0_std_hz": 1.9257408380508423,
+        "low_mid_ratio": 0.013517740182578564,
+        "drone_band_ratio": 0.44827350974082947,
+        "speech_band_ratio": 0.7835416793823242
+      }
+    },
+    {
+      "window_index": 90,
+      "start_s": 31.49795918367347,
+      "end_s": 32.74793650793651,
+      "score": 0.8331857117604126,
+      "quality": {
+        "rms_db": -18.02603830071902,
+        "peak": 0.82264244556427,
+        "active_ratio": 0.34959349593495936,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -18.02603830071902,
+        "centroid_hz": 3214.7340791846614,
+        "rolloff_hz": 6050.830078125,
+        "bandwidth_hz": 2539.832582408237,
+        "flatness": 0.06631302088499069,
+        "zcr": 0.18546549479166666,
+        "voiced_ratio": 0.16666666666666666,
+        "f0_median_hz": 53.280025482177734,
+        "f0_std_hz": 3.0310816764831543,
+        "low_mid_ratio": 0.007725372910499573,
+        "drone_band_ratio": 0.4745982885360718,
+        "speech_band_ratio": 0.8276364803314209
+      }
+    },
+    {
+      "window_index": 91,
+      "start_s": 31.84793650793651,
+      "end_s": 33.097913832199545,
+      "score": 0.5464065356239145,
+      "quality": {
+        "rms_db": -28.322850144709392,
+        "peak": 0.6354692578315735,
+        "active_ratio": 0.25203252032520324,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -28.322850144709392,
+        "centroid_hz": 2423.1682339750555,
+        "rolloff_hz": 4783.760579427083,
+        "bandwidth_hz": 2343.8811352424827,
+        "flatness": 0.0432722344994545,
+        "zcr": 0.12525318287037038,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.046150751411914825,
+        "drone_band_ratio": 0.4749772250652313,
+        "speech_band_ratio": 0.7977883219718933
+      }
+    },
+    {
+      "window_index": 92,
+      "start_s": 32.197913832199546,
+      "end_s": 33.44789115646258,
+      "score": 0.7426177877357956,
+      "quality": {
+        "rms_db": -37.18144902497109,
+        "peak": 0.07922390848398209,
+        "active_ratio": 0.4715447154471545,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -37.18144902497109,
+        "centroid_hz": 2127.3623317490756,
+        "rolloff_hz": 4318.204752604167,
+        "bandwidth_hz": 2289.774377852899,
+        "flatness": 0.024601111188530922,
+        "zcr": 0.09256546585648148,
+        "voiced_ratio": 0.23148148148148148,
+        "f0_median_hz": 52.668052673339844,
+        "f0_std_hz": 2.3105852603912354,
+        "low_mid_ratio": 0.4839211702346802,
+        "drone_band_ratio": 0.5314462780952454,
+        "speech_band_ratio": 0.3662111759185791
+      }
+    },
+    {
+      "window_index": 93,
+      "start_s": 32.54789115646258,
+      "end_s": 33.797868480725626,
+      "score": 0.7159138176810217,
+      "quality": {
+        "rms_db": -36.36805775932413,
+        "peak": 0.07979681342840195,
+        "active_ratio": 0.6097560975609756,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -36.36805775932413,
+        "centroid_hz": 2203.9740356453367,
+        "rolloff_hz": 4421.683756510417,
+        "bandwidth_hz": 2288.164036038416,
+        "flatness": 0.03348541632294655,
+        "zcr": 0.1068431712962963,
+        "voiced_ratio": 0.07407407407407407,
+        "f0_median_hz": 50.0,
+        "f0_std_hz": 0.09579145908355713,
+        "low_mid_ratio": 0.46289128065109253,
+        "drone_band_ratio": 0.544121265411377,
+        "speech_band_ratio": 0.423156201839447
+      }
+    },
+    {
+      "window_index": 94,
+      "start_s": 32.89786848072562,
+      "end_s": 34.14784580498866,
+      "score": 0.7827769671867423,
+      "quality": {
+        "rms_db": -31.491348327601155,
+        "peak": 0.21204179525375366,
+        "active_ratio": 0.8536585365853658,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -31.491348327601155,
+        "centroid_hz": 2451.022663497675,
+        "rolloff_hz": 5023.616536458333,
+        "bandwidth_hz": 2424.8401593647027,
+        "flatness": 0.05708225071430206,
+        "zcr": 0.13171838831018517,
+        "voiced_ratio": 0.3055555555555556,
+        "f0_median_hz": 59.804805755615234,
+        "f0_std_hz": 8.42456340789795,
+        "low_mid_ratio": 0.46113985776901245,
+        "drone_band_ratio": 0.696168839931488,
+        "speech_band_ratio": 0.753693699836731
+      }
+    },
+    {
+      "window_index": 95,
+      "start_s": 33.247845804988664,
+      "end_s": 34.4978231292517,
+      "score": 0.5605225656521409,
+      "quality": {
+        "rms_db": -25.50672302190076,
+        "peak": 0.467390239238739,
+        "active_ratio": 0.8617886178861789,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.50672302190076,
+        "centroid_hz": 2825.441290619573,
+        "rolloff_hz": 5766.512044270833,
+        "bandwidth_hz": 2557.542440416271,
+        "flatness": 0.08234407007694244,
+        "zcr": 0.16915328414351852,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.40065595507621765,
+        "drone_band_ratio": 0.8014053106307983,
+        "speech_band_ratio": 0.9111078977584839
+      }
+    },
+    {
+      "window_index": 96,
+      "start_s": 33.5978231292517,
+      "end_s": 34.847800453514736,
+      "score": 0.9144288146826388,
+      "quality": {
+        "rms_db": -23.646918190134663,
+        "peak": 0.467390239238739,
+        "active_ratio": 0.967479674796748,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -23.646918190134663,
+        "centroid_hz": 3079.278475561775,
+        "rolloff_hz": 6355.086263020833,
+        "bandwidth_hz": 2657.8952620140035,
+        "flatness": 0.10405177623033524,
+        "zcr": 0.19405562789351852,
+        "voiced_ratio": 0.5648148148148148,
+        "f0_median_hz": 166.24757385253906,
+        "f0_std_hz": 34.55048751831055,
+        "low_mid_ratio": 0.43937715888023376,
+        "drone_band_ratio": 0.7939474582672119,
+        "speech_band_ratio": 0.9210039973258972
+      }
+    },
+    {
+      "window_index": 97,
+      "start_s": 33.94780045351474,
+      "end_s": 35.19777777777778,
+      "score": 0.9504593164937172,
+      "quality": {
+        "rms_db": -22.85397753559561,
+        "peak": 0.467390239238739,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -22.85397753559561,
+        "centroid_hz": 3071.8051856200036,
+        "rolloff_hz": 6366.650390625,
+        "bandwidth_hz": 2676.2041758915216,
+        "flatness": 0.10047339648008347,
+        "zcr": 0.18742766203703703,
+        "voiced_ratio": 0.7685185185185185,
+        "f0_median_hz": 167.2106475830078,
+        "f0_std_hz": 14.151925086975098,
+        "low_mid_ratio": 0.4555457532405853,
+        "drone_band_ratio": 0.793420135974884,
+        "speech_band_ratio": 0.9183053374290466
+      }
+    },
+    {
+      "window_index": 98,
+      "start_s": 34.297777777777775,
+      "end_s": 35.54775510204082,
+      "score": 0.9667229639888385,
+      "quality": {
+        "rms_db": -23.33679922389831,
+        "peak": 0.467390239238739,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -23.33679922389831,
+        "centroid_hz": 3022.4876455685103,
+        "rolloff_hz": 6214.322916666667,
+        "bandwidth_hz": 2649.0526559726536,
+        "flatness": 0.0920988991856575,
+        "zcr": 0.18062789351851852,
+        "voiced_ratio": 0.9259259259259259,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 1.8077540397644043,
+        "low_mid_ratio": 0.4815097153186798,
+        "drone_band_ratio": 0.790144681930542,
+        "speech_band_ratio": 0.9166332483291626
+      }
+    },
+    {
+      "window_index": 99,
+      "start_s": 34.64775510204082,
+      "end_s": 35.897732426303854,
+      "score": 0.9551983166723504,
+      "quality": {
+        "rms_db": -25.291664841133887,
+        "peak": 0.34325623512268066,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.291664841133887,
+        "centroid_hz": 2961.470695403977,
+        "rolloff_hz": 6027.901204427083,
+        "bandwidth_hz": 2624.627664783616,
+        "flatness": 0.08172068744897842,
+        "zcr": 0.17325846354166666,
+        "voiced_ratio": 0.9537037037037037,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 1.841973066329956,
+        "low_mid_ratio": 0.5398073792457581,
+        "drone_band_ratio": 0.7867828011512756,
+        "speech_band_ratio": 0.9119957685470581
+      }
+    },
+    {
+      "window_index": 100,
+      "start_s": 34.997732426303855,
+      "end_s": 36.24770975056689,
+      "score": 0.9481599942022796,
+      "quality": {
+        "rms_db": -26.553946628324752,
+        "peak": 0.2724030017852783,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.553946628324752,
+        "centroid_hz": 2933.1060859683535,
+        "rolloff_hz": 5836.494954427083,
+        "bandwidth_hz": 2570.2819478420543,
+        "flatness": 0.07037343084812164,
+        "zcr": 0.1691351996527778,
+        "voiced_ratio": 0.9537037037037037,
+        "f0_median_hz": 170.13343811035156,
+        "f0_std_hz": 1.9049361944198608,
+        "low_mid_ratio": 0.5905540585517883,
+        "drone_band_ratio": 0.8037741780281067,
+        "speech_band_ratio": 0.9330584406852722
+      }
+    },
+    {
+      "window_index": 101,
+      "start_s": 35.34770975056689,
+      "end_s": 36.597687074829935,
+      "score": 0.9475372683978271,
+      "quality": {
+        "rms_db": -26.83007278050932,
+        "peak": 0.29348593950271606,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.83007278050932,
+        "centroid_hz": 2958.637112212679,
+        "rolloff_hz": 5785.652669270833,
+        "bandwidth_hz": 2545.9697832305164,
+        "flatness": 0.06428366154432297,
+        "zcr": 0.1724265769675926,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 170.13343811035156,
+        "f0_std_hz": 1.5479331016540527,
+        "low_mid_ratio": 0.5883871912956238,
+        "drone_band_ratio": 0.796932578086853,
+        "speech_band_ratio": 0.9466552138328552
+      }
+    },
+    {
+      "window_index": 102,
+      "start_s": 35.69768707482993,
+      "end_s": 36.94766439909297,
+      "score": 0.9407933263105779,
+      "quality": {
+        "rms_db": -26.798453350821063,
+        "peak": 0.3069321811199188,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.798453350821063,
+        "centroid_hz": 3099.608207637464,
+        "rolloff_hz": 6002.978515625,
+        "bandwidth_hz": 2560.3761843134625,
+        "flatness": 0.07308797538280487,
+        "zcr": 0.18818721064814814,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 170.13343811035156,
+        "f0_std_hz": 5.5918498039245605,
+        "low_mid_ratio": 0.5265600681304932,
+        "drone_band_ratio": 0.7470318675041199,
+        "speech_band_ratio": 0.9426129460334778
+      }
+    },
+    {
+      "window_index": 103,
+      "start_s": 36.04766439909297,
+      "end_s": 37.29764172335601,
+      "score": 0.943348903721033,
+      "quality": {
+        "rms_db": -26.360591728324316,
+        "peak": 0.3069321811199188,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.360591728324316,
+        "centroid_hz": 3251.131312628984,
+        "rolloff_hz": 6221.700032552083,
+        "bandwidth_hz": 2567.416413975798,
+        "flatness": 0.08146492391824722,
+        "zcr": 0.21021412037037038,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 167.2106475830078,
+        "f0_std_hz": 5.197877883911133,
+        "low_mid_ratio": 0.4441336691379547,
+        "drone_band_ratio": 0.6724286079406738,
+        "speech_band_ratio": 0.9332262873649597
+      }
+    },
+    {
+      "window_index": 104,
+      "start_s": 36.39764172335601,
+      "end_s": 37.647619047619045,
+      "score": 0.9451659725483653,
+      "quality": {
+        "rms_db": -26.10580211697151,
+        "peak": 0.3069321811199188,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.10580211697151,
+        "centroid_hz": 3278.2680045829998,
+        "rolloff_hz": 6390.177408854167,
+        "bandwidth_hz": 2602.163271105094,
+        "flatness": 0.08680886775255203,
+        "zcr": 0.2177463107638889,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 166.24757385253906,
+        "f0_std_hz": 4.7173380851745605,
+        "low_mid_ratio": 0.4272351562976837,
+        "drone_band_ratio": 0.6678686738014221,
+        "speech_band_ratio": 0.93071448802948
+      }
+    },
+    {
+      "window_index": 105,
+      "start_s": 36.74761904761905,
+      "end_s": 37.99759637188209,
+      "score": 0.9436929718270148,
+      "quality": {
+        "rms_db": -26.552593866142047,
+        "peak": 0.3033950924873352,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.552593866142047,
+        "centroid_hz": 3247.0221281851955,
+        "rolloff_hz": 6474.715169270833,
+        "bandwidth_hz": 2636.4758384215447,
+        "flatness": 0.08651424944400787,
+        "zcr": 0.21383101851851852,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 166.24757385253906,
+        "f0_std_hz": 3.8126683235168457,
+        "low_mid_ratio": 0.452709823846817,
+        "drone_band_ratio": 0.6907632350921631,
+        "speech_band_ratio": 0.930285632610321
+      }
+    },
+    {
+      "window_index": 106,
+      "start_s": 37.097596371882084,
+      "end_s": 38.347573696145126,
+      "score": 0.9052634087277738,
+      "quality": {
+        "rms_db": -26.61630689518391,
+        "peak": 0.3033950924873352,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.61630689518391,
+        "centroid_hz": 3221.26832571802,
+        "rolloff_hz": 6547.2900390625,
+        "bandwidth_hz": 2667.2068124708803,
+        "flatness": 0.08476180583238602,
+        "zcr": 0.19895652488425927,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 167.2106475830078,
+        "f0_std_hz": 1.2773643732070923,
+        "low_mid_ratio": 0.5004494190216064,
+        "drone_band_ratio": 0.7381978631019592,
+        "speech_band_ratio": 0.9326850175857544
+      }
+    },
+    {
+      "window_index": 107,
+      "start_s": 37.44757369614513,
+      "end_s": 38.69755102040816,
+      "score": 0.9016753103780717,
+      "quality": {
+        "rms_db": -26.99533521123277,
+        "peak": 0.29973268508911133,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.99533521123277,
+        "centroid_hz": 3161.7336537425113,
+        "rolloff_hz": 6528.548177083333,
+        "bandwidth_hz": 2677.24633177637,
+        "flatness": 0.0814739316701889,
+        "zcr": 0.1912163628472222,
+        "voiced_ratio": 0.9259259259259259,
+        "f0_median_hz": 167.69496154785156,
+        "f0_std_hz": 2.2714340686798096,
+        "low_mid_ratio": 0.542561411857605,
+        "drone_band_ratio": 0.8026828765869141,
+        "speech_band_ratio": 0.940109133720398
+      }
+    },
+    {
+      "window_index": 108,
+      "start_s": 37.797551020408164,
+      "end_s": 39.0475283446712,
+      "score": 0.9029436395767984,
+      "quality": {
+        "rms_db": -26.896438100318456,
+        "peak": 0.29973268508911133,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.896438100318456,
+        "centroid_hz": 3169.1318000347487,
+        "rolloff_hz": 6552.0751953125,
+        "bandwidth_hz": 2685.6556461267546,
+        "flatness": 0.07843250781297684,
+        "zcr": 0.1884223090277778,
+        "voiced_ratio": 0.9351851851851852,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 2.0506038665771484,
+        "low_mid_ratio": 0.550430178642273,
+        "drone_band_ratio": 0.8089346885681152,
+        "speech_band_ratio": 0.9427757859230042
+      }
+    },
+    {
+      "window_index": 109,
+      "start_s": 38.1475283446712,
+      "end_s": 39.397505668934244,
+      "score": 0.9008670117899522,
+      "quality": {
+        "rms_db": -27.134686311943675,
+        "peak": 0.29973268508911133,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.134686311943675,
+        "centroid_hz": 3193.1744819685255,
+        "rolloff_hz": 6606.705729166667,
+        "bandwidth_hz": 2695.0003521783765,
+        "flatness": 0.08013323694467545,
+        "zcr": 0.1880515769675926,
+        "voiced_ratio": 0.9907407407407407,
+        "f0_median_hz": 169.15353393554688,
+        "f0_std_hz": 2.30511474609375,
+        "low_mid_ratio": 0.5470114946365356,
+        "drone_band_ratio": 0.8049465417861938,
+        "speech_band_ratio": 0.9427421689033508
+      }
+    },
+    {
+      "window_index": 110,
+      "start_s": 38.49750566893424,
+      "end_s": 39.74748299319728,
+      "score": 0.8986717837519081,
+      "quality": {
+        "rms_db": -27.35388405051964,
+        "peak": 0.23386500775814056,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.35388405051964,
+        "centroid_hz": 3200.1433167868267,
+        "rolloff_hz": 6635.416666666667,
+        "bandwidth_hz": 2709.5090514844724,
+        "flatness": 0.08526431769132614,
+        "zcr": 0.19312427662037038,
+        "voiced_ratio": 0.9814814814814815,
+        "f0_median_hz": 169.15353393554688,
+        "f0_std_hz": 2.4912843704223633,
+        "low_mid_ratio": 0.5516582727432251,
+        "drone_band_ratio": 0.8089181780815125,
+        "speech_band_ratio": 0.9394586086273193
+      }
+    },
+    {
+      "window_index": 111,
+      "start_s": 38.84748299319728,
+      "end_s": 40.09746031746032,
+      "score": 0.8997389613764487,
+      "quality": {
+        "rms_db": -27.505667431947437,
+        "peak": 0.19980353116989136,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.505667431947437,
+        "centroid_hz": 3240.5766608870404,
+        "rolloff_hz": 6717.362467447917,
+        "bandwidth_hz": 2728.310654639794,
+        "flatness": 0.08993177860975266,
+        "zcr": 0.19394712094907407,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.8210594654083252,
+        "low_mid_ratio": 0.5662372708320618,
+        "drone_band_ratio": 0.7953159213066101,
+        "speech_band_ratio": 0.9341274499893188
+      }
+    },
+    {
+      "window_index": 112,
+      "start_s": 39.19746031746032,
+      "end_s": 40.447437641723354,
+      "score": 0.8996094799380155,
+      "quality": {
+        "rms_db": -27.488673845606364,
+        "peak": 0.19980353116989136,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.488673845606364,
+        "centroid_hz": 3213.179365603288,
+        "rolloff_hz": 6673.299153645833,
+        "bandwidth_hz": 2724.3648593639223,
+        "flatness": 0.09194928407669067,
+        "zcr": 0.19325086805555555,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.8453860282897949,
+        "low_mid_ratio": 0.5816405415534973,
+        "drone_band_ratio": 0.795518159866333,
+        "speech_band_ratio": 0.9323652386665344
+      }
+    },
+    {
+      "window_index": 113,
+      "start_s": 39.547437641723356,
+      "end_s": 40.79741496598639,
+      "score": 0.9012979569468197,
+      "quality": {
+        "rms_db": -27.239349414077626,
+        "peak": 0.19980353116989136,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.239349414077626,
+        "centroid_hz": 3186.1899640192964,
+        "rolloff_hz": 6603.515625,
+        "bandwidth_hz": 2710.06812037179,
+        "flatness": 0.09195613116025925,
+        "zcr": 0.19596354166666666,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.7830624580383301,
+        "low_mid_ratio": 0.5735580325126648,
+        "drone_band_ratio": 0.7884753346443176,
+        "speech_band_ratio": 0.9312865734100342
+      }
+    },
+    {
+      "window_index": 114,
+      "start_s": 39.89741496598639,
+      "end_s": 41.147392290249435,
+      "score": 0.9015254194881283,
+      "quality": {
+        "rms_db": -27.218597491803234,
+        "peak": 0.19980353116989136,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.218597491803234,
+        "centroid_hz": 3178.2007910809775,
+        "rolloff_hz": 6577.994791666667,
+        "bandwidth_hz": 2704.8167702423207,
+        "flatness": 0.0898294746875763,
+        "zcr": 0.19307906539351852,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.8617393970489502,
+        "low_mid_ratio": 0.5745545029640198,
+        "drone_band_ratio": 0.7889505624771118,
+        "speech_band_ratio": 0.9329712986946106
+      }
+    },
+    {
+      "window_index": 115,
+      "start_s": 40.24739229024944,
+      "end_s": 41.49736961451247,
+      "score": 0.8990792710214973,
+      "quality": {
+        "rms_db": -27.302203587720157,
+        "peak": 0.23485098779201508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.302203587720157,
+        "centroid_hz": 3173.2923342149684,
+        "rolloff_hz": 6528.946940104167,
+        "bandwidth_hz": 2685.2566788763147,
+        "flatness": 0.09109668433666229,
+        "zcr": 0.1967230902777778,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 167.2106475830078,
+        "f0_std_hz": 2.051305055618286,
+        "low_mid_ratio": 0.5548997521400452,
+        "drone_band_ratio": 0.7777178287506104,
+        "speech_band_ratio": 0.9321597814559937
+      }
+    },
+    {
+      "window_index": 116,
+      "start_s": 40.59736961451247,
+      "end_s": 41.84734693877551,
+      "score": 0.9417825974850632,
+      "quality": {
+        "rms_db": -27.28172913614697,
+        "peak": 0.23485098779201508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.28172913614697,
+        "centroid_hz": 3174.3204619196736,
+        "rolloff_hz": 6483.487955729167,
+        "bandwidth_hz": 2669.486441687666,
+        "flatness": 0.08970244973897934,
+        "zcr": 0.194580078125,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 166.24757385253906,
+        "f0_std_hz": 1.7627273797988892,
+        "low_mid_ratio": 0.5447853207588196,
+        "drone_band_ratio": 0.771758496761322,
+        "speech_band_ratio": 0.933448076248169
+      }
+    },
+    {
+      "window_index": 117,
+      "start_s": 40.94734693877551,
+      "end_s": 42.197324263038546,
+      "score": 0.9419241622343927,
+      "quality": {
+        "rms_db": -27.23748877713971,
+        "peak": 0.23485098779201508,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.23748877713971,
+        "centroid_hz": 3172.21374309022,
+        "rolloff_hz": 6447.001139322917,
+        "bandwidth_hz": 2655.2681512370164,
+        "flatness": 0.08700896054506302,
+        "zcr": 0.19446252893518517,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 166.24757385253906,
+        "f0_std_hz": 2.0366756916046143,
+        "low_mid_ratio": 0.548850417137146,
+        "drone_band_ratio": 0.7727000117301941,
+        "speech_band_ratio": 0.9353474974632263
+      }
+    },
+    {
+      "window_index": 118,
+      "start_s": 41.29732426303855,
+      "end_s": 42.54730158730159,
+      "score": 0.9428973458662675,
+      "quality": {
+        "rms_db": -27.128183567662937,
+        "peak": 0.23831042647361755,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.128183567662937,
+        "centroid_hz": 3132.7202011303025,
+        "rolloff_hz": 6396.358235677083,
+        "bandwidth_hz": 2653.1068580655588,
+        "flatness": 0.08098331093788147,
+        "zcr": 0.1895435474537037,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 2.2559654712677,
+        "low_mid_ratio": 0.5775160789489746,
+        "drone_band_ratio": 0.7918640971183777,
+        "speech_band_ratio": 0.9391423463821411
+      }
+    },
+    {
+      "window_index": 119,
+      "start_s": 41.647301587301584,
+      "end_s": 42.89727891156463,
+      "score": 0.9437568052320793,
+      "quality": {
+        "rms_db": -27.293071398990925,
+        "peak": 0.23831042647361755,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.293071398990925,
+        "centroid_hz": 3159.0150231444777,
+        "rolloff_hz": 6424.869791666667,
+        "bandwidth_hz": 2653.8501955005754,
+        "flatness": 0.08065127581357956,
+        "zcr": 0.19163230613425927,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 1.001606822013855,
+        "low_mid_ratio": 0.582048773765564,
+        "drone_band_ratio": 0.7927275896072388,
+        "speech_band_ratio": 0.9374374747276306
+      }
+    },
+    {
+      "window_index": 120,
+      "start_s": 41.99727891156463,
+      "end_s": 43.24725623582766,
+      "score": 0.9436661717280129,
+      "quality": {
+        "rms_db": -27.430172991250036,
+        "peak": 0.23831042647361755,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.430172991250036,
+        "centroid_hz": 3159.3242439874466,
+        "rolloff_hz": 6419.685872395833,
+        "bandwidth_hz": 2651.4607863310916,
+        "flatness": 0.0794752910733223,
+        "zcr": 0.19140625,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.5554613471031189,
+        "low_mid_ratio": 0.5869701504707336,
+        "drone_band_ratio": 0.8005183935165405,
+        "speech_band_ratio": 0.9393445253372192
+      }
+    },
+    {
+      "window_index": 121,
+      "start_s": 42.347256235827665,
+      "end_s": 43.5972335600907,
+      "score": 0.9432285973784006,
+      "quality": {
+        "rms_db": -27.47537388378328,
+        "peak": 0.23831042647361755,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.47537388378328,
+        "centroid_hz": 3136.759411493438,
+        "rolloff_hz": 6342.12646484375,
+        "bandwidth_hz": 2630.8341279909323,
+        "flatness": 0.07885608822107315,
+        "zcr": 0.1879340277777778,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.6956006288528442,
+        "low_mid_ratio": 0.5719356536865234,
+        "drone_band_ratio": 0.7978606820106506,
+        "speech_band_ratio": 0.9408643841743469
+      }
+    },
+    {
+      "window_index": 122,
+      "start_s": 42.6972335600907,
+      "end_s": 43.947210884353744,
+      "score": 0.9447709315426983,
+      "quality": {
+        "rms_db": -27.22624930075311,
+        "peak": 0.26491275429725647,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.22624930075311,
+        "centroid_hz": 3111.7973075721184,
+        "rolloff_hz": 6258.38623046875,
+        "bandwidth_hz": 2599.8106896356458,
+        "flatness": 0.07696527987718582,
+        "zcr": 0.18479636863425927,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.8563632965087891,
+        "low_mid_ratio": 0.5484733581542969,
+        "drone_band_ratio": 0.7918657064437866,
+        "speech_band_ratio": 0.9439098238945007
+      }
+    },
+    {
+      "window_index": 123,
+      "start_s": 43.04721088435374,
+      "end_s": 44.29718820861678,
+      "score": 0.9454085040293013,
+      "quality": {
+        "rms_db": -27.100764877754628,
+        "peak": 0.26491275429725647,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.100764877754628,
+        "centroid_hz": 3089.408120362226,
+        "rolloff_hz": 6198.173014322917,
+        "bandwidth_hz": 2589.039159237152,
+        "flatness": 0.07686334103345871,
+        "zcr": 0.18538411458333334,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.9735110998153687,
+        "low_mid_ratio": 0.5502120852470398,
+        "drone_band_ratio": 0.7929903268814087,
+        "speech_band_ratio": 0.9450492262840271
+      }
+    },
+    {
+      "window_index": 124,
+      "start_s": 43.39718820861678,
+      "end_s": 44.64716553287982,
+      "score": 0.9380253296544886,
+      "quality": {
+        "rms_db": -28.530941218281516,
+        "peak": 0.26491275429725647,
+        "active_ratio": 0.7886178861788617,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -28.530941218281516,
+        "centroid_hz": 2661.2435718662778,
+        "rolloff_hz": 5425.569661458333,
+        "bandwidth_hz": 2503.457636278894,
+        "flatness": 0.05888959765434265,
+        "zcr": 0.14438657407407407,
+        "voiced_ratio": 0.7222222222222222,
+        "f0_median_hz": 168.1792755126953,
+        "f0_std_hz": 0.9917911887168884,
+        "low_mid_ratio": 0.5377513766288757,
+        "drone_band_ratio": 0.7824737429618835,
+        "speech_band_ratio": 0.9390237927436829
+      }
+    },
+    {
+      "window_index": 125,
+      "start_s": 43.74716553287982,
+      "end_s": 44.997142857142855,
+      "score": 0.9046525894468807,
+      "quality": {
+        "rms_db": -30.566930793277123,
+        "peak": 0.26491275429725647,
+        "active_ratio": 0.5203252032520326,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -30.566930793277123,
+        "centroid_hz": 2263.853044645117,
+        "rolloff_hz": 4728.9306640625,
+        "bandwidth_hz": 2446.822509988382,
+        "flatness": 0.03985347971320152,
+        "zcr": 0.10452835648148148,
+        "voiced_ratio": 0.4444444444444444,
+        "f0_median_hz": 167.2106475830078,
+        "f0_std_hz": 0.4689349830150604,
+        "low_mid_ratio": 0.5625745058059692,
+        "drone_band_ratio": 0.7848449945449829,
+        "speech_band_ratio": 0.9270612001419067
+      }
+    },
+    {
+      "window_index": 126,
+      "start_s": 44.097142857142856,
+      "end_s": 45.3471201814059,
+      "score": 0.7374086928656817,
+      "quality": {
+        "rms_db": -34.37207817000883,
+        "peak": 0.23895414173603058,
+        "active_ratio": 0.21951219512195122,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -34.37207817000883,
+        "centroid_hz": 1975.4403108327624,
+        "rolloff_hz": 4207.149251302083,
+        "bandwidth_hz": 2397.0747257612893,
+        "flatness": 0.022190924733877182,
+        "zcr": 0.07491500289351852,
+        "voiced_ratio": 0.1111111111111111,
+        "f0_median_hz": 51.16869354248047,
+        "f0_std_hz": 0.4222257435321808,
+        "low_mid_ratio": 0.587543785572052,
+        "drone_band_ratio": 0.7933663129806519,
+        "speech_band_ratio": 0.9045063257217407
+      }
+    },
+    {
+      "window_index": 127,
+      "start_s": 44.44712018140589,
+      "end_s": 45.697097505668935,
+      "score": 0.6933878176854189,
+      "quality": {
+        "rms_db": -41.08249976813694,
+        "peak": 0.07119975984096527,
+        "active_ratio": 0.14634146341463414,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -41.08249976813694,
+        "centroid_hz": 2099.6960286447206,
+        "rolloff_hz": 4409.720865885417,
+        "bandwidth_hz": 2418.612877227961,
+        "flatness": 0.0331844799220562,
+        "zcr": 0.0927734375,
+        "voiced_ratio": 0.1111111111111111,
+        "f0_median_hz": 51.16869354248047,
+        "f0_std_hz": 0.4054400324821472,
+        "low_mid_ratio": 0.4988943338394165,
+        "drone_band_ratio": 0.7297154664993286,
+        "speech_band_ratio": 0.7788820266723633
+      }
+    },
+    {
+      "window_index": 128,
+      "start_s": 44.79709750566894,
+      "end_s": 46.04707482993197,
+      "score": 0.6966401577159204,
+      "quality": {
+        "rms_db": -39.77429556612073,
+        "peak": 0.07119975984096527,
+        "active_ratio": 0.3008130081300813,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -39.77429556612073,
+        "centroid_hz": 2598.058963862886,
+        "rolloff_hz": 5403.03955078125,
+        "bandwidth_hz": 2556.1499498104185,
+        "flatness": 0.06391490250825882,
+        "zcr": 0.14182761863425927,
+        "voiced_ratio": 0.10185185185185185,
+        "f0_median_hz": 51.16869354248047,
+        "f0_std_hz": 0.42338842153549194,
+        "low_mid_ratio": 0.4318951964378357,
+        "drone_band_ratio": 0.7360427975654602,
+        "speech_band_ratio": 0.8750025629997253
+      }
+    },
+    {
+      "window_index": 129,
+      "start_s": 45.147074829931974,
+      "end_s": 46.39705215419501,
+      "score": 0.7295099648323919,
+      "quality": {
+        "rms_db": -32.682648536692845,
+        "peak": 0.1936185657978058,
+        "active_ratio": 0.5772357723577236,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -32.682648536692845,
+        "centroid_hz": 3012.4002721180054,
+        "rolloff_hz": 6262.174479166667,
+        "bandwidth_hz": 2649.7967754117935,
+        "flatness": 0.09143023192882538,
+        "zcr": 0.19057436342592593,
+        "voiced_ratio": 0.05555555555555555,
+        "f0_median_hz": 50.28964614868164,
+        "f0_std_hz": 0.19951564073562622,
+        "low_mid_ratio": 0.40513351559638977,
+        "drone_band_ratio": 0.7461893558502197,
+        "speech_band_ratio": 0.9358118176460266
+      }
+    },
+    {
+      "window_index": 130,
+      "start_s": 45.49705215419501,
+      "end_s": 46.74702947845805,
+      "score": 0.5114622480697602,
+      "quality": {
+        "rms_db": -26.179670619667064,
+        "peak": 0.4000582993030548,
+        "active_ratio": 0.8699186991869918,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.179670619667064,
+        "centroid_hz": 3253.0623581140394,
+        "rolloff_hz": 6834.798177083333,
+        "bandwidth_hz": 2737.0293019563987,
+        "flatness": 0.10987859964370728,
+        "zcr": 0.21397569444444445,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.40009281039237976,
+        "drone_band_ratio": 0.7730014324188232,
+        "speech_band_ratio": 0.9305392503738403
+      }
+    },
+    {
+      "window_index": 131,
+      "start_s": 45.84702947845805,
+      "end_s": 47.09700680272109,
+      "score": 0.5214730792220985,
+      "quality": {
+        "rms_db": -24.739382920840207,
+        "peak": 0.4000582993030548,
+        "active_ratio": 0.9024390243902439,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -24.739382920840207,
+        "centroid_hz": 3237.3358085379023,
+        "rolloff_hz": 6780.765787760417,
+        "bandwidth_hz": 2726.4925909642952,
+        "flatness": 0.10194870084524155,
+        "zcr": 0.20372178819444445,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.42159900069236755,
+        "drone_band_ratio": 0.782775342464447,
+        "speech_band_ratio": 0.9348019957542419
+      }
+    },
+    {
+      "window_index": 132,
+      "start_s": 46.19700680272109,
+      "end_s": 47.44698412698413,
+      "score": 0.8474232572044827,
+      "quality": {
+        "rms_db": -24.10458340363434,
+        "peak": 0.4000582993030548,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -24.10458340363434,
+        "centroid_hz": 3172.6841118823886,
+        "rolloff_hz": 6653.560384114583,
+        "bandwidth_hz": 2709.7623372885323,
+        "flatness": 0.08670426160097122,
+        "zcr": 0.1913429542824074,
+        "voiced_ratio": 0.21296296296296297,
+        "f0_median_hz": 239.21922302246094,
+        "f0_std_hz": 1.4010862112045288,
+        "low_mid_ratio": 0.4464646875858307,
+        "drone_band_ratio": 0.7987401485443115,
+        "speech_band_ratio": 0.9383985996246338
+      }
+    },
+    {
+      "window_index": 133,
+      "start_s": 46.54698412698413,
+      "end_s": 47.796961451247164,
+      "score": 0.9315332873356063,
+      "quality": {
+        "rms_db": -24.45534468373214,
+        "peak": 0.4000582993030548,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -24.45534468373214,
+        "centroid_hz": 3037.9605759358715,
+        "rolloff_hz": 6304.842122395833,
+        "bandwidth_hz": 2664.3879912952316,
+        "flatness": 0.07348833978176117,
+        "zcr": 0.17771629050925927,
+        "voiced_ratio": 0.4166666666666667,
+        "f0_median_hz": 243.40069580078125,
+        "f0_std_hz": 2.3418424129486084,
+        "low_mid_ratio": 0.4787771701812744,
+        "drone_band_ratio": 0.8182240724563599,
+        "speech_band_ratio": 0.9448463320732117
+      }
+    },
+    {
+      "window_index": 134,
+      "start_s": 46.896961451247165,
+      "end_s": 48.14693877551021,
+      "score": 0.8771261285733367,
+      "quality": {
+        "rms_db": -25.635161466722913,
+        "peak": 0.3276161551475525,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.635161466722913,
+        "centroid_hz": 2829.877059586637,
+        "rolloff_hz": 5813.36669921875,
+        "bandwidth_hz": 2611.932620027634,
+        "flatness": 0.05381927639245987,
+        "zcr": 0.1600929542824074,
+        "voiced_ratio": 0.6296296296296297,
+        "f0_median_hz": 239.21922302246094,
+        "f0_std_hz": 54.28460693359375,
+        "low_mid_ratio": 0.5873710513114929,
+        "drone_band_ratio": 0.8930721282958984,
+        "speech_band_ratio": 0.9669962525367737
+      }
+    },
+    {
+      "window_index": 135,
+      "start_s": 47.2469387755102,
+      "end_s": 48.496916099773244,
+      "score": 0.9156532024637762,
+      "quality": {
+        "rms_db": -25.23174990781571,
+        "peak": 0.3387177586555481,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.23174990781571,
+        "centroid_hz": 2692.727665603132,
+        "rolloff_hz": 5488.972981770833,
+        "bandwidth_hz": 2568.0224688930816,
+        "flatness": 0.04485531523823738,
+        "zcr": 0.15485749421296297,
+        "voiced_ratio": 0.35185185185185186,
+        "f0_median_hz": 243.40069580078125,
+        "f0_std_hz": 2.0971622467041016,
+        "low_mid_ratio": 0.6008419394493103,
+        "drone_band_ratio": 0.9120716452598572,
+        "speech_band_ratio": 0.9726752638816833
+      }
+    },
+    {
+      "window_index": 136,
+      "start_s": 47.596916099773246,
+      "end_s": 48.84689342403628,
+      "score": 0.5666150481703718,
+      "quality": {
+        "rms_db": -24.991552729581173,
+        "peak": 0.34595221281051636,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -24.991552729581173,
+        "centroid_hz": 2839.013709104734,
+        "rolloff_hz": 5844.47021484375,
+        "bandwidth_hz": 2647.998897670805,
+        "flatness": 0.05439014360308647,
+        "zcr": 0.16724537037037038,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.5905961990356445,
+        "drone_band_ratio": 0.8916956782341003,
+        "speech_band_ratio": 0.9633004069328308
+      }
+    },
+    {
+      "window_index": 137,
+      "start_s": 47.94689342403628,
+      "end_s": 49.19687074829932,
+      "score": 0.8795091052442803,
+      "quality": {
+        "rms_db": -25.259236596077667,
+        "peak": 0.34595221281051636,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.259236596077667,
+        "centroid_hz": 3159.4600326052846,
+        "rolloff_hz": 6524.959309895833,
+        "bandwidth_hz": 2762.8205137899017,
+        "flatness": 0.0785306990146637,
+        "zcr": 0.1972384982638889,
+        "voiced_ratio": 0.42592592592592593,
+        "f0_median_hz": 228.41647338867188,
+        "f0_std_hz": 6.605335712432861,
+        "low_mid_ratio": 0.5836617946624756,
+        "drone_band_ratio": 0.8438294529914856,
+        "speech_band_ratio": 0.9410167336463928
+      }
+    },
+    {
+      "window_index": 138,
+      "start_s": 48.29687074829932,
+      "end_s": 49.546848072562355,
+      "score": 0.9016690962642013,
+      "quality": {
+        "rms_db": -25.91903327673743,
+        "peak": 0.34595221281051636,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -25.91903327673743,
+        "centroid_hz": 3291.7954665108996,
+        "rolloff_hz": 6994.10400390625,
+        "bandwidth_hz": 2843.1201854529286,
+        "flatness": 0.08695033937692642,
+        "zcr": 0.20445421006944445,
+        "voiced_ratio": 0.5462962962962963,
+        "f0_median_hz": 231.07054138183594,
+        "f0_std_hz": 5.96398401260376,
+        "low_mid_ratio": 0.5997621417045593,
+        "drone_band_ratio": 0.8197159767150879,
+        "speech_band_ratio": 0.9287253618240356
+      }
+    },
+    {
+      "window_index": 139,
+      "start_s": 48.646848072562356,
+      "end_s": 49.8968253968254,
+      "score": 0.8976552463782733,
+      "quality": {
+        "rms_db": -26.558369002104627,
+        "peak": 0.26239582896232605,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.558369002104627,
+        "centroid_hz": 3274.3044682440145,
+        "rolloff_hz": 7045.54443359375,
+        "bandwidth_hz": 2858.193940186678,
+        "flatness": 0.08667434006929398,
+        "zcr": 0.19560185185185186,
+        "voiced_ratio": 0.5648148148148148,
+        "f0_median_hz": 231.07054138183594,
+        "f0_std_hz": 6.46917200088501,
+        "low_mid_ratio": 0.6338607668876648,
+        "drone_band_ratio": 0.8203112483024597,
+        "speech_band_ratio": 0.9266836643218994
+      }
+    },
+    {
+      "window_index": 140,
+      "start_s": 48.99682539682539,
+      "end_s": 50.246802721088436,
+      "score": 0.8143893812442075,
+      "quality": {
+        "rms_db": -26.605310358662027,
+        "peak": 0.24340997636318207,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.605310358662027,
+        "centroid_hz": 3083.876255813031,
+        "rolloff_hz": 6775.18310546875,
+        "bandwidth_hz": 2823.0845097757733,
+        "flatness": 0.07157456129789352,
+        "zcr": 0.17459671585648148,
+        "voiced_ratio": 0.8888888888888888,
+        "f0_median_hz": 122.40535736083984,
+        "f0_std_hz": 62.78611755371094,
+        "low_mid_ratio": 0.6702166795730591,
+        "drone_band_ratio": 0.8631565570831299,
+        "speech_band_ratio": 0.9449462890625
+      }
+    },
+    {
+      "window_index": 141,
+      "start_s": 49.34680272108844,
+      "end_s": 50.59678004535147,
+      "score": 0.8327126698760515,
+      "quality": {
+        "rms_db": -26.692224739145406,
+        "peak": 0.25824907422065735,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.692224739145406,
+        "centroid_hz": 2910.5039414250377,
+        "rolloff_hz": 6559.053548177083,
+        "bandwidth_hz": 2800.2444046606174,
+        "flatness": 0.05571242794394493,
+        "zcr": 0.15620478877314814,
+        "voiced_ratio": 0.75,
+        "f0_median_hz": 121.70034790039062,
+        "f0_std_hz": 51.257232666015625,
+        "low_mid_ratio": 0.6909506916999817,
+        "drone_band_ratio": 0.9060884714126587,
+        "speech_band_ratio": 0.9634532332420349
+      }
+    },
+    {
+      "window_index": 142,
+      "start_s": 49.696780045351474,
+      "end_s": 50.94675736961451,
+      "score": 0.8253995720368288,
+      "quality": {
+        "rms_db": -26.766165854693966,
+        "peak": 0.25824907422065735,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.766165854693966,
+        "centroid_hz": 2932.827200780299,
+        "rolloff_hz": 6605.908203125,
+        "bandwidth_hz": 2808.986950554358,
+        "flatness": 0.05458150804042816,
+        "zcr": 0.15544524016203703,
+        "voiced_ratio": 0.7962962962962963,
+        "f0_median_hz": 177.40724182128906,
+        "f0_std_hz": 55.89254379272461,
+        "low_mid_ratio": 0.7008333206176758,
+        "drone_band_ratio": 0.9047490954399109,
+        "speech_band_ratio": 0.9639055132865906
+      }
+    },
+    {
+      "window_index": 143,
+      "start_s": 50.04675736961451,
+      "end_s": 51.29673469387755,
+      "score": 0.8414060854312918,
+      "quality": {
+        "rms_db": -27.056565266146922,
+        "peak": 0.25824907422065735,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.056565266146922,
+        "centroid_hz": 2947.572137417047,
+        "rolloff_hz": 6626.2451171875,
+        "bandwidth_hz": 2812.7285239895045,
+        "flatness": 0.054054781794548035,
+        "zcr": 0.1528591579861111,
+        "voiced_ratio": 0.8425925925925926,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 44.01761245727539,
+        "low_mid_ratio": 0.7105368971824646,
+        "drone_band_ratio": 0.9071784615516663,
+        "speech_band_ratio": 0.9640921950340271
+      }
+    },
+    {
+      "window_index": 144,
+      "start_s": 50.39673469387755,
+      "end_s": 51.64671201814059,
+      "score": 0.901539946559352,
+      "quality": {
+        "rms_db": -27.387903062117243,
+        "peak": 0.22249530255794525,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.387903062117243,
+        "centroid_hz": 2982.9842657485883,
+        "rolloff_hz": 6714.969889322917,
+        "bandwidth_hz": 2829.964043803457,
+        "flatness": 0.05412723124027252,
+        "zcr": 0.15129484953703703,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 231.07054138183594,
+        "f0_std_hz": 2.509833812713623,
+        "low_mid_ratio": 0.732240617275238,
+        "drone_band_ratio": 0.9095802903175354,
+        "speech_band_ratio": 0.9629601240158081
+      }
+    },
+    {
+      "window_index": 145,
+      "start_s": 50.74671201814059,
+      "end_s": 51.99668934240363,
+      "score": 0.9031299238246864,
+      "quality": {
+        "rms_db": -27.490211212352747,
+        "peak": 0.22249530255794525,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.490211212352747,
+        "centroid_hz": 2977.530988724464,
+        "rolloff_hz": 6697.025553385417,
+        "bandwidth_hz": 2824.712140379513,
+        "flatness": 0.05250920355319977,
+        "zcr": 0.14937789351851852,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 231.07054138183594,
+        "f0_std_hz": 1.1212027072906494,
+        "low_mid_ratio": 0.73996502161026,
+        "drone_band_ratio": 0.9110703468322754,
+        "speech_band_ratio": 0.9641309976577759
+      }
+    },
+    {
+      "window_index": 146,
+      "start_s": 51.09668934240363,
+      "end_s": 52.346666666666664,
+      "score": 0.9035331470032383,
+      "quality": {
+        "rms_db": -27.46248389190919,
+        "peak": 0.21673250198364258,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.46248389190919,
+        "centroid_hz": 2958.419454523954,
+        "rolloff_hz": 6644.388834635417,
+        "bandwidth_hz": 2812.797414077351,
+        "flatness": 0.05216527730226517,
+        "zcr": 0.15001989293981483,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 231.07054138183594,
+        "f0_std_hz": 0.993618905544281,
+        "low_mid_ratio": 0.7441082000732422,
+        "drone_band_ratio": 0.9112188816070557,
+        "speech_band_ratio": 0.9644656181335449
+      }
+    },
+    {
+      "window_index": 147,
+      "start_s": 51.446666666666665,
+      "end_s": 52.69664399092971,
+      "score": 0.9026182147217306,
+      "quality": {
+        "rms_db": -27.342366453531618,
+        "peak": 0.23757030069828033,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.342366453531618,
+        "centroid_hz": 2962.1192500563393,
+        "rolloff_hz": 6599.727376302083,
+        "bandwidth_hz": 2797.797940168587,
+        "flatness": 0.05291362479329109,
+        "zcr": 0.1539623119212963,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 2.0661849975585938,
+        "low_mid_ratio": 0.7327374815940857,
+        "drone_band_ratio": 0.9065542221069336,
+        "speech_band_ratio": 0.9635983109474182
+      }
+    },
+    {
+      "window_index": 148,
+      "start_s": 51.7966439909297,
+      "end_s": 53.046621315192745,
+      "score": 0.9020417788152879,
+      "quality": {
+        "rms_db": -27.36814101265456,
+        "peak": 0.23757030069828033,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.36814101265456,
+        "centroid_hz": 2973.111090238154,
+        "rolloff_hz": 6648.974609375,
+        "bandwidth_hz": 2809.6475344454684,
+        "flatness": 0.056073885411024094,
+        "zcr": 0.1589084201388889,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 2.1298201084136963,
+        "low_mid_ratio": 0.7262732982635498,
+        "drone_band_ratio": 0.9028407335281372,
+        "speech_band_ratio": 0.9614794850349426
+      }
+    },
+    {
+      "window_index": 149,
+      "start_s": 52.146621315192746,
+      "end_s": 53.39659863945578,
+      "score": 0.9007695728588561,
+      "quality": {
+        "rms_db": -27.43968219421091,
+        "peak": 0.23757030069828033,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.43968219421091,
+        "centroid_hz": 3004.139355027958,
+        "rolloff_hz": 6734.110514322917,
+        "bandwidth_hz": 2827.577218366624,
+        "flatness": 0.05837176740169525,
+        "zcr": 0.1623263888888889,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 231.73983764648438,
+        "f0_std_hz": 2.5195229053497314,
+        "low_mid_ratio": 0.7201597094535828,
+        "drone_band_ratio": 0.9001364707946777,
+        "speech_band_ratio": 0.9591432213783264
+      }
+    },
+    {
+      "window_index": 150,
+      "start_s": 52.49659863945578,
+      "end_s": 53.74657596371882,
+      "score": 0.9002926684604994,
+      "quality": {
+        "rms_db": -27.524453182907898,
+        "peak": 0.23757030069828033,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.524453182907898,
+        "centroid_hz": 3031.8490776866856,
+        "rolloff_hz": 6843.570963541667,
+        "bandwidth_hz": 2852.4536450364367,
+        "flatness": 0.06062629073858261,
+        "zcr": 0.1641529224537037,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 229.7396697998047,
+        "f0_std_hz": 2.325468063354492,
+        "low_mid_ratio": 0.7229340672492981,
+        "drone_band_ratio": 0.8977096676826477,
+        "speech_band_ratio": 0.9570258259773254
+      }
+    },
+    {
+      "window_index": 151,
+      "start_s": 52.84657596371882,
+      "end_s": 54.09655328798186,
+      "score": 0.9014111381514344,
+      "quality": {
+        "rms_db": -27.588095503650102,
+        "peak": 0.22036905586719513,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.588095503650102,
+        "centroid_hz": 3046.19079653728,
+        "rolloff_hz": 6915.7470703125,
+        "bandwidth_hz": 2871.7468995366926,
+        "flatness": 0.06122839078307152,
+        "zcr": 0.16203703703703703,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 229.7396697998047,
+        "f0_std_hz": 1.2681410312652588,
+        "low_mid_ratio": 0.7340639233589172,
+        "drone_band_ratio": 0.8994742035865784,
+        "speech_band_ratio": 0.9568667411804199
+      }
+    },
+    {
+      "window_index": 152,
+      "start_s": 53.19655328798186,
+      "end_s": 54.4465306122449,
+      "score": 0.9022494359433749,
+      "quality": {
+        "rms_db": -27.451380768789306,
+        "peak": 0.22036905586719513,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.451380768789306,
+        "centroid_hz": 3023.836261824608,
+        "rolloff_hz": 6887.434895833333,
+        "bandwidth_hz": 2872.026504185543,
+        "flatness": 0.057737044990062714,
+        "zcr": 0.1586281105324074,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 230.4051055908203,
+        "f0_std_hz": 1.525348424911499,
+        "low_mid_ratio": 0.740425169467926,
+        "drone_band_ratio": 0.906329333782196,
+        "speech_band_ratio": 0.9595406651496887
+      }
+    },
+    {
+      "window_index": 153,
+      "start_s": 53.5465306122449,
+      "end_s": 54.796507936507936,
+      "score": 0.902944851995903,
+      "quality": {
+        "rms_db": -27.39577757638603,
+        "peak": 0.22036905586719513,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.39577757638603,
+        "centroid_hz": 3002.4123151794647,
+        "rolloff_hz": 6856.131998697917,
+        "bandwidth_hz": 2870.3849934563004,
+        "flatness": 0.056524522602558136,
+        "zcr": 0.15724464699074073,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 1.3798128366470337,
+        "low_mid_ratio": 0.7401448488235474,
+        "drone_band_ratio": 0.9092798233032227,
+        "speech_band_ratio": 0.9607389569282532
+      }
+    },
+    {
+      "window_index": 154,
+      "start_s": 53.89650793650794,
+      "end_s": 55.14648526077097,
+      "score": 0.9042615500772369,
+      "quality": {
+        "rms_db": -27.24233217872101,
+        "peak": 0.22036905586719513,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.24233217872101,
+        "centroid_hz": 2986.568258674086,
+        "rolloff_hz": 6845.166015625,
+        "bandwidth_hz": 2868.825964241397,
+        "flatness": 0.05507350713014603,
+        "zcr": 0.15616861979166666,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 1.2534488439559937,
+        "low_mid_ratio": 0.7426542639732361,
+        "drone_band_ratio": 0.9124677181243896,
+        "speech_band_ratio": 0.9610361456871033
+      }
+    },
+    {
+      "window_index": 155,
+      "start_s": 54.246485260770974,
+      "end_s": 55.49646258503402,
+      "score": 0.9034195205269364,
+      "quality": {
+        "rms_db": -27.307771421066995,
+        "peak": 0.226718932390213,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.307771421066995,
+        "centroid_hz": 2976.074122852725,
+        "rolloff_hz": 6821.439615885417,
+        "bandwidth_hz": 2863.238403326122,
+        "flatness": 0.05649404227733612,
+        "zcr": 0.1599754050925926,
+        "voiced_ratio": 0.8611111111111112,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 1.4408921003341675,
+        "low_mid_ratio": 0.728708803653717,
+        "drone_band_ratio": 0.9111788868904114,
+        "speech_band_ratio": 0.9601641893386841
+      }
+    },
+    {
+      "window_index": 156,
+      "start_s": 54.59646258503401,
+      "end_s": 55.846439909297054,
+      "score": 0.902675890861901,
+      "quality": {
+        "rms_db": -27.315428611053704,
+        "peak": 0.226718932390213,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.315428611053704,
+        "centroid_hz": 3020.2506294698355,
+        "rolloff_hz": 6905.777994791667,
+        "bandwidth_hz": 2875.721514112292,
+        "flatness": 0.059621453285217285,
+        "zcr": 0.1657081886574074,
+        "voiced_ratio": 0.8611111111111112,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 1.695480465888977,
+        "low_mid_ratio": 0.7234843969345093,
+        "drone_band_ratio": 0.9063249826431274,
+        "speech_band_ratio": 0.956811785697937
+      }
+    },
+    {
+      "window_index": 157,
+      "start_s": 54.946439909297055,
+      "end_s": 56.19641723356009,
+      "score": 0.9020074654577593,
+      "quality": {
+        "rms_db": -27.308085895167963,
+        "peak": 0.226718932390213,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.308085895167963,
+        "centroid_hz": 3022.5818430966083,
+        "rolloff_hz": 6910.563151041667,
+        "bandwidth_hz": 2873.804074007438,
+        "flatness": 0.05981407314538956,
+        "zcr": 0.1643337673611111,
+        "voiced_ratio": 0.8796296296296297,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 2.1595849990844727,
+        "low_mid_ratio": 0.716781497001648,
+        "drone_band_ratio": 0.9078306555747986,
+        "speech_band_ratio": 0.957245409488678
+      }
+    },
+    {
+      "window_index": 158,
+      "start_s": 55.29641723356009,
+      "end_s": 56.54639455782313,
+      "score": 0.9016872913577824,
+      "quality": {
+        "rms_db": -27.187906477465788,
+        "peak": 0.23025454580783844,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.187906477465788,
+        "centroid_hz": 3027.252559584501,
+        "rolloff_hz": 6880.257161458333,
+        "bandwidth_hz": 2865.767745392657,
+        "flatness": 0.060386378318071365,
+        "zcr": 0.16441514756944445,
+        "voiced_ratio": 0.8981481481481481,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 2.8476462364196777,
+        "low_mid_ratio": 0.71003657579422,
+        "drone_band_ratio": 0.9042453169822693,
+        "speech_band_ratio": 0.9570614099502563
+      }
+    },
+    {
+      "window_index": 159,
+      "start_s": 55.64639455782313,
+      "end_s": 56.896371882086164,
+      "score": 0.9039616476812733,
+      "quality": {
+        "rms_db": -26.991233247196107,
+        "peak": 0.23025454580783844,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.991233247196107,
+        "centroid_hz": 3006.3917191475102,
+        "rolloff_hz": 6823.6328125,
+        "bandwidth_hz": 2851.852824664282,
+        "flatness": 0.056526798754930496,
+        "zcr": 0.1570095486111111,
+        "voiced_ratio": 0.8981481481481481,
+        "f0_median_hz": 236.4715576171875,
+        "f0_std_hz": 2.4278531074523926,
+        "low_mid_ratio": 0.7182507514953613,
+        "drone_band_ratio": 0.9051193594932556,
+        "speech_band_ratio": 0.9600629806518555
+      }
+    },
+    {
+      "window_index": 160,
+      "start_s": 55.996371882086166,
+      "end_s": 57.24634920634921,
+      "score": 0.9080966664602834,
+      "quality": {
+        "rms_db": -26.675998078806977,
+        "peak": 0.23025454580783844,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.675998078806977,
+        "centroid_hz": 2984.8049536067465,
+        "rolloff_hz": 6761.42578125,
+        "bandwidth_hz": 2844.986820961534,
+        "flatness": 0.05079617351293564,
+        "zcr": 0.1454535590277778,
+        "voiced_ratio": 0.8981481481481481,
+        "f0_median_hz": 236.4715576171875,
+        "f0_std_hz": 1.3982189893722534,
+        "low_mid_ratio": 0.733616292476654,
+        "drone_band_ratio": 0.9098400473594666,
+        "speech_band_ratio": 0.9644783735275269
+      }
+    },
+    {
+      "window_index": 161,
+      "start_s": 56.34634920634921,
+      "end_s": 57.596326530612245,
+      "score": 0.9060440207616856,
+      "quality": {
+        "rms_db": -26.853412419303474,
+        "peak": 0.23025454580783844,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -26.853412419303474,
+        "centroid_hz": 3026.188454758013,
+        "rolloff_hz": 6803.89404296875,
+        "bandwidth_hz": 2844.2292252339703,
+        "flatness": 0.050261661410331726,
+        "zcr": 0.14742476851851852,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 236.4715576171875,
+        "f0_std_hz": 2.045315742492676,
+        "low_mid_ratio": 0.7161722183227539,
+        "drone_band_ratio": 0.9058530926704407,
+        "speech_band_ratio": 0.9644298553466797
+      }
+    },
+    {
+      "window_index": 162,
+      "start_s": 56.69632653061225,
+      "end_s": 57.94630385487528,
+      "score": 0.9039317703721482,
+      "quality": {
+        "rms_db": -27.096709522456592,
+        "peak": 0.21348212659358978,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.096709522456592,
+        "centroid_hz": 3062.6353347916747,
+        "rolloff_hz": 6866.898600260417,
+        "bandwidth_hz": 2856.157684511993,
+        "flatness": 0.05057547241449356,
+        "zcr": 0.14765986689814814,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 235.10958862304688,
+        "f0_std_hz": 2.3944942951202393,
+        "low_mid_ratio": 0.7157847881317139,
+        "drone_band_ratio": 0.9039227366447449,
+        "speech_band_ratio": 0.9637984037399292
+      }
+    },
+    {
+      "window_index": 163,
+      "start_s": 57.04630385487528,
+      "end_s": 58.29628117913832,
+      "score": 0.9029247429655669,
+      "quality": {
+        "rms_db": -27.323636911084918,
+        "peak": 0.21348212659358978,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.323636911084918,
+        "centroid_hz": 3066.503898313143,
+        "rolloff_hz": 6898.002115885417,
+        "bandwidth_hz": 2860.6555877920177,
+        "flatness": 0.05176761746406555,
+        "zcr": 0.15864619502314814,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 2.01814603805542,
+        "low_mid_ratio": 0.6875084638595581,
+        "drone_band_ratio": 0.9063349366188049,
+        "speech_band_ratio": 0.9630609154701233
+      }
+    },
+    {
+      "window_index": 164,
+      "start_s": 57.39628117913832,
+      "end_s": 58.64625850340136,
+      "score": 0.8999212248924999,
+      "quality": {
+        "rms_db": -27.38826362876178,
+        "peak": 0.21348212659358978,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.38826362876178,
+        "centroid_hz": 3042.03930069976,
+        "rolloff_hz": 6846.3623046875,
+        "bandwidth_hz": 2855.9472209902265,
+        "flatness": 0.05482865124940872,
+        "zcr": 0.16030092592592593,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 3.540681838989258,
+        "low_mid_ratio": 0.6903629899024963,
+        "drone_band_ratio": 0.9065697193145752,
+        "speech_band_ratio": 0.961220383644104
+      }
+    },
+    {
+      "window_index": 165,
+      "start_s": 57.74625850340136,
+      "end_s": 58.9962358276644,
+      "score": 0.9013036025986566,
+      "quality": {
+        "rms_db": -27.133660052196834,
+        "peak": 0.21348212659358978,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -27.133660052196834,
+        "centroid_hz": 3008.9863642303185,
+        "rolloff_hz": 6765.812174479167,
+        "bandwidth_hz": 2843.6689056273713,
+        "flatness": 0.05586937069892883,
+        "zcr": 0.16056315104166666,
+        "voiced_ratio": 0.7129629629629629,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 3.636023998260498,
+        "low_mid_ratio": 0.6774122714996338,
+        "drone_band_ratio": 0.9064974188804626,
+        "speech_band_ratio": 0.9607663750648499
+      }
+    },
+    {
+      "window_index": 166,
+      "start_s": 58.0962358276644,
+      "end_s": 59.34621315192744,
+      "score": 0.8921681360864802,
+      "quality": {
+        "rms_db": -28.2847575602896,
+        "peak": 0.20725183188915253,
+        "active_ratio": 0.7804878048780488,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -28.2847575602896,
+        "centroid_hz": 2840.782655949718,
+        "rolloff_hz": 6099.27978515625,
+        "bandwidth_hz": 2507.185341835136,
+        "flatness": 0.24425078928470612,
+        "zcr": 0.15019169560185186,
+        "voiced_ratio": 0.4351851851851852,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 3.5558876991271973,
+        "low_mid_ratio": 0.6522948741912842,
+        "drone_band_ratio": 0.9035781621932983,
+        "speech_band_ratio": 0.9596629738807678
+      }
+    },
+    {
+      "window_index": 167,
+      "start_s": 58.44621315192744,
+      "end_s": 59.69619047619047,
+      "score": 0.48984237392111046,
+      "quality": {
+        "rms_db": -30.02462907482649,
+        "peak": 0.19877023994922638,
+        "active_ratio": 0.4959349593495935,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -30.02462907482649,
+        "centroid_hz": 2021.682218310142,
+        "rolloff_hz": 4255.598958333333,
+        "bandwidth_hz": 1724.9550833033832,
+        "flatness": 0.508760929107666,
+        "zcr": 0.10356083622685185,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6439701318740845,
+        "drone_band_ratio": 0.8995873928070068,
+        "speech_band_ratio": 0.9581701159477234
+      }
+    },
+    {
+      "window_index": 168,
+      "start_s": 58.796190476190475,
+      "end_s": 60.04616780045352,
+      "score": 0.4649413814502794,
+      "quality": {
+        "rms_db": -33.91540914839385,
+        "peak": 0.19366398453712463,
+        "active_ratio": 0.21138211382113822,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "kept": true,
+      "features": {
+        "rms_db": -33.91540914839385,
+        "centroid_hz": 1191.338789517707,
+        "rolloff_hz": 2381.8115234375,
+        "bandwidth_hz": 940.5667792243702,
+        "flatness": 0.7723363041877747,
+        "zcr": 0.05904586226851852,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6426467299461365,
+        "drone_band_ratio": 0.8944684267044067,
+        "speech_band_ratio": 0.9579557776451111
+      }
+    },
+    {
+      "window_index": 169,
+      "start_s": 59.14616780045351,
+      "end_s": 60.396145124716554,
+      "score": 0.219,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 239.41244260682822,
+        "rolloff_hz": 438.0411783854167,
+        "bandwidth_hz": 156.63103798429512,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 1.8716599665340214e-22,
+        "drone_band_ratio": 2.2897090408645892e-22,
+        "speech_band_ratio": 2.500486868723381e-22
+      }
+    },
+    {
+      "window_index": 170,
+      "start_s": 59.496145124716556,
+      "end_s": 60.74612244897959,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 171,
+      "start_s": 59.84612244897959,
+      "end_s": 61.09609977324263,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 172,
+      "start_s": 60.19609977324263,
+      "end_s": 61.44607709750567,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 173,
+      "start_s": 60.546077097505666,
+      "end_s": 61.79605442176871,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 174,
+      "start_s": 60.89605442176871,
+      "end_s": 62.146031746031746,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 175,
+      "start_s": 61.24603174603175,
+      "end_s": 62.49600907029478,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 176,
+      "start_s": 61.596009070294784,
+      "end_s": 62.845986394557826,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 177,
+      "start_s": 61.94598639455782,
+      "end_s": 63.19596371882086,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 178,
+      "start_s": 62.295963718820865,
+      "end_s": 63.5459410430839,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 179,
+      "start_s": 62.6459410430839,
+      "end_s": 63.89591836734694,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 180,
+      "start_s": 62.99591836734694,
+      "end_s": 64.24589569160997,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 181,
+      "start_s": 63.345895691609975,
+      "end_s": 64.59587301587301,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 182,
+      "start_s": 63.69587301587302,
+      "end_s": 64.94585034013605,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 183,
+      "start_s": 64.04585034013606,
+      "end_s": 65.2958276643991,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 184,
+      "start_s": 64.39582766439909,
+      "end_s": 65.64580498866214,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 185,
+      "start_s": 64.74580498866213,
+      "end_s": 65.99578231292517,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 186,
+      "start_s": 65.09578231292517,
+      "end_s": 66.34575963718821,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 187,
+      "start_s": 65.4457596371882,
+      "end_s": 66.69573696145125,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 188,
+      "start_s": 65.79573696145124,
+      "end_s": 67.04571428571428,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 189,
+      "start_s": 66.14571428571429,
+      "end_s": 67.39569160997732,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 190,
+      "start_s": 66.49569160997733,
+      "end_s": 67.74566893424036,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 191,
+      "start_s": 66.84566893424036,
+      "end_s": 68.09564625850341,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 192,
+      "start_s": 67.1956462585034,
+      "end_s": 68.44562358276644,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 193,
+      "start_s": 67.54562358276644,
+      "end_s": 68.79560090702948,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    },
+    {
+      "window_index": 194,
+      "start_s": 67.8758276643991,
+      "end_s": 69.12580498866213,
+      "score": 0.11850000000000001,
+      "quality": {
+        "rms_db": -153.9794001131145,
+        "peak": 9.99999993922529e-09,
+        "active_ratio": 0.0,
+        "is_silent": true
+      },
+      "speech_like": false,
+      "is_silent": true,
+      "kept": false,
+      "features": {
+        "rms_db": -153.9794001131145,
+        "centroid_hz": 0.0,
+        "rolloff_hz": 0.0,
+        "bandwidth_hz": 0.0,
+        "flatness": 0.9999988079071045,
+        "zcr": 0.0,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.0,
+        "drone_band_ratio": 0.0,
+        "speech_band_ratio": 0.0
+      }
+    }
+  ]
+}
