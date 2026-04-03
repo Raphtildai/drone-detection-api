@@ -1,0 +1,13 @@
+path,readable,n_channels,sample_rate,bit_depth,n_frames,duration_sec,format,comptype,filename,folder
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 01_02.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 01_02.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 02_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 02_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 03_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 03_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 04_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 04_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 05_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 05_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 06_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 06_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 07_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 07_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 08_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 08_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 09_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 09_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 10_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 10_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 11_01.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 11_01.wav,Dunakeszi_MEMS
+/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_MEMS/Audio/Audio 12_02.wav,True,1,8000,16,69779912,8722.489,WAV/PCM,NONE,Audio 12_02.wav,Dunakeszi_MEMS

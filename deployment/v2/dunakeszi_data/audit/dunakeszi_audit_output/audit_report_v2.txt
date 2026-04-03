@@ -1,0 +1,42 @@
+========================================================================
+  DUNAKESZI DRONE DATASET — FORENSIC AUDIT REPORT  v2
+  Generated : 2026-03-25T22:58:48.622885
+  Elapsed   : 453.8 s
+========================================================================
+
+FLIGHT WINDOW
+────────────────────────────────────────
+  Takeoff : 2025-10-20 12:57:21
+  Landing : 2025-10-20 13:04:09
+  Duration: 408s  (6.8 min)
+
+BRÜEL RECORDINGS
+────────────────────────────────────────
+  Files downloaded       : 2
+  Flight window segments : 2
+  Total flight audio (s) : 407.0
+  Channels               : 14
+  Sample rate            : 192000 Hz
+
+FILE SYSTEM
+────────────────────────────────────────
+  Total files : 164
+  Total size  : 10.401 GB
+  By type     : {'text': 58, 'image': 39, 'other': 30, 'video': 21, 'audio': 14, 'data': 2}
+
+SIGNAL QUALITY (MEMS files)
+────────────────────────────────────────
+  Mean SNR       : 15.410917156013426 dB
+  Clipped files  : 0
+  Noise colours  : {'brownian': 10, 'white': 2}
+
+TELEMETRY (GPX)
+────────────────────────────────────────
+  GPX files          : 57
+  Total trackpoints  : 9028
+  In flight window   : 4066
+
+CONSISTENCY ISSUES
+────────────────────────────────────────
+  ✔  2 files are >70% silence
+========================================================================

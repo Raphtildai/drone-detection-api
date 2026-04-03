@@ -1,0 +1,92 @@
+{
+  "generated": "2026-03-25T22:58:48.622885",
+  "elapsed_sec": 453.8,
+  "flight_window": {
+    "takeoff_utc": "2025-10-20T12:57:21",
+    "landing_utc": "2025-10-20T13:04:09",
+    "duration_sec": 408.0
+  },
+  "filesystem": {
+    "total_files": 164,
+    "total_size_gb": 10.401410846039653,
+    "by_type": {
+      "text": 58,
+      "image": 39,
+      "other": 30,
+      "video": 21,
+      "audio": 14,
+      "data": 2
+    },
+    "by_folder": {
+      "Dunakeszi_DRON-ADATOK": 90,
+      "Dunakeszi_FOT\u00d3": 39,
+      "Dunakeszi_VIDE\u00d3": 21,
+      "Dunakeszi_MEMS": 12,
+      "Dunakeszi_BRUEL_VIDEO": 1,
+      "Dunakeszi_JEGYZOKONYV": 1
+    }
+  },
+  "audio": {
+    "total_wav": 12,
+    "sample_rates": {
+      "8000": 12
+    }
+  },
+  "signal_quality": {
+    "mean_snr_db": 15.410917156013426,
+    "clipped_files": 0,
+    "noise_colours": {
+      "brownian": 10,
+      "white": 2
+    }
+  },
+  "consistency": {
+    "sample_rates": {
+      "8000": 12
+    },
+    "bit_depths": {
+      "16": 12
+    },
+    "channel_counts": {
+      "1": 12
+    },
+    "duration_stats": {
+      "min_sec": 8722.489,
+      "max_sec": 8722.489,
+      "mean_sec": 8722.489,
+      "std_sec": 0.0
+    },
+    "clipped_files": 0,
+    "issues": [
+      "2 files are >70% silence"
+    ],
+    "n_issues": 1
+  },
+  "telemetry": {
+    "n_files": 57,
+    "n_gpx_points": 9028,
+    "n_gpx_in_flight": 4066
+  },
+  "logbook": {
+    "n_entries": 2
+  },
+  "alignment": {
+    "aligned": [
+      "Validated GPX timestamps overlap known flight window"
+    ],
+    "unmatched_audio": [],
+    "unmatched_tele": [],
+    "audio_timestamps_found": 0,
+    "tele_range": "2025-10-20 12:47:21.056000+00:00 \u2192 2025-10-20 13:14:08.891000+00:00",
+    "log_entries": 2,
+    "gpx_points_in_flight_window": 4066,
+    "gpx_files_with_flight_data": 1
+  },
+  "bruel": {
+    "files_downloaded": 2,
+    "flight_window_ok": 2,
+    "total_flight_sec": 407.0,
+    "channels": 14,
+    "sample_rate": 192000
+  }
+}

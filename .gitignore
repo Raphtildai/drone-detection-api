@@ -1,6 +1,30 @@
 # Untrack venv folder
 venv/
 
+# Audio files
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aif
+*.aiff
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Large binaries
+*.bin
+*.zip
+*.tar
+*.gz
+
+*.npy
+
 # Untrack __pycache__ folders
 **/__pycache__/
 
@@ -18,3 +42,7 @@ model_training_and_testing/venv
 model_training_and_testing/drone_project_local/mel_cache/
 model_training_and_testing/drone_project_local/processed/
 model_training_and_testing/drone_project_local/raw/
+
+# Untrack Dunakeszi videos
+deployment/v2/dunakeszi_data/*.wav
+deployment/v2/dunakeszi_data/audit/dunakeszi_audit_ws/Dunakeszi_DRON-ADATOK/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053/*.wav
