@@ -1,0 +1,202 @@
+{
+  "file": "source/DJI_drones_noise_comparson_seg_002_0008149_0011899_0001200_0003749.wav",
+  "duration_s": 2.5495691609977325,
+  "windows_total": 5,
+  "detected_regions": [
+    {
+      "region_index": 1,
+      "start_s": 0.0,
+      "end_s": 2.5495691609977325,
+      "duration_s": 2.5495691609977325,
+      "windows": 5,
+      "purity": {
+        "accept": true,
+        "drone_ratio": 1.0,
+        "speech_ratio": 0.0,
+        "silence_ratio": 0.0,
+        "uncertain_ratio": 0.0,
+        "mean_drone_score": 0.6159734719532216,
+        "max_drone_score": 0.694765440532309
+      },
+      "bucket": "clean",
+      "trimmed_start_s": 0.0,
+      "trimmed_end_s": 2.6695691609977326
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0.0,
+      "end_s": 2.6695691609977326,
+      "duration_s": 2.6695691609977326,
+      "score": 0.694765440532309,
+      "bucket": "clean",
+      "purity": {
+        "accept": true,
+        "drone_ratio": 1.0,
+        "speech_ratio": 0.0,
+        "silence_ratio": 0.0,
+        "uncertain_ratio": 0.0,
+        "mean_drone_score": 0.6159734719532216,
+        "max_drone_score": 0.694765440532309
+      }
+    }
+  ],
+  "quarantine_segments": [],
+  "window_details": [
+    {
+      "window_index": 0,
+      "start_s": 0.0,
+      "end_s": 1.2499773242630385,
+      "score": 0.594686883032322,
+      "quality": {
+        "rms_db": -14.054229155914594,
+        "peak": 0.97998046875,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8319959044456482,
+      "features": {
+        "rms_db": -14.054229155914594,
+        "centroid_hz": 3174.24747905656,
+        "rolloff_hz": 6398.750813802083,
+        "bandwidth_hz": 2723.2942748523096,
+        "flatness": 0.0931311696767807,
+        "zcr": 0.18178530092592593,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6319173574447632,
+        "drone_band_ratio": 0.7462373375892639,
+        "speech_band_ratio": 0.8639184236526489
+      },
+      "kept": true
+    },
+    {
+      "window_index": 1,
+      "start_s": 0.34997732426303857,
+      "end_s": 1.5999546485260772,
+      "score": 0.5952233866751194,
+      "quality": {
+        "rms_db": -14.396154044592892,
+        "peak": 0.97998046875,
+        "active_ratio": 0.926829268292683,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8346608281135559,
+      "features": {
+        "rms_db": -14.396154044592892,
+        "centroid_hz": 3109.935160579944,
+        "rolloff_hz": 6352.494303385417,
+        "bandwidth_hz": 2733.811466621108,
+        "flatness": 0.087766133248806,
+        "zcr": 0.17201063368055555,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6384189128875732,
+        "drone_band_ratio": 0.7498639822006226,
+        "speech_band_ratio": 0.8649739623069763
+      },
+      "kept": true
+    },
+    {
+      "window_index": 2,
+      "start_s": 0.6999546485260771,
+      "end_s": 1.9499319727891156,
+      "score": 0.5967856080234051,
+      "quality": {
+        "rms_db": -15.820631660258622,
+        "peak": 0.97998046875,
+        "active_ratio": 0.6422764227642277,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.828041136264801,
+      "features": {
+        "rms_db": -15.820631660258622,
+        "centroid_hz": 2909.6112748960627,
+        "rolloff_hz": 6233.8623046875,
+        "bandwidth_hz": 2769.8381516324794,
+        "flatness": 0.07214391976594925,
+        "zcr": 0.14805772569444445,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6213085651397705,
+        "drone_band_ratio": 0.7376145124435425,
+        "speech_band_ratio": 0.870067834854126
+      },
+      "kept": true
+    },
+    {
+      "window_index": 3,
+      "start_s": 1.0499319727891157,
+      "end_s": 2.2999092970521544,
+      "score": 0.5984060415029526,
+      "quality": {
+        "rms_db": -18.364791144166187,
+        "peak": 0.839813232421875,
+        "active_ratio": 0.4146341463414634,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8299928307533264,
+      "features": {
+        "rms_db": -18.364791144166187,
+        "centroid_hz": 2679.3255055184563,
+        "rolloff_hz": 5802.60009765625,
+        "bandwidth_hz": 2687.710031093075,
+        "flatness": 0.05593958497047424,
+        "zcr": 0.13173647280092593,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.6313833594322205,
+        "drone_band_ratio": 0.7436487674713135,
+        "speech_band_ratio": 0.8574849367141724
+      },
+      "kept": true
+    },
+    {
+      "window_index": 4,
+      "start_s": 1.299591836734694,
+      "end_s": 2.5495691609977325,
+      "score": 0.694765440532309,
+      "quality": {
+        "rms_db": -21.890363829015232,
+        "peak": 0.8262939453125,
+        "active_ratio": 0.37398373983739835,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8609693646430969,
+      "features": {
+        "rms_db": -21.890363829015232,
+        "centroid_hz": 2570.355935850464,
+        "rolloff_hz": 5752.9541015625,
+        "bandwidth_hz": 2649.8494608978563,
+        "flatness": 0.04071798548102379,
+        "zcr": 0.12317346643518519,
+        "voiced_ratio": 0.17592592592592593,
+        "f0_median_hz": 411.72088623046875,
+        "f0_std_hz": 18.298847198486328,
+        "low_mid_ratio": 0.7162269353866577,
+        "drone_band_ratio": 0.7959719300270081,
+        "speech_band_ratio": 0.8657445907592773
+      },
+      "kept": true
+    }
+  ]
+}

@@ -1,0 +1,904 @@
+{
+  "rows": [
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_019_0069497_0073497_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_019_0069497_0073497_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_019_0069497_0073497_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_019_0069497_0073497_0001000_0004000",
+      "source_sha1": "aac81f39a3b994022eff225920d43020b9f24a2a",
+      "segment_sha1": "1f9dde90f2e61eae4d4b74d8c8355995015a798c"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_0001000_0004000_seg_001_0000000_0002769.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_0001000_0004000_seg_001_0000000_0002769.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025578_0029578_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_008_0025578_0029578_0001000_0004000",
+      "source_sha1": "6357f70827f4ed8c6c9477d6ebac5dbf079eb896",
+      "segment_sha1": "5b24fa96544776734fddecb0b9033853e5ae40b7"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_003_0016229_0020229_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_003_0016229_0020229_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_003_0016229_0020229_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_003_0016229_0020229_0001000_0004000",
+      "source_sha1": "2f39ec5b5048032c0f50f80f5b7fb3c6052ca771",
+      "segment_sha1": "3c7fe7fe41c031a8547d5051c328686241034118"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/DJI_drones_noise_comparson_seg_021_0076997_0080997_0001000_0004000_seg_001_0001629_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_021_0076997_0080997_0001000_0004000_seg_001_0001629_0003120.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/DJI_drones_noise_comparson_seg_021_0076997_0080997_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_021_0076997_0080997_0001000_0004000",
+      "source_sha1": "e735a32b83c96d12b1abc6e3e3c0688478c55158",
+      "segment_sha1": "c840ad6445052efda51941f4cbe319669c1283a0"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_017_0061997_0065997_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_017_0061997_0065997_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_017_0061997_0065997_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_017_0061997_0065997_0001000_0004000",
+      "source_sha1": "f3f92cafe4a8db05a9ebb021e7f4e5d39f6b38a4",
+      "segment_sha1": "7f2c3a4b1f9a92f36f957eef03c060c8f47827cd"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_0001600_0004000_seg_001_0000229_0002520.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_0001600_0004000_seg_001_0000229_0002520.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044328_0048328_0001600_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_013_0044328_0048328_0001600_0004000",
+      "source_sha1": "28217ac7db96c5a09164e3edf9f97564f85caaa9",
+      "segment_sha1": "9ebe38b367782fb530081afe12546b57008a6c3d"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051828_0055828_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_015_0051828_0055828_0001000_0004000",
+      "source_sha1": "3e1e4bf1b4c0a80736835bf3c029bc082cc0c4f2",
+      "segment_sha1": "04bbf8051a5907352ee2864bb2fad3de0ae7dd60"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_0001000_0003529_seg_001_0000000_0002649.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_0001000_0003529_seg_001_0000000_0002649.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055578_0059466_0001000_0003529.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_016_0055578_0059466_0001000_0003529",
+      "source_sha1": "cba3129f76a0f700516b30b876e7d66cbcd4e265",
+      "segment_sha1": "472ac852956544d7a463d9ffbb81322d381be606"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048048_0052048_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_014_0048048_0052048_0001000_0004000",
+      "source_sha1": "978978d9558e729581aa7437908f282d4e779c8f",
+      "segment_sha1": "0799d56c2b5d70f7706aa7806254045c723e487d"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_0002000_0004000_seg_001_0000000_0001719.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_0002000_0004000_seg_001_0000000_0001719.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_008_0025548_0029548_0002000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_008_0025548_0029548_0002000_0004000",
+      "source_sha1": "b95bdc25c86545b52e0a491f51e785feea2456aa",
+      "segment_sha1": "b3c15d2f3e8aac95c2f2697ef9fbe23390d410cf"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036828_0040828_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_011_0036828_0040828_0001000_0004000",
+      "source_sha1": "74d27387b343b2413dd6d100d1a6ab72450c5942",
+      "segment_sha1": "d21b8e3e3c1a64e9a962a4e28a4c987decaa3fa9"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_014_0048078_0052078_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_014_0048078_0052078_0001000_0004000",
+      "source_sha1": "290fc09a42f70edf34560cdc39de628ac39df2cd",
+      "segment_sha1": "84cc6c0c4ef125565c3ee1b691e47eea1b236efe"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040548_0044548_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_012_0040548_0044548_0001000_0004000",
+      "source_sha1": "b4f17527a6de52abd63a5a74b57811492c4a29af",
+      "segment_sha1": "b18d874e0f66ce1e4a2d4b898b85d8e4f40a24f4"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_0002000_0003976_seg_001_0000000_0002096.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_0002000_0003976_seg_001_0000000_0002096.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021798_0025798_0002000_0003976.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_007_0021798_0025798_0002000_0003976",
+      "source_sha1": "13b18b5ce0992d553d756cd6a776ff47c5548fc6",
+      "segment_sha1": "7e94fc36cc6fb48d4954f7621cc729e98c314a90"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_020_0073247_0077247_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_020_0073247_0077247_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_020_0073247_0077247_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_020_0073247_0077247_0001000_0004000",
+      "source_sha1": "57416bcf35f824f59b37d5cbb5f59efda1ec4643",
+      "segment_sha1": "ed13980c34ff87f01c3468d28b8e697989d51734"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_0001000_0003200_seg_001_0000000_0002069.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_0001000_0003200_seg_001_0000000_0002069.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_009_0029298_0033298_0001000_0003200.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_009_0029298_0033298_0001000_0003200",
+      "source_sha1": "48c5b2f92f8adbc094d67652e699a1583a87768c",
+      "segment_sha1": "6d8843eb67b690ab98b554eade54b0f94a7880ef"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/DJI_drones_noise_comparson_seg_007_0026698_0029748_0001000_0002856_seg_001_0000000_0001976.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_007_0026698_0029748_0001000_0002856_seg_001_0000000_0001976.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/DJI_drones_noise_comparson_seg_007_0026698_0029748_0001000_0002856.wav",
+      "source_group": "dji_drones_noise_comparson_seg_007_0026698_0029748_0001000_0002856",
+      "source_sha1": "ea507733bfc6c02ce96e69a55e5894df664639f5",
+      "segment_sha1": "3b04fc4f3445ef714f77f25fb605162c7617f6b3"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008399_0012399_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_003_0008399_0012399_0001000_0004000",
+      "source_sha1": "3b93f240851ea9427850accff77c7b365a66271f",
+      "segment_sha1": "68cb741d5913b43f02b1d089338977543e440467"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_0001200_0004000_seg_001_0000000_0002920.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_0001200_0004000_seg_001_0000000_0002920.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_010_0033048_0037048_0001200_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_010_0033048_0037048_0001200_0004000",
+      "source_sha1": "9317fb6776f87370a53fc1fb76e03c381278eacc",
+      "segment_sha1": "28bea792acdac12dd873c91a8572b405f7ae4e79"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012149_0016149_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_004_0012149_0016149_0001000_0004000",
+      "source_sha1": "72a8c2271807e16525294eb55aacc8b202cdf139",
+      "segment_sha1": "a6bc2837da695f59af70e60aba35d705610fca3d"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_011_0036798_0040798_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_011_0036798_0040798_0001000_0004000",
+      "source_sha1": "4ea6ed6213ef7774b11897514049c7aba49fcc12",
+      "segment_sha1": "376a627d4c9a0c062bcb91eee4e8342fa0dd3a7d"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_018_0065747_0069747_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_018_0065747_0069747_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_018_0065747_0069747_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_018_0065747_0069747_0001000_0004000",
+      "source_sha1": "38c7856e754baf087dfb615bfaea13dc5ae485e3",
+      "segment_sha1": "d6cf713badac31d5cda09b5c1e6099b12bfc6993"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_0001700_0004000_seg_001_0000229_0002420.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_0001700_0004000_seg_001_0000229_0002420.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_013_0044298_0048298_0001700_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_013_0044298_0048298_0001700_0004000",
+      "source_sha1": "43f83639f49ee8a7e692b23eae4ec44de398092e",
+      "segment_sha1": "9745b41091f7012b893624337fc7a21b6cd639f3"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_015_0051798_0055798_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_015_0051798_0055798_0001000_0004000",
+      "source_sha1": "d9b99ee43c53dc114bcc610af30e601dd2d7126b",
+      "segment_sha1": "e115299fdf41556e26fbcb81186a4eb2b90f4e66"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_004_0015849_0019849_0001200_0004000_seg_001_0000000_0002920.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_004_0015849_0019849_0001200_0004000_seg_001_0000000_0002920.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_004_0015849_0019849_0001200_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_004_0015849_0019849_0001200_0004000",
+      "source_sha1": "4ce985f754de10dc5617f2815ab795f7096fb444",
+      "segment_sha1": "a7b62a25a7e5074719973c40566c8343ca674872"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_0001000_0003500_seg_001_0000000_0002620.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_0001000_0003500_seg_001_0000000_0002620.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_0001000_0003500.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_016_0055548_0059548_0001000_0003500",
+      "source_sha1": "3d4fdf049b46572af9545b948d9f524f71245d39",
+      "segment_sha1": "65ce74bef70c9517fc82339923a7a5cf3a6b9c0f"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_010_0037798_0041798_0001000_0003088_seg_001_0000000_0002208.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_010_0037798_0041798_0001000_0003088_seg_001_0000000_0002208.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_010_0037798_0041798_0001000_0003088.wav",
+      "source_group": "dji_drones_noise_comparson_seg_010_0037798_0041798_0001000_0003088",
+      "source_sha1": "5205d4f7fcaef0a14960a06c9106e3f957d4fc71",
+      "segment_sha1": "1c962ec3dd1d9fb397f29eadabb6621ca4b6aa4d"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_001_0000000_0004000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_001_0000000_0004000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "07bc34d0881dfb47950461e803b3a016f53b1e79"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_002_0003750_0007750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_002_0003750_0007750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "19e56037cc8009dce1a13d1e82307dd5d8d79d55"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_003_0007500_0011500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_003_0007500_0011500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "fc91275186796a02c71324b6a7b1d980d4cb992f"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_004_0011250_0015250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_004_0011250_0015250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "38ae7601b42ad1d0cc2caf49025c75d29e9ea44b"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_005_0015000_0019000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_005_0015000_0019000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "52cb9729138456e0b9041bcffdca353da9b481c5"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_006_0018750_0022750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_006_0018750_0022750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "063951cd4084460ba1ba39df9f1f2c10763ff3f8"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_007_0022500_0026500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_007_0022500_0026500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ffe85d8b54958e0f58630f3182453cc1c444eb61"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_008_0026250_0030250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_008_0026250_0030250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "d33662714f25ab7ecd10586a5c2080305af67871"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_009_0030000_0034000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_009_0030000_0034000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "924f179033f0370b50e63d6215a0564945ad544c"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_010_0033750_0037750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_010_0033750_0037750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "15e6febf794afc4ad62e564ac0b2d5dde02ecb7b"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_011_0037500_0041500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_011_0037500_0041500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "b8a86564ac2aef3551c6ea949f2bba5cb3f3d845"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_012_0041250_0045250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_012_0041250_0045250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "0b52580ab6aa739ccab71efa3d03ca7e06685ac2"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_013_0045000_0049000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_013_0045000_0049000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "75167dba283ad119e9785ba5dca4e8bd1a3ee0c5"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_014_0048750_0052750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_014_0048750_0052750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "9c39266970a3166bb4b2ed0953bc9dbf9c0fd3ce"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_015_0052500_0056500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_015_0052500_0056500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "6e66303cd666a92d89cfd89eba15800adc7a7871"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_016_0056250_0060250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_016_0056250_0060250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "b9ebfe1ecddd9aa1ce5bd03c9d50a8772bfcff18"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_017_0060000_0064000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_017_0060000_0064000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "f7882ac597c3bd2dc7f6d9b2ac38382bc1d97abb"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_018_0063750_0067750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_018_0063750_0067750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "84eca842096e88cf3c0e313c8119f6f21e2bf9b4"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_019_0067500_0071500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_019_0067500_0071500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "3ea3350eb3fe4a548cd28994b72343e54c5d3586"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_020_0071250_0075250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_020_0071250_0075250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "4ed600278543e1466d121d66cbd3d9d97a0cf1da"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_021_0075000_0079000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_021_0075000_0079000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "c12445f6719e52dc31124f1a76ca1c2cb02352af"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_022_0078750_0082750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_022_0078750_0082750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "a0c4a3f8693cbecf3775f1e19b99ccb0395eacc1"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_023_0082500_0086500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_023_0082500_0086500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "c2e924de7e30b644d00d0fbf3a826660d5cb1cc6"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_024_0086250_0090250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_024_0086250_0090250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "f6236a9fbb80dec4066ac6443bd1d40b05708954"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_025_0090000_0094000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_025_0090000_0094000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ef825cfc93ddbcb825e74262c772192f2c1f6dc9"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_026_0093750_0097750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_026_0093750_0097750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ddd6de4d32f0bb457e8783e3f3b536a61acfe987"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_027_0097500_0101500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_027_0097500_0101500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "103300071ab9edab395302136340da0fb7a92f3e"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_028_0101250_0105250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_028_0101250_0105250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "5f832fc1cdecb887dc5ad563c708ec253c6e9388"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_029_0105000_0109000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_029_0105000_0109000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "4c42a7e9540747e4813ada00d3222c7b6f2af060"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_030_0108750_0112750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_030_0108750_0112750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "829a7bddf0cb2d41f4c28c0474fc0062f94b7b77"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_031_0112500_0116500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_031_0112500_0116500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "903dc084b96d925ef94782ccbaa17934cfb6338a"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_032_0116250_0120250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_032_0116250_0120250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "1497b89a0f0c9ba8a679e2c879867f2b65545641"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_033_0120000_0124000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_033_0120000_0124000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ce00d30abb6a2121c0ace378e0e0331bc9601721"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_034_0123750_0127750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_034_0123750_0127750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "27461faa72fb858d60427fed1edbae805359e766"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_035_0127500_0131500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_035_0127500_0131500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "39a18675a6bb2475fdf3ee0e8c13862c9bc26ef8"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_036_0131250_0135250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_036_0131250_0135250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "bc76c62d251fde1ca441bddb4a658e6d0d824382"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_037_0135000_0139000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_037_0135000_0139000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "8f5ffcc836b35ad4180073beb565a64d26b4f7f2"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_038_0138750_0142750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_038_0138750_0142750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "0c030e49af88e95a25c0d2489cc87b341da723a3"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_039_0142500_0146500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_039_0142500_0146500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "dcfbb19ac8e9e1c7b6621eb8b68a7e90154a6a94"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_040_0146250_0150250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_040_0146250_0150250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "f4c0ac0ca26ee3f2c1c01fa0a4aefd0ce03a5628"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_041_0150000_0154000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_041_0150000_0154000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "db8a00917ad4735043fca0fca6eb1f09407ddca7"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_042_0153750_0157750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_042_0153750_0157750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "827b4eab3305d399c9831204ea0d14eeb053e6ed"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_043_0157500_0161500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_043_0157500_0161500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "18b4d31e6152a935f488ff51c447a94f1150a40a"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_044_0161250_0165250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_044_0161250_0165250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "e2ec9148182335beb7bbd3fb455f4643696e2069"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_045_0165000_0169000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_045_0165000_0169000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "54ebc345ba8078d7678b94af77d2642ff237705c"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_046_0168750_0172750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_046_0168750_0172750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ce407c59107ba71b97efea52772c4df4dc6db40d"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_047_0172500_0176500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_047_0172500_0176500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "d548b56f43aacc4fff7d016888e5097b19d1f104"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_048_0176250_0180250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_048_0176250_0180250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "bc637a5e091965cf4dad470cdfe2ca57ccd6bb78"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_049_0180000_0184000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_049_0180000_0184000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "498c7f4c9a4b0e3a5cac8b91ea2017a988a40180"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_050_0183750_0187750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_050_0183750_0187750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "38449ffaf09e8f8fdea78e7b38439aa0d5d90cbb"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_051_0187500_0191500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_051_0187500_0191500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "d8143f24903e7c53c07d3d6acc24b9dd91d41e57"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_052_0191250_0195250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_052_0191250_0195250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "bebdbe9ae1a78dbefcc6824ed8ab211a7c952f68"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_053_0195000_0199000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_053_0195000_0199000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "287ab6ad2f4415fcf550e2146db56f4050810019"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_054_0198750_0202750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_054_0198750_0202750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "ea5b83373494e8addcd4620a4a5b31c64406d4ad"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_055_0202500_0206500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_055_0202500_0206500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "eb87da70e3af04c085300294bccbb0b362066ea4"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_056_0206250_0210250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_056_0206250_0210250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "b96072051056764f948db2c877168c34d3956920"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_057_0210000_0214000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_057_0210000_0214000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "fc0145cc42595b0f6b616d35ea3a1fa20e8cf060"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_058_0213750_0217750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_058_0213750_0217750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "f0a5d6f333bb7baab129bef8a80f09b26af2356f"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_059_0217500_0221500.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_059_0217500_0221500.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "1f0625762d8cd9db7a484a7bd0e6ad369551ba7b"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_060_0221250_0225250.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_060_0221250_0225250.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "34c30aab8395cbecfe2ce02f782d00ebf7edcb54"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_061_0225000_0229000.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_061_0225000_0229000.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "6b360df7fa8d805159a63fae2d50a4f6792e5458"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_062_0228750_0232750.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_062_0228750_0232750.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "c4771354819b954abe6f38b1185621cb37d8f555"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/klemenflerin-drone-fly-397287_0010000_0247920_seg_063_0232500_0235154.wav",
+      "segment_name": "klemenflerin-drone-fly-397287_0010000_0247920_seg_063_0232500_0235154.wav",
+      "bucket": "clean",
+      "source_file": "source/klemenflerin-drone-fly-397287_0010000_0247920.wav",
+      "source_group": "klemenflerin-drone-fly-397287_0010000_0247920",
+      "source_sha1": "869989bdb687f76d5300c16c349afaf8a182ea63",
+      "segment_sha1": "788adeb962870577060ca904c45b37a0e2dc3043"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/DJI_drones_noise_comparson_seg_009_0034048_0038048_0001000_0004000_seg_001_0001629_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_009_0034048_0038048_0001000_0004000_seg_001_0001629_0003120.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/DJI_drones_noise_comparson_seg_009_0034048_0038048_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_009_0034048_0038048_0001000_0004000",
+      "source_sha1": "95b01537786640969c2750831fdb4f43da8dd3e5",
+      "segment_sha1": "81698f1db1074cc76bd8f34c7a545673be8d3142"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/DJI_drones_noise_comparson_seg_006_0022948_0026948_0001300_0004000_seg_001_0000579_0002820.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_006_0022948_0026948_0001300_0004000_seg_001_0000579_0002820.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/DJI_drones_noise_comparson_seg_006_0022948_0026948_0001300_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_006_0022948_0026948_0001300_0004000",
+      "source_sha1": "6f407767c66ce1569513edde8ca16b680ef6eb0b",
+      "segment_sha1": "d807f2bebcd386342acdb22e93e71a895903d47f"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_0002000_0004000_seg_001_0000000_0002120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_0002000_0004000_seg_001_0000000_0002120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_007_0021828_0025828_0002000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_007_0021828_0025828_0002000_0004000",
+      "source_sha1": "09edc19af669052f11bc8ac55e8b8b7b0497e682",
+      "segment_sha1": "8cf02941ae47137e1c3d81645066cd744cd7caf7"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_012_0040578_0044578_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_012_0040578_0044578_0001000_0004000",
+      "source_sha1": "8d4f8c8e1c2f8986ee3066f0f6e6e1ac0051acdb",
+      "segment_sha1": "b94f5c00cbfabdb6bcb77f7c5c0526b14042902f"
+    },
+    {
+      "segment_path": "output_v4/quarantine_uncertain/DJI_drones_noise_comparson_seg_023_0084497_0088497_0001000_0003400_seg_001_0000000_0002069.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_023_0084497_0088497_0001000_0003400_seg_001_0000000_0002069.wav",
+      "bucket": "quarantine_uncertain",
+      "source_file": "source/DJI_drones_noise_comparson_seg_023_0084497_0088497_0001000_0003400.wav",
+      "source_group": "dji_drones_noise_comparson_seg_023_0084497_0088497_0001000_0003400",
+      "source_sha1": "ae55802618b85b5699b5a671a53608decde94fc9",
+      "segment_sha1": "e5e0d1f56bd640430bdca409df3ac87cf07397c0"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_002_0008149_0011899_0001200_0003749_seg_001_0000000_0002669.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_002_0008149_0011899_0001200_0003749_seg_001_0000000_0002669.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_002_0008149_0011899_0001200_0003749.wav",
+      "source_group": "dji_drones_noise_comparson_seg_002_0008149_0011899_0001200_0003749",
+      "source_sha1": "b5dc00e059325dfd50ab27e2139618eb71100c83",
+      "segment_sha1": "4034c88372926cbcb6978260bfadf41fe2054191"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_003_0008429_0012429_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_003_0008429_0012429_0001000_0004000",
+      "source_sha1": "34848f20796c527d992e825da2eb1cc983b59bd5",
+      "segment_sha1": "73dc1aea287224e0b3062f2c296e5002f025a19c"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_038_0145941_0149941_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_038_0145941_0149941_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_038_0145941_0149941_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_038_0145941_0149941_0001000_0004000",
+      "source_sha1": "1902478685ac8795b9cc40794b9f7eee58cd3dab",
+      "segment_sha1": "1ad1004633acbec88e557d7a18fcff6cd004c935"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/DJI_drones_noise_comparson_seg_037_0142191_0146191_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "DJI_drones_noise_comparson_seg_037_0142191_0146191_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/DJI_drones_noise_comparson_seg_037_0142191_0146191_0001000_0004000.wav",
+      "source_group": "dji_drones_noise_comparson_seg_037_0142191_0146191_0001000_0004000",
+      "source_sha1": "939afe246bc89a7108d33d825365f98166e060e0",
+      "segment_sha1": "85b5fc0eff26b3548d06e8ae1f3da7dd94bb3261"
+    },
+    {
+      "segment_path": "output_v4/clean_drone_segments/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_0001000_0004000_seg_001_0000000_0003120.wav",
+      "segment_name": "Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_0001000_0004000_seg_001_0000000_0003120.wav",
+      "bucket": "clean",
+      "source_file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_004_0012179_0016179_0001000_0004000.wav",
+      "source_group": "drone_noise_test_-_dji_avata_vs_dji_fpv_vs_dji_mavic_3_vs_dji_air_2s_compared_seg_004_0012179_0016179_0001000_0004000",
+      "source_sha1": "0764fd9b0b96ca50be9c884b1b95e44436ab7c9f",
+      "segment_sha1": "46cd9f967c886795ac80153ea0e0cde4069b091b"
+    }
+  ]
+}

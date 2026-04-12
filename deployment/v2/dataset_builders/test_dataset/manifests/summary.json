@@ -1,0 +1,18 @@
+{
+  "output_root": "test_dataset",
+  "total_manifest_rows": 79,
+  "successful_rows": 72,
+  "failed_rows": 7,
+  "accepted_drone_files": 72,
+  "accepted_non_drone_files": 0,
+  "quarantine_drone_files": 0,
+  "quarantine_non_drone_files": 0,
+  "sources_breakdown": {
+    "youtube": 72,
+    "xeno_canto": 7
+  },
+  "labels_breakdown": {
+    "drone": 72,
+    "non_drone": 7
+  }
+}

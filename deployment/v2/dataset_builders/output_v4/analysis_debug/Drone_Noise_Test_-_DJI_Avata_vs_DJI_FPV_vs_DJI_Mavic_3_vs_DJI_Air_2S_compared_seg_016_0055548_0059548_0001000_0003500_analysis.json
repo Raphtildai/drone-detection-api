@@ -1,0 +1,202 @@
+{
+  "file": "source/Drone_Noise_Test_-_DJI_Avata_vs_DJI_FPV_vs_DJI_Mavic_3_vs_DJI_Air_2S_compared_seg_016_0055548_0059548_0001000_0003500.wav",
+  "duration_s": 2.5,
+  "windows_total": 5,
+  "detected_regions": [
+    {
+      "region_index": 1,
+      "start_s": 0.0,
+      "end_s": 2.5,
+      "duration_s": 2.5,
+      "windows": 5,
+      "purity": {
+        "accept": true,
+        "drone_ratio": 1.0,
+        "speech_ratio": 0.0,
+        "silence_ratio": 0.0,
+        "uncertain_ratio": 0.0,
+        "mean_drone_score": 0.9485414796471595,
+        "max_drone_score": 0.949726689890027
+      },
+      "bucket": "clean",
+      "trimmed_start_s": 0.0,
+      "trimmed_end_s": 2.62
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0.0,
+      "end_s": 2.62,
+      "duration_s": 2.62,
+      "score": 0.949726689890027,
+      "bucket": "clean",
+      "purity": {
+        "accept": true,
+        "drone_ratio": 1.0,
+        "speech_ratio": 0.0,
+        "silence_ratio": 0.0,
+        "uncertain_ratio": 0.0,
+        "mean_drone_score": 0.9485414796471595,
+        "max_drone_score": 0.949726689890027
+      }
+    }
+  ],
+  "quarantine_segments": [],
+  "window_details": [
+    {
+      "window_index": 0,
+      "start_s": 0.0,
+      "end_s": 1.2499773242630385,
+      "score": 0.9493170467615127,
+      "quality": {
+        "rms_db": -14.406859640104937,
+        "peak": 0.980010986328125,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8960908651351929,
+      "features": {
+        "rms_db": -14.406859640104937,
+        "centroid_hz": 3045.4187177162803,
+        "rolloff_hz": 6828.218587239583,
+        "bandwidth_hz": 2843.306801651204,
+        "flatness": 0.0509972870349884,
+        "zcr": 0.1474880642361111,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 235.10958862304688,
+        "f0_std_hz": 2.3888163566589355,
+        "low_mid_ratio": 0.7151097655296326,
+        "drone_band_ratio": 0.9040594696998596,
+        "speech_band_ratio": 0.9644942879676819
+      },
+      "kept": true
+    },
+    {
+      "window_index": 1,
+      "start_s": 0.34997732426303857,
+      "end_s": 1.5999546485260772,
+      "score": 0.9497162303328515,
+      "quality": {
+        "rms_db": -14.502564986523407,
+        "peak": 0.909454345703125,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8959403038024902,
+      "features": {
+        "rms_db": -14.502564986523407,
+        "centroid_hz": 3063.884868155929,
+        "rolloff_hz": 6890.824381510417,
+        "bandwidth_hz": 2864.9323369654244,
+        "flatness": 0.05084411799907684,
+        "zcr": 0.15259693287037038,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 2.1329052448272705,
+        "low_mid_ratio": 0.7125530242919922,
+        "drone_band_ratio": 0.9075619578361511,
+        "speech_band_ratio": 0.9643774628639221
+      },
+      "kept": true
+    },
+    {
+      "window_index": 2,
+      "start_s": 0.6999546485260771,
+      "end_s": 1.9499319727891156,
+      "score": 0.949726689890027,
+      "quality": {
+        "rms_db": -14.892560392871186,
+        "peak": 0.909454345703125,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8889472484588623,
+      "features": {
+        "rms_db": -14.892560392871186,
+        "centroid_hz": 3064.937557039067,
+        "rolloff_hz": 6885.042317708333,
+        "bandwidth_hz": 2861.1374951371317,
+        "flatness": 0.0546688549220562,
+        "zcr": 0.1622902199074074,
+        "voiced_ratio": 1.0,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 1.8709497451782227,
+        "low_mid_ratio": 0.6838032603263855,
+        "drone_band_ratio": 0.9049978256225586,
+        "speech_band_ratio": 0.9613302946090698
+      },
+      "kept": true
+    },
+    {
+      "window_index": 3,
+      "start_s": 1.0499319727891157,
+      "end_s": 2.2999092970521544,
+      "score": 0.946969765946269,
+      "quality": {
+        "rms_db": -14.673740719217047,
+        "peak": 0.909454345703125,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.8883122801780701,
+      "features": {
+        "rms_db": -14.673740719217047,
+        "centroid_hz": 3027.851835366248,
+        "rolloff_hz": 6810.872395833333,
+        "bandwidth_hz": 2849.229573838043,
+        "flatness": 0.057042527943849564,
+        "zcr": 0.16165726273148148,
+        "voiced_ratio": 0.8240740740740741,
+        "f0_median_hz": 232.40911865234375,
+        "f0_std_hz": 3.550654172897339,
+        "low_mid_ratio": 0.6770524978637695,
+        "drone_band_ratio": 0.9052035212516785,
+        "speech_band_ratio": 0.9605525732040405
+      },
+      "kept": true
+    },
+    {
+      "window_index": 4,
+      "start_s": 1.2500226757369615,
+      "end_s": 2.5,
+      "score": 0.9469776653051375,
+      "quality": {
+        "rms_db": -14.510783792109516,
+        "peak": 0.909454345703125,
+        "active_ratio": 1.0,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "drone",
+      "periodicity": 0.889267086982727,
+      "features": {
+        "rms_db": -14.510783792109516,
+        "centroid_hz": 3001.42310026867,
+        "rolloff_hz": 6755.4443359375,
+        "bandwidth_hz": 2841.0696901481683,
+        "flatness": 0.056797176599502563,
+        "zcr": 0.1603099681712963,
+        "voiced_ratio": 0.6666666666666666,
+        "f0_median_hz": 233.7554473876953,
+        "f0_std_hz": 3.5617446899414062,
+        "low_mid_ratio": 0.6739795804023743,
+        "drone_band_ratio": 0.9067791700363159,
+        "speech_band_ratio": 0.9607455134391785
+      },
+      "kept": true
+    }
+  ]
+}

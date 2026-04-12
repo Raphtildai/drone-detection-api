@@ -1,0 +1,59 @@
+{
+  "file": "source/DJI_drones_noise_comparson_seg_013_0046997_0050997_0001000_0002100.wav",
+  "duration_s": 1.1,
+  "windows_total": 1,
+  "detected_regions": [
+    {
+      "region_index": 1,
+      "start_s": 0.0,
+      "end_s": 1.1,
+      "duration_s": 1.1,
+      "windows": 1,
+      "purity": {
+        "accept": false,
+        "drone_ratio": 0.0,
+        "speech_ratio": 0.0,
+        "silence_ratio": 0.0,
+        "uncertain_ratio": 1.0,
+        "mean_drone_score": 0.47309570406542883,
+        "max_drone_score": 0.47309570406542883
+      },
+      "bucket": "quarantine_uncertain"
+    }
+  ],
+  "segments": [],
+  "quarantine_segments": [],
+  "window_details": [
+    {
+      "window_index": 0,
+      "start_s": 0.0,
+      "end_s": 1.1,
+      "score": 0.47309570406542883,
+      "quality": {
+        "rms_db": -12.897128574684649,
+        "peak": 0.97998046875,
+        "active_ratio": 0.9024390243902439,
+        "is_silent": false
+      },
+      "speech_like": false,
+      "is_silent": false,
+      "window_label": "uncertain",
+      "periodicity": 0.6018170118331909,
+      "features": {
+        "rms_db": -12.897128574684649,
+        "centroid_hz": 3515.927427865432,
+        "rolloff_hz": 6174.247233072917,
+        "bandwidth_hz": 2189.2924059619236,
+        "flatness": 0.16498222947120667,
+        "zcr": 0.23706958912037038,
+        "voiced_ratio": 0.0,
+        "f0_median_hz": 0.0,
+        "f0_std_hz": 0.0,
+        "low_mid_ratio": 0.015082237310707569,
+        "drone_band_ratio": 0.2703019082546234,
+        "speech_band_ratio": 0.8103638887405396
+      },
+      "kept": false
+    }
+  ]
+}
