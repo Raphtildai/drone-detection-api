@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-run_server_v2.py — Drone Detection System v2
-=============================================
+run_server_v2.py — Drone Detection System v2 (pipeline aligned with v15)
+=========================================================================
 Location: drone-detection-api/deployment/v2/run_server_v2.py
 
 Usage:
@@ -11,32 +11,28 @@ Usage:
 
 Directory layout this script expects:
     drone-detection-api/               ← REPO_ROOT
-    ├── drone_detection_v2.py          ← core ML module (imported by app_v2.py)
-    ├── drone_detection_v2_fixes.py    ← FIX-1 to FIX-8 patches
+    ├── drone_detection_v2.py          ← core ML module (v15 compatible)
     └── deployment/
-        ├── v1/                        ← original deployment (port 5000, untouched)
         └── v2/                        ← THIS directory (port 5001)
             ├── run_server_v2.py       ← this file
             ├── app_v2.py
             ├── real_time_audio_v2.py
+            ├── realtime_sessions.py
             ├── requirements_v2.txt
             ├── models/best_model.pth
             └── templates/index_v2.html
 """
 
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import logging
 import os
 import sys
-import argparse
-import logging
-import importlib.util
 from pathlib import Path
 
-# ── Resolve paths BEFORE any app import ──────────────────────────────────────
-#
-#   __file__  = .../drone-detection-api/deployment/v2/run_server_v2.py
-#   THIS_DIR  = .../drone-detection-api/deployment/v2/
-#   REPO_ROOT = .../drone-detection-api/
-#
+# ── Resolve paths BEFORE any app import ───────────────────────────────────────
 THIS_DIR  = Path(__file__).parent.resolve()   # deployment/v2/
 REPO_ROOT = THIS_DIR.parent.parent.resolve()  # drone-detection-api/
 
@@ -45,7 +41,8 @@ for p in (str(THIS_DIR), str(REPO_ROOT)):
         sys.path.insert(0, p)
 
 
-# ── Pre-flight: verify the core ML module is importable ──────────────────────
+# ── Pre-flight checks ──────────────────────────────────────────────────────────
+
 def _check_module(name: str) -> bool:
     spec = importlib.util.find_spec(name)
     if spec:
@@ -55,13 +52,17 @@ def _check_module(name: str) -> bool:
     return False
 
 
-def _preflight():
+def _preflight() -> None:
     print(f"\n📂 deployment dir : {THIS_DIR}")
     print(f"📂 repo root      : {REPO_ROOT}")
     print(f"\n🔍 Module check:")
 
     ok = _check_module("drone_detection_v2")
-    _check_module("drone_detection_v2_fixes")   # optional but nice to know
+    # v15 patch modules are optional but desirable
+    for optional in ("multidrone_localization_patch_v2",):
+        found = _check_module(optional)
+        if not found:
+            print(f"   ℹ️  {optional} not found — optional, basic fallback will be used")
 
     if not ok:
         print()
@@ -80,7 +81,7 @@ def _preflight():
 
     print()
     print("🔍 Directory check:")
-    for d in ("templates", "static", "models"):
+    for d in ("templates", "static", "models", "logs"):
         path = THIS_DIR / d
         if not path.exists():
             path.mkdir(parents=True, exist_ok=True)
@@ -97,31 +98,37 @@ def _preflight():
     if env_path:
         model_candidates.insert(0, Path(env_path))
 
-    found_model = False
     print("\n🔍 Model check:")
+    found_model = False
     for mp in model_candidates:
         if mp.exists():
             print(f"   ✅ {mp}")
             found_model = True
             break
     if not found_model:
-        print(f"   ⚠️  best_model.pth not found.")
+        print("   ⚠️  best_model.pth not found.")
         print(f"      Copy it to: {THIS_DIR / 'models' / 'best_model.pth'}")
-        print(f"      Or set:     export MODEL_PATH=/path/to/best_model.pth")
+        print("      Or set:     export MODEL_PATH=/path/to/best_model.pth")
 
 
-# ── Argument parsing ──────────────────────────────────────────────────────────
-def parse_args():
+# ── Argument parsing ───────────────────────────────────────────────────────────
+
+def _parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Drone Detection v2 server")
-    p.add_argument("--host",     default="0.0.0.0", help="Bind host (default: 0.0.0.0)")
-    p.add_argument("--port",     default=5001, type=int, help="Port (default: 5001)")
-    p.add_argument("--no-debug", action="store_true", help="Disable debug mode / reloader")
+    p.add_argument("--host",     default="0.0.0.0",
+                   help="Bind host (default: 0.0.0.0)")
+    p.add_argument("--port",     default=5001, type=int,
+                   help="Port (default: 5001)")
+    p.add_argument("--no-debug", action="store_true",
+                   help="Disable debug mode / reloader")
     return p.parse_args()
 
 
-# ── Logging ───────────────────────────────────────────────────────────────────
-def setup_logging(debug: bool):
-    log_file = THIS_DIR / "app_v2.log"
+# ── Logging ────────────────────────────────────────────────────────────────────
+
+def _setup_logging(debug: bool) -> Path:
+    log_file = THIS_DIR / "logs" / "app_v2.log"
+    log_file.parent.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         level=logging.DEBUG if debug else logging.INFO,
         format="%(asctime)s [%(name)s] %(levelname)s %(message)s",
@@ -134,15 +141,16 @@ def setup_logging(debug: bool):
     return log_file
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-def main():
-    args  = parse_args()
-    debug = not args.no_debug
-    log_file = setup_logging(debug)
+# ── Main ───────────────────────────────────────────────────────────────────────
+
+def main() -> int:
+    args     = _parse_args()
+    debug    = not args.no_debug
+    log_file = _setup_logging(debug)
 
     print()
-    print("🚁 Drone Detection System v2")
-    print("=" * 44)
+    print("🚁 Drone Detection System v2  (pipeline: drone_detection_v15)")
+    print("=" * 55)
     print(f"   Host     : {args.host}")
     print(f"   Port     : {args.port}")
     print(f"   Debug    : {'ON' if debug else 'OFF'}")
@@ -153,8 +161,8 @@ def main():
     print()
     try:
         from app_v2 import app, socketio
-    except ImportError as e:
-        print(f"❌ Failed to import app_v2: {e}")
+    except ImportError as exc:
+        print(f"❌ Failed to import app_v2: {exc}")
         print("   Run:  pip install -r requirements_v2.txt")
         return 1
 
@@ -172,8 +180,14 @@ def main():
         ("POST",  "/detect-multi"),
         ("POST",  "/noise-test"),
         ("POST",  "/path-simulate"),
+        ("POST",  "/realtime/start"),
+        ("POST",  "/realtime/stop"),
+        ("GET ",  "/realtime/status"),
+        ("GET ",  "/realtime/audio-devices"),
     ]:
         print(f"   {method}  {base}{path}")
+    print()
+    print("WebSocket: realtime_frame, realtime_stats, realtime_status")
     print()
     print("⏹  Ctrl+C to stop\n")
 
@@ -186,12 +200,12 @@ def main():
             use_reloader=debug,
             log_output=True,
         )
-    except OSError as e:
-        if "Address already in use" in str(e):
+    except OSError as exc:
+        if "Address already in use" in str(exc):
             print(f"\n❌ Port {args.port} is already in use.")
             print(f"   Try: python run_server_v2.py --port {args.port + 1}")
         else:
-            print(f"\n❌ OS error: {e}")
+            print(f"\n❌ OS error: {exc}")
         return 1
 
     return 0
