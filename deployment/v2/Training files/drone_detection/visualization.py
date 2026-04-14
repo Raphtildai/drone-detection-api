@@ -50,18 +50,31 @@ from .config import Config, config
 
 matplotlib.use("Agg")
 
+matplotlib.rcParams.update({
+    "font.size": 10,
+    "axes.titlesize": 12,
+    "axes.labelsize": 11,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
+    "legend.fontsize": 9,
+    "figure.titlesize": 14,
+})
+
 # ── Colour palette ─────────────────────────────────────────────────────────
 PLOT_STYLE = {
-    "bg":     "#0f172a",
-    "panel":  "#1e293b",
-    "accent": "#00d4ff",
-    "warn":   "#f59e0b",
-    "ok":     "#22c55e",
-    "err":    "#ef4444",
-    "grid":   "#334155",
-    "text":   "#e2e8f0",
-    "muted":  "#64748b",
-    "purple": "#8b5cf6",
+    "bg":        "#08111f",
+    "panel":     "#0f1b2d",
+    "panel_alt": "#14233a",
+    "accent":    "#38bdf8",
+    "warn":      "#fbbf24",
+    "ok":        "#4ade80",
+    "err":       "#f87171",
+    "grid":      "#47607d",
+    "text":      "#f8fafc",
+    "text_soft": "#dbeafe",
+    "muted":     "#b6c2cf",
+    "spine":     "#6b85a3",
+    "purple":    "#a78bfa",
 }
 
 # Thesis palette
@@ -78,19 +91,69 @@ C_RANDOM = "#AAAAAA"
 def _mae_color(v: float) -> str:
     return C_GOOD if v < 30 else C_MOD if v < 60 else C_POOR
 
+def _style_legend(legend):
+    if legend is None:
+        return
+    frame = legend.get_frame()
+    frame.set_facecolor(PLOT_STYLE["panel_alt"])
+    frame.set_edgecolor(PLOT_STYLE["spine"])
+    frame.set_alpha(0.95)
+
+    for txt in legend.get_texts():
+        txt.set_color(PLOT_STYLE["text"])
+
+    title = legend.get_title()
+    if title is not None:
+        title.set_color(PLOT_STYLE["text"])
+
+def _style_colorbar(cbar):
+    try:
+        cbar.ax.yaxis.label.set_color(PLOT_STYLE["text"])
+        cbar.ax.tick_params(colors=PLOT_STYLE["text"])
+        cbar.outline.set_edgecolor(PLOT_STYLE["spine"])
+        cbar.ax.set_facecolor(PLOT_STYLE["panel"])
+    except Exception:
+        pass
 
 def _apply_dark_style(fig, axes_flat):
     fig.patch.set_facecolor(PLOT_STYLE["bg"])
+
     for ax in axes_flat:
+        if ax is None:
+            continue
+
         ax.set_facecolor(PLOT_STYLE["panel"])
-        ax.tick_params(colors=PLOT_STYLE["text"])
+
+        # ticks
+        ax.tick_params(
+            axis="both",
+            colors=PLOT_STYLE["text"],
+            labelcolor=PLOT_STYLE["text"],
+            labelsize=10,
+        )
+
+        # axis labels
         ax.xaxis.label.set_color(PLOT_STYLE["text"])
         ax.yaxis.label.set_color(PLOT_STYLE["text"])
-        ax.title.set_color(PLOT_STYLE["accent"])
-        for spine in ax.spines.values():
-            spine.set_color(PLOT_STYLE["grid"])
-        ax.grid(color=PLOT_STYLE["grid"], alpha=0.4)
 
+        # title
+        ax.title.set_color(PLOT_STYLE["text"])
+        ax.title.set_fontweight("bold")
+
+        # spines
+        for spine in ax.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+            spine.set_linewidth(1.0)
+
+        # grid
+        ax.grid(color=PLOT_STYLE["grid"], alpha=0.35, linewidth=0.8)
+
+        # offset text such as 1e3 on axis
+        try:
+            ax.xaxis.get_offset_text().set_color(PLOT_STYLE["text"])
+            ax.yaxis.get_offset_text().set_color(PLOT_STYLE["text"])
+        except Exception:
+            pass
 
 def _show_inline(fig):
     try:
@@ -140,12 +203,14 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, tr_loss, "-o", color=PLOT_STYLE["accent"], ms=4, label="Train loss")
         ax.set_xlabel("Epoch"); ax.set_ylabel("Focal loss"); ax.set_title("Detection — Loss")
-        ax.legend(facecolor=PLOT_STYLE["panel"])
+        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+        _style_legend(leg)
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, tr_acc,  "-o", color=PLOT_STYLE["ok"],   ms=4, label="Train acc %")
         ax.plot(epochs, val_acc, "-s", color=PLOT_STYLE["warn"], ms=4, label="Val acc %")
         ax.set_xlabel("Epoch"); ax.set_ylabel("Accuracy (%)"); ax.set_title("Detection — Accuracy")
-        ax.legend(facecolor=PLOT_STYLE["panel"])
+        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+        _style_legend(leg)
 
     if has_loc:
         with open(loc_csv, newline="") as f:
@@ -160,13 +225,15 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
         ax.plot(epochs, tr_loss,  "-o", color=PLOT_STYLE["accent"], ms=4, label="Train")
         ax.plot(epochs, val_loss, "-s", color=PLOT_STYLE["warn"],   ms=4, label="Val")
         ax.set_xlabel("Epoch"); ax.set_ylabel("MSE loss"); ax.set_title("Localization — Loss")
-        ax.legend(facecolor=PLOT_STYLE["panel"])
+        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+        _style_legend(leg)  
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, mae_az,   "-o", color=PLOT_STYLE["err"],    ms=4, label="MAE az (°)")
         ax.plot(epochs, mae_dist, "-s", color=PLOT_STYLE["purple"], ms=4, label="MAE dist (m)")
         ax.plot(epochs, mae_ht,   "-^", color=PLOT_STYLE["ok"],     ms=4, label="MAE ht (m)")
         ax.set_xlabel("Epoch"); ax.set_ylabel("MAE"); ax.set_title("Localization — MAE")
-        ax.legend(facecolor=PLOT_STYLE["panel"])
+        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+        _style_legend(leg)
 
     plt.tight_layout()
     if save:
@@ -203,8 +270,11 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     rms_vals = [s.get("rms_db", -60) for s in segments]
     ax2 = ax.twinx()
     ax2.plot(ts_list, rms_vals, "o-", color=PLOT_STYLE["warn"], ms=4, lw=1.5, label="RMS dB")
-    ax2.tick_params(colors=PLOT_STYLE["text"]); ax2.yaxis.label.set_color(PLOT_STYLE["text"])
+    ax2.tick_params(axis="y", colors=PLOT_STYLE["text"], labelcolor=PLOT_STYLE["text"])
+    ax2.yaxis.label.set_color(PLOT_STYLE["text"])
     ax2.set_ylabel("RMS (dB)", color=PLOT_STYLE["text"])
+    for spine in ax2.spines.values():
+        spine.set_color(PLOT_STYLE["spine"])
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Amplitude"); ax.set_title("Waveform + RMS")
 
     # [1] Mel spectrogram
@@ -213,7 +283,8 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
         mel_frames = np.concatenate([s["mel"] for s in segments if "mel" in s], axis=1)
         ax.imshow(mel_frames, aspect="auto", origin="lower", cmap="magma",
                   extent=[0, max(ts_list) + cfg.TARGET_DURATION if ts_list else 3.0, 0, cfg.SR // 2 / 1000])
-        plt.colorbar(ax.images[0], ax=ax, label="dB").ax.yaxis.label.set_color(PLOT_STYLE["text"])
+        cbar = plt.colorbar(ax.images[0], ax=ax, label="dB")
+        _style_colorbar(cbar)
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Freq (kHz)"); ax.set_title("Mel Spectrogram")
 
     # [2] Detection timeline
@@ -223,7 +294,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     heurs = [s.get("heuristic_probability", float("nan")) for s in segments]
     cols  = [PLOT_STYLE["ok"] if s["detected"] else PLOT_STYLE["err"] for s in segments]
     ax.bar(ts_list, prbs, width=cfg.TARGET_DURATION * 0.8, color=cols, alpha=0.55, label="Hybrid")
-    ax.fill_between(ts_list, prbs, alpha=0.15, color=PLOT_STYLE["accent"])
+    ax.fill_between(ts_list, prbs, alpha=0.15, color=PLOT_STYLE["text"])
     if not all(math.isnan(v) for v in cnns):
         ax.plot(ts_list, cnns,  "-o", color=PLOT_STYLE["accent"], ms=4, lw=1.5, label="CNN")
     if not all(math.isnan(v) for v in heurs):
@@ -232,7 +303,8 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
                label=f"Thr={cfg.DETECTION_THRESHOLD:.2f}")
     ax.set_xlim(left=0); ax.set_ylim(0, 1.05)
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Probability"); ax.set_title("Detection Timeline")
-    ax.legend(facecolor=PLOT_STYLE["panel"], fontsize=8)
+    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+    _style_legend(leg)
 
     # [3] Localization bars
     ax = axes[3]
@@ -247,7 +319,8 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
                 color=PLOT_STYLE["muted"], transform=ax.transAxes)
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Normalised"); ax.set_title("Localization")
     if locs:
-        ax.legend(facecolor=PLOT_STYLE["panel"], fontsize=8)
+        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+        _style_legend(leg)
 
     # [4] Polar compass
     axes[4].remove()
@@ -281,7 +354,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     ax.text(0, -0.08, f"{final_score:.3f}", ha="center", fontsize=16, fontweight="bold", color=col)
     ax.text(0, 0.6, "DRONE" if final_score >= cfg.DETECTION_THRESHOLD else "CLEAR",
             ha="center", fontsize=10, color=col)
-    ax.axis("off"); ax.set_title("Detection Score", color=PLOT_STYLE["accent"])
+    ax.axis("off"); ax.set_title("Detection Score", color=PLOT_STYLE["text"])
 
     cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
     save_path = cfg.DRIVE_PLOTS / f"analysis_{Path(title).stem}.png"
@@ -312,9 +385,11 @@ def _plot_external_detection_scores(
                label=f"Ext thr={threshold:.2f}")
     ax.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["err"], ls=":", lw=1.5,
                label=f"Main thr={cfg.DETECTION_THRESHOLD:.2f}")
-    ax.set_title(f"Robust External Detection — {title}", color=PLOT_STYLE["accent"])
+    ax.set_title(f"Robust External Detection — {title}", color=PLOT_STYLE["text"])
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Probability"); ax.set_ylim(0, 1.05)
-    ax.legend(facecolor=PLOT_STYLE["panel"]); plt.tight_layout()
+    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+    _style_legend(leg)
+    plt.tight_layout()
     _show_inline(fig); plt.close(fig)
 
 
@@ -330,7 +405,8 @@ def plot_confusion_matrix_styled(
     fig, ax = plt.subplots(figsize=(6, 5))
     _apply_dark_style(fig, [ax])
     im = ax.imshow(cm_array, interpolation="nearest", cmap=cmap)
-    plt.colorbar(im, ax=ax)
+    cbar = plt.colorbar(im, ax=ax)
+    _style_colorbar(cbar)
     ax.set_xticks(range(len(labels))); ax.set_yticks(range(len(labels)))
     ax.set_xticklabels(labels, color=PLOT_STYLE["text"])
     ax.set_yticklabels(labels, color=PLOT_STYLE["text"])
@@ -341,7 +417,7 @@ def plot_confusion_matrix_styled(
             ax.text(j, i, f"{cm_array[i,j]}\n({pct:.1f}%)",
                     ha="center", va="center", color=PLOT_STYLE["text"], fontsize=10)
     ax.set_xlabel("Predicted"); ax.set_ylabel("True")
-    ax.set_title(title, color=PLOT_STYLE["accent"])
+    ax.set_title(title, color=PLOT_STYLE["text"])
     plt.tight_layout()
     _save_plot(fig, save_path)
     _show_inline(fig); plt.close(fig)
@@ -358,7 +434,7 @@ def plot_polar_azimuth(
     ax  = fig.add_subplot(111, projection="polar")
     ax.set_facecolor(PLOT_STYLE["panel"])
     ax.tick_params(colors=PLOT_STYLE["text"])
-    ax.title.set_color(PLOT_STYLE["accent"])
+    ax.title.set_color(PLOT_STYLE["text"])
     rads = np.radians([90 - a for a in azimuth_degs])
     counts, edges = np.histogram(rads, bins=36, range=(-np.pi, np.pi))
     centers = 0.5 * (edges[:-1] + edges[1:])
@@ -393,7 +469,9 @@ def plot_multi_drone_positions(
             ax.add_patch(plt.Circle(xy, cr, color=col, alpha=0.15, fill=True))
     ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
     ax.set_title(f"Multi-Drone Positions ({len(drones)} detected)")
-    ax.legend(facecolor=PLOT_STYLE["panel"]); ax.set_aspect("equal")
+    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+    _style_legend(leg)
+    ax.set_aspect("equal")
     plt.tight_layout()
     if save:
         _save_plot(fig, cfg.DRIVE_PLOTS / "multi_drone_positions.png")
@@ -436,7 +514,9 @@ def plot_track_trajectory(tracks, cfg: Optional[Config] = None, save: bool = Tru
         ax.set_ylim(min(all_ys) - pad, max(all_ys) + pad)
     ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
     ax.set_title(f"Kalman Track Trajectories ({len(tracks)} tracks)")
-    ax.legend(facecolor=PLOT_STYLE["panel"]); ax.set_aspect("equal")
+    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+    _style_legend(leg)
+    ax.set_aspect("equal")
     plt.tight_layout()
     if save:
         _save_plot(fig, cfg.DRIVE_PLOTS / "track_trajectory.png")
@@ -620,7 +700,7 @@ def plot_azimuth_distance_heatmap(save_path: Optional[Path] = None):
         for col in range(len(azimuths)):
             val = grid[row, col]
             ax.text(col, row, f"{val:.0f}°", ha="center", va="center",
-                    fontsize=9, color="white" if val > 80 else "black", fontweight="500")
+                    fontsize=9, color=PLOT_STYLE["text"], fontweight="500")
     plt.colorbar(im, ax=ax, label="MAE (°)", shrink=0.8); plt.tight_layout()
     if save_path:
         fig.savefig(str(save_path)); print(f"Saved: {save_path}")
@@ -676,7 +756,7 @@ def plot_polar_mae(save_path: Optional[Path] = None):
     ax.plot(theta_closed, mae_closed, color=C_PURPLE, lw=2, zorder=3)
     for t, m in zip(theta, mean_maes):
         ax.scatter(t, m, color=_mae_color(m), s=60, zorder=4, edgecolors="white", lw=0.5)
-        ax.text(t, m + 14, f"{m:.0f}°", ha="center", va="center", fontsize=7.5, color="#333")
+        ax.text(t, m + 14, f"{m:.0f}°", ha="center", va="center", fontsize=7.5, color=PLOT_STYLE["text"])
     ax.set_rticks([30, 60, 90, 120, 150]); ax.set_rlim(0, 160)
     ax.set_thetagrids(azimuths, labels=[f"{a}°" for a in azimuths], fontsize=9)
     ax.set_title("Mean azimuth MAE by direction\n(compass view)", pad=18)
