@@ -565,11 +565,22 @@ def analyse_audio_file(
         else:
             det = detect([audio, audio, audio], cfg)
             drone_loc = None
-            if det["detected"] and can_localize:
-                drone_loc = {
-                    "azimuth_deg": 0.0, "distance_m": 0.0, "height_m": 0.0,
-                    "xy_position": np.array(cfg.ARRAY_CENTER),
-                }
+            if det["detected"]:
+                if can_localize:
+                    try:
+                        drone_loc = localize([audio, audio, audio], cfg)
+                    except Exception:
+                        # Localization failed; still feed detection position to tracker
+                        drone_loc = {
+                            "azimuth_deg": 0.0, "distance_m": 0.0, "height_m": 0.0,
+                            "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
+                        }
+                else:
+                    # No loc model — use array center so tracker still gets a position
+                    drone_loc = {
+                        "azimuth_deg": 0.0, "distance_m": 0.0, "height_m": 0.0,
+                        "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
+                    }
             positions = [drone_loc["xy_position"]] if drone_loc else []
             tracks    = tracker.step(positions, base_ts + t_s)
             res = {
@@ -596,6 +607,10 @@ def analyse_audio_file(
     print(f"\n  📊 {n_det}/{n_segments} detected  |  {len(confirmed)} confirmed track(s)")
     if show_plot:
         _plot_analysis_report(segments, confirmed, cfg, Path(audio_path).name)
+        # Also show track trajectories if any were confirmed
+        if confirmed:
+            from .visualization import plot_track_trajectory
+            plot_track_trajectory(confirmed, cfg, save=True)
     if threshold_override is not None:
         cfg.DETECTION_THRESHOLD = old_thr
 

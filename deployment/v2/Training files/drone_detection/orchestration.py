@@ -86,7 +86,7 @@ from .inference import (
 )
 from .tracking import KalmanTrack, KalmanTracker
 from .multidrone import localize_multi_drone
-from .visualization import plot_multi_drone_positions
+from .visualization import plot_multi_drone_positions, plot_track_trajectory
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -951,6 +951,15 @@ def quick_demo(cfg: Optional[Config] = None) -> dict:
         print(f"    Drone {i+1}: ({xy[0]:.2f},{xy[1]:.2f})m  az={d['azimuth_deg']:.1f}°  dist={d['distance_m']:.2f}m{err}")
     if result["drones"]:
         plot_multi_drone_positions(result["drones"], cfg)
+    # ── Tracks ────────────────────────────────────────────────────────────
+    tracks = tracker.all_confirmed()
+    print(f"  Confirmed tracks: {len(tracks)}")
+    for t in tracks:
+        xy = t.predicted_xy()
+        print(f"    Track #{t.track_id}: pos=({xy[0]:.2f},{xy[1]:.2f})m  "
+              f"hits={t.hits}  dist={t.total_distance():.3f}m")
+    if tracks:
+        plot_track_trajectory(tracks, cfg)
     return result
 
 
