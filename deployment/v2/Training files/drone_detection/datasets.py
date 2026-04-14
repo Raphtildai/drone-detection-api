@@ -538,40 +538,115 @@ class DroneAudioDatasetManager:
     def prepare(self) -> bool:
         dest = self.cfg.DRONEDS_RAW
         proc = self.cfg.PROCESSED_DIR / "detection"
+
         counts = {
             f"{split}_{lbl}": len(list((proc / split / lbl).glob("*.wav")))
             if (proc / split / lbl).exists() else 0
             for split in ["train", "val", "test"]
             for lbl in ["drone", "non_drone"]
         }
+
         ready = all([
-            counts["train_drone"]     > 20,
+            counts["train_drone"] > 20,
             counts["train_non_drone"] > 20,
-            counts["val_drone"]       > 0,
-            counts["val_non_drone"]   > 0,
-            counts["test_drone"]      > 0,
-            counts["test_non_drone"]  > 0,
+            counts["val_drone"] > 0,
+            counts["val_non_drone"] > 0,
+            counts["test_drone"] > 0,
+            counts["test_non_drone"] > 0,
         ])
+
         if ready:
             print(f"✅ Detection dataset ready ({sum(counts.values())} files)")
             return True
+
         print("⚠️  Detection dataset incomplete — rebuilding …")
         if proc.exists():
             shutil.rmtree(proc)
+
         self._download(dest)
         self._process(dest, proc)
         return True
 
     def _download(self, dest: Path):
+        """
+        Download and extract the DroneAudioDataset archive safely.
+
+        Guards against:
+        - stale/corrupt zip files already on disk
+        - URLs returning HTML/error pages instead of a zip
+        - partial downloads
+        """
         archive = dest / "drone_dataset.zip"
         dest.mkdir(parents=True, exist_ok=True)
-        if not archive.exists():
+
+        # Skip extraction if already extracted
+        if any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
+            print("✅ DroneAudioDataset already extracted.")
+            return
+
+        def _preview_file(path: Path, n: int = 300) -> str:
+            try:
+                with open(path, "rb") as f:
+                    raw = f.read(n)
+                return raw.decode("utf-8", errors="ignore")
+            except Exception:
+                return "<unable to preview file>"
+
+        def _is_valid_zip(path: Path) -> bool:
+            try:
+                return path.exists() and path.stat().st_size > 0 and zipfile.is_zipfile(path)
+            except Exception:
+                return False
+
+        # Re-download if missing or invalid
+        need_download = not _is_valid_zip(archive)
+        if archive.exists() and not _is_valid_zip(archive):
+            print(f"⚠️ Existing archive is invalid, deleting: {archive}")
+            try:
+                archive.unlink()
+            except Exception:
+                pass
+            need_download = True
+
+        if need_download:
             print("📥 Downloading DroneAudioDataset …")
-            urllib.request.urlretrieve(self.cfg.DRONEDS_ZIP_URL, str(archive))
-        if not any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
-            print("📦 Extracting …")
-            with zipfile.ZipFile(archive) as z:
+            try:
+                urllib.request.urlretrieve(self.cfg.DRONEDS_ZIP_URL, str(archive))
+            except Exception as e:
+                raise RuntimeError(f"Failed to download detection dataset: {e}") from e
+
+        # Validate downloaded file before extraction
+        if not _is_valid_zip(archive):
+            size = archive.stat().st_size if archive.exists() else 0
+            preview = _preview_file(archive)
+            raise RuntimeError(
+                "Downloaded detection dataset is not a valid ZIP file.\n"
+                f"Path: {archive}\n"
+                f"Size: {size} bytes\n"
+                f"Preview: {preview[:300]}"
+            )
+
+        print("📦 Extracting …")
+        try:
+            with zipfile.ZipFile(archive, "r") as z:
                 z.extractall(str(dest))
+        except zipfile.BadZipFile as e:
+            size = archive.stat().st_size if archive.exists() else 0
+            preview = _preview_file(archive)
+            raise RuntimeError(
+                "Detection dataset archive is corrupt or not a ZIP.\n"
+                f"Path: {archive}\n"
+                f"Size: {size} bytes\n"
+                f"Preview: {preview[:300]}"
+            ) from e
+
+        if not any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
+            raise RuntimeError(
+                "Extraction completed, but 'Binary_Drone_Audio' was not found. "
+                "The downloaded archive may not be the expected dataset."
+            )
+
+        print("✅ DroneAudioDataset downloaded and extracted.")
 
     def _process(self, src: Path, dst: Path):
         import librosa
