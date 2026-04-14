@@ -898,7 +898,7 @@ def verify_tdoa_accuracy(cfg: Optional[Config] = None) -> bool:
     ap   = AudioProcessor(cfg)
     positions = [[1.0, 0.8], [2.0, 0.5], [-1.5, 2.0], [0.3, 0.2]]
     max_tau   = np.max([np.linalg.norm(mics[i] - mics[j]) for i in range(3) for j in range(i+1, 3)]) / c * 1.5
-    ds        = max(1, sr // 4000); fs_ds = sr // ds; hi_ds = min(5000, fs_ds // 2 - 100)
+    ds        = max(1, sr // 16000); fs_ds = sr // ds; hi_ds = min(5000, fs_ds // 2 - 100)
     print("=" * 60); print("  TDOA ACCURACY VERIFICATION"); print("=" * 60)
     all_ok = True
     for pos in positions:

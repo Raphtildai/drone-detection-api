@@ -241,39 +241,19 @@ def _parabolic_peak(y: np.ndarray, x: int) -> float:
     return x + 0.5 * (y1 - y3) / d
 
 
-def gcc_phat(
-    sig: np.ndarray,
-    ref: np.ndarray,
-    fs: int,
-    max_tau: float,
-    interp: int = 4,
-) -> Tuple[float, np.ndarray, np.ndarray]:
-    """
-    GCC-PHAT time-delay estimator.
-
-    Returns
-    ───────
-    tau   : estimated time-delay (s)
-    lags  : lag axis (s)
-    cc    : cross-correlation magnitudes
-    """
+def gcc_phat(sig: np.ndarray, ref: np.ndarray, fs: int, max_tau: float, interp: int = 4):
     n   = len(sig) + len(ref)
-    S   = np.fft.rfft(sig, n=n)
-    R   = np.fft.rfft(ref, n=n)
+    S   = np.fft.rfft(sig, n=n); R = np.fft.rfft(ref, n=n)
     if np.max(np.abs(S)) < 1e-10 or np.max(np.abs(R)) < 1e-10:
-        nlags = 2 * int(interp * fs * max_tau) + 1
+        nlags = 2*int(interp*fs*max_tau)+1
         return 0.0, np.zeros(nlags), np.zeros(nlags)
-    X   = S * np.conj(R)
-    den = np.abs(X)
-    den[den < 1e-10] = 1e-10
-    X  /= den
-    cc  = np.fft.irfft(X, n=interp * n)
-    ms  = min(int(interp * n / 2), int(interp * fs * max_tau))
-    cc  = np.concatenate((cc[-ms:], cc[:ms + 1]))
-    pk  = int(np.argmax(np.abs(cc)))
-    pk_f = _parabolic_peak(np.abs(cc), pk)
-    tau  = (pk_f - ms) / (interp * fs)
-    lags = np.arange(-ms, ms + 1) / (interp * fs)
+    X   = S * np.conj(R); den = np.abs(X); den[den < 1e-10] = 1e-10; X /= den
+    cc  = np.fft.irfft(X, n=interp*n)
+    ms  = min(int(interp*n/2), int(interp*fs*max_tau))
+    cc  = np.concatenate((cc[-ms:], cc[:ms+1]))
+    pk  = int(np.argmax(np.abs(cc))); pk_f = _parabolic_peak(np.abs(cc), pk)
+    tau = (pk_f - ms) / (interp * fs)
+    lags = np.arange(-ms, ms+1) / (interp*fs)
     return tau, lags, np.abs(cc)
 
 
@@ -309,18 +289,28 @@ def gcc_phat_peaks(
 
 
 def _fractional_delay(signal: np.ndarray, delay_samples: float) -> np.ndarray:
-    """Apply a sub-sample fractional delay using a windowed sinc filter."""
-    if delay_samples < 0:
-        delay_samples = 0.0
+    delay_samples = max(0.0, float(delay_samples))
+    n     = len(signal)
     int_d = int(np.floor(delay_samples))
     frac  = delay_samples - int_d
-    taps  = np.arange(-3, 5)
-    h     = np.sinc(taps - frac) * np.hanning(len(taps))
-    h    /= h.sum() + 1e-12
-    filt  = np.convolve(signal.astype(np.float64), h, mode="full")[: len(signal)]
+
+    # Fractional part via windowed-sinc interpolation
+    if frac > 1e-6:
+        taps  = np.arange(-3, 5)
+        h     = np.sinc(taps - frac) * np.hanning(len(taps))
+        h    /= h.sum() + 1e-12
+        sig_f = np.convolve(signal.astype(np.float64), h, mode='full')[:n]
+    else:
+        sig_f = signal.astype(np.float64).copy()
+
+    # Integer part via zero-pad + truncate
     if int_d > 0:
-        return np.concatenate([np.zeros(int_d), filt])[: len(signal)].astype(np.float32)
-    return filt.astype(np.float32)
+        out          = np.empty(n, dtype=np.float32)
+        out[:int_d]  = 0.0
+        out[int_d:]  = sig_f[:n - int_d]
+        return out
+
+    return sig_f.astype(np.float32)
 
 
 def compute_ipd_features(channels: List[np.ndarray], cfg) -> np.ndarray:

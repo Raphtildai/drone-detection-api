@@ -217,33 +217,36 @@ def synthesise_drone(
     t   = np.linspace(0, dur, n, endpoint=False)
     c   = config.SPEED_OF_SOUND
     src = np.asarray(src_xy, dtype=np.float64)
+    # ── Build the SOURCE signal ONCE ──────────────────────────────────────
+    # Harmonic comb
+    y_src = np.zeros(n, dtype=np.float64)
+    for k in range(1, 9):
+        amp = 1.0 / (k ** 1.3) * (0.9 + 0.2 * random.random())
+        ph  = random.uniform(0, 2 * np.pi)
+        jit = 1.0 + 0.003 * np.sin(2 * np.pi * 0.5 * t)
+        y_src += amp * np.sin(2 * np.pi * fundamental * k * jit * t + ph)
+
+    # Pink-ish propwash — generated ONCE so the delay is preserved across mics
+    # noise_level enforced >= 0.05 so GCC-PHAT has broadband content to lock onto
+    noise_amp = max(noise_level, 0.05)
+    wn   = np.random.randn(n)
+    b, a = scipy.signal.butter(1, 0.05)
+    pink = scipy.signal.lfilter(b, a, wn)
+    y_src += noise_amp * pink + noise_amp * 0.5 * np.random.randn(n)
+    # ── End source ────────────────────────────────────────────────────────
 
     channels = []
     for mic in mic_positions:
         dist = max(float(np.linalg.norm(src - mic)), 0.01)
-        sd   = int(dist / c * sr)
-
-        # Harmonic comb
-        y = np.zeros(n, dtype=np.float64)
-        for k in range(1, 9):
-            amp = 1.0 / (k ** 1.3) * (0.9 + 0.2 * random.random())
-            ph  = random.uniform(0, 2 * np.pi)
-            jit = 1.0 + 0.003 * np.sin(2 * np.pi * 0.5 * t)
-            y  += amp * np.sin(2 * np.pi * fundamental * k * jit * t + ph)
 
         # Distance attenuation
-        y /= (dist ** 0.6 + 0.1)
+        y_mic = y_src / (dist ** 0.6 + 0.1)
 
-        # Pink-ish noise (propwash)
-        wn   = np.random.randn(n)
-        b, a = scipy.signal.butter(1, 0.05)
-        pink = scipy.signal.lfilter(b, a, wn)
-        y   += noise_level * pink + noise_level * 0.5 * np.random.randn(n)
+        # Sub-sample fractional delay (replaces integer-only shift)
+        delay_samp = dist / c * sr
+        if delay_samp > 0:
+            y_mic = _fractional_delay(y_mic.astype(np.float32), delay_samp)
 
-        # Propagation delay
-        if sd > 0:
-            y = np.concatenate([np.zeros(sd), y[:-sd]])
-
-        channels.append(y.astype(np.float32))
+        channels.append(y_mic.astype(np.float32))
 
     return channels
