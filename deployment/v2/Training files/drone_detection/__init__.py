@@ -28,7 +28,6 @@ from .audio_processing import AudioProcessor, synthesise_drone
 from .models import (
     DetectionCNN,
     LocalizationCNN,
-    LocalizationCNNLite,
     make_localization_model,
     FocalLoss,
     localization_loss,
@@ -159,7 +158,7 @@ __all__ = [
     # audio
     "AudioProcessor", "synthesise_drone",
     # models
-    "DetectionCNN", "LocalizationCNN", "LocalizationCNNLite",
+    "DetectionCNN", "LocalizationCNN",
     "make_localization_model", "FocalLoss", "localization_loss",
     # datasets
     "MelCacheManager", "MelCachedDataset", "DetectionDataset",

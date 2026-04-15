@@ -94,9 +94,6 @@ class Config:
         self.DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
         self.USE_AMP    = True
 
-        self._gpu_mem_gb  = self._detect_gpu_mem()
-        self.USE_LITE_LOC = self._gpu_mem_gb < 4.0   # auto-select lighter model
-
         # ── Detection thresholds (v15: auto-searched on val, stored in ckpt) ─
         self.DETECTION_THRESHOLD      = 0.62
         self.DETECTION_THRESHOLD_LOW  = 0.35

@@ -38,7 +38,7 @@ import torch
 
 from .config import Config, config
 from .audio_processing import AudioProcessor
-from .models import DetectionCNN, make_localization_model
+from .models import DetectionCNN, LocalizationCNN, make_localization_model
 from .utils import (
     azimuth_deg_to_xy,
     classify_detection_score,
@@ -101,7 +101,7 @@ def load_localization_model(cfg: Optional[Config] = None):
         )
     dev  = torch.device(cfg.DEVICE)
     data = torch.load(ckpt, map_location=dev)
-    m    = make_localization_model(cfg).to(dev)
+    m    = LocalizationCNN(cfg.N_MELS).to(dev)
     m.load_state_dict(data["model_state"])
     m.eval()
     _loc_model = m

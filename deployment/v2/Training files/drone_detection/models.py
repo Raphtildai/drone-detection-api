@@ -8,7 +8,6 @@ Models
 ──────
 DetectionCNN          — frequency-attention CNN, binary drone/non-drone
 LocalizationCNN       — full-capacity multi-mic CNN+IPD localizer
-LocalizationCNNLite   — depthwise-separable lightweight variant (< 4 GB VRAM)
 
 Loss functions
 ──────────────
@@ -129,61 +128,10 @@ class LocalizationCNN(nn.Module):
         mel_feat = self.mel_enc(mel).flatten(1)
         ipd_feat = self.ipd_fc(ipd)
         return self.head(torch.cat([mel_feat, ipd_feat], dim=1))
-
-
-class LocalizationCNNLite(nn.Module):
-    """
-    Resource-constrained localizer using depthwise-separable convolutions.
-    ~4× fewer parameters than LocalizationCNN.
-    Recommended for GPU VRAM < 4 GB (Colab free tier).
-
-    Same input / output signature as LocalizationCNN.
-    """
-
-    def __init__(self, n_mels: int = 64):
-        super().__init__()
-        self.mel_enc = nn.Sequential(
-            self._ds_block(3,   16),
-            self._ds_block(16,  32),
-            self._ds_block(32,  64),
-            self._ds_block(64,  128),
-            nn.AdaptiveAvgPool2d((2, 2)),
-        )
-        self.ipd_fc = nn.Sequential(
-            nn.Linear(3, 16), nn.ReLU(),
-            nn.Linear(16, 16), nn.ReLU(),
-        )
-        fused = 128 * 2 * 2 + 16
-        self.head = nn.Sequential(
-            nn.Linear(fused, 128), nn.ReLU(), nn.Dropout(0.3),
-            nn.Linear(128, 4),
-        )
-
-    @staticmethod
-    def _ds_block(cin: int, cout: int) -> nn.Sequential:
-        return nn.Sequential(
-            nn.Conv2d(cin, cin,  3, padding=1, groups=cin, bias=False),  # depthwise
-            nn.Conv2d(cin, cout, 1, bias=False),                          # pointwise
-            nn.BatchNorm2d(cout),
-            nn.ReLU(),
-            nn.MaxPool2d(2),
-        )
-
-    def forward(self, mel: torch.Tensor, ipd: torch.Tensor) -> torch.Tensor:
-        mel_feat = self.mel_enc(mel).flatten(1)
-        ipd_feat = self.ipd_fc(ipd)
-        return self.head(torch.cat([mel_feat, ipd_feat], dim=1))
-
-
+    
 def make_localization_model(cfg) -> nn.Module:
-    """
-    Factory that selects the full or lite localization model based on
-    cfg.USE_LITE_LOC (auto-set from GPU VRAM, can be overridden).
-    """
-    if getattr(cfg, "USE_LITE_LOC", False):
-        print("🔧 Using LocalizationCNNLite (resource-constrained mode)")
-        return LocalizationCNNLite(cfg.N_MELS)
-    print("🔧 Using LocalizationCNN (full-capacity mode)")
+    """Returns the localization model for training and inference."""
+    print("🔧 Using LocalizationCNN")
     return LocalizationCNN(cfg.N_MELS)
 
 
