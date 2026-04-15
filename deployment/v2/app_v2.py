@@ -1,13 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 app_v2.py — Drone Detection System v2 Flask Application
 ========================================================
-Location: drone-detection-api/deployment/v2/app_v2.py
+Location: deployment/v2/app_v2.py
 
-Aligned with drone_detection_v15.py pipeline:
-  - Uses detect() + localize() (CNN + heuristic hybrid)
-  - Uses localize_multi_drone_v2() (Cartesian solver, fixed TDOA dedup)
-  - Uses PathTracker / DroneTrack from realtime_sessions.py
-  - Reports v15 metrics (focal loss, threshold search, AUROC, AUPRC)
+Uses the drone_detection package (v15) exclusively:
+  - detect() + localize()       CNN + heuristic hybrid
+  - localize_multi_drone()      Cartesian Nelder-Mead solver
+  - synthesise_drone()          fractional-delay synthesis
+  - LocalizationCNN             single model class (no Lite variant)
 
 All API routes are prefixed /api/v2/.
 Default port: 5001  (v1 uses 5000)
@@ -51,10 +52,12 @@ app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 CORS(app, resources={r"/api/v2/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
-# ── Model singleton ───────────────────────────────────────────────────────────
 
-def _get_local_config():
-    from drone_detection_v2 import Config
+# ── Config / model singleton ──────────────────────────────────────────────────
+
+def _get_config():
+    """Return a Config pointed at this deployment's models directory."""
+    from drone_detection import Config
     cfg = Config()
     cfg.DRIVE_MODELS = _THIS_DIR / "models"
     cfg.DRIVE_ROOT   = _THIS_DIR
@@ -62,11 +65,11 @@ def _get_local_config():
     return cfg
 
 
-def get_v2_model():
+def get_model():
     """Load or return cached (model, config) tuple."""
     try:
-        from drone_detection_v2 import load_detection_model
-        cfg = _get_local_config()
+        from drone_detection import load_detection_model
+        cfg = _get_config()
         m   = load_detection_model(cfg)
         return m, cfg
     except Exception as exc:
@@ -134,23 +137,22 @@ def _clean(obj):
 @app.route("/api/v2/version", methods=["GET"])
 def version():
     return jsonify({
-        "version": "5.0",
-        "pipeline": "drone_detection_v15",
+        "version": "2.0",
+        "pipeline": "drone_detection v15",
         "fixes_applied": [
-            "FIX-1: fractional sinc delay synthesis",
-            "FIX-2: cap-hit guard (15 m boundary)",
-            "FIX-3: NaN-safe GCC-PHAT",
-            "FIX-4/5: error chart always populated",
-            "FIX-6: segment hop clamped for short files",
-            "FIX-7: NaN band skip in multi-drone",
-            "FIX-8: synthetic fallback for noise test",
-            "FIX-9: real-time simulated + live mic sessions",
-            "FIX-10: CNN+heuristic hybrid detect() (v15)",
-            "FIX-11: Cartesian Nelder-Mead localize_multi_drone (v15)",
-            "FIX-12: TDOA dedup window 29µs (was 0.05µs)",
-            "FIX-13: Kalman gate 8m, min_hits=1 (v15)",
-            "FIX-14: focal loss + threshold search training (v15)",
-            "FIX-15: feature_stack [log-mel, PCEN, delta] (v15)",
+            "Fractional sinc delay in synthesise_drone()",
+            "Source-level noise delayed with harmonics (GCC-PHAT fix)",
+            "Cartesian Nelder-Mead localize_multi_drone()",
+            "TDOA dedup window 29µs (was 0.05µs — 580x too tight)",
+            "Kalman match gate 8m, min_hits=1",
+            "LocalizationCNN only — LocalizationCNNLite removed",
+            "USE_LITE_LOC removed from Config",
+            "Focal loss + auto threshold search training",
+            "feature_stack [log-mel, PCEN, delta-mel]",
+            "CNN + heuristic hybrid detect()",
+            "Tracker feeds real localize() positions per segment",
+            "analyse_audio_file shows track trajectory plot",
+            "quick_demo prints and plots confirmed tracks",
         ],
         "timestamp": time.time(),
     })
@@ -159,7 +161,7 @@ def version():
 @app.route("/api/v2/status", methods=["GET"])
 def status():
     try:
-        m, cfg = get_v2_model()
+        m, cfg = get_model()
         model_ok = m is not None
     except Exception as exc:
         return jsonify({"status": "error", "message": str(exc)}), 500
@@ -172,18 +174,17 @@ def status():
         }
 
     return jsonify({
-        "status": "ok",
-        "model_loaded": model_ok,
-        "device": str(getattr(cfg, "DEVICE", "unknown")),
-        "mic_positions": (
+        "status":              "ok",
+        "model_loaded":        model_ok,
+        "device":              str(getattr(cfg, "DEVICE", "unknown")),
+        "mic_positions":       (
             cfg.MIC_POSITIONS.tolist()
-            if hasattr(getattr(cfg, "MIC_POSITIONS", None), "tolist")
-            else []
+            if hasattr(getattr(cfg, "MIC_POSITIONS", None), "tolist") else []
         ),
-        "sample_rate": getattr(cfg, "SR", 22050),
+        "sample_rate":         getattr(cfg, "SR", 22050),
         "detection_threshold": getattr(cfg, "DETECTION_THRESHOLD", 0.62),
-        "active_sessions": active,
-        "timestamp": time.time(),
+        "active_sessions":     active,
+        "timestamp":           time.time(),
     })
 
 
@@ -198,7 +199,7 @@ def detect_single():
     drone_x     : hint X position metres (default 1.0)
     drone_y     : hint Y position metres (default 0.8)
     threshold   : detection threshold 0.1–0.99 (default cfg.DETECTION_THRESHOLD)
-    n_segments  : number of 3-second segments (default 5)
+    n_segments  : number of segments to analyse (default 5)
     force_detect: skip classifier, always localise (default false)
     """
     if "file" not in request.files:
@@ -207,25 +208,21 @@ def detect_single():
     if _file_ext(f.filename) not in ALLOWED_AUDIO:
         return jsonify({"error": f"Unsupported format: {f.filename}"}), 400
 
-    drone_x      = float(request.form.get("drone_x",    1.0))
-    drone_y      = float(request.form.get("drone_y",    0.8))
-    n_segments   = int(  request.form.get("n_segments", 5))
+    n_segments   = int(  request.form.get("n_segments",  5))
     force_detect = request.form.get("force_detect", "false").lower() == "true"
 
     tmp = _save_upload(f, suffix=_file_ext(f.filename) or ".wav")
     try:
-        m, cfg = get_v2_model()
+        m, cfg = get_model()
         threshold = float(request.form.get("threshold", cfg.DETECTION_THRESHOLD))
 
-        from drone_detection_v2 import AudioProcessor, detect, localize
+        from drone_detection import AudioProcessor, detect, localize
 
-        ap = AudioProcessor(cfg)
-        y  = ap.pad_or_truncate(ap.load(tmp))
-
-        # Run detection on the full clip (replicated to 3 channels)
+        ap       = AudioProcessor(cfg)
+        y        = ap.pad_or_truncate(ap.load(tmp))
         channels = [y, y, y]
-        det = detect(channels, cfg)
 
+        det      = detect(channels, cfg)
         prob     = float(det["probability"])
         detected = force_detect or (prob >= threshold)
 
@@ -234,28 +231,28 @@ def detect_single():
             loc = localize(channels, cfg)
 
         resp = _clean({
-            "detected":    detected,
-            "probability": prob,
-            "cnn_probability": float(det.get("cnn_probability", prob)),
+            "detected":              detected,
+            "probability":           prob,
+            "cnn_probability":       float(det.get("cnn_probability", prob)),
             "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
-            "position":    loc["xy_position"] if loc else None,
-            "azimuth_deg": loc["azimuth_deg"] if loc else None,
-            "distance_m":  loc["distance_m"] if loc else None,
-            "height_m":    loc["height_m"] if loc else None,
+            "position":              loc["xy_position"] if loc else None,
+            "azimuth_deg":           loc["azimuth_deg"] if loc else None,
+            "distance_m":            loc["distance_m"]  if loc else None,
+            "height_m":              loc["height_m"]    if loc else None,
             "detection_summary": {
-                "total_segments": n_segments,
+                "total_segments":    n_segments,
                 "detected_segments": 1 if detected else 0,
-                "max_confidence": prob,
+                "max_confidence":    prob,
             },
             "n_tracks": 0,
         })
 
         if detected:
             socketio.emit("drone_detected_v2", {
-                "timestamp": time.time(),
+                "timestamp":  time.time(),
                 "confidence": prob,
-                "position": resp.get("position"),
-                "source": f.filename,
+                "position":   resp.get("position"),
+                "source":     f.filename,
             })
 
         return jsonify(resp)
@@ -276,7 +273,8 @@ def detect_3mic():
     -----------
     mic1, mic2, mic3 : one audio file per mic (required)
     threshold        : detection threshold (default cfg.DETECTION_THRESHOLD)
-    hint_x, hint_y   : initial search position (optional)
+    hint_x, hint_y   : initial search position (optional, unused — kept for
+                       API compatibility)
     """
     for key in ("mic1", "mic2", "mic3"):
         if key not in request.files:
@@ -284,24 +282,22 @@ def detect_3mic():
 
     tmps: list = []
     try:
-        m, cfg = get_v2_model()
+        m, cfg    = get_model()
         threshold = float(request.form.get("threshold", cfg.DETECTION_THRESHOLD))
 
         for key in ("mic1", "mic2", "mic3"):
-            tmps.append(
-                _save_upload(
-                    request.files[key],
-                    suffix=_file_ext(request.files[key].filename) or ".wav",
-                )
-            )
+            tmps.append(_save_upload(
+                request.files[key],
+                suffix=_file_ext(request.files[key].filename) or ".wav",
+            ))
 
-        from drone_detection_v2 import AudioProcessor, detect, localize
+        from drone_detection import AudioProcessor, detect, localize
 
-        ap = AudioProcessor(cfg)
+        ap       = AudioProcessor(cfg)
         channels = [ap.pad_or_truncate(ap.load(p)) for p in tmps]
 
-        det  = detect(channels, cfg)
-        prob = float(det["probability"])
+        det      = detect(channels, cfg)
+        prob     = float(det["probability"])
         detected = prob >= threshold
 
         loc = None
@@ -320,10 +316,10 @@ def detect_3mic():
                 "confidence_radius": 0.0,
             })
             socketio.emit("drone_detected_v2", {
-                "timestamp": time.time(),
+                "timestamp":  time.time(),
                 "confidence": prob,
-                "position": _clean(loc["xy_position"]),
-                "source": "3-mic",
+                "position":   _clean(loc["xy_position"]),
+                "source":     "3-mic",
             })
 
         return jsonify(resp)
@@ -338,7 +334,7 @@ def detect_3mic():
 @app.route("/api/v2/detect-multi", methods=["POST"])
 def detect_multi():
     """
-    Multi-drone detection using v15 Cartesian Nelder-Mead localizer.
+    Multi-drone detection using Cartesian Nelder-Mead localizer.
 
     Form fields
     -----------
@@ -352,28 +348,17 @@ def detect_multi():
 
     tmps: list = []
     try:
-        m, cfg = get_v2_model()
+        m, cfg     = get_model()
         threshold  = float(request.form.get("threshold",  cfg.DETECTION_THRESHOLD))
         max_drones = int(  request.form.get("max_drones", 3))
 
         for key in ("mic1", "mic2", "mic3"):
-            tmps.append(
-                _save_upload(
-                    request.files[key],
-                    suffix=_file_ext(request.files[key].filename) or ".wav",
-                )
-            )
+            tmps.append(_save_upload(
+                request.files[key],
+                suffix=_file_ext(request.files[key].filename) or ".wav",
+            ))
 
-        from drone_detection_v2 import AudioProcessor, detect
-
-        # Try the v15 Cartesian solver first, fall back to original
-        try:
-            from drone_detection_v2 import localize_multi_drone_v2 as _localize_multi
-        except ImportError:
-            try:
-                from drone_detection_v2 import localize_multi_drone as _localize_multi
-            except ImportError:
-                return jsonify({"error": "localize_multi_drone not available"}), 500
+        from drone_detection import AudioProcessor, detect, localize_multi_drone
 
         ap       = AudioProcessor(cfg)
         channels = [ap.pad_or_truncate(ap.load(p)) for p in tmps]
@@ -383,7 +368,7 @@ def detect_multi():
 
         drones_raw = []
         if prob >= threshold:
-            drones_raw = _localize_multi(channels, cfg, max_drones=max_drones)
+            drones_raw = localize_multi_drone(channels, cfg, max_drones=max_drones)
 
         drones_out = [
             {
@@ -394,7 +379,7 @@ def detect_multi():
                 "reliable":          float(d.get("tdoa_residual", 1.0)) < 1e-8,
                 "confidence_radius": float(d.get("confidence_radius") or 0.0),
                 "band_hz":           [0, 0],
-                "tdoa_strength":     float(d.get("tdoa_residual", 0.0)),
+                "tdoa_residual":     float(d.get("tdoa_residual", 0.0)),
             }
             for i, d in enumerate(drones_raw)
         ]
@@ -426,14 +411,14 @@ def detect_multi():
 @app.route("/api/v2/noise-test", methods=["POST"])
 def noise_test():
     """
-    SNR sweep robustness test.
+    SNR sweep robustness test using synthesise_drone().
 
     Form fields
     -----------
-    snr_min   : lowest SNR level dB (default -5)
+    snr_min   : lowest SNR level dB  (default -5)
     snr_max   : highest SNR level dB (default 20)
-    snr_step  : step dB (default 5)
-    n_clips   : clips per level (default 20)
+    snr_step  : step dB              (default 5)
+    n_clips   : clips per level      (default 20)
     """
     snr_min  = int(request.form.get("snr_min",  -5))
     snr_max  = int(request.form.get("snr_max",  20))
@@ -442,12 +427,9 @@ def noise_test():
     snr_levels = list(range(snr_min, snr_max + 1, snr_step))
 
     try:
-        m, cfg = get_v2_model()
+        m, cfg = get_model()
 
-        from drone_detection_v2 import (
-            AudioProcessor, detect, synthesise_drone,
-        )
-
+        from drone_detection import AudioProcessor, detect, synthesise_drone
         import numpy as np
 
         ap      = AudioProcessor(cfg)
@@ -455,19 +437,17 @@ def noise_test():
         results = {}
 
         for snr_db in snr_levels:
-            n_det = 0
+            n_det    = 0
             conf_sum = 0.0
             for _ in range(n_clips):
-                # Synthesise a random near-field drone position
                 r     = np.random.uniform(0.3, 2.5)
                 theta = np.random.uniform(0, 2 * np.pi)
                 cx, cy = float(cfg.ARRAY_CENTER[0]), float(cfg.ARRAY_CENTER[1])
                 pos   = [cx + r * np.cos(theta), cy + r * np.sin(theta)]
                 fund  = int(np.random.choice([80, 90, 100, 110, 120, 130]))
                 chs   = synthesise_drone(mics, pos, fundamental=fund,
-                                         noise_level=0.03)
+                                         noise_level=0.05)
                 chs   = [ap.pad_or_truncate(c) for c in chs]
-                # Add noise at specified SNR
                 if snr_db < 30:
                     chs = [ap.add_noise(c, snr_db) for c in chs]
                 det = detect(chs, cfg)
@@ -478,15 +458,11 @@ def noise_test():
             results[snr_db] = {
                 "detection_rate": round(n_det / n_clips * 100, 1),
                 "avg_confidence": round(conf_sum / n_clips, 4),
-                "n_clips": n_clips,
-                "n_detected": n_det,
+                "n_clips":        n_clips,
+                "n_detected":     n_det,
             }
 
-        return jsonify({
-            "status":     "ok",
-            "snr_levels": snr_levels,
-            "results":    results,
-        })
+        return jsonify({"status": "ok", "snr_levels": snr_levels, "results": results})
 
     except Exception as exc:
         log.exception("noise_test failed")
@@ -501,46 +477,47 @@ def path_simulate():
     Form fields
     -----------
     n_waypoints : number of waypoints (default 8)
-    spread      : max radius metres (default 2.0)
+    spread      : max radius metres   (default 2.0)
     """
     n_waypoints = int(  request.form.get("n_waypoints", 8))
     spread      = float(request.form.get("spread",      2.0))
 
     try:
-        m, cfg = get_v2_model()
+        m, cfg = get_model()
 
-        from drone_detection_v2 import (
-            AudioProcessor, detect, localize, synthesise_drone,
-        )
+        from drone_detection import AudioProcessor, detect, localize, synthesise_drone
         from realtime_sessions import PathTracker, DroneTrack
-
         import numpy as np
 
         ap = AudioProcessor(cfg)
         cx, cy = float(cfg.ARRAY_CENTER[0]), float(cfg.ARRAY_CENTER[1])
 
-        angles  = np.linspace(0, 2 * np.pi * 1.5, n_waypoints)
-        radii   = np.linspace(0.3, min(spread, 2.5), n_waypoints)
-        waypts  = [
-            (cx + r * np.cos(a), cy + r * np.sin(a))
+        import math
+        angles = np.linspace(0, 2 * np.pi * 1.5, n_waypoints)
+        radii  = np.linspace(0.3, min(spread, 2.5), n_waypoints)
+        waypts = [
+            (cx + r * math.cos(a), cy + r * math.sin(a))
             for r, a in zip(radii, angles)
         ]
 
         DroneTrack._id_counter = 0
-        tracker   = PathTracker(cfg)
-        base_ts   = time.time()
+        tracker  = PathTracker(cfg)
+        base_ts  = time.time()
 
         for i, wp in enumerate(waypts):
             chs = synthesise_drone(
                 cfg.MIC_POSITIONS, wp,
                 fundamental=int(np.random.choice([90, 100, 110])),
+                noise_level=0.05,
             )
             chs = [ap.pad_or_truncate(c) for c in chs]
             det = detect(chs, cfg)
             if det["detected"]:
                 loc = localize(chs, cfg)
-                tracker.update([np.array(loc["xy_position"])],
-                               timestamp=base_ts + i)
+                tracker.update(
+                    [np.array(loc["xy_position"])],
+                    timestamp=base_ts + i,
+                )
 
         tracks_out = []
         for t in tracker.confirmed_tracks:
@@ -598,7 +575,7 @@ def realtime_start():
         _remove_session(session_id)
 
     try:
-        m, cfg = get_v2_model()
+        m, cfg = get_model()
     except Exception as exc:
         return jsonify({"error": f"Model not ready: {exc}"}), 500
 
@@ -610,13 +587,14 @@ def realtime_start():
         n_drones    = int(  request.form.get("n_drones",    1))
         raw_pattern = request.form.get("pattern", "circle")
         tick_rate   = float(request.form.get("tick_rate",   1.0))
-        noise_level = float(request.form.get("noise_level", 0.04))
+        noise_level = float(request.form.get("noise_level", 0.05))
         spread      = float(request.form.get("spread",      1.5))
 
-        if raw_pattern == "multi":
-            patterns = ["circle", "figure8", "random"][:n_drones]
-        else:
-            patterns = [raw_pattern] * n_drones
+        patterns = (
+            ["circle", "figure8", "random"][:n_drones]
+            if raw_pattern == "multi"
+            else [raw_pattern] * n_drones
+        )
 
         session = SimulatedRealtimeSession(
             cfg, socketio,
@@ -686,7 +664,7 @@ def realtime_status_endpoint():
 def list_audio_devices():
     try:
         import pyaudio
-        pa = pyaudio.PyAudio()
+        pa      = pyaudio.PyAudio()
         devices = []
         for i in range(pa.get_device_count()):
             info = pa.get_device_info_by_index(i)
@@ -705,39 +683,41 @@ def list_audio_devices():
         return jsonify({"devices": [], "error": str(exc)})
 
 
-# ── Frontend + WebSocket ───────────────────────────────────────────────────────
+# ── Frontend ───────────────────────────────────────────────────────────────────
 
 @app.route("/")
-@app.route("/v2")
-@app.route("/v2/")
-def index_v2():
+def index():
     return render_template("index_v2.html")
 
 
-@app.route("/static/v2/<path:filename>")
-def static_v2(filename):
+@app.route("/static/<path:filename>")
+def static_files(filename):
     return send_from_directory("static", filename)
 
 
-@socketio.on("connect", namespace="/v2")
+# ── WebSocket ──────────────────────────────────────────────────────────────────
+
+@socketio.on("connect")
 def ws_connect():
-    log.info("WebSocket client connected (v2 namespace)")
+    log.info("WebSocket client connected")
     emit("status_v2", {
-        "message": "Connected to Drone Detection v2",
-        "version": "5.0",
-        "pipeline": "drone_detection_v15",
+        "message":  "Connected to Drone Detection v2",
+        "version":  "2.0",
+        "pipeline": "drone_detection v15",
     })
 
 
-@socketio.on("disconnect", namespace="/v2")
+@socketio.on("disconnect")
 def ws_disconnect():
-    log.info("WebSocket client disconnected (v2 namespace)")
+    log.info("WebSocket client disconnected")
 
 
-@socketio.on("ping_v2", namespace="/v2")
+@socketio.on("ping_v2")
 def ws_ping(data):
     emit("pong_v2", {"timestamp": time.time()})
 
+
+# ── Error handlers ─────────────────────────────────────────────────────────────
 
 @app.errorhandler(413)
 def too_large(e):

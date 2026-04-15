@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-run_server_v2.py — Drone Detection System v2 (pipeline aligned with v15)
-=========================================================================
-Location: drone-detection-api/deployment/v2/run_server_v2.py
+run_server_v2.py — Drone Detection System v2 entry point
+=========================================================
+Location: deployment/v2/run_server_v2.py
+
+Directory layout expected:
+    drone-detection-api/               ← REPO_ROOT
+    ├── drone_detection/               ← v15 package (drone_detection/__init__.py)
+    └── deployment/
+        └── v2/                        ← THIS directory (port 5001)
+            ├── run_server_v2.py
+            ├── app_v2.py
+            ├── realtime_sessions.py
+            ├── real_time_audio_v2.py
+            ├── requirements_v2.txt
+            ├── models/
+            │   ├── best_detection.pth
+            │   └── best_localization.pth
+            ├── logs/
+            └── templates/
+                └── index_v2.html
 
 Usage:
     python run_server_v2.py
-    python run_server_v2.py --port 5001
-    python run_server_v2.py --host 0.0.0.0 --no-debug
-
-Directory layout this script expects:
-    drone-detection-api/               ← REPO_ROOT
-    ├── drone_detection_v2.py          ← core ML module (v15 compatible)
-    └── deployment/
-        └── v2/                        ← THIS directory (port 5001)
-            ├── run_server_v2.py       ← this file
-            ├── app_v2.py
-            ├── real_time_audio_v2.py
-            ├── realtime_sessions.py
-            ├── requirements_v2.txt
-            ├── models/best_model.pth
-            └── templates/index_v2.html
+    python run_server_v2.py --port 5001 --host 0.0.0.0 --no-debug
 """
 
 from __future__ import annotations
@@ -32,7 +36,7 @@ import os
 import sys
 from pathlib import Path
 
-# ── Resolve paths BEFORE any app import ───────────────────────────────────────
+# ── Resolve paths before any app import ───────────────────────────────────────
 THIS_DIR  = Path(__file__).parent.resolve()   # deployment/v2/
 REPO_ROOT = THIS_DIR.parent.parent.resolve()  # drone-detection-api/
 
@@ -55,14 +59,19 @@ def _check_module(name: str) -> bool:
 def _preflight() -> None:
     print(f"\n📂 deployment dir : {THIS_DIR}")
     print(f"📂 repo root      : {REPO_ROOT}")
-    print(f"\n🔍 Module check:")
 
-    ok = _check_module("drone_detection_v2")
-    # v15 patch modules are optional but desirable
-    for optional in ("multidrone_localization_patch_v2",):
-        found = _check_module(optional)
-        if not found:
-            print(f"   ℹ️  {optional} not found — optional, basic fallback will be used")
+    print("\n🔍 Module check:")
+    ok = _check_module("drone_detection")
+    _check_module("realtime_sessions")
+    _check_module("real_time_audio_v2")
+
+    # Optional — PyAudio only needed for live mic mode
+    try:
+        import pyaudio  # noqa: F401
+        print("   ✅ pyaudio  (live mic mode available)")
+    except ImportError:
+        print("   ℹ️  pyaudio not installed — live mic mode disabled "
+              "(simulated mode still works)")
 
     if not ok:
         print()
@@ -76,11 +85,10 @@ def _preflight() -> None:
         print(f"    export PYTHONPATH={REPO_ROOT}:$PYTHONPATH")
         print(f"    python run_server_v2.py")
         print()
-        print(f"  Expected file: {REPO_ROOT / 'drone_detection_v2.py'}")
+        print(f"  Expected package: {REPO_ROOT / 'drone_detection'}/__init__.py")
         sys.exit(1)
 
-    print()
-    print("🔍 Directory check:")
+    print("\n🔍 Directory check:")
     for d in ("templates", "static", "models", "logs"):
         path = THIS_DIR / d
         if not path.exists():
@@ -89,26 +97,32 @@ def _preflight() -> None:
         else:
             print(f"   ✅ {path}")
 
-    model_candidates = [
-        THIS_DIR / "models" / "best_model.pth",
-        REPO_ROOT / "models" / "best_model.pth",
-        Path("/content/drive/MyDrive/drone_project/models/best_model.pth"),
-    ]
+    # Model files
+    print("\n🔍 Model check:")
+    model_candidates = {
+        "best_detection.pth": [
+            THIS_DIR   / "models" / "best_detection.pth",
+            REPO_ROOT  / "models" / "best_detection.pth",
+            Path("/content/drive/MyDrive/drone_v15/models/best_detection.pth"),
+        ],
+        "best_localization.pth": [
+            THIS_DIR   / "models" / "best_localization.pth",
+            REPO_ROOT  / "models" / "best_localization.pth",
+            Path("/content/drive/MyDrive/drone_v15/models/best_localization.pth"),
+        ],
+    }
     env_path = os.environ.get("MODEL_PATH")
     if env_path:
-        model_candidates.insert(0, Path(env_path))
+        for key in model_candidates:
+            model_candidates[key].insert(0, Path(env_path) / key)
 
-    print("\n🔍 Model check:")
-    found_model = False
-    for mp in model_candidates:
-        if mp.exists():
-            print(f"   ✅ {mp}")
-            found_model = True
-            break
-    if not found_model:
-        print("   ⚠️  best_model.pth not found.")
-        print(f"      Copy it to: {THIS_DIR / 'models' / 'best_model.pth'}")
-        print("      Or set:     export MODEL_PATH=/path/to/best_model.pth")
+    for model_name, candidates in model_candidates.items():
+        found = next((p for p in candidates if p.exists()), None)
+        if found:
+            print(f"   ✅ {model_name}  →  {found}")
+        else:
+            print(f"   ⚠️  {model_name} not found")
+            print(f"      Copy it to: {THIS_DIR / 'models' / model_name}")
 
 
 # ── Argument parsing ───────────────────────────────────────────────────────────
@@ -149,8 +163,8 @@ def main() -> int:
     log_file = _setup_logging(debug)
 
     print()
-    print("🚁 Drone Detection System v2  (pipeline: drone_detection_v15)")
-    print("=" * 55)
+    print("🚁 Drone Detection System v2  (pipeline: drone_detection v15)")
+    print("=" * 60)
     print(f"   Host     : {args.host}")
     print(f"   Port     : {args.port}")
     print(f"   Debug    : {'ON' if debug else 'OFF'}")
@@ -187,7 +201,8 @@ def main() -> int:
     ]:
         print(f"   {method}  {base}{path}")
     print()
-    print("WebSocket: realtime_frame, realtime_stats, realtime_status")
+    print("WebSocket events: drone_detected_v2, realtime_frame,")
+    print("                  realtime_stats, realtime_status")
     print()
     print("⏹  Ctrl+C to stop\n")
 

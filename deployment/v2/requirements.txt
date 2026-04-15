@@ -1,0 +1,20 @@
+# Drone Detection System v2 — Python dependencies
+# Install with: pip install -r requirements_v2.txt
+
+# Web framework
+flask>=2.3.0
+flask-cors>=4.0.0
+flask-socketio>=5.3.0
+eventlet>=0.33.0          # async backend for SocketIO
+
+# ML / audio (must match the drone_detection package requirements)
+torch>=2.0.0
+torchaudio>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# Optional — live mic capture
+# pyaudio>=0.2.13         # uncomment if using live mic mode
+#                         # also requires: apt-get install portaudio19-dev
