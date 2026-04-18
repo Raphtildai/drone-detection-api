@@ -228,9 +228,8 @@ def diagnose_file(
         veto   = feats.get("veto", "-")
 
         try:
-            mel = ap.mel(ap.pad_or_truncate(seg))
-            x   = torch.tensor(np.stack([mel, mel, mel], axis=0),
-                               dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
+            feat = ap.feature_stack(ap.pad_or_truncate(seg))
+            x    = torch.tensor(feat, dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
             with torch.no_grad():
                 cnn_p = float(torch.softmax(m(x), dim=1)[0, 1].item())
         except Exception:

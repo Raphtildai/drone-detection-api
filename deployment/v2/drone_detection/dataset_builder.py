@@ -54,8 +54,8 @@ try:
 except ImportError:
     _LIBROSA_OK = False
 
-from drone_detection.config import AUDIO_EXTS, config as _default_cfg
-from drone_detection.audio import AudioProcessor, load_audio_any
+from .config import AUDIO_EXTS, config as _default_cfg
+from .audio import AudioProcessor, load_audio_any
 
 
 # ══════════════════════════════════════════════════════════════════════════════

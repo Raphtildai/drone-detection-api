@@ -428,6 +428,7 @@ def plot_polar_azimuth(
     title:  str  = "Detected Drone Azimuths",
     cfg:    Optional[Config] = None,
     save:   bool = True,
+    true_azimuths: Optional[List[float]] = None,  
 ):
     cfg = cfg or config
     fig = plt.figure(figsize=(6, 6), facecolor=PLOT_STYLE["bg"])
@@ -435,11 +436,23 @@ def plot_polar_azimuth(
     ax.set_facecolor(PLOT_STYLE["panel"])
     ax.tick_params(colors=PLOT_STYLE["text"])
     ax.title.set_color(PLOT_STYLE["text"])
+
+    # Predicted azimuths — blue bars
     rads = np.radians([90 - a for a in azimuth_degs])
     counts, edges = np.histogram(rads, bins=36, range=(-np.pi, np.pi))
     centers = 0.5 * (edges[:-1] + edges[1:])
-    ax.bar(centers, counts, width=edges[1] - edges[0], alpha=0.8,
-           color=PLOT_STYLE["accent"], edgecolor=PLOT_STYLE["bg"])
+    ax.bar(centers, counts, width=edges[1] - edges[0], alpha=0.7,
+           color=PLOT_STYLE["accent"], edgecolor=PLOT_STYLE["bg"], label="Predicted")
+
+    # True azimuths — orange markers (if provided)
+    if true_azimuths:
+        true_rads = np.radians([90 - a for a in true_azimuths])
+        true_counts, _ = np.histogram(true_rads, bins=36, range=(-np.pi, np.pi))
+        ax.bar(centers, true_counts, width=edges[1] - edges[0], alpha=0.45,
+               color=PLOT_STYLE["warn"], edgecolor=PLOT_STYLE["bg"], label="True")
+        ax.legend(loc="upper right", facecolor=PLOT_STYLE["panel_alt"],
+                  labelcolor=PLOT_STYLE["text"], fontsize=8)
+
     ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
     ax.set_title(title, pad=12); ax.grid(color=PLOT_STYLE["grid"], alpha=0.4)
     plt.tight_layout()

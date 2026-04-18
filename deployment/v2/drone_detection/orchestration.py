@@ -75,7 +75,7 @@ from .datasets import (
 from .training import (
     DetectionTrainer,
     LocalizationTrainer,
-    train_localization_v2,
+    train_localization,
 )
 from .inference import (
     load_detection_model,
@@ -593,19 +593,6 @@ def train_detection(
     download_builtin_detection_dataset: Optional[bool] = None,
     download_external_audio:          Optional[bool]  = None,
 ):
-    """
-    Full detection training pipeline.
-
-    Steps
-    ─────
-    1. (Optional) Download DroneAudioDataset
-    2. (Optional) Scrape external audio
-    3. (Optional) Import custom builder dataset
-    4. Generate mixed drone + background augmentations
-    5. Build mel feature cache
-    6. Inject synthetic drone samples
-    7. Train DetectionCNN with FocalLoss + threshold search
-    """
     cfg = cfg or config
     cfg.ensure_dirs()
     _set_seed(cfg.SEED)
@@ -625,27 +612,71 @@ def train_detection(
     print("  STAGE 1 — Detection Model")
     print("=" * 70)
 
+    # ── SOURCE 1: Builtin GitHub DroneAudioDataset ────────────────────────
     if download_builtin_detection_dataset:
+        print("\n📥 [1/3] Builtin DroneAudioDataset …")
         DroneAudioDatasetManager(cfg).prepare()
     else:
-        print("ℹ️  Skipping built-in dataset download.")
+        print("ℹ️  [1/3] Skipping built-in dataset download.")
         for split in ["train", "val", "test"]:
             for label in ["drone", "non_drone"]:
                 (cfg.PROCESSED_DIR / "detection" / split / label).mkdir(parents=True, exist_ok=True)
 
+    # ── SOURCE 2: External scraped audio ─────────────────────────────────
     if download_external_audio:
+        print("\n🌐 [2/3] External audio scraping …")
         from .dataset_builder import AudioWebScraper, _incorporate_scraped_audio
         AudioWebScraper(cfg).download(force=False)
         _incorporate_scraped_audio(cfg, force=False)
     else:
-        print("ℹ️  Skipping external audio scraping.")
+        print("ℹ️  [2/3] Skipping external audio scraping.")
 
+    # ── SOURCE 3: Custom builder dataset ─────────────────────────────────
     if use_custom_builder:
+        print("\n📦 [3/3] Custom builder dataset …")
         import_custom_builder_dataset(
             cfg, getattr(cfg, "CUSTOM_DATASET_ROOT", None), force=False,
             include_background_pool_as_non_drone=cfg.CUSTOM_DATASET_COPY_BACKGROUNDS_AS_NON_DRONE,
         )
+    else:
+        print("ℹ️  [3/3] No custom builder dataset configured.")
 
+    # ── Audit combined sources before proceeding ──────────────────────────
+    print("\n📊 Combined dataset audit (pre-mix):")
+    det = cfg.PROCESSED_DIR / "detection"
+    total_drone = total_non_drone = 0
+    for split in ["train", "val", "test"]:
+        for label in ["drone", "non_drone"]:
+            d = det / split / label
+            if not d.exists():
+                print(f"   ⚠️  MISSING: {split}/{label}")
+                continue
+            all_wavs  = list(d.glob("*.wav"))
+            builtin   = [f for f in all_wavs if not f.stem.startswith(("custom", "mixdrone", "synth"))]
+            custom    = [f for f in all_wavs if f.stem.startswith("custom")]
+            mixed     = [f for f in all_wavs if f.stem.startswith("mixdrone")]
+            print(f"   {split:5s}/{label:10s}  total={len(all_wavs):4d}  "
+                  f"builtin={len(builtin):4d}  custom={len(custom):4d}  mixed={len(mixed):4d}")
+            if label == "drone":
+                total_drone     += len(all_wavs)
+            else:
+                total_non_drone += len(all_wavs)
+
+    # Hard-stop if no drone files at all — nothing to train on
+    if total_drone == 0:
+        raise RuntimeError(
+            "❌ No drone audio files found after all import steps. "
+            "Check download flags and custom dataset root."
+        )
+    if total_non_drone == 0:
+        raise RuntimeError(
+            "❌ No non-drone audio files found after all import steps. "
+            "Check download flags and background pool."
+        )
+    print(f"\n   ✅ Total drone={total_drone}  non_drone={total_non_drone}  "
+          f"combined={total_drone + total_non_drone}")
+
+    # ── Mixed augmentation, cache, training ──────────────────────────────
     generate_mixed_drone_training_audio(cfg, force=force_regen_mixed_audio)
     report_detection_split_counts(cfg)
 

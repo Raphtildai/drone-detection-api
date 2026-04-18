@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-datasets.py
+datasets.py  (BPF energy ratio feature + measured BPF synthesis)
 ───────────
 All PyTorch Dataset classes, cache builders, and data-manager utilities.
 
-Contents
-────────
-MelCacheManager           — builds on-disk .npy feature cache (v15 features)
-MelCachedDataset          — loads from cache with spec-augment
-DetectionDataset          — loads raw WAVs for detection (with augmentation)
-LocalizationDataset       — loads 3-mic sessions for localization
-SyntheticLocDataset       — fast fully-synthetic localization dataset
-SyntheticLocDatasetV2     — grid-conditioned, physics-aware (loc patch v1)
-DroneAudioDatasetManager  — downloads & prepares the DroneAudioDataset
-UaVirBASEDatasetManager   — downloads & prepares UaVirBASE (position-grouped)
+Includes:
+  LocalizationDataset
+    - When cfg.BPF_ENERGY_RATIO_AS_FEATURE is True, the returned ipd tensor
+      has shape (4,): [tau01, tau02, tau12, bpf_energy_ratio].
+    - BPF energy ratio is computed from channel 0 using the label's BPF Hz
+      if present, otherwise falls back to estimating the fundamental.
 
-Dataloader factory
-──────────────────
-get_det_dataloaders()     — returns (train, val, test) DataLoader objects
+  SyntheticLocDatasetV2
+    - drone_type sampled from {"mavic_pro", "mavic_2_pro", "mavic_mini",
+      "generic_quad"} to match the real recording scenarios.
+    - Fundamental drawn from cfg.sample_fundamental_hz(drone_type) so
+      frequency matches Q2 measurements.
+    - noise_profile randomly chosen per sample from "indoor"/"outdoor".
+    - BPF energy ratio injected when cfg.BPF_ENERGY_RATIO_AS_FEATURE is True.
+
+  SyntheticLocDataset  — same BPF ratio injection (simpler variant)
 """
 
 import json
@@ -37,7 +39,7 @@ import soundfile as sf
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 
-from .config import Config, config, AUDIO_EXTS
+from .config import Config, config, AUDIO_EXTS, DRONE_BPF_PROFILES
 from .audio_processing import AudioProcessor, synthesise_drone
 from .utils import (
     compute_ipd_features,
@@ -50,22 +52,79 @@ from .utils import (
     _ensure_remotezip,
 )
 
-# JSON keys searched when parsing UaVirBASE label files
 _AZ_KEYS   = ["azimuth_deg","azimuth","az","Azimuth","AZ","bearing","heading","direction_deg","direction"]
 _DIST_KEYS = ["distance_m","distance","dist","Distance","range","range_m","horizontal_distance","slant_range"]
 _HT_KEYS   = ["height_m","height","alt","altitude","Height","z","elevation","Elevation","altitude_m","z_m","height_agl"]
 
-# Real UaVirBASE measurement grid (used by SyntheticLocDatasetV2)
-_REAL_AZ_DEG   = [0, 45, 90, 135, 180, 225, 270, 315]
-_REAL_DIST_M   = [10.0, 20.0]
-_REAL_HT_M     = [10.0, 20.0]
-_DRONE_FUNDAMENTALS = {
-    "dji_mavic":   [87,  174, 261],
-    "dji_phantom": [100, 200, 300],
-    "parrot":      [73,  146, 219],
-    "generic_quad":[110, 220, 330],
-    "hexarotor":   [65,  130, 195],
-}
+# Real UaVirBASE measurement grid
+_REAL_AZ_DEG  = [0, 45, 90, 135, 180, 225, 270, 315]
+_REAL_DIST_M  = [10.0, 20.0]
+_REAL_HT_M    = [10.0, 20.0]
+
+# Drone types weighted toward the recorded PannoniaFS drones
+_SYNTH_DRONE_TYPES  = ["mavic_pro", "mavic_2_pro", "mavic_mini", "generic_quad"]
+_SYNTH_DRONE_WEIGHTS = [0.30,        0.30,          0.25,         0.15]
+
+
+# ── BPF energy ratio helper ──────────────────────────────────────────────────
+
+def _compute_bpf_ratio(
+    channels: List[np.ndarray],
+    bpf_hz: float,
+    cfg: Config,
+) -> float:
+    """
+    Compute the BPF energy ratio for the first channel of a multi-mic session.
+    Returns a float in [0, 1].
+    """
+    ap = AudioProcessor(cfg)
+    try:
+        return float(ap.compute_bpf_energy_ratio(
+            channels[0], bpf_hz=bpf_hz, bw_hz=20.0, n_harmonics=4
+        ))
+    except Exception:
+        return 0.0
+
+
+def _estimate_bpf_hz(y: np.ndarray, sr: int) -> float:
+    """
+    Estimate the blade-pass fundamental from a mono signal using
+    a short-time spectral peak search in 50–700 Hz.
+    Used as fallback when the label does not contain BPF information.
+    """
+    try:
+        import librosa
+        S    = np.abs(librosa.stft(y, n_fft=2048, hop_length=512))
+        Sm   = S.mean(axis=1)
+        freqs = librosa.fft_frequencies(sr=sr, n_fft=2048)
+        mask  = (freqs >= 50) & (freqs <= 700)
+        peak_idx = int(np.argmax(Sm[mask]))
+        return float(freqs[mask][peak_idx])
+    except Exception:
+        return 200.0  # fallback
+
+
+def _build_ipd_tensor(
+    channels: List[np.ndarray],
+    bpf_hz: float,
+    cfg: Config,
+    augment: bool,
+) -> torch.Tensor:
+    """
+    Build the IPD (+ optional BPF energy ratio) feature tensor.
+
+    Returns shape (3,) or (4,) depending on cfg.BPF_ENERGY_RATIO_AS_FEATURE.
+    """
+    ipd = compute_ipd_features(channels, cfg)   # shape (3,)
+
+    if getattr(cfg, "BPF_ENERGY_RATIO_AS_FEATURE", False):
+        ratio = _compute_bpf_ratio(channels, bpf_hz, cfg)
+        # Light noise augmentation on the ratio to prevent memorisation
+        if augment:
+            ratio = float(np.clip(ratio + random.gauss(0, 0.02), 0.0, 1.0))
+        ipd = np.append(ipd, ratio).astype(np.float32)
+
+    return torch.tensor(ipd, dtype=torch.float32)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -73,27 +132,13 @@ _DRONE_FUNDAMENTALS = {
 # ══════════════════════════════════════════════════════════════════════════════
 
 class MelCacheManager:
-    """
-    Builds and manages an on-disk cache of pre-computed feature tensors.
-
-    Each WAV is converted to a 3-channel feature stack (log-mel / PCEN /
-    delta-mel) and saved as a .npy file with the same relative path under
-    cfg.MEL_CACHE_DIR.  Training then reads from cache instead of
-    re-computing features every epoch.
-    """
+    """Builds and manages an on-disk cache of pre-computed feature tensors."""
 
     def __init__(self, cfg: Optional[Config] = None):
         self.cfg = cfg or config
         self.ap  = AudioProcessor(cfg)
 
     def build(self, force: bool = False):
-        """
-        Build the complete feature cache from all processed WAV splits.
-
-        Parameters
-        ──────────
-        force : if True, delete existing cache first and rebuild from scratch
-        """
         cache_root = self.cfg.MEL_CACHE_DIR
         n_existing = len(list(cache_root.rglob("*.npy")))
         if not force and n_existing > 100:
@@ -102,7 +147,7 @@ class MelCacheManager:
         if force and cache_root.exists():
             shutil.rmtree(str(cache_root))
 
-        print("🎵 Building mel cache from processed WAVs [v15 features] …")
+        print("🎵 Building mel cache from processed WAVs…")
         det_root = self.cfg.PROCESSED_DIR / "detection"
         wavs = [
             (split, label, wav)
@@ -128,7 +173,6 @@ class MelCacheManager:
         print(f"✅ Mel cache built ({total} new files).")
 
     def count(self) -> Dict[str, int]:
-        """Return a dict mapping 'split/label' → number of cached files."""
         out = {}
         for split in ["train", "val", "test"]:
             for label in ["drone", "non_drone"]:
@@ -139,14 +183,9 @@ class MelCacheManager:
         return out
 
     def inject_synthetic(self, force: bool = False):
-        """
-        Inject synthetic drone mel tensors into the training cache.
-        Respects cfg.CUSTOM_DATASET_SKIP_SYNTH_IF_PRESENT.
-        """
-        cache_dir   = self.cfg.MEL_CACHE_DIR / "train" / "drone"
+        cache_dir = self.cfg.MEL_CACHE_DIR / "train" / "drone"
         cache_dir.mkdir(parents=True, exist_ok=True)
 
-        # Reduce synthetic count when real custom clips are present
         real_custom = len(list(
             (self.cfg.PROCESSED_DIR / "detection" / "train" / "drone")
             .glob("custom*.wav")
@@ -161,16 +200,18 @@ class MelCacheManager:
             print(f"✅ Synthetic detection cache already present ({existing} files) — skipping.")
             return
         if n_samples <= 0:
-            print("ℹ️  Synthetic injection disabled (custom real data present).")
             return
 
         rng = np.random.default_rng(self.cfg.SEED + 1)
-        r      = rng.uniform(0.3, self.cfg.MAX_LOCALIZATION_DIST, n_samples)
-        theta  = rng.uniform(0, 2 * np.pi, n_samples)
-        funds  = rng.choice([80, 90, 100, 110, 120, 130], n_samples)
-        noises = rng.uniform(0.02, 0.10, n_samples)
-        cx, cy = self.cfg.ARRAY_CENTER
+        r       = rng.uniform(0.3, self.cfg.MAX_LOCALIZATION_DIST, n_samples)
+        theta   = rng.uniform(0, 2 * np.pi, n_samples)
+        noises  = rng.uniform(0.02, 0.10, n_samples)
+        cx, cy  = self.cfg.ARRAY_CENTER
         positions = np.stack([cx + r * np.cos(theta), cy + r * np.sin(theta)], axis=1)
+        # Sample drone types per example
+        drone_types = rng.choice(
+            _SYNTH_DRONE_TYPES, size=n_samples, p=_SYNTH_DRONE_WEIGHTS
+        )
 
         print(f"🔬 Injecting {n_samples} synthetic drone tensors …")
         from tqdm.auto import tqdm
@@ -178,9 +219,14 @@ class MelCacheManager:
             out_path = cache_dir / f"synth_det_{i:06d}.npy"
             if out_path.exists() and not force:
                 continue
-            chs  = synthesise_drone(
+            dtype = str(drone_types[i])
+            noise_profile = rng.choice(["indoor", "outdoor"])
+            chs = synthesise_drone(
                 self.cfg.MIC_POSITIONS, positions[i],
-                fundamental=int(funds[i]), noise_level=float(noises[i]),
+                noise_level=float(noises[i]),
+                drone_type=dtype,
+                noise_profile=noise_profile,
+                cfg=self.cfg,
             )
             mono = np.mean(np.stack(chs, axis=0), axis=0)
             np.save(str(out_path), self.ap.feature_stack(self.ap.pad_or_truncate(mono)))
@@ -188,20 +234,11 @@ class MelCacheManager:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PyTorch datasets
+# PyTorch Datasets
 # ══════════════════════════════════════════════════════════════════════════════
 
 class MelCachedDataset(Dataset):
-    """
-    Loads pre-computed .npy feature tensors for the detection task.
-
-    Augmentation (when augment=True)
-    ─────────────────────────────────
-    - Random gain scaling
-    - Time-mask
-    - Frequency-mask
-    - Low-amplitude Gaussian noise
-    """
+    """Loads pre-computed .npy feature tensors for the detection task."""
 
     def __init__(self, cache_root: Path, split: str, augment: bool = False):
         self.augment = augment
@@ -216,10 +253,9 @@ class MelCachedDataset(Dataset):
         if not self.files:
             raise RuntimeError(f"No cached features in {cache_root}/{split}")
 
-    def __len__(self) -> int:
-        return len(self.files)
+    def __len__(self): return len(self.files)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         x = np.load(str(self.files[idx])).astype(np.float32)
         if self.augment:
             x = self._spec_augment(x)
@@ -248,18 +284,9 @@ class MelCachedDataset(Dataset):
 
 
 class DetectionDataset(Dataset):
-    """
-    Loads raw WAV files for detection training.
-    Applies waveform augmentation before feature extraction.
-    """
+    """Loads raw WAV files for detection training."""
 
-    def __init__(
-        self,
-        root:    Path,
-        split:   str,
-        augment: bool = False,
-        cfg:     Optional[Config] = None,
-    ):
+    def __init__(self, root, split, augment=False, cfg=None):
         self.ap      = AudioProcessor(cfg or config)
         self.cfg     = cfg or config
         self.augment = augment
@@ -274,10 +301,9 @@ class DetectionDataset(Dataset):
         if not self.files:
             raise RuntimeError(f"No WAV files in {root}/{split}")
 
-    def __len__(self) -> int:
-        return len(self.files)
+    def __len__(self): return len(self.files)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         from .utils import augment_waveform
         y = self.ap.pad_or_truncate(self.ap.load(self.files[idx]))
         if self.augment:
@@ -292,16 +318,12 @@ class DetectionDataset(Dataset):
 class LocalizationDataset(Dataset):
     """
     Loads 3-microphone recording sessions for localization training.
-    Each session consists of 3 WAV files (_ch0, _ch1, _ch2) + a label JSON.
+
+    appends BPF energy ratio as 4th IPD scalar when
+    cfg.BPF_ENERGY_RATIO_AS_FEATURE is True.
     """
 
-    def __init__(
-        self,
-        root:    Path,
-        split:   str,
-        augment: bool = False,
-        cfg:     Optional[Config] = None,
-    ):
+    def __init__(self, root, split, augment=False, cfg=None):
         self.cfg     = cfg or config
         self.ap      = AudioProcessor(self.cfg)
         self.augment = augment
@@ -317,36 +339,30 @@ class LocalizationDataset(Dataset):
         if not self.sessions:
             raise RuntimeError(f"No complete sessions in {d}")
 
-    def __len__(self) -> int:
-        return len(self.sessions)
+    def __len__(self): return len(self.sessions)
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         from .utils import perturb_multichannel
         chs_paths, lf = self.sessions[idx]
         channels = [self.ap.pad_or_truncate(self.ap.load(p)) for p in chs_paths]
         if self.augment:
             channels = perturb_multichannel(channels, self.cfg)
 
-        # IPD features (cached on disk for non-augmented samples)
-        ipd_cache = lf.parent / (lf.stem.replace("_label", "") + "_ipd.npy")
-        if (not self.augment) and ipd_cache.exists():
-            ipd = np.load(str(ipd_cache))
-        else:
-            ipd = compute_ipd_features(channels, self.cfg)
-            if not self.augment:
-                try:
-                    np.save(str(ipd_cache), ipd)
-                except Exception:
-                    pass
-
-        mels  = [self.ap.mel(c) for c in channels]
-        mel_t = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
-        ipd_t = torch.tensor(ipd, dtype=torch.float32)
-
         label  = json.loads(lf.read_text())
         az_deg = float(label["azimuth_deg"])
         di_m   = float(label["distance_m"])
         ht_m   = float(label["height_m"])
+
+        # Estimate BPF Hz for the ratio computation
+        bpf_hz = float(label.get("bpf_hz", 0.0)) or _estimate_bpf_hz(
+            channels[0], self.cfg.SR
+        )
+
+        # Build IPD tensor (shape 3 or 4)
+        ipd_t = _build_ipd_tensor(channels, bpf_hz, self.cfg, self.augment)
+
+        mels  = [self.ap.mel(c) for c in channels]
+        mel_t = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
 
         if self.augment:
             az_deg = wrap_angle_deg(az_deg + random.gauss(0, 15.0))
@@ -367,15 +383,10 @@ class LocalizationDataset(Dataset):
 class SyntheticLocDataset(Dataset):
     """
     Fully-synthetic localization dataset using synthesise_drone().
-    Useful as a training supplement when real data is scarce.
+    Uses measured BPF profiles and injects BPF energy ratio.
     """
 
-    def __init__(
-        self,
-        cfg:         Optional[Config] = None,
-        n_samples:   int  = 500,
-        augment:     bool = True,
-    ):
+    def __init__(self, cfg=None, n_samples=500, augment=True):
         self.cfg     = cfg or config
         self.ap      = AudioProcessor(self.cfg)
         self.n       = n_samples
@@ -385,25 +396,31 @@ class SyntheticLocDataset(Dataset):
         theta   = rng.uniform(0, 2 * np.pi, n_samples)
         height  = rng.uniform(0.5, 5.0, n_samples)
         cx, cy  = self.cfg.ARRAY_CENTER
-        self.positions   = np.stack([cx + r * np.cos(theta), cy + r * np.sin(theta), height], axis=1)
-        self.fundamentals = rng.choice([80, 90, 100, 110, 120, 130], n_samples)
+        self.positions    = np.stack([cx + r * np.cos(theta), cy + r * np.sin(theta), height], axis=1)
+        self.drone_types  = rng.choice(_SYNTH_DRONE_TYPES, size=n_samples, p=_SYNTH_DRONE_WEIGHTS)
+        self.noise_profiles = rng.choice(["indoor", "outdoor"], size=n_samples)
 
-    def __len__(self) -> int:
-        return self.n
+    def __len__(self): return self.n
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         from .utils import perturb_multichannel
-        pos  = self.positions[idx]
-        fund = int(self.fundamentals[idx])
-        chs  = synthesise_drone(self.cfg.MIC_POSITIONS, pos[:2], fundamental=fund,
-                                noise_level=0.04 if self.augment else 0.01)
-        chs  = [self.ap.pad_or_truncate(c) for c in chs]
+        pos   = self.positions[idx]
+        dtype = str(self.drone_types[idx])
+        chs   = synthesise_drone(
+            self.cfg.MIC_POSITIONS, pos[:2],
+            noise_level=0.04 if self.augment else 0.01,
+            drone_type=dtype,
+            noise_profile=str(self.noise_profiles[idx]),
+            cfg=self.cfg,
+        )
+        chs = [self.ap.pad_or_truncate(c) for c in chs]
         if self.augment and random.random() < 0.3:
             chs = perturb_multichannel(chs, self.cfg)
 
-        mels  = [self.ap.mel(c) for c in chs]
-        mel_t = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
-        ipd_t = torch.tensor(compute_ipd_features(chs, self.cfg), dtype=torch.float32)
+        bpf_hz = self.cfg.sample_fundamental_hz(dtype)
+        ipd_t  = _build_ipd_tensor(chs, bpf_hz, self.cfg, self.augment)
+        mels   = [self.ap.mel(c) for c in chs]
+        mel_t  = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
 
         cx, cy   = self.cfg.ARRAY_CENTER
         az_deg   = wrap_angle_deg(float(np.degrees(np.arctan2(pos[1] - cy, pos[0] - cx))))
@@ -421,31 +438,31 @@ class SyntheticLocDataset(Dataset):
 
 class SyntheticLocDatasetV2(Dataset):
     """
-    Physics-aware synthetic localization dataset (loc patch v1).
+    Physics-aware synthetic localization dataset.
 
-    Improvements over SyntheticLocDataset
-    ──────────────────────────────────────
-    - Grid-conditioned sampling: majority of samples are placed near real
-      UaVirBASE measurement positions (±jitter), so the model generalises
-      better to the real evaluation grid.
-    - Free-interpolation samples fill angular / range gaps.
-    - Physics-aware synthesis: blade-pass harmonics, motor whine, ground
-      reflection, wind noise (via _synthesise_drone_v2).
+    Includes:
+    - drone_type drawn from real PannoniaFS drone distribution
+      (Mavic Pro 30%, Mavic 2 30%, Mavic Mini 25%, generic 15%)
+    - fundamental from cfg.sample_fundamental_hz(drone_type) —
+      matches measured Q2 BPF bands
+    - noise_profile randomly selected per sample ("indoor"/"outdoor")
+    - BPF energy ratio injected as 4th IPD scalar
+    - grid positions biased toward real UaVirBASE measurement grid
     """
 
     def __init__(
         self,
-        cfg:              Optional[Config] = None,
-        n_samples:        int   = 2000,
-        grid_fraction:    float = 0.55,
-        augment:          bool  = True,
-        real_az_values:   Optional[List[float]] = None,
-        real_dist_values: Optional[List[float]] = None,
-        real_ht_values:   Optional[List[float]] = None,
-        az_jitter_deg:    float = 18.0,
-        dist_jitter_m:    float = 3.0,
-        ht_jitter_m:      float = 2.5,
-        seed:             int   = 7777,
+        cfg=None,
+        n_samples=2000,
+        grid_fraction=0.55,
+        augment=True,
+        real_az_values=None,
+        real_dist_values=None,
+        real_ht_values=None,
+        az_jitter_deg=18.0,
+        dist_jitter_m=3.0,
+        ht_jitter_m=2.5,
+        seed=7777,
     ):
         self.cfg     = cfg or config
         self.ap      = AudioProcessor(self.cfg)
@@ -456,19 +473,16 @@ class SyntheticLocDatasetV2(Dataset):
         real_dist = real_dist_values or _REAL_DIST_M
         real_ht   = real_ht_values   or _REAL_HT_M
 
-        rng     = np.random.default_rng(seed)
-        n_grid  = int(n_samples * grid_fraction)
-        n_free  = n_samples - n_grid
+        rng    = np.random.default_rng(seed)
+        n_grid = int(n_samples * grid_fraction)
+        n_free = n_samples - n_grid
 
-        # Grid-conditioned samples
-        az_g    = rng.choice(real_az,   n_grid).astype(float) + rng.uniform(-az_jitter_deg,   az_jitter_deg,   n_grid)
-        dist_g  = np.clip(rng.choice(real_dist, n_grid).astype(float) + rng.uniform(-dist_jitter_m, dist_jitter_m, n_grid), 1.0, self.cfg.MAX_LOCALIZATION_DIST)
-        ht_g    = np.clip(rng.choice(real_ht,   n_grid).astype(float) + rng.uniform(-ht_jitter_m,   ht_jitter_m,   n_grid), 0.5, self.cfg.MAX_LOCALIZATION_DIST)
-
-        # Free / interpolated samples
-        az_f    = rng.uniform(0, 360, n_free)
-        dist_f  = np.exp(rng.uniform(np.log(2.0), np.log(self.cfg.MAX_LOCALIZATION_DIST), n_free))
-        ht_f    = rng.uniform(1.0, 25.0, n_free)
+        az_g   = rng.choice(real_az,   n_grid).astype(float) + rng.uniform(-az_jitter_deg,   az_jitter_deg,   n_grid)
+        dist_g = np.clip(rng.choice(real_dist, n_grid).astype(float) + rng.uniform(-dist_jitter_m, dist_jitter_m, n_grid), 1.0, self.cfg.MAX_LOCALIZATION_DIST)
+        ht_g   = np.clip(rng.choice(real_ht,   n_grid).astype(float) + rng.uniform(-ht_jitter_m,   ht_jitter_m,   n_grid), 0.5, self.cfg.MAX_LOCALIZATION_DIST)
+        az_f   = rng.uniform(0, 360, n_free)
+        dist_f = np.exp(rng.uniform(np.log(2.0), np.log(self.cfg.MAX_LOCALIZATION_DIST), n_free))
+        ht_f   = rng.uniform(1.0, 25.0, n_free)
 
         az_all   = np.concatenate([az_g,   az_f])
         dist_all = np.concatenate([dist_g, dist_f])
@@ -481,34 +495,36 @@ class SyntheticLocDatasetV2(Dataset):
             ht_all,
         ], axis=1).astype(np.float32)
 
-        drone_types       = list(_DRONE_FUNDAMENTALS.keys())
-        self.drone_types  = [rng.choice(drone_types) for _ in range(n_samples)]
-        self.fundamentals = [int(rng.choice(_DRONE_FUNDAMENTALS[dt][0:1])) for dt in self.drone_types]
-        self.wind_speeds  = rng.uniform(0.0, 4.0, n_samples).astype(np.float32)
+        # Use real drone type distribution
+        self.drone_types    = rng.choice(
+            _SYNTH_DRONE_TYPES, size=n_samples, p=_SYNTH_DRONE_WEIGHTS
+        )
+        self.noise_profiles = rng.choice(["indoor", "outdoor"], size=n_samples)
+        self.wind_speeds    = rng.uniform(0.0, 4.0, n_samples).astype(np.float32)
 
-    def __len__(self) -> int:
-        return self.n
+    def __len__(self): return self.n
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx):
         from .utils import perturb_multichannel
         pos   = self.positions[idx]
-        fund  = self.fundamentals[idx]
-        wind  = float(self.wind_speeds[idx])
+        dtype = str(self.drone_types[idx])
         noise = 0.03 + (0.07 * random.random() if self.augment else 0.0)
 
-        # Use basic synthesise_drone (v2 physics synthesis is a bonus when available)
         chs = synthesise_drone(
             self.cfg.MIC_POSITIONS, pos[:2],
-            fundamental=fund, noise_level=noise,
+            noise_level=noise,
+            drone_type=dtype,
+            noise_profile=str(self.noise_profiles[idx]),
+            cfg=self.cfg,
         )
         chs = [self.ap.pad_or_truncate(c) for c in chs]
         if self.augment:
             chs = perturb_multichannel(chs, self.cfg)
 
-        ipd   = compute_ipd_features(chs, self.cfg)
-        mels  = [self.ap.mel(c) for c in chs]
-        mel_t = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
-        ipd_t = torch.tensor(ipd, dtype=torch.float32)
+        bpf_hz = self.cfg.sample_fundamental_hz(dtype)
+        ipd_t  = _build_ipd_tensor(chs, bpf_hz, self.cfg, self.augment)
+        mels   = [self.ap.mel(c) for c in chs]
+        mel_t  = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32)
 
         cx, cy   = self.cfg.ARRAY_CENTER
         az_deg   = wrap_angle_deg(float(np.degrees(np.arctan2(pos[1] - cy, pos[0] - cx))))
@@ -525,186 +541,38 @@ class SyntheticLocDatasetV2(Dataset):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Data managers
+# Data managers and helpers 
 # ══════════════════════════════════════════════════════════════════════════════
 
-class DroneAudioDatasetManager:
-    """Download and prepare the DroneAudioDataset binary-label subset."""
-
-    def __init__(self, cfg: Optional[Config] = None):
-        self.cfg = cfg or config
-        self.ap  = AudioProcessor(cfg)
-
-    def prepare(self) -> bool:
-        dest = self.cfg.DRONEDS_RAW
-        proc = self.cfg.PROCESSED_DIR / "detection"
-
-        counts = {
-            f"{split}_{lbl}": len(list((proc / split / lbl).glob("*.wav")))
-            if (proc / split / lbl).exists() else 0
-            for split in ["train", "val", "test"]
-            for lbl in ["drone", "non_drone"]
-        }
-
-        ready = all([
-            counts["train_drone"] > 20,
-            counts["train_non_drone"] > 20,
-            counts["val_drone"] > 0,
-            counts["val_non_drone"] > 0,
-            counts["test_drone"] > 0,
-            counts["test_non_drone"] > 0,
-        ])
-
-        if ready:
-            print(f"✅ Detection dataset ready ({sum(counts.values())} files)")
-            return True
-
-        print("⚠️  Detection dataset incomplete — rebuilding …")
-        if proc.exists():
-            shutil.rmtree(proc)
-
-        self._download(dest)
-        self._process(dest, proc)
-        return True
-
-    def _download(self, dest: Path):
-        """
-        Download and extract the DroneAudioDataset archive safely.
-
-        Guards against:
-        - stale/corrupt zip files already on disk
-        - URLs returning HTML/error pages instead of a zip
-        - partial downloads
-        """
-        archive = dest / "drone_dataset.zip"
-        dest.mkdir(parents=True, exist_ok=True)
-
-        # Skip extraction if already extracted
-        if any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
-            print("✅ DroneAudioDataset already extracted.")
-            return
-
-        def _preview_file(path: Path, n: int = 300) -> str:
-            try:
-                with open(path, "rb") as f:
-                    raw = f.read(n)
-                return raw.decode("utf-8", errors="ignore")
-            except Exception:
-                return "<unable to preview file>"
-
-        def _is_valid_zip(path: Path) -> bool:
-            try:
-                return path.exists() and path.stat().st_size > 0 and zipfile.is_zipfile(path)
-            except Exception:
-                return False
-
-        # Re-download if missing or invalid
-        need_download = not _is_valid_zip(archive)
-        if archive.exists() and not _is_valid_zip(archive):
-            print(f"⚠️ Existing archive is invalid, deleting: {archive}")
-            try:
-                archive.unlink()
-            except Exception:
-                pass
-            need_download = True
-
-        if need_download:
-            print("📥 Downloading DroneAudioDataset …")
-            try:
-                urllib.request.urlretrieve(self.cfg.DRONEDS_ZIP_URL, str(archive))
-            except Exception as e:
-                raise RuntimeError(f"Failed to download detection dataset: {e}") from e
-
-        # Validate downloaded file before extraction
-        if not _is_valid_zip(archive):
-            size = archive.stat().st_size if archive.exists() else 0
-            preview = _preview_file(archive)
-            raise RuntimeError(
-                "Downloaded detection dataset is not a valid ZIP file.\n"
-                f"Path: {archive}\n"
-                f"Size: {size} bytes\n"
-                f"Preview: {preview[:300]}"
-            )
-
-        print("📦 Extracting …")
-        try:
-            with zipfile.ZipFile(archive, "r") as z:
-                z.extractall(str(dest))
-        except zipfile.BadZipFile as e:
-            size = archive.stat().st_size if archive.exists() else 0
-            preview = _preview_file(archive)
-            raise RuntimeError(
-                "Detection dataset archive is corrupt or not a ZIP.\n"
-                f"Path: {archive}\n"
-                f"Size: {size} bytes\n"
-                f"Preview: {preview[:300]}"
-            ) from e
-
-        if not any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
-            raise RuntimeError(
-                "Extraction completed, but 'Binary_Drone_Audio' was not found. "
-                "The downloaded archive may not be the expected dataset."
-            )
-
-        print("✅ DroneAudioDataset downloaded and extracted.")
-
-    def _process(self, src: Path, dst: Path):
-        import librosa
-        binary = next(
-            (d for d in src.rglob("Binary_Drone_Audio") if d.is_dir()), None
-        )
-        if binary is None:
-            print("❌ Binary_Drone_Audio not found"); return
-        mapping = {
-            "yes_drone": "drone", "unknown": "non_drone",
-            "Drone": "drone",     "noDrone": "non_drone",
-        }
-        all_files: Dict[str, List[Path]] = {"drone": [], "non_drone": []}
-        for cls_dir in binary.iterdir():
-            if not cls_dir.is_dir():
-                continue
-            label = mapping.get(cls_dir.name, "non_drone")
-            all_files[label].extend(
-                [f for f in cls_dir.glob("*.*") if f.is_file()]
-            )
-        for label, files in all_files.items():
-            random.shuffle(files)
-            n = len(files)
-            splits = {
-                "train": files[: int(n * 0.70)],
-                "val":   files[int(n * 0.70) : int(n * 0.85)],
-                "test":  files[int(n * 0.85) :],
-            }
-            for split, flist in splits.items():
-                out = dst / split / label
-                out.mkdir(parents=True, exist_ok=True)
-                for f in flist:
-                    tgt = out / f"{f.stem}.wav"
-                    if tgt.exists():
-                        continue
-                    try:
-                        y, _ = librosa.load(str(f), sr=self.cfg.SR, mono=True)
-                        sf.write(str(tgt), y, self.cfg.SR)
-                    except Exception as e:
-                        print(f"   ⚠️  {f.name}: {e}")
-        print("✅ Detection dataset processed")
+def _position_grouped_split(usable, train_frac=0.625, val_frac=0.187, seed=42):
+    from collections import defaultdict
+    pos_groups: Dict = defaultdict(list)
+    for item in usable:
+        az, di, ht = item[2]
+        key = (round(az / 45) * 45 % 360, round(di), round(ht))
+        pos_groups[key].append(item)
+    groups = sorted(pos_groups.items(), key=lambda x: x[0])
+    rng    = random.Random(seed)
+    rng.shuffle(groups)
+    n       = len(groups)
+    n_train = max(1, int(round(n * train_frac)))
+    n_val   = max(1, int(round(n * val_frac)))
+    n_test  = max(1, n - n_train - n_val)
+    while n_train + n_val + n_test > n:
+        n_test -= 1
+    split_map: Dict = {"train": [], "val": [], "test": []}
+    for i, (pos_key, sessions) in enumerate(groups):
+        if   i < n_train:             split_map["train"].extend(sessions)
+        elif i < n_train + n_val:     split_map["val"].extend(sessions)
+        else:                         split_map["test"].extend(sessions)
+    print(f"\n📐 Position-grouped split ({n} unique positions):")
+    for sp in ["train", "val", "test"]:
+        pos_in = sorted({(round(s[2][0]), round(s[2][1]), round(s[2][2])) for s in split_map[sp]})
+        print(f"   {sp:5s}: {len(split_map[sp]):3d} sessions | {len(pos_in):2d} positions")
+    return split_map
 
 
-def report_detection_split_counts(cfg: Optional[Config] = None):
-    """Print a table of WAV counts per split/label."""
-    cfg  = cfg or config
-    root = cfg.PROCESSED_DIR / "detection"
-    print("\n📊 Detection WAV split counts")
-    for split in ["train", "val", "test"]:
-        for label in ["drone", "non_drone"]:
-            d = root / split / label
-            n = len(list(d.glob("*.wav"))) if d.exists() else 0
-            print(f"   {split:5s} / {label:10s}: {n}")
-
-
-# ── Label parsing helpers for UaVirBASE ──────────────────────────────────────
-
-def _get_scalar(d: dict, keys: list) -> Optional[float]:
+def _get_scalar(d, keys):
     for k in keys:
         if k in d:
             v = d[k]
@@ -716,7 +584,7 @@ def _get_scalar(d: dict, keys: list) -> Optional[float]:
     return None
 
 
-def _cartesian_to_az_dist_ht(obj: dict) -> Optional[Tuple[float, float, float]]:
+def _cartesian_to_az_dist_ht(obj):
     x_keys = ["x","X","east","East","east_m","pos_x","x_m"]
     y_keys = ["y","Y","north","North","north_m","pos_y","y_m"]
     z_keys = ["z","Z","up","Up","up_m","pos_z","z_m","height","height_m","altitude","alt"]
@@ -732,18 +600,13 @@ def _cartesian_to_az_dist_ht(obj: dict) -> Optional[Tuple[float, float, float]]:
     return None
 
 
-def parse_label_json(raw: bytes) -> Optional[Tuple[float, float, float]]:
-    """
-    Parse a UaVirBASE label.json and return (azimuth_deg, distance_m, height_m).
-    Returns None if the file is ambient-only or cannot be parsed.
-    """
+def parse_label_json(raw: bytes):
     try:
         data = json.loads(raw.decode("utf-8"))
     except Exception:
         return None
     if not isinstance(data, dict):
         return None
-
     if "drone" in data and isinstance(data["drone"], dict):
         drone = data["drone"]
         ss    = drone.get("sound_source", "")
@@ -760,13 +623,11 @@ def parse_label_json(raw: bytes) -> Optional[Tuple[float, float, float]]:
         result = _cartesian_to_az_dist_ht(drone)
         if result:
             return result
-
     az = _get_scalar(data, _AZ_KEYS)
     di = _get_scalar(data, _DIST_KEYS)
     ht = _get_scalar(data, _HT_KEYS)
     if az is not None and di is not None and ht is not None:
         return float(az), float(di), float(ht)
-
     for sk in ["uav", "target", "labels", "annotation", "data", "position"]:
         if sk not in data:
             continue
@@ -778,66 +639,17 @@ def parse_label_json(raw: bytes) -> Optional[Tuple[float, float, float]]:
     return None
 
 
-# ── UaVirBASE manager (with position-grouped split from loc patch) ────────────
-
-def _position_grouped_split(
-    usable: list,
-    train_frac: float = 0.625,
-    val_frac:   float = 0.187,
-    seed:       int   = 42,
-) -> Dict[str, list]:
-    """
-    Assign sessions to splits by position group so that val/test positions
-    were never seen during training.  This is the honest evaluation strategy
-    required by the thesis.
-    """
-    pos_groups: Dict[tuple, list] = defaultdict(list)
-    for item in usable:
-        az, di, ht = item[2]
-        key = (round(az / 45) * 45 % 360, round(di), round(ht))
-        pos_groups[key].append(item)
-
-    groups = sorted(pos_groups.items(), key=lambda x: x[0])
-    rng    = random.Random(seed)
-    rng.shuffle(groups)
-
-    n       = len(groups)
-    n_train = max(1, int(round(n * train_frac)))
-    n_val   = max(1, int(round(n * val_frac)))
-    n_test  = max(1, n - n_train - n_val)
-    while n_train + n_val + n_test > n:
-        n_test -= 1
-
-    split_map: Dict[str, list] = {"train": [], "val": [], "test": []}
-    for i, (pos_key, sessions) in enumerate(groups):
-        if   i < n_train:             split_map["train"].extend(sessions)
-        elif i < n_train + n_val:     split_map["val"].extend(sessions)
-        else:                         split_map["test"].extend(sessions)
-
-    print(f"\n📐 Position-grouped split ({n} unique positions):")
-    for sp in ["train", "val", "test"]:
-        pos_in = sorted({(round(s[2][0]), round(s[2][1]), round(s[2][2])) for s in split_map[sp]})
-        print(f"   {sp:5s}: {len(split_map[sp]):3d} sessions | {len(pos_in):2d} positions")
-    return split_map
-
-
 class UaVirBASEDatasetManager:
-    """
-    Download and prepare UaVirBASE localization sessions.
-
-    Uses position-grouped splits (from loc patch v1) so that evaluation
-    positions are strictly held out from training.
-    Falls back to a fully synthetic dataset if download fails.
-    """
+    """Download and prepare UaVirBASE localization sessions."""
 
     AUDIO_FILENAME = "output.wav"
     LABEL_FILENAME = "label.json"
 
-    def __init__(self, cfg: Optional[Config] = None):
+    def __init__(self, cfg=None):
         self.cfg = cfg or config
         self.ap  = AudioProcessor(cfg)
 
-    def prepare(self) -> bool:
+    def prepare(self):
         proc = self.cfg.PROCESSED_DIR / "localization"
         if (proc / "train").exists():
             n = len(list(proc.rglob("*_label.json")))
@@ -846,7 +658,6 @@ class UaVirBASEDatasetManager:
                 return True
         url = self.cfg.UAVIRBASE_ZIP_URL
         if url is None:
-            print("⚠️  UAVIRBASE_ZIP_URL is None → synthetic fallback.")
             self._write_synthetic(proc)
             return True
         if getattr(self.cfg, "UAVIRBASE_FULL", False):
@@ -867,20 +678,14 @@ class UaVirBASEDatasetManager:
                 self._write_synthetic(proc)
         return True
 
-    def _download_partial(self, url: str, proc: Path, n_sessions: int):
-        """
-        Stream only the required audio+label pairs from the remote ZIP using
-        position-grouped splits (loc patch v1).
-        """
+    def _download_partial(self, url, proc, n_sessions):
         from remotezip import RemoteZip
         RZ_KWARGS        = {"initial_buffer_size": 64 * 1024 * 1024}
         AUDIO_CANDIDATES = {"output.wav", "audio.wav"}
         LABEL_CANDIDATES = {"label.json", "annotation.json"}
-
         print("   Reading remote ZIP central directory …")
         with RemoteZip(url, **RZ_KWARGS) as rz:
             all_names = rz.namelist()
-
         norm_names  = [n.replace("\\", "/") for n in all_names]
         session_map = {}
         for path in norm_names:
@@ -889,7 +694,6 @@ class UaVirBASEDatasetManager:
                 continue
             session_dir = str(Path(*p.parts[:-1]))
             session_map.setdefault(session_dir, []).append(p.name)
-
         paired = [
             (f"{sd}/{a}", f"{sd}/{l}")
             for sd, files in session_map.items()
@@ -899,8 +703,7 @@ class UaVirBASEDatasetManager:
         ]
         print(f"   Candidate paired sessions: {len(paired)}")
         if not paired:
-            raise RuntimeError("No paired audio/json sessions found.")
-
+            raise RuntimeError("No paired sessions found.")
         print("   Validating labels …")
         usable = []; ambient_skipped = parse_failed = 0
         with RemoteZip(url, **RZ_KWARGS) as rz:
@@ -921,18 +724,14 @@ class UaVirBASEDatasetManager:
                     usable.append((audio_path, label_path, parsed))
                 except Exception:
                     parse_failed += 1
-
         print(f"   Usable: {len(usable)} | Ambient skipped: {ambient_skipped} | Failed: {parse_failed}")
         if not usable:
             raise RuntimeError("No usable sessions after validation.")
-
-        # Position-grouped split (honest evaluation)
         split_map = _position_grouped_split(usable, seed=self.cfg.SEED)
         for s in ["train", "val", "test"]:
             (proc / s).mkdir(parents=True, exist_ok=True)
-
         downloaded = failed_audio = 0
-        all_items  = (
+        all_items = (
             [(s, "train") for s in split_map["train"]] +
             [(s, "val")   for s in split_map["val"]]   +
             [(s, "test")  for s in split_map["test"]]
@@ -965,14 +764,13 @@ class UaVirBASEDatasetManager:
                 except Exception as e:
                     failed_audio += 1
                     print(f"   ⚠️  {session_id}: {e}")
-
         print(f"\n✅ Downloaded {downloaded} sessions ({failed_audio} failed)")
         for split in ["train", "val", "test"]:
             print(f"   {split}: {len(list((proc/split).glob('*_label.json')))} sessions")
         if downloaded == 0:
             raise RuntimeError("Zero sessions saved.")
 
-    def _download_full(self, dest: Path):
+    def _download_full(self, dest):
         archive = dest / "uavirbase.zip"
         if not archive.exists():
             urllib.request.urlretrieve(self.cfg.UAVIRBASE_ZIP_URL, str(archive))
@@ -980,7 +778,7 @@ class UaVirBASEDatasetManager:
             z.extractall(str(dest))
         archive.unlink()
 
-    def _process_local(self, src: Path, dst: Path):
+    def _process_local(self, src, dst):
         sessions = list(src.rglob(self.LABEL_FILENAME)) or list(src.rglob("annotation.json"))
         sessions = [p.parent for p in sessions]
         if not sessions:
@@ -1001,11 +799,10 @@ class UaVirBASEDatasetManager:
                     continue
                 try:
                     parsed = parse_label_json(label_file.read_bytes())
-                    if parsed is None:
-                        continue
+                    if parsed is None: continue
                     az, di, ht = parsed
-                    channels   = self.ap.load_channels(audio_file, channel_indices=self.cfg.UAVIRBASE_MIC_INDICES)
-                    sid        = sess.name
+                    channels = self.ap.load_channels(audio_file, channel_indices=self.cfg.UAVIRBASE_MIC_INDICES)
+                    sid = sess.name
                     for i, ch in enumerate(channels):
                         sf.write(str(out / f"{sid}_ch{i}.wav"), self.ap.pad_or_truncate(ch), self.cfg.SR)
                     (out / f"{sid}_label.json").write_text(
@@ -1013,16 +810,15 @@ class UaVirBASEDatasetManager:
                     )
                 except Exception as e:
                     print(f"   ⚠️  {sess.name}: {e}")
-        print("✅ Full dataset processed")
 
-    def _write_synthetic(self, proc: Path, n_total: int = 2400):
+    def _write_synthetic(self, proc, n_total=2400):
         print(f"🔬 Generating {n_total} synthetic localization samples …")
         rng    = np.random.default_rng(self.cfg.SEED)
         dists  = np.exp(rng.uniform(np.log(0.3), np.log(self.cfg.MAX_LOCALIZATION_DIST), n_total))
         az_rad = rng.uniform(-np.pi, np.pi, n_total)
         heights= rng.uniform(0.5, 5.0, n_total)
-        funds  = rng.choice([80, 90, 100, 110, 120, 130], n_total)
         noises = rng.uniform(0.01, 0.08, n_total)
+        dtypes = rng.choice(_SYNTH_DRONE_TYPES, size=n_total, p=_SYNTH_DRONE_WEIGHTS)
         cx, cy = self.cfg.ARRAY_CENTER
         xs = cx + dists * np.cos(az_rad)
         ys = cy + dists * np.sin(az_rad)
@@ -1033,8 +829,14 @@ class UaVirBASEDatasetManager:
         from tqdm.auto import tqdm
         for i in tqdm(range(n_total), desc="Synthetic loc"):
             sid  = f"synth_{i:06d}"
-            chs  = synthesise_drone(self.cfg.MIC_POSITIONS, [xs[i], ys[i]],
-                                    fundamental=int(funds[i]), noise_level=float(noises[i]))
+            dtype = str(dtypes[i])
+            chs  = synthesise_drone(
+                self.cfg.MIC_POSITIONS, [xs[i], ys[i]],
+                noise_level=float(noises[i]),
+                drone_type=dtype,
+                noise_profile=str(rng.choice(["indoor", "outdoor"])),
+                cfg=self.cfg,
+            )
             out  = proc / splits[i]
             for j, ch in enumerate(chs):
                 sf.write(str(out / f"{sid}_ch{j}.wav"),
@@ -1050,49 +852,123 @@ class UaVirBASEDatasetManager:
         print(f"✅ Synthetic fallback: {len(list(proc.rglob('*_label.json')))} sessions written.")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# DataLoader factory
-# ══════════════════════════════════════════════════════════════════════════════
+class DroneAudioDatasetManager:
+    """Download and prepare the DroneAudioDataset binary-label subset."""
 
-def get_det_dataloaders(cfg: Optional[Config] = None):
-    """
-    Build (train, val, test) DataLoaders from the mel feature cache.
+    def __init__(self, cfg=None):
+        self.cfg = cfg or config
+        self.ap  = AudioProcessor(cfg)
 
-    Training uses WeightedRandomSampler to handle class imbalance.
-    Returns a tuple (tr_loader, va_loader, te_loader).
-    """
+    def prepare(self):
+        proc = self.cfg.PROCESSED_DIR / "detection"
+        def _count_builtin(split, label):
+            d = proc / split / label
+            if not d.exists(): return 0
+            return len([f for f in d.glob("*.wav")
+                        if not f.stem.startswith(("custom", "custommix", "customclean",
+                                                   "custombg", "mixdrone", "synth"))])
+        builtin_counts = {
+            f"{split}_{lbl}": _count_builtin(split, lbl)
+            for split in ["train", "val", "test"]
+            for lbl   in ["drone", "non_drone"]
+        }
+        ready = all([
+            builtin_counts["train_drone"]     > 400,
+            builtin_counts["train_non_drone"] > 400,
+            builtin_counts["val_drone"]       > 50,
+            builtin_counts["val_non_drone"]   > 50,
+            builtin_counts["test_drone"]      > 50,
+            builtin_counts["test_non_drone"]  > 50,
+        ])
+        total_all = sum(
+            len(list((proc / s / l).glob("*.wav"))) if (proc / s / l).exists() else 0
+            for s in ["train", "val", "test"]
+            for l in ["drone", "non_drone"]
+        )
+        if ready:
+            print(f"✅ Detection dataset ready — builtin={sum(builtin_counts.values())}  total={total_all}")
+            return True
+        print(f"⚠️  Builtin dataset incomplete — downloading …")
+        self._download(self.cfg.DRONEDS_RAW)
+        self._process(self.cfg.DRONEDS_RAW, proc)
+        return True
+
+    def _download(self, dest):
+        import zipfile as zf
+        archive = dest / "drone_dataset.zip"
+        dest.mkdir(parents=True, exist_ok=True)
+        if any(d.name == "Binary_Drone_Audio" for d in dest.rglob("*") if d.is_dir()):
+            return
+        if not archive.exists() or not zf.is_zipfile(archive):
+            if archive.exists():
+                archive.unlink()
+            print("📥 Downloading DroneAudioDataset …")
+            urllib.request.urlretrieve(self.cfg.DRONEDS_ZIP_URL, str(archive))
+        print("📦 Extracting …")
+        with zf.ZipFile(archive, "r") as z:
+            z.extractall(str(dest))
+
+    def _process(self, src, dst):
+        import librosa
+        binary = next((d for d in src.rglob("Binary_Drone_Audio") if d.is_dir()), None)
+        if binary is None:
+            print("❌ Binary_Drone_Audio not found"); return
+        mapping = {"yes_drone": "drone", "unknown": "non_drone", "Drone": "drone", "noDrone": "non_drone"}
+        all_files = {"drone": [], "non_drone": []}
+        for cls_dir in binary.iterdir():
+            if not cls_dir.is_dir(): continue
+            label = mapping.get(cls_dir.name, "non_drone")
+            all_files[label].extend([f for f in cls_dir.glob("*.*") if f.is_file()])
+        for label, files in all_files.items():
+            random.shuffle(files)
+            n = len(files)
+            splits = {"train": files[:int(n*0.70)], "val": files[int(n*0.70):int(n*0.85)], "test": files[int(n*0.85):]}
+            for split, flist in splits.items():
+                out = dst / split / label; out.mkdir(parents=True, exist_ok=True)
+                for f in flist:
+                    tgt = out / f"{f.stem}.wav"
+                    if tgt.exists(): continue
+                    try:
+                        y, _ = librosa.load(str(f), sr=self.cfg.SR, mono=True)
+                        sf.write(str(tgt), y, self.cfg.SR)
+                    except Exception as e:
+                        print(f"   ⚠️  {f.name}: {e}")
+        print("✅ Detection dataset processed")
+
+
+def report_detection_split_counts(cfg=None):
+    cfg  = cfg or config
+    root = cfg.PROCESSED_DIR / "detection"
+    print("\n📊 Detection WAV split counts")
+    for split in ["train", "val", "test"]:
+        for label in ["drone", "non_drone"]:
+            d = root / split / label
+            n = len(list(d.glob("*.wav"))) if d.exists() else 0
+            print(f"   {split:5s} / {label:10s}: {n}")
+
+
+def get_det_dataloaders(cfg=None):
     cfg   = cfg or config
     cache = cfg.MEL_CACHE_DIR
-
     tr_ds = MelCachedDataset(cache, "train", augment=True)
     va_ds = MelCachedDataset(cache, "val",   augment=False)
     try:
         te_ds = MelCachedDataset(cache, "test", augment=False)
     except RuntimeError:
-        print("⚠️  No test split in cache — using val as fallback.")
         te_ds = MelCachedDataset(cache, "val", augment=False)
-
     labels  = np.array(tr_ds.labels)
-    counts  = np.bincount(labels)
-    counts[counts == 0] = 1
+    counts  = np.bincount(labels); counts[counts == 0] = 1
     weights = (1.0 / counts)[labels]
     sampler = WeightedRandomSampler(weights, len(weights), replacement=True)
-
     def _collate(batch):
-        xs, ys = zip(*batch)
-        return torch.stack(xs), torch.stack(ys)
-
+        xs, ys = zip(*batch); return torch.stack(xs), torch.stack(ys)
     bs = cfg.BATCH_SIZE
     nw = min(4, os.cpu_count() or 2)
     pin = (cfg.DEVICE == "cuda")
-    kw  = dict(
-        collate_fn=_collate,
-        num_workers=nw,
-        pin_memory=pin,
-        persistent_workers=(nw > 0),
-        prefetch_factor=2 if nw > 0 else None,
+    kw  = dict(collate_fn=_collate, num_workers=nw, pin_memory=pin,
+               persistent_workers=(nw > 0), prefetch_factor=2 if nw > 0 else None)
+    return (
+        DataLoader(tr_ds, batch_size=bs, sampler=sampler, **kw),
+        DataLoader(va_ds, batch_size=bs, shuffle=False, **kw),
+        DataLoader(te_ds, batch_size=bs, shuffle=False, **kw),
     )
-    tr_l = DataLoader(tr_ds, batch_size=bs, sampler=sampler, **kw)
-    va_l = DataLoader(va_ds, batch_size=bs, shuffle=False, **kw)
-    te_l = DataLoader(te_ds, batch_size=bs, shuffle=False, **kw)
-    return tr_l, va_l, te_l

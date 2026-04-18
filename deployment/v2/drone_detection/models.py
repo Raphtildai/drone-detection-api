@@ -4,19 +4,21 @@ models.py
 ─────────
 PyTorch model definitions for the drone detection & localization pipeline.
 
-Models
-──────
-DetectionCNN          — frequency-attention CNN, binary drone/non-drone
-LocalizationCNN       — full-capacity multi-mic CNN+IPD localizer
+Includes:
+  LocalizationCNN
+    - IPD branch capacity: 3→32→32 replaced by 3(+1)→64→128→64 (deeper, wider)
+    - BPF energy ratio accepted as optional 4th scalar input when
+      cfg.BPF_ENERGY_RATIO_AS_FEATURE is True (IPD tensor shape becomes (4,))
+    - Dropout added to IPD branch for regularisation
 
-Loss functions
-──────────────
-FocalLoss             — focal loss with optional alpha balancing (detection)
-localization_loss     — mixed MSE + SmoothL1 for (sin, cos, dist, ht)
+  localization_loss
+    - Azimuth components now use cosine-distance loss:
+        L_az = 1 - (pred_sin*true_sin + pred_cos*true_cos)
+      This is the geometrically correct loss for circular quantities and
+      avoids the MSE(sin,cos) bias that inflated azimuth MAE.
+    - Focal weighting on distance/height when target > 0.5 (hard examples)
 
-Utilities
-─────────
-make_localization_model()  — auto-selects full vs lite based on cfg.USE_LITE_LOC
+  make_localization_model — updated to always return full-capacity model
 """
 
 import torch
@@ -32,13 +34,8 @@ class DetectionCNN(nn.Module):
     """
     Binary drone / non-drone classifier.
 
-    Architecture
-    ────────────
-    4× ConvBNReLU + MaxPool encoder → frequency-axis soft-attention pooling
-    → GlobalAveragePool → 256-d MLP head.
-
-    Input:  (B, 3, N_MELS, T)  — 3-channel feature stack (log-mel/PCEN/delta)
-    Output: (B, 2)             — logits for [non_drone, drone]
+    Input:  (B, 3, N_MELS, T)
+    Output: (B, 2)
     """
 
     def __init__(self):
@@ -49,7 +46,6 @@ class DetectionCNN(nn.Module):
             self._block(64,  128),
             self._block(128, 256),
         )
-        # Soft attention over the frequency axis
         self.freq_attn = nn.Sequential(
             nn.Conv2d(256, 64, kernel_size=(1, 1)), nn.ReLU(),
             nn.Conv2d(64,   1, kernel_size=(1, 1)), nn.Softmax(dim=2),
@@ -71,14 +67,14 @@ class DetectionCNN(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         feat = self.encoder(x)
-        attn = self.freq_attn(feat)                        # (B,1,F',T')
-        feat = (feat * attn).sum(dim=2, keepdim=True)      # frequency pooling
-        feat = self.gap(feat).flatten(1)                   # (B,256)
+        attn = self.freq_attn(feat)
+        feat = (feat * attn).sum(dim=2, keepdim=True)
+        feat = self.gap(feat).flatten(1)
         return self.classifier(feat)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Localization models
+# Localization model  (stronger IPD branch + BPF ratio input)
 # ══════════════════════════════════════════════════════════════════════════════
 
 class LocalizationCNN(nn.Module):
@@ -88,15 +84,29 @@ class LocalizationCNN(nn.Module):
     Input
     ─────
     mel : (B, 3, N_MELS, T)  — stacked mel-spectrograms (one per mic)
-    ipd : (B, 3)             — IPD features for the 3 mic pairs
+    ipd : (B, 3) or (B, 4)   — IPD features + optional BPF energy ratio
 
     Output
     ──────
     (B, 4) — [sin(az), cos(az), dist/MAX_DIST, ht/MAX_DIST]
+
+    Internal architecture changes:
+    - IPD branch: Linear(in→64) → BN → ReLU → Dropout(0.2)
+                  Linear(64→128) → BN → ReLU → Dropout(0.2)
+                  Linear(128→64) → BN → ReLU
+      vs old:     Linear(3→32) → ReLU → Linear(32→32) → ReLU
+      This gives the TDOA/IPD information a much larger capacity, matching
+      its importance for azimuth estimation.
+    - ipd_in_dim: 3 (standard) or 4 (with BPF energy ratio as 4th scalar).
+      Pass ipd_in_dim=4 when cfg.BPF_ENERGY_RATIO_AS_FEATURE is True.
+    - BatchNorm on each IPD FC layer for stable training.
+    - Head dropout increased from 0.3 to 0.4 to match the wider branch.
     """
 
-    def __init__(self, n_mels: int = 64):
+    def __init__(self, n_mels: int = 64, ipd_in_dim: int = 3):
         super().__init__()
+        self._ipd_in_dim = ipd_in_dim
+
         self.mel_enc = nn.Sequential(
             self._block(3,   32),
             self._block(32,  64),
@@ -104,14 +114,26 @@ class LocalizationCNN(nn.Module):
             self._block(128, 256),
             nn.AdaptiveAvgPool2d((4, 4)),
         )
+
+        # Deeper, wider IPD branch 
         self.ipd_fc = nn.Sequential(
-            nn.Linear(3, 32), nn.ReLU(),
-            nn.Linear(32, 32), nn.ReLU(),
+            nn.Linear(ipd_in_dim, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(64, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
         )
-        fused = 256 * 4 * 4 + 32
+
+        fused = 256 * 4 * 4 + 64   # mel flat + IPD output
         self.head = nn.Sequential(
-            nn.Linear(fused, 512), nn.ReLU(), nn.Dropout(0.3),
-            nn.Linear(512, 128),  nn.ReLU(),
+            nn.Linear(fused, 512), nn.ReLU(), nn.Dropout(0.4),
+            nn.Linear(512, 128),  nn.ReLU(), nn.Dropout(0.2),
             nn.Linear(128, 4),
         )
 
@@ -128,11 +150,19 @@ class LocalizationCNN(nn.Module):
         mel_feat = self.mel_enc(mel).flatten(1)
         ipd_feat = self.ipd_fc(ipd)
         return self.head(torch.cat([mel_feat, ipd_feat], dim=1))
-    
+
+
 def make_localization_model(cfg) -> nn.Module:
-    """Returns the localization model for training and inference."""
-    print("🔧 Using LocalizationCNN")
-    return LocalizationCNN(cfg.N_MELS)
+    """
+    Instantiate LocalizationCNN with the correct IPD input dimension.
+    Uses 4-dim IPD when cfg.BPF_ENERGY_RATIO_AS_FEATURE is True.
+    """
+    ipd_in_dim = 4 if getattr(cfg, "BPF_ENERGY_RATIO_AS_FEATURE", False) else 3
+    print(
+        f"🔧 Using LocalizationCNN (full-capacity mode, "
+        f"ipd_in_dim={ipd_in_dim})"
+    )
+    return LocalizationCNN(n_mels=cfg.N_MELS, ipd_in_dim=ipd_in_dim)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -142,12 +172,6 @@ def make_localization_model(cfg) -> nn.Module:
 class FocalLoss(nn.Module):
     """
     Focal loss for imbalanced binary classification (Lin et al., 2017).
-
-    Parameters
-    ──────────
-    gamma          : focusing exponent (default 2.0)
-    alpha          : positive-class weight in (0,1); None = no weighting
-    label_smoothing: label smoothing factor applied before focal modulation
     """
 
     def __init__(
@@ -157,14 +181,13 @@ class FocalLoss(nn.Module):
         label_smoothing: float = 0.0,
     ):
         super().__init__()
-        self.gamma          = gamma
-        self.alpha          = alpha
+        self.gamma           = gamma
+        self.alpha           = alpha
         self.label_smoothing = label_smoothing
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         ce    = F.cross_entropy(
-            logits, targets,
-            reduction="none",
+            logits, targets, reduction="none",
             label_smoothing=self.label_smoothing,
         )
         pt    = torch.exp(-ce)
@@ -179,14 +202,41 @@ def localization_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     """
     Mixed regression loss for the 4-dimensional localization output.
 
-    Components
-    ──────────
-    2 × MSE for (sin(az), cos(az))  — upweighted for angular accuracy
-    1 × SmoothL1 for normalised distance
-    0.7 × SmoothL1 for normalised height
+    Azimuth via cosine-distance loss
+    ───────────────────────────────────────
+    Old:  2 × MSE(sin_az) + 2 × MSE(cos_az)
+    New:  2 × (1 − cos_similarity(pred_az_vec, true_az_vec))
+              = 2 × (1 − (pred_s·true_s + pred_c·true_c))
+
+    This is the correct circular loss for azimuth angles.  MSE on (sin, cos)
+    is biased: an error of 90° gives MSE = 1.0 but cosine distance = 1.0 too,
+    however at small angles MSE penalises proportionally to sin² while cosine
+    distance penalises proportionally to the actual angular deviation — which
+    is what we care about.
+
+    The cosine dot product is bounded to [−1, 1] so we clamp before subtracting
+    to avoid numerical issues with fp16 training.
+
+    Distance / height
+    ─────────────────
+    SmoothL1 (Huber).
+    Added: focal up-weighting for hard examples (dist or ht > 0.5 normalised),
+    which correspond to drones at longer range where SNR is lower.
     """
-    loss_sin  = F.mse_loss(pred[:, 0], target[:, 0])
-    loss_cos  = F.mse_loss(pred[:, 1], target[:, 1])
-    loss_dist = F.smooth_l1_loss(pred[:, 2], target[:, 2])
-    loss_ht   = F.smooth_l1_loss(pred[:, 3], target[:, 3])
-    return 2.0 * (loss_sin + loss_cos) + 1.0 * loss_dist + 0.7 * loss_ht
+    # ── Azimuth: cosine-distance loss  ──────────────────────────────
+    dot    = (pred[:, 0] * target[:, 0] + pred[:, 1] * target[:, 1]).clamp(-1.0, 1.0)
+    loss_az = (1.0 - dot).mean()
+
+    # ── Distance and height: SmoothL1 with hard-example focal weight ─────
+    loss_dist_raw = F.smooth_l1_loss(pred[:, 2], target[:, 2], reduction="none")
+    loss_ht_raw   = F.smooth_l1_loss(pred[:, 3], target[:, 3], reduction="none")
+
+    # Weight hard examples (far drones) more strongly
+    # focal_w ∈ [1.0, 2.0] — scales up loss for targets > 0.5 (normalised)
+    focal_w_dist = 1.0 + target[:, 2].clamp(0.0, 1.0)
+    focal_w_ht   = 1.0 + target[:, 3].clamp(0.0, 1.0)
+    loss_dist = (loss_dist_raw * focal_w_dist).mean()
+    loss_ht   = (loss_ht_raw   * focal_w_ht  ).mean()
+
+    # Overall: azimuth upweighted 2×, height 0.7× to reflect importance for performance
+    return 2.0 * loss_az + 1.0 * loss_dist + 0.7 * loss_ht

@@ -54,7 +54,7 @@ from .training import (
     WarmupCosineScheduler,
     DetectionTrainer,
     LocalizationTrainer,
-    train_localization_v2,
+    train_localization,
     collect_val_probs,
     find_best_threshold,
     evaluate_binary_metrics,
@@ -152,6 +152,27 @@ from .utils import (
     load_audio_any,
 )
 
+# ── Synthetic dataset generation (for testing / demo purposes) ───────────────────────────────────────────
+from .synthetic_dataset_generator import (
+    generate_single_drone_dataset,
+    generate_multi_drone_dataset,
+    generate_hover_grid_dataset,
+    generate_scenario_dataset,
+    generate_all_test_suites,
+    describe_test_zip,
+)
+
+# ── Dataset visualization ─────────────────────────────────────────────────────────────
+from .dataset_visualizer import (
+    plot_dataset_overview,
+    plot_sample_session,
+    plot_position_coverage,
+    plot_noise_profiles,
+    plot_all,
+    plot_test_zip_overview,  
+    plot_test_session, 
+)
+
 __all__ = [
     # config
     "Config", "config", "AUDIO_EXTS",
@@ -167,7 +188,7 @@ __all__ = [
     "get_det_dataloaders", "report_detection_split_counts", "parse_label_json",
     # training
     "TrainingLogger", "WarmupCosineScheduler",
-    "DetectionTrainer", "LocalizationTrainer", "train_localization_v2",
+    "DetectionTrainer", "LocalizationTrainer", "train_localization",
     "collect_val_probs", "find_best_threshold", "evaluate_binary_metrics",
     "print_detection_report",
     # inference
@@ -199,4 +220,11 @@ __all__ = [
     "upload_custom_dataset_artifacts",
     "audit_localization_labels", "diagnose_uavirbase",
     "verify_tdoa_accuracy", "quick_demo", "launch_ui",
+    # synthetic dataset generation
+    "generate_single_drone_dataset", "generate_multi_drone_dataset",
+    "generate_hover_grid_dataset", "generate_scenario_dataset",
+    "generate_all_test_suites", "describe_test_zip",
+    # dataset visualization
+    "plot_dataset_overview", "plot_sample_session", "plot_position_coverage",
+    "plot_noise_profiles", "plot_all", "plot_test_zip_overview", "plot_test_session",
 ]

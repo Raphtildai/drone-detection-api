@@ -27,8 +27,8 @@ import numpy as np
 import scipy.signal
 import soundfile as sf
 
-from drone_detection.config import AUDIO_EXTS, config as _default_cfg
-from drone_detection.utils import (
+from .config import AUDIO_EXTS, config as _default_cfg
+from .utils import (
     _fractional_delay,
     normalize_peak,
     safe_standardize,
@@ -113,7 +113,7 @@ class AudioProcessor:
         return np.pad(y, (0, n - len(y))).astype(np.float32)
 
     def add_noise(self, y: np.ndarray, snr_db: float) -> np.ndarray:
-        from drone_detection.utils import rms_energy
+        from .utils import rms_energy
         sr  = rms_energy(y)
         n   = np.random.randn(len(y)).astype(np.float32)
         n  /= (rms_energy(n) + 1e-8)
@@ -274,7 +274,7 @@ def perturb_multichannel(
     """Light per-channel augmentation used by LocalizationDataset."""
     cfg  = cfg or _default_cfg
     ap   = AudioProcessor(cfg)
-    from drone_detection.utils import db_to_gain, random_eq_tilt
+    from .utils import db_to_gain, random_eq_tilt
     out  = []
     base = random.uniform(-3.0, 3.0)
     for ch in channels:
@@ -590,7 +590,7 @@ def collect_background_pool(cfg=None) -> Dict[str, list]:
     # Custom-builder background pool
     custom_bg = Path(getattr(cfg, "CUSTOM_DATASET_IMPORTED_ROOT", "")) / "background_pool"
     if custom_bg.exists():
-        from drone_detection.config import AUDIO_EXTS as _AEXTS
+        from .config import AUDIO_EXTS as _AEXTS
         for f in custom_bg.rglob("*"):
             if f.is_file() and f.suffix.lower() in _AEXTS:
                 pool["non_drone"].append(f)

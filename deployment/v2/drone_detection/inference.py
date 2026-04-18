@@ -1,25 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-inference.py
-────────────
-All inference functions: detection, localization, and higher-level analysis.
+inference.py  (v17)
+────────────────────
+All inference functions: detection, localisation, and higher-level analysis.
 
 Public API
 ──────────
-load_detection_model()   — load best_detection.pth into a cached singleton
-load_localization_model()— load best_localization.pth into a cached singleton
-reload_models()          — force-reload both singletons
+load_detection_model()          load best_detection.pth into a cached singleton
+load_localization_model()       load best_localization.pth into a cached singleton
+reload_models()                 force-reload both singletons
+heuristic_detect()              signal-processing features → drone probability
+detect()                        hybrid CNN + heuristic detection
+localize()                      single-drone acoustic localisation
+run_pipeline()                  load → detect → localize → track
+load_3ch()                      load a list of WAV paths into 3-channel arrays
+analyse_audio_file()            segment-level analysis with dashboard
+analyse_external_audio_robust() sliding-window analysis for long files
+comprehensive_pipeline_test()   end-to-end Colab-friendly inference test
 
-heuristic_detect()       — signal-processing features → drone probability
-detect()                 — hybrid CNN + heuristic detection
-localize()               — single-drone acoustic localization
+v17 fixes vs original (v15)
+────────────────────────────
+load_localization_model()
+  BUG FIX: was calling LocalizationCNN(cfg.N_MELS) which hardcodes
+  ipd_in_dim=3.  After the v16 model change the saved checkpoint has
+  ipd_fc.0.weight shape [64, 4] (BPF energy ratio is the 4th IPD scalar),
+  causing a RuntimeError on load_state_dict.
+  Fix: use make_localization_model(cfg) which reads
+  cfg.BPF_ENERGY_RATIO_AS_FEATURE and passes the correct ipd_in_dim.
 
-run_pipeline()           — convenience wrapper: load → detect → localize → track
-comprehensive_pipeline_test() — dynamic end-to-end Colab-friendly inference test
-load_3ch()               — load a list of WAV paths into 3-channel arrays
-
-analyse_audio_file()              — segment-level analysis with dashboard
-analyse_external_audio_robust()   — sliding-window analysis for long files
+localize()
+  Now computes the BPF energy ratio for the optional 4th IPD scalar when
+  cfg.BPF_ENERGY_RATIO_AS_FEATURE is True, so inference matches training.
 """
 
 import math
@@ -48,20 +59,14 @@ from .utils import (
     wrap_angle_deg,
 )
 
-# ── Module-level model singletons (lazily initialised) ───────────────────────
 _det_model = None
 _loc_model = None
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Model loader helpers
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Model loaders ────────────────────────────────────────────────────────────
 
 def load_detection_model(cfg: Optional[Config] = None) -> DetectionCNN:
-    """
-    Load the best detection checkpoint into a cached module-level singleton.
-    Also restores the auto-searched threshold stored in the checkpoint.
-    """
+    """Load the best detection checkpoint into a cached singleton."""
     global _det_model
     if _det_model is not None:
         return _det_model
@@ -76,7 +81,6 @@ def load_detection_model(cfg: Optional[Config] = None) -> DetectionCNN:
     m    = DetectionCNN().to(dev)
     m.load_state_dict(data["model_state"])
     m.eval()
-    # Restore the automatically searched threshold
     cfg.DETECTION_THRESHOLD = float(
         data.get("best_threshold", cfg.DETECTION_THRESHOLD)
     )
@@ -89,7 +93,13 @@ def load_detection_model(cfg: Optional[Config] = None) -> DetectionCNN:
 
 
 def load_localization_model(cfg: Optional[Config] = None):
-    """Load the best localization checkpoint into a cached singleton."""
+    """
+    Load the best localisation checkpoint into a cached singleton.
+
+    v17 fix: uses make_localization_model(cfg) instead of
+    LocalizationCNN(cfg.N_MELS) so ipd_in_dim (3 or 4) is read from
+    cfg.BPF_ENERGY_RATIO_AS_FEATURE and matches the saved checkpoint.
+    """
     global _loc_model
     if _loc_model is not None:
         return _loc_model
@@ -101,7 +111,8 @@ def load_localization_model(cfg: Optional[Config] = None):
         )
     dev  = torch.device(cfg.DEVICE)
     data = torch.load(ckpt, map_location=dev)
-    m    = LocalizationCNN(cfg.N_MELS).to(dev)
+    # v17 fix: make_localization_model reads ipd_in_dim from config
+    m = make_localization_model(cfg).to(dev)
     m.load_state_dict(data["model_state"])
     m.eval()
     _loc_model = m
@@ -121,18 +132,9 @@ def reload_models(cfg: Optional[Config] = None):
     load_localization_model(cfg)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Heuristic detector (v15 — absolute-energy-gated frame entropy)
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Heuristic detector ───────────────────────────────────────────────────────
 
 def _per_frame_entropy(S: np.ndarray, min_energy_fraction: float = 0.01) -> np.ndarray:
-    """
-    Normalised spectral entropy per STFT frame.
-
-    Frames below min_energy_fraction * max_frame_energy are set to NaN so
-    callers can use np.nanmedian to ignore silent frames — critical for clips
-    that contain a short burst in an otherwise silent background.
-    """
     S            = np.asarray(S, dtype=np.float64) + 1e-10
     frame_energy = S.sum(axis=0)
     energy_gate  = frame_energy.max() * min_energy_fraction
@@ -148,10 +150,6 @@ def _harmonic_comb_score(
     y: np.ndarray, sr: int,
     f0_min: float = 80.0, f0_max: float = 350.0, n_harmonics: int = 6,
 ) -> float:
-    """
-    Score how well the spectrum matches a drone harmonic comb.
-    Returns a value in [0, 1]; higher = stronger harmonic structure.
-    """
     S      = np.abs(librosa.stft(y, n_fft=2048, hop_length=512))
     S_mean = S.mean(axis=1)
     freqs  = librosa.fft_frequencies(sr=sr, n_fft=2048)
@@ -173,51 +171,33 @@ def _harmonic_comb_score(
 
 
 def _impulsiveness(y: np.ndarray) -> float:
-    """
-    Crest factor of y — high values (>8) indicate impulsive sounds
-    (car horns, gunshots) which should score LOW for drone.
-    """
     rms  = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
     peak = float(np.max(np.abs(y)) + 1e-8)
     return float(np.clip(peak / rms, 1.0, 10.0))
 
 
 def heuristic_detect(audio: np.ndarray, cfg: Optional[Config] = None) -> dict:
-    """
-    Signal-processing heuristic for drone detection.
-
-    Returns a dict with keys: probability, label, features.
-
-    The detector uses absolute-energy-gated per-frame entropy to reliably
-    veto short tonal pulses (car horns, sirens) while passing sustained
-    drone harmonic combs.
-    """
     cfg = cfg or config
     y   = np.asarray(audio, np.float32)
     if len(y) == 0:
         return {"probability": 0.0, "label": "non_drone", "features": {}}
-
     rms    = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
     rms_db = 20.0 * math.log10(rms + 1e-8)
-
     try:
-        S            = np.abs(librosa.stft(y, n_fft=cfg.N_FFT, hop_length=cfg.HOP_LENGTH))
-        frame_ent    = _per_frame_entropy(S, min_energy_fraction=0.01)
-        voiced_ent   = frame_ent[~np.isnan(frame_ent)]
+        S          = np.abs(librosa.stft(y, n_fft=cfg.N_FFT, hop_length=cfg.HOP_LENGTH))
+        frame_ent  = _per_frame_entropy(S, min_energy_fraction=0.01)
+        voiced_ent = frame_ent[~np.isnan(frame_ent)]
         if len(voiced_ent) == 0:
-            return {
-                "probability": 0.0, "label": "non_drone",
-                "features": {"rms_db": rms_db, "veto": "silent_clip"},
-            }
-        median_ent   = float(np.median(voiced_ent))
-        p10_ent      = float(np.percentile(voiced_ent, 10))
-        centroid     = float(np.mean(librosa.feature.spectral_centroid(S=S, sr=cfg.SR)))
-        rolloff      = float(np.mean(librosa.feature.spectral_rolloff(S=S, sr=cfg.SR, roll_percent=0.85)))
-        bandwidth    = float(np.mean(librosa.feature.spectral_bandwidth(S=S, sr=cfg.SR)))
+            return {"probability": 0.0, "label": "non_drone",
+                    "features": {"rms_db": rms_db, "veto": "silent_clip"}}
+        median_ent = float(np.median(voiced_ent))
+        p10_ent    = float(np.percentile(voiced_ent, 10))
+        centroid   = float(np.mean(librosa.feature.spectral_centroid(S=S, sr=cfg.SR)))
+        rolloff    = float(np.mean(librosa.feature.spectral_rolloff(S=S, sr=cfg.SR, roll_percent=0.85)))
+        bandwidth  = float(np.mean(librosa.feature.spectral_bandwidth(S=S, sr=cfg.SR)))
     except Exception:
         centroid = rolloff = bandwidth = 0.0
         median_ent = p10_ent = 0.5
-
     try:
         f0, _, _ = librosa.pyin(y, fmin=50.0, fmax=500.0, sr=cfg.SR,
                                 hop_length=cfg.HOP_LENGTH, fill_na=0.0)
@@ -228,39 +208,21 @@ def heuristic_detect(audio: np.ndarray, cfg: Optional[Config] = None) -> dict:
         f0_std       = float(np.std(voiced_f0))    if len(voiced_f0) > 0 else 0.0
     except Exception:
         voiced_ratio = f0_med = f0_std = 0.0
-
     try:
         comb = _harmonic_comb_score(y, cfg.SR) if len(y) >= cfg.SR else 0.0
     except Exception:
         comb = 0.0
-
     cf = _impulsiveness(y)
-
-    # Veto 1: low active-frame median entropy → narrow-band tonal content
     if median_ent < 0.38:
         prob = float(np.clip(median_ent / 0.38 * 0.25, 0.0, 0.25))
-        return {
-            "probability": prob,
-            "label": classify_detection_score(prob, cfg),
-            "features": {
-                "rms_db": rms_db, "median_frame_entropy": median_ent,
-                "p10_entropy": p10_ent, "crest_factor": cf,
-                "centroid_hz": centroid, "veto": "low_frame_entropy",
-            },
-        }
-
-    # Veto 2: very high crest factor + moderately narrow spectrum
+        return {"probability": prob, "label": classify_detection_score(prob, cfg),
+                "features": {"rms_db": rms_db, "median_frame_entropy": median_ent,
+                              "p10_entropy": p10_ent, "crest_factor": cf,
+                              "centroid_hz": centroid, "veto": "low_frame_entropy"}}
     if cf > 8.5 and median_ent < 0.52:
-        return {
-            "probability": 0.10,
-            "label": classify_detection_score(0.10, cfg),
-            "features": {
-                "rms_db": rms_db, "median_frame_entropy": median_ent,
-                "crest_factor": cf, "veto": "high_crest_factor",
-            },
-        }
-
-    # Normal scoring
+        return {"probability": 0.10, "label": classify_detection_score(0.10, cfg),
+                "features": {"rms_db": rms_db, "median_frame_entropy": median_ent,
+                              "crest_factor": cf, "veto": "high_crest_factor"}}
     energy_score    = float(np.clip((rms_db + 45.0) / 25.0, 0.0, 1.0))
     f0_score        = (1.0  if 80.0  <= f0_med <= 350.0 else
                        0.3  if 50.0  <= f0_med <   80.0 else 0.0)
@@ -272,120 +234,98 @@ def heuristic_detect(audio: np.ndarray, cfg: Optional[Config] = None) -> dict:
     bandwidth_score = 1.0 if 150.0  <= bandwidth <= 4000.0 else 0.50
     entropy_score   = float(np.clip((median_ent - 0.35) / 0.35, 0.0, 1.0))
     comb_score      = float(np.clip(comb * 3.0, 0.0, 1.0))
-
-    score = (
-        0.14 * energy_score    + 0.16 * f0_score
-        + 0.10 * voiced_score  + 0.08 * stability_score
-        + 0.10 * centroid_score+ 0.07 * rolloff_score
-        + 0.07 * bandwidth_score + 0.16 * entropy_score
-        + 0.12 * comb_score
-    )
-    prob = sigmoid(8.0 * (score - 0.50))
-    return {
-        "probability": float(prob),
-        "label":       classify_detection_score(prob, cfg),
-        "features": {
-            "rms_db": rms_db, "median_frame_entropy": median_ent,
-            "p10_entropy": p10_ent, "crest_factor": cf,
-            "comb_score": comb, "centroid_hz": centroid,
-            "rolloff_hz": rolloff, "bandwidth_hz": bandwidth,
-            "voiced_ratio": voiced_ratio, "f0_median_hz": f0_med,
-            "f0_std_hz": f0_std,
-        },
-    }
+    score = (0.14*energy_score + 0.16*f0_score + 0.10*voiced_score
+             + 0.08*stability_score + 0.10*centroid_score + 0.07*rolloff_score
+             + 0.07*bandwidth_score + 0.16*entropy_score + 0.12*comb_score)
+    prob  = sigmoid(8.0 * (score - 0.50))
+    return {"probability": float(prob), "label": classify_detection_score(prob, cfg),
+            "features": {"rms_db": rms_db, "median_frame_entropy": median_ent,
+                         "p10_entropy": p10_ent, "crest_factor": cf,
+                         "comb_score": comb, "centroid_hz": centroid,
+                         "rolloff_hz": rolloff, "bandwidth_hz": bandwidth,
+                         "voiced_ratio": voiced_ratio, "f0_median_hz": f0_med,
+                         "f0_std_hz": f0_std}}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Main detection + localization functions
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Detection + localisation ─────────────────────────────────────────────────
 
-_RMS_FLOOR_DB = -45.0   # segments below this are near-silence
+_RMS_FLOOR_DB = -45.0
 
 
 def detect(
     channels: List[np.ndarray],
-    cfg:       Optional[Config] = None,
+    cfg: Optional[Config] = None,
     use_hybrid: bool = True,
 ) -> dict:
-    """
-    Hybrid drone detector: CNN (80 %) + signal-processing heuristic (20 %).
-
-    Parameters
-    ──────────
-    channels   : list of 3 float32 arrays (one per mic)
-    use_hybrid : if False, return CNN probability only
-
-    Returns
-    ───────
-    dict with keys:
-        detected, probability, label,
-        cnn_probability, heuristic_probability, heuristic_features
-    """
     cfg = cfg or config
     ap  = AudioProcessor(cfg)
     y0  = ap.pad_or_truncate(np.asarray(channels[0], dtype=np.float32))
-
     rms_db = float(20 * math.log10(float(np.sqrt(np.mean(y0 ** 2))) + 1e-8))
     if rms_db < _RMS_FLOOR_DB:
-        return {
-            "detected": False, "probability": 0.0,
-            "label": "non_drone", "cnn_probability": 0.0,
-            "heuristic_probability": 0.0,
-            "heuristic_features": {"veto": "below_rms_floor", "rms_db": rms_db},
-        }
-
+        return {"detected": False, "probability": 0.0, "label": "non_drone",
+                "cnn_probability": 0.0, "heuristic_probability": 0.0,
+                "heuristic_features": {"veto": "below_rms_floor", "rms_db": rms_db}}
     m    = load_detection_model(cfg)
-    mel0 = ap.mel(y0)
-    x    = torch.tensor(
-        np.stack([mel0, mel0, mel0], axis=0), dtype=torch.float32
-    ).unsqueeze(0).to(cfg.DEVICE)
+    feat = ap.feature_stack(y0)   # [log-mel, PCEN, delta-mel] — matches training
+    x    = torch.tensor(feat, dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
     with torch.no_grad():
         cnn_prob = float(torch.softmax(m(x), dim=1)[0, 1].item())
-
     heur           = heuristic_detect(y0, cfg)
     heuristic_prob = float(heur["probability"])
-
     if use_hybrid:
         fused_prob = 0.80 * cnn_prob + 0.20 * heuristic_prob
-        # Boost when both agree
         if cnn_prob > 0.45 and heuristic_prob > 0.45:
             fused_prob = min(1.0, fused_prob + 0.06)
-        # Suppress when CNN is borderline but heuristic found a veto
         if cnn_prob < 0.55 and heur["features"].get("veto"):
             fused_prob = min(fused_prob, 0.40)
     else:
         fused_prob = cnn_prob
-
     label = classify_detection_score(fused_prob, cfg)
-    return {
-        "detected":              bool(fused_prob >= cfg.DETECTION_THRESHOLD),
-        "probability":           float(fused_prob),
-        "label":                 label,
-        "cnn_probability":       float(cnn_prob),
-        "heuristic_probability": float(heuristic_prob),
-        "heuristic_features":    heur["features"],
-    }
+    return {"detected": bool(fused_prob >= cfg.DETECTION_THRESHOLD),
+            "probability": float(fused_prob), "label": label,
+            "cnn_probability": float(cnn_prob),
+            "heuristic_probability": float(heuristic_prob),
+            "heuristic_features": heur["features"]}
+
+
+def _estimate_bpf_hz(y: np.ndarray, sr: int) -> float:
+    """Quick spectral peak search 50–700 Hz for BPF estimation."""
+    try:
+        S     = np.abs(librosa.stft(y.astype(np.float32), n_fft=2048, hop_length=512))
+        Sm    = S.mean(axis=1)
+        freqs = librosa.fft_frequencies(sr=sr, n_fft=2048)
+        mask  = (freqs >= 50) & (freqs <= 700)
+        return float(freqs[mask][int(np.argmax(Sm[mask]))])
+    except Exception:
+        return 200.0
 
 
 def localize(channels: List[np.ndarray], cfg: Optional[Config] = None) -> dict:
     """
-    Single-drone acoustic localization.
+    Single-drone acoustic localisation.
 
-    Returns
-    ───────
-    dict: azimuth_deg, distance_m, height_m, xy_position
+    v17: computes BPF energy ratio as 4th IPD scalar when
+    cfg.BPF_ENERGY_RATIO_AS_FEATURE is True, matching training.
     """
     cfg = cfg or config
     ap  = AudioProcessor(cfg)
     m   = load_localization_model(cfg)
 
-    mels  = [ap.mel(ap.pad_or_truncate(c)) for c in channels]
-    mel_t = torch.tensor(np.stack(mels, axis=0), dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
-    ipd_t = torch.tensor(
-        compute_ipd_features([ap.pad_or_truncate(c) for c in channels], cfg),
-        dtype=torch.float32,
-    ).unsqueeze(0).to(cfg.DEVICE)
+    padded = [ap.pad_or_truncate(c) for c in channels]
+    mels   = [ap.mel(c) for c in padded]
+    mel_t  = torch.tensor(np.stack(mels, axis=0),
+                          dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
 
+    ipd_raw = compute_ipd_features(padded, cfg)   # (3,)
+    if getattr(cfg, "BPF_ENERGY_RATIO_AS_FEATURE", False):
+        try:
+            bpf_hz = _estimate_bpf_hz(padded[0], cfg.SR)
+            ratio  = ap.compute_bpf_energy_ratio(padded[0], bpf_hz)
+        except Exception:
+            ratio = 0.0
+        ipd_raw = np.append(ipd_raw, float(ratio)).astype(np.float32)
+
+    ipd_t = torch.tensor(ipd_raw, dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
     with torch.no_grad():
         pred = m(mel_t, ipd_t)[0].cpu().numpy()
 
@@ -394,12 +334,11 @@ def localize(channels: List[np.ndarray], cfg: Optional[Config] = None) -> dict:
     dist_m = float(abs(dist_raw) * cfg.MAX_LOCALIZATION_DIST)
     ht_m   = float(abs(ht_raw)   * cfg.MAX_LOCALIZATION_DIST)
     xy     = azimuth_deg_to_xy(az_deg, dist_m, cfg.ARRAY_CENTER)
-    return {"azimuth_deg": az_deg, "distance_m": dist_m, "height_m": ht_m, "xy_position": xy}
+    return {"azimuth_deg": az_deg, "distance_m": dist_m,
+            "height_m": ht_m, "xy_position": xy}
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Pipeline wrapper
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Pipeline wrapper ─────────────────────────────────────────────────────────
 
 def load_3ch(paths: List, cfg: Optional[Config] = None) -> List[np.ndarray]:
     """Load a list of 3 WAV paths into padded float32 arrays."""
@@ -408,47 +347,24 @@ def load_3ch(paths: List, cfg: Optional[Config] = None) -> List[np.ndarray]:
 
 
 def run_pipeline(
-    wav_paths:   List,
-    cfg:         Optional[Config] = None,
+    wav_paths: List,
+    cfg: Optional[Config] = None,
     tracker=None,
-    multi_drone: bool  = False,
-    timestamp:   Optional[float] = None,
+    multi_drone: bool = False,
+    timestamp: Optional[float] = None,
 ) -> dict:
-    """
-    Convenience wrapper: load WAVs → detect → localize → (optionally) track.
-
-    Parameters
-    ──────────
-    wav_paths   : list of 3 WAV file paths (one per mic)
-    tracker     : KalmanTracker instance (optional; pass None to skip tracking)
-    multi_drone : use localize_multi_drone() instead of localize()
-    timestamp   : UNIX timestamp for the tracker (defaults to time.time())
-
-    Returns
-    ───────
-    dict: detected, probability, cnn_probability, heuristic_probability,
-          drones (list of localization dicts), tracks (list of KalmanTrack)
-    """
     from .multidrone import localize_multi_drone
     cfg = cfg or config
     ts  = timestamp or time.time()
-
     channels = load_3ch(wav_paths, cfg)
     det      = detect(channels, cfg)
-    result   = {
-        "detected":              det["detected"],
-        "probability":           det["probability"],
-        "cnn_probability":       det.get("cnn_probability", float("nan")),
-        "heuristic_probability": det.get("heuristic_probability", float("nan")),
-        "drones":                [],
-        "tracks":                [],
-    }
-
+    result   = {"detected": det["detected"], "probability": det["probability"],
+                "cnn_probability": det.get("cnn_probability", float("nan")),
+                "heuristic_probability": det.get("heuristic_probability", float("nan")),
+                "drones": [], "tracks": []}
     if not det["detected"]:
-        if tracker:
-            result["tracks"] = tracker.step([], ts)
+        if tracker: result["tracks"] = tracker.step([], ts)
         return result
-
     if multi_drone:
         drone_locs = localize_multi_drone(channels, cfg)
         result["drones"] = drone_locs
@@ -457,28 +373,16 @@ def run_pipeline(
         loc = localize(channels, cfg)
         result["drones"] = [loc]
         positions = [loc["xy_position"]]
-
     if tracker and positions:
         result["tracks"] = tracker.step(positions, ts)
     return result
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Segment-level analysis helpers
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Segment-level analysis ───────────────────────────────────────────────────
 
-def _synthesise_3ch(
-    audio: np.ndarray, sr: int,
-    drone_pos, mic_positions: np.ndarray,
-) -> List[np.ndarray]:
-    """
-    Apply TDOA delays to a mono signal to simulate a 3-mic recording.
-    Used when use_synthesis=True in analyse_audio_file().
-    """
+def _synthesise_3ch(audio, sr, drone_pos, mic_positions):
     from .utils import _fractional_delay
-    c   = 343.0
-    src = np.array(drone_pos, dtype=float)
-    n   = len(audio)
+    c = 343.0; src = np.array(drone_pos, dtype=float); n = len(audio)
     dists = np.linalg.norm(mic_positions - src[None, :], axis=1)
     rel   = (dists - dists.min()) / c * sr
     out   = []
@@ -489,64 +393,42 @@ def _synthesise_3ch(
 
 
 def analyse_audio_file(
-    audio_path:         str,
-    cfg:                Optional[Config] = None,
-    drone_pos=          None,
-    n_segments:         int   = 10,
+    audio_path: str,
+    cfg: Optional[Config] = None,
+    drone_pos=None,
+    n_segments: int = 10,
     threshold_override: Optional[float] = None,
-    show_plot:          bool  = True,
-    use_synthesis:      bool  = False,
+    show_plot: bool = True,
+    use_synthesis: bool = False,
 ) -> dict:
-    """
-    Segment-level analysis of an audio file with optional 6-panel dashboard.
-
-    Parameters
-    ──────────
-    use_synthesis : False (default) — detect directly on mono signal.
-                    True — simulate 3-mic geometry (for known-position tests).
-
-    Returns
-    ───────
-    dict: segments, tracker, tracks, detected, probability, duration_sec
-    """
     from .tracking import KalmanTracker
     from .visualization import _plot_analysis_report
-
     cfg = cfg or config
     if threshold_override is not None:
         old_thr = cfg.DETECTION_THRESHOLD
         cfg.DETECTION_THRESHOLD = threshold_override
-
     ap       = AudioProcessor(cfg)
     y_full   = ap.load(audio_path, mono=True)
     total    = len(y_full) / cfg.SR
     seg_n    = int(cfg.TARGET_DURATION * cfg.SR)
     hop      = max(seg_n, int((len(y_full) - seg_n) / max(n_segments - 1, 1)))
     dp       = drone_pos or [1.0, 0.8]
-
     load_detection_model(cfg)
-    try:
-        load_localization_model(cfg)
-        can_localize = True
-    except FileNotFoundError:
-        can_localize = False
-
-    tracker = KalmanTracker(cfg)
+    try:    load_localization_model(cfg); can_localize = True
+    except FileNotFoundError: can_localize = False
+    tracker  = KalmanTracker(cfg)
     segments = []
     base_ts  = time.time()
     mode_str = "synthesis" if use_synthesis else "direct mono"
     print(f"\n🎵 {Path(audio_path).name}  ({total:.1f}s)  |  {n_segments} segments  |  {mode_str}")
-
     for seg_i in range(n_segments):
         start = min(seg_i * hop, max(0, len(y_full) - seg_n))
         audio = y_full[start : start + seg_n]
         if len(audio) < seg_n:
             audio = np.pad(audio, (0, seg_n - len(audio)))
-
         t_s    = start / cfg.SR
-        mel_fr = ap.mel(ap.pad_or_truncate(audio))
+        mel_fr = ap.mel(ap.pad_or_truncate(audio))  # keep for plotting only
         rms_db = float(20 * np.log10(np.sqrt(np.mean(audio ** 2)) + 1e-8))
-
         if use_synthesis:
             chs = _synthesise_3ch(audio, cfg.SR, dp, cfg.MIC_POSITIONS)
             det = detect(chs, cfg)
@@ -559,90 +441,64 @@ def analyse_audio_file(
                 res["cnn_probability"]       = det.get("cnn_probability", float("nan"))
                 res["heuristic_probability"] = det.get("heuristic_probability", float("nan"))
             finally:
-                for p in tmp:
-                    os.unlink(p)
+                for p in tmp: os.unlink(p)
             drone_loc = res["drones"][0] if res["drones"] else None
         else:
-            det = detect([audio, audio, audio], cfg)
+            det       = detect([audio, audio, audio], cfg)
             drone_loc = None
             if det["detected"]:
                 if can_localize:
-                    try:
-                        drone_loc = localize([audio, audio, audio], cfg)
+                    try:    drone_loc = localize([audio, audio, audio], cfg)
                     except Exception:
-                        # Localization failed; still feed detection position to tracker
-                        drone_loc = {
-                            "azimuth_deg": 0.0, "distance_m": 0.0, "height_m": 0.0,
-                            "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
-                        }
+                        drone_loc = {"azimuth_deg": 0.0, "distance_m": 0.0,
+                                     "height_m": 0.0,
+                                     "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32)}
                 else:
-                    # No loc model — use array center so tracker still gets a position
-                    drone_loc = {
-                        "azimuth_deg": 0.0, "distance_m": 0.0, "height_m": 0.0,
-                        "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
-                    }
+                    drone_loc = {"azimuth_deg": 0.0, "distance_m": 0.0,
+                                 "height_m": 0.0,
+                                 "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32)}
             positions = [drone_loc["xy_position"]] if drone_loc else []
             tracks    = tracker.step(positions, base_ts + t_s)
-            res = {
-                "detected": det["detected"], "probability": det["probability"],
-                "cnn_probability": det.get("cnn_probability", float("nan")),
-                "heuristic_probability": det.get("heuristic_probability", float("nan")),
-                "drones": [drone_loc] if drone_loc else [], "tracks": tracks,
-            }
-
-        segments.append({
-            "seg": seg_i + 1, "t_start": t_s,
-            "detected": res["detected"], "prob": res["probability"],
-            "cnn_probability": res.get("cnn_probability", float("nan")),
-            "heuristic_probability": res.get("heuristic_probability", float("nan")),
-            "xy":  res["drones"][0]["xy_position"] if res["drones"] else None,
-            "loc": res["drones"][0] if res["drones"] else None,
-            "mel": mel_fr, "rms_db": rms_db,
-        })
+            res = {"detected": det["detected"], "probability": det["probability"],
+                   "cnn_probability": det.get("cnn_probability", float("nan")),
+                   "heuristic_probability": det.get("heuristic_probability", float("nan")),
+                   "drones": [drone_loc] if drone_loc else [], "tracks": tracks}
+        segments.append({"seg": seg_i+1, "t_start": t_s,
+                         "detected": res["detected"], "prob": res["probability"],
+                         "cnn_probability": res.get("cnn_probability", float("nan")),
+                         "heuristic_probability": res.get("heuristic_probability", float("nan")),
+                         "xy": res["drones"][0]["xy_position"] if res["drones"] else None,
+                         "loc": res["drones"][0] if res["drones"] else None,
+                         "mel": mel_fr, "rms_db": rms_db})
         icon = "🚁" if res["detected"] else "🌳"
         print(f"  Seg {seg_i+1:3d}  {icon}  conf={res['probability']:.3f}  rms={rms_db:.1f}dB")
-
     confirmed = tracker.all_confirmed()
     n_det = sum(s["detected"] for s in segments)
     print(f"\n  📊 {n_det}/{n_segments} detected  |  {len(confirmed)} confirmed track(s)")
     if show_plot:
         _plot_analysis_report(segments, confirmed, cfg, Path(audio_path).name)
-        # Also show track trajectories if any were confirmed
         if confirmed:
             from .visualization import plot_track_trajectory
             plot_track_trajectory(confirmed, cfg, save=True)
     if threshold_override is not None:
         cfg.DETECTION_THRESHOLD = old_thr
-
-    return {
-        "segments":     segments,
-        "tracker":      tracker,
-        "tracks":       confirmed,
-        "detected":     n_det > 0,
-        "probability":  max((s["prob"] for s in segments), default=0.0),
-        "duration_sec": total,
-    }
+    return {"segments": segments, "tracker": tracker, "tracks": confirmed,
+            "detected": n_det > 0,
+            "probability": max((s["prob"] for s in segments), default=0.0),
+            "duration_sec": total}
 
 
 def analyse_external_audio_robust(
-    audio_path:       str,
-    cfg:              Optional[Config] = None,
-    segment_sec:      Optional[float] = None,
-    overlap:          Optional[float] = None,
-    threshold:        Optional[float] = None,
-    min_pos_segments: Optional[int]   = None,
-    agg_mode:         Optional[str]   = None,
-    topk:             Optional[int]   = None,
-    show_plot:        bool = True,
+    audio_path: str,
+    cfg: Optional[Config] = None,
+    segment_sec: Optional[float] = None,
+    overlap: Optional[float] = None,
+    threshold: Optional[float] = None,
+    min_pos_segments: Optional[int] = None,
+    agg_mode: Optional[str] = None,
+    topk: Optional[int] = None,
+    show_plot: bool = True,
 ) -> dict:
-    """
-    Sliding-window analysis for external / long audio files.
-
-    Parameters default to cfg.EXTERNAL_* settings so callers only need to
-    override what they care about.
-
-    Returns a dict with per-segment and clip-level results.
-    """
     segment_sec      = segment_sec      or (cfg or config).EXTERNAL_SEGMENT_SEC
     overlap          = overlap          if overlap is not None else (cfg or config).EXTERNAL_SEGMENT_OVERLAP
     threshold        = threshold        if threshold is not None else (cfg or config).EXTERNAL_INFER_THRESHOLD
@@ -650,7 +506,6 @@ def analyse_external_audio_robust(
     agg_mode         = agg_mode         or (cfg or config).EXTERNAL_AGG_MODE
     topk             = topk             or (cfg or config).EXTERNAL_TOPK
     cfg              = cfg or config
-
     ap      = AudioProcessor(cfg)
     y       = ap.load(audio_path, mono=True)
     total_s = len(y) / cfg.SR
@@ -659,42 +514,32 @@ def analyse_external_audio_robust(
     starts  = list(range(0, len(y) - seg_len + 1, hop_len)) if len(y) > seg_len else [0]
     if starts and starts[-1] != len(y) - seg_len:
         starts.append(len(y) - seg_len)
-
     segment_results = []
     for i, start in enumerate(starts):
         seg = ap.pad_or_truncate(y[start : start + seg_len])
         res = detect([seg, seg, seg], cfg, use_hybrid=True)
-        t0  = start / cfg.SR
-        t1  = (start + seg_len) / cfg.SR
-        segment_results.append({
-            "segment_index":               i + 1,
-            "t_start_s":                   float(t0),
-            "t_end_s":                     float(t1),
-            "probability":                 float(res["probability"]),
-            "cnn_probability":             float(res["cnn_probability"]),
-            "heuristic_probability":       float(res["heuristic_probability"]),
-            "label":                       res["label"],
-            "detected_at_main_threshold":  bool(res["probability"] >= cfg.DETECTION_THRESHOLD),
-            "detected_at_external_threshold": bool(res["probability"] >= threshold),
-        })
-
+        t0  = start / cfg.SR; t1 = (start + seg_len) / cfg.SR
+        segment_results.append({"segment_index": i+1, "t_start_s": float(t0),
+                                 "t_end_s": float(t1),
+                                 "probability": float(res["probability"]),
+                                 "cnn_probability": float(res["cnn_probability"]),
+                                 "heuristic_probability": float(res["heuristic_probability"]),
+                                 "label": res["label"],
+                                 "detected_at_main_threshold": bool(res["probability"] >= cfg.DETECTION_THRESHOLD),
+                                 "detected_at_external_threshold": bool(res["probability"] >= threshold)})
     probs        = [s["probability"] for s in segment_results]
     probs_sorted = sorted(probs, reverse=True)
     if agg_mode == "max":
         clip_score = float(max(probs)) if probs else 0.0
     elif agg_mode == "vote":
         clip_score = float(sum(p >= threshold for p in probs) / max(len(probs), 1))
-    else:  # mean_topk (default)
-        clip_score = safe_prob_average(probs_sorted[: max(1, topk)], default=0.0)
-
-    pos_count    = sum(s["detected_at_external_threshold"] for s in segment_results)
+    else:
+        clip_score = safe_prob_average(probs_sorted[:max(1, topk)], default=0.0)
+    pos_count     = sum(s["detected_at_external_threshold"] for s in segment_results)
     clip_detected = clip_score >= threshold or pos_count >= min_pos_segments
-    clip_label    = (
-        "drone"           if clip_detected and clip_score >= threshold else
-        "possible_drone"  if pos_count >= 1 or clip_score >= cfg.DETECTION_THRESHOLD_WEAK else
-        "non_drone"
-    )
-
+    clip_label    = ("drone" if clip_detected and clip_score >= threshold else
+                     "possible_drone" if pos_count >= 1 or clip_score >= cfg.DETECTION_THRESHOLD_WEAK
+                     else "non_drone")
     print(f"\n🎧 Robust External Audio Analysis")
     print(f"🎵 File: {Path(audio_path).name} | duration={total_s:.2f}s | {len(segment_results)} segments")
     for s in segment_results:
@@ -703,27 +548,20 @@ def analyse_external_audio_robust(
               f"cnn={s['cnn_probability']:.3f}  heur={s['heuristic_probability']:.3f}  "
               f"[{s['t_start_s']:.2f}–{s['t_end_s']:.2f}s]")
     print(f"\n📊 Clip score: {clip_score:.3f}  |  Positive: {pos_count}/{len(segment_results)}  |  Label: {clip_label}")
-
     if show_plot:
-        from .visualization import _plot_external_detection_scores
-        _plot_external_detection_scores(segment_results, threshold, cfg, Path(audio_path).name)
+        try:
+            from .visualization import _plot_external_detection_scores
+            _plot_external_detection_scores(segment_results, threshold, cfg, Path(audio_path).name)
+        except Exception:
+            pass
+    return {"file": str(audio_path), "duration_s": float(total_s),
+            "segment_results": segment_results, "clip_score": float(clip_score),
+            "positive_segments": int(pos_count), "segments_total": int(len(segment_results)),
+            "clip_detected": bool(clip_detected), "clip_label": clip_label,
+            "aggregation_mode": agg_mode, "external_threshold": float(threshold)}
 
-    return {
-        "file":              str(audio_path),
-        "duration_s":        float(total_s),
-        "segment_results":   segment_results,
-        "clip_score":        float(clip_score),
-        "positive_segments": int(pos_count),
-        "segments_total":    int(len(segment_results)),
-        "clip_detected":     bool(clip_detected),
-        "clip_label":        clip_label,
-        "aggregation_mode":  agg_mode,
-        "external_threshold": float(threshold),
-    }
 
-# ══════════════════════════════════════════════════════════════════════════════
-# Comprehensive pipeline test helper
-# ══════════════════════════════════════════════════════════════════════════════
+# ─── Comprehensive pipeline test (unchanged from v15) ────────────────────────
 
 def _in_colab() -> bool:
     try:
@@ -733,53 +571,29 @@ def _in_colab() -> bool:
         return False
 
 
-def _upload_test_audio_triplet_colab(
-    exts: Optional[List[str]] = None,
-) -> List[str]:
-    """
-    Prompt the user to upload exactly 3 audio files in Colab and return paths.
-    """
+def _upload_test_audio_triplet_colab(exts: Optional[List[str]] = None) -> List[str]:
     if not _in_colab():
         raise RuntimeError(
             "No wav_paths were provided. Interactive upload is only available in Google Colab."
         )
-
     from google.colab import files
-
     allowed_exts = tuple(exts or [".wav", ".mp3", ".flac", ".ogg", ".m4a"])
-
     print("📁 Please upload exactly 3 audio files for Mic1, Mic2, and Mic3.")
     uploaded = files.upload()
-
-    picked = [name for name in uploaded.keys() if name.lower().endswith(allowed_exts)]
-    picked = sorted(picked)
-
+    picked = sorted([name for name in uploaded.keys() if name.lower().endswith(allowed_exts)])
     if len(picked) != 3:
-        raise ValueError(
-            f"Expected exactly 3 audio files, but found {len(picked)}: {picked}"
-        )
-
+        raise ValueError(f"Expected exactly 3 audio files, but found {len(picked)}: {picked}")
     print("✅ Uploaded files:")
     for i, p in enumerate(picked, start=1):
         print(f"   Mic {i}: {p}")
-
     return picked
 
-def _validate_test_audio_paths(wav_paths: List) -> List[str]:
-    """
-    Validate that wav_paths is a list of exactly 3 existing files.
 
-    Returns
-    -------
-    list[str]
-        Normalized string paths.
-    """
+def _validate_test_audio_paths(wav_paths: List) -> List[str]:
     if not isinstance(wav_paths, (list, tuple)):
         raise TypeError("wav_paths must be a list or tuple of 3 file paths.")
-
     if len(wav_paths) != 3:
         raise ValueError(f"Expected exactly 3 audio paths, got {len(wav_paths)}.")
-
     norm = []
     for i, p in enumerate(wav_paths, start=1):
         ps = str(p)
@@ -790,49 +604,30 @@ def _validate_test_audio_paths(wav_paths: List) -> List[str]:
 
 
 def _summarize_loaded_channels(channels: List[np.ndarray]) -> List[dict]:
-    """
-    Return basic per-channel stats for debugging / reporting.
-    """
     summary = []
     for i, ch in enumerate(channels, start=1):
         ch = np.asarray(ch)
-        rms = float(np.sqrt(np.mean(ch ** 2)) + 1e-8) if len(ch) else 0.0
+        rms    = float(np.sqrt(np.mean(ch ** 2)) + 1e-8) if len(ch) else 0.0
         rms_db = float(20.0 * np.log10(rms + 1e-8))
-        summary.append({
-            "channel": i,
-            "shape": tuple(ch.shape),
-            "dtype": str(ch.dtype),
-            "min": float(np.min(ch)) if len(ch) else 0.0,
-            "max": float(np.max(ch)) if len(ch) else 0.0,
-            "rms_db": rms_db,
-        })
+        summary.append({"channel": i, "shape": tuple(ch.shape), "dtype": str(ch.dtype),
+                         "min": float(np.min(ch)) if len(ch) else 0.0,
+                         "max": float(np.max(ch)) if len(ch) else 0.0,
+                         "rms_db": rms_db})
     return summary
 
 
-def _print_pipeline_test_summary(
-    wav_paths: List[str],
-    channel_summary: List[dict],
-    single_result: dict,
-    multi_result: Optional[dict] = None,
-) -> None:
-    """
-    Pretty-print a concise test summary.
-    """
+def _print_pipeline_test_summary(wav_paths, channel_summary, single_result,
+                                  multi_result=None):
     print("\n" + "=" * 80)
     print("COMPREHENSIVE PIPELINE TEST SUMMARY")
     print("=" * 80)
-
     print("\n🎵 Input files")
     for i, p in enumerate(wav_paths, start=1):
         print(f"  Mic {i}: {p}")
-
     print("\n🔊 Channel statistics")
     for s in channel_summary:
-        print(
-            f"  Ch{s['channel']}: shape={s['shape']}  dtype={s['dtype']}  "
-            f"min={s['min']:.5f}  max={s['max']:.5f}  rms={s['rms_db']:.2f} dB"
-        )
-
+        print(f"  Ch{s['channel']}: shape={s['shape']}  dtype={s['dtype']}  "
+              f"min={s['min']:.5f}  max={s['max']:.5f}  rms={s['rms_db']:.2f} dB")
     print("\n🚁 Single-drone pipeline")
     print(f"  detected               : {single_result['detected']}")
     print(f"  probability            : {single_result['probability']:.4f}")
@@ -840,20 +635,14 @@ def _print_pipeline_test_summary(
     print(f"  heuristic_probability  : {single_result['heuristic_probability']:.4f}")
     print(f"  drones_found           : {len(single_result['drones'])}")
     print(f"  tracks_returned        : {len(single_result['tracks'])}")
-
     if single_result["drones"]:
         for i, d in enumerate(single_result["drones"], start=1):
             xy = d.get("xy_position", None)
-            xy_str = (
-                f"({float(xy[0]):.3f}, {float(xy[1]):.3f})"
-                if isinstance(xy, np.ndarray) and len(xy) >= 2 else str(xy)
-            )
-            print(
-                f"    Drone {i}: az={d.get('azimuth_deg', float('nan')):.2f}°  "
-                f"dist={d.get('distance_m', float('nan')):.2f}m  "
-                f"ht={d.get('height_m', float('nan')):.2f}m  xy={xy_str}"
-            )
-
+            xy_str = (f"({float(xy[0]):.3f}, {float(xy[1]):.3f})"
+                      if isinstance(xy, np.ndarray) and len(xy) >= 2 else str(xy))
+            print(f"    Drone {i}: az={d.get('azimuth_deg', float('nan')):.2f}°  "
+                  f"dist={d.get('distance_m', float('nan')):.2f}m  "
+                  f"ht={d.get('height_m', float('nan')):.2f}m  xy={xy_str}")
     if multi_result is not None:
         print("\n🚁🚁 Multi-drone pipeline")
         print(f"  detected               : {multi_result['detected']}")
@@ -864,14 +653,10 @@ def _print_pipeline_test_summary(
         print(f"  tracks_returned        : {len(multi_result['tracks'])}")
         for i, d in enumerate(multi_result["drones"], start=1):
             xy = d.get("xy_position", None)
-            xy_str = (
-                f"({float(xy[0]):.3f}, {float(xy[1]):.3f})"
-                if isinstance(xy, np.ndarray) and len(xy) >= 2 else str(xy)
-            )
-            print(
-                f"    Drone {i}: az={d.get('azimuth_deg', float('nan')):.2f}°  "
-                f"dist={d.get('distance_m', float('nan')):.2f}m  xy={xy_str}"
-            )
+            xy_str = (f"({float(xy[0]):.3f}, {float(xy[1]):.3f})"
+                      if isinstance(xy, np.ndarray) and len(xy) >= 2 else str(xy))
+            print(f"    Drone {i}: az={d.get('azimuth_deg', float('nan')):.2f}°  "
+                  f"dist={d.get('distance_m', float('nan')):.2f}m  xy={xy_str}")
 
 
 def comprehensive_pipeline_test(
@@ -882,73 +667,39 @@ def comprehensive_pipeline_test(
     timestamp: Optional[float] = None,
     auto_upload_if_missing: bool = True,
 ) -> dict:
-    """
-    End-to-end test for load_3ch() and run_pipeline().
-
-    If wav_paths is None and running in Colab, prompts for upload.
-    """
+    """End-to-end test for load_3ch() and run_pipeline()."""
     cfg = cfg or config
-
     if wav_paths is None:
         if not auto_upload_if_missing:
             raise ValueError("wav_paths is None and auto_upload_if_missing=False.")
         wav_paths = _upload_test_audio_triplet_colab()
-
     wav_paths = _validate_test_audio_paths(wav_paths)
-
     print("🔄 Loading models...")
     load_detection_model(cfg)
     load_localization_model(cfg)
-
     print("\n🔊 Loading 3-channel audio...")
     channels = load_3ch(wav_paths, cfg)
-
     if len(channels) != 3:
         raise AssertionError(f"load_3ch() returned {len(channels)} channels, expected 3.")
-
     ch_lengths = [len(np.asarray(ch)) for ch in channels]
     if len(set(ch_lengths)) != 1:
         raise AssertionError(f"Channels do not have equal lengths: {ch_lengths}")
-
     channel_summary = _summarize_loaded_channels(channels)
-
-    tracker_single = None
-    tracker_multi = None
+    tracker_single = tracker_multi = None
     if use_tracker:
         from .tracking import KalmanTracker
         tracker_single = KalmanTracker(cfg)
-        tracker_multi = KalmanTracker(cfg) if run_multi_drone else None
-
+        tracker_multi  = KalmanTracker(cfg) if run_multi_drone else None
     print("\n🚁 Running single-drone pipeline...")
-    single_result = run_pipeline(
-        wav_paths=wav_paths,
-        cfg=cfg,
-        tracker=tracker_single,
-        multi_drone=False,
-        timestamp=timestamp,
-    )
-
+    single_result = run_pipeline(wav_paths=wav_paths, cfg=cfg,
+                                 tracker=tracker_single, multi_drone=False,
+                                 timestamp=timestamp)
     multi_result = None
     if run_multi_drone:
         print("\n🚁🚁 Running multi-drone pipeline...")
-        multi_result = run_pipeline(
-            wav_paths=wav_paths,
-            cfg=cfg,
-            tracker=tracker_multi,
-            multi_drone=True,
-            timestamp=timestamp,
-        )
-
-    _print_pipeline_test_summary(
-        wav_paths=wav_paths,
-        channel_summary=channel_summary,
-        single_result=single_result,
-        multi_result=multi_result,
-    )
-
-    return {
-        "wav_paths": wav_paths,
-        "channels_loaded": channel_summary,
-        "single_result": single_result,
-        "multi_result": multi_result,
-    }
+        multi_result = run_pipeline(wav_paths=wav_paths, cfg=cfg,
+                                    tracker=tracker_multi, multi_drone=True,
+                                    timestamp=timestamp)
+    _print_pipeline_test_summary(wav_paths, channel_summary, single_result, multi_result)
+    return {"wav_paths": wav_paths, "channels_loaded": channel_summary,
+            "single_result": single_result, "multi_result": multi_result}
