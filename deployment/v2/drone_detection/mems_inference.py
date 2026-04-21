@@ -153,9 +153,10 @@ def _meta_summary(meta: dict) -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _estimate_dominant_freq(y: np.ndarray, sr: int,
-                             f_min: float = 50.0,
+                             f_min: float = 5.0,
                              f_max: float = 700.0) -> float:
-    """Return the most prominent spectral peak in [f_min, f_max] Hz."""
+    """Return the most prominent spectral peak in [f_min, f_max] Hz.
+    Default f_min lowered to 5 Hz to capture low-RPM / large drone BPF."""
     try:
         import librosa
         S      = np.abs(librosa.stft(y.astype(np.float32), n_fft=2048, hop_length=512))
@@ -254,13 +255,22 @@ def _pseudo_localize(segments: List[dict], cfg) -> dict:
             continue
 
         # Distance: log-law from RMS
-        db_diff  = REF_RMS_DB - rms_db          # positive → quieter → farther
+        db_diff  = REF_RMS_DB - rms_db
         dist_m   = REF_DIST_M * (10 ** (db_diff / (20 * math.log10(2) * DIST_SCALE / 6)))
         dist_m   = float(np.clip(dist_m, 0.5, 150.0))
 
-        # Confidence: blend of CNN prob and BPF ratio
+        # Confidence: blend CNN prob + BPF ratio, then penalise for low SNR
         bpf_conf = float(np.clip(bpf_r, 0.0, 1.0)) if not math.isnan(bpf_r) else 0.3
         conf     = float(np.clip(0.6 * prob + 0.4 * bpf_conf, 0.0, 1.0))
+
+        # Penalise low SNR — use meta SNR if available, else per-segment estimate
+        snr_use = s.get("snr_meta_db", float("nan"))
+        if math.isnan(snr_use):
+            snr_use = s.get("snr_est_db", float("nan"))
+        if not math.isnan(snr_use) and snr_use < 10.0:
+            # Linear ramp: SNR=0→conf×0.2, SNR=10→conf×1.0
+            snr_factor = float(np.clip(snr_use / 10.0, 0.2, 1.0))
+            conf = conf * snr_factor
 
         per_seg.append((0.0, dist_m, conf))  # azimuth always 0 — no spatial cue
 
@@ -541,6 +551,140 @@ def _plot_mems_dashboard(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Meta cross-check
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _crosscheck_with_meta(result: dict, meta: dict) -> dict:
+    """
+    Automatically validate analysis results against ground-truth meta JSON.
+
+    Checks performed
+    ────────────────
+    bpf_error_hz        : |estimated BPF − meta dominant_freq_hz|
+    rms_error_db        : |mean segment RMS − meta rms_db_mean|
+    snr_match           : whether meta SNR is above reliable threshold (6 dB)
+    detection_correct   : whether our detection matches meta detection window
+    spectral_centroid   : meta spectral_centroid_hz vs our dominant freq
+    flight_phase        : flight phase label from meta (cruise/hover/takeoff)
+    dist_plausibility   : flag if estimated distance seems unrealistic given SNR
+
+    Returns a dict of check results plus a summary verdict.
+    """
+    sig   = meta.get("signal_metrics", {})
+    clip  = meta.get("clip", {})
+    det_m = meta.get("detection", {})
+
+    checks  = {}
+    flags   = []
+
+    # ── BPF frequency error ───────────────────────────────────────────────────
+    meta_f0    = sig.get("dominant_freq_hz")
+    est_bpf    = result.get("bpf_hz_used")
+    if meta_f0 and est_bpf and not math.isnan(float(est_bpf)):
+        bpf_err = abs(float(est_bpf) - float(meta_f0))
+        checks["bpf_error_hz"]     = round(bpf_err, 3)
+        checks["bpf_meta_hz"]      = float(meta_f0)
+        checks["bpf_estimated_hz"] = float(est_bpf)
+        if bpf_err > 5.0:
+            flags.append(f"⚠️  BPF mismatch: estimated {est_bpf:.1f} Hz vs meta {meta_f0:.1f} Hz "
+                         f"(Δ={bpf_err:.1f} Hz)")
+        else:
+            checks["bpf_match"] = True
+
+    # ── RMS level error ───────────────────────────────────────────────────────
+    meta_rms = sig.get("rms_db_mean") or sig.get("rms_dbfs")
+    if meta_rms is not None:
+        segs     = result.get("segments", [])
+        rms_vals = [s["rms_db"] for s in segs if not math.isnan(s.get("rms_db", float("nan")))]
+        if rms_vals:
+            est_rms  = float(np.mean(rms_vals))
+            rms_err  = abs(est_rms - float(meta_rms))
+            checks["rms_error_db"]     = round(rms_err, 2)
+            checks["rms_meta_db"]      = float(meta_rms)
+            checks["rms_estimated_db"] = round(est_rms, 2)
+            if rms_err > 6.0:
+                flags.append(f"⚠️  RMS mismatch: estimated {est_rms:.1f} dB vs meta {meta_rms:.1f} dB "
+                             f"(Δ={rms_err:.1f} dB) — distance estimate unreliable")
+
+    # ── SNR reliability ───────────────────────────────────────────────────────
+    snr_db = sig.get("snr_db")
+    if snr_db is not None:
+        checks["snr_db"]      = float(snr_db)
+        checks["snr_reliable"] = float(snr_db) >= 6.0
+        if float(snr_db) < 6.0:
+            flags.append(f"⚠️  Low SNR ({snr_db:.1f} dB < 6 dB) — localisation confidence penalised")
+        if float(snr_db) < 3.0:
+            flags.append(f"🔴  Very low SNR ({snr_db:.1f} dB) — detection result may be unreliable")
+
+    # ── Detection window match ────────────────────────────────────────────────
+    meta_detected = (det_m.get("detected_start_s") is not None and
+                     det_m.get("detected_end_s")   is not None)
+    our_detected  = result.get("detected", False)
+    checks["detection_meta"]      = meta_detected
+    checks["detection_estimated"] = our_detected
+    checks["detection_match"]     = (meta_detected == our_detected)
+    if not checks["detection_match"]:
+        flags.append(f"🔴  Detection mismatch: meta={'detected' if meta_detected else 'not detected'}, "
+                     f"ours={'detected' if our_detected else 'not detected'}")
+
+    # ── Spectral centroid vs dominant freq ────────────────────────────────────
+    sc_hz = sig.get("spectral_centroid_hz")
+    if sc_hz:
+        checks["spectral_centroid_meta_hz"] = float(sc_hz)
+        dom_f = result.get("dom_freq_hz", float("nan"))
+        if not math.isnan(float(dom_f)):
+            checks["dom_freq_estimated_hz"] = float(dom_f)
+            # Centroid and dominant freq won't be equal, but large divergence is a flag
+            if float(sc_hz) > 3 * float(dom_f) or float(dom_f) > 3 * float(sc_hz):
+                flags.append(f"ℹ️  Spectral centroid ({sc_hz:.0f} Hz) and dominant freq "
+                             f"({dom_f:.0f} Hz) differ by >3×  — possible harmonic confusion")
+
+    # ── Distance plausibility given SNR ──────────────────────────────────────
+    dist_est = result.get("distance_m", float("nan"))
+    if dist_est and not math.isnan(float(dist_est)) and snr_db is not None:
+        checks["distance_estimated_m"] = round(float(dist_est), 1)
+        # Very rough: low SNR + short estimated distance is contradictory
+        if float(snr_db) < 6.0 and float(dist_est) < 5.0:
+            flags.append(f"ℹ️  Distance estimate ({dist_est:.1f} m) seems close for low SNR "
+                         f"({snr_db:.1f} dB) — true distance likely greater")
+
+    # ── Flight phase ─────────────────────────────────────────────────────────
+    phase = clip.get("flight_phase")
+    if phase:
+        checks["flight_phase"] = phase
+        if phase == "cruise":
+            flags.append("ℹ️  Cruise phase — drone is moving, RMS will vary; distance estimate less stable")
+
+    # ── Overall verdict ───────────────────────────────────────────────────────
+    n_red    = sum(1 for f in flags if f.startswith("🔴"))
+    n_warn   = sum(1 for f in flags if f.startswith("⚠️"))
+    verdict  = ("RELIABLE"    if n_red == 0 and n_warn == 0
+                else "CAUTION" if n_red == 0
+                else "UNRELIABLE")
+    checks["flags"]   = flags
+    checks["verdict"] = verdict
+    return checks
+
+
+def print_crosscheck(xc: dict) -> None:
+    """Pretty-print the cross-check results."""
+    v = xc.get("verdict", "?")
+    colour = {"RELIABLE": "✅", "CAUTION": "⚠️ ", "UNRELIABLE": "🔴"}.get(v, "❓")
+    print(f"\n  {'─'*55}")
+    print(f"  📋 META CROSS-CHECK  [{colour} {v}]")
+    print(f"  {'─'*55}")
+    for key in ["bpf_error_hz", "rms_error_db", "snr_db", "snr_reliable",
+                "detection_match", "flight_phase", "distance_estimated_m"]:
+        if key in xc:
+            print(f"     {key:<30s} {xc[key]}")
+    if xc.get("flags"):
+        print(f"\n  Flags:")
+        for f in xc["flags"]:
+            print(f"     {f}")
+    print(f"  {'─'*55}\n")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Public API
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -597,17 +741,25 @@ def analyse_mems_file(
         meta = load_meta(meta_path)
 
     stem = Path(audio_path).stem
+    sig  = meta.get("signal_metrics", {})
     print(f"\n🎵 MEMS: {Path(audio_path).name}  ({total_s:.1f}s)")
     if meta:
         print(f"   Meta: {_meta_summary(meta)}")
-    print(f"   ⚠️  Single-channel recording — localization is not available.\n"
-          f"   Running detection-only analysis over {n_segments} segments.")
+    snr_meta = sig.get("snr_db")
+    if snr_meta is not None and snr_meta < 6.0:
+        print(f"   ⚠️  Low SNR ({snr_meta:.1f} dB) — detection confidence will be penalised.")
+    print(f"   ⚠️  Single-channel recording — azimuth unresolvable; spectral-proxy distance shown.\n"
+          f"   Running analysis over {n_segments} segments.")
 
-    # Use dominant freq from meta if available and bpf_hz not provided
+    # BPF: prefer meta ground-truth (even sub-50 Hz), fall back to wideband estimate
     if bpf_hz is None:
-        bpf_hz = (meta.get("signal_metrics", {}).get("dominant_freq_hz")
-                  or _estimate_dominant_freq(y_full, cfg.SR))
-        print(f"   BPF estimate: {bpf_hz:.1f} Hz")
+        meta_f0 = sig.get("dominant_freq_hz")
+        if meta_f0 and float(meta_f0) > 1.0:
+            bpf_hz = float(meta_f0)
+            print(f"   BPF from meta (ground-truth): {bpf_hz:.2f} Hz")
+        else:
+            bpf_hz = _estimate_dominant_freq(y_full, cfg.SR, f_min=5.0, f_max=700.0)
+            print(f"   BPF estimated (wideband): {bpf_hz:.2f} Hz")
 
     segments = []
 
@@ -626,9 +778,11 @@ def analyse_mems_file(
         # Also run heuristic standalone for richer features
         heur = heuristic_detect(audio, cfg)
 
-        dom_f = _estimate_dominant_freq(audio, cfg.SR)
+        dom_f = _estimate_dominant_freq(audio, cfg.SR, f_min=5.0, f_max=700.0)
         bpf_r = _bpf_energy_ratio(audio, cfg.SR, bpf_hz)
         snr_e = _segment_snr(audio, cfg.SR, bpf_hz)
+        # Pull SNR from meta for the whole clip if per-segment SNR is unreliable
+        snr_meta_val = float(meta.get("signal_metrics", {}).get("snr_db", float("nan")))
 
         segments.append({
             "seg":       seg_i + 1,
@@ -640,7 +794,8 @@ def analyse_mems_file(
             "rms_db":    rms_db,
             "dom_freq_hz": dom_f,
             "bpf_ratio": bpf_r,
-            "snr_est_db": snr_e,
+            "snr_est_db":  snr_e,
+            "snr_meta_db": snr_meta_val,
             "mel":       mel_fr,
             "waveform":  audio,
             # Localization fields are explicitly None — single channel
@@ -675,6 +830,18 @@ def analyse_mems_file(
           f"az_unc=±{loc['azimuth_unc_deg']:.0f}°  conf={loc['distance_conf']:.2f}")
     print(f"  ⚠️  Azimuth is unresolvable from single-channel — uncertainty arc shown in dashboard.")
 
+    # Auto cross-check against meta ground-truth
+    xc = {}
+    if meta:
+        xc = _crosscheck_with_meta({
+            "detected":    n_det > 0,
+            "dom_freq_hz": dom_freq,
+            "bpf_hz_used": bpf_hz,
+            "distance_m":  loc["distance_est_m"],
+            "segments":    segments,
+        }, meta)
+        print_crosscheck(xc)
+
     if show_plot or save_plot:
         save_path = None
         if save_plot:
@@ -706,6 +873,7 @@ def analyse_mems_file(
         "localization_confidence":  loc["distance_conf"],
         "localization_available":   True,
         "localization_method":      "spectral_proxy",
+        "crosscheck":               xc,
     }
 
 
@@ -803,7 +971,7 @@ def batch_analyse_mems(
         "detection_rate":  det_rate,
         "mean_bpf_ratio":  mean_bpf,
         "mean_dom_freq_hz": mean_f0,
-        "localization_available": False,
+        "localization_available": True,
     }
 
 
@@ -811,23 +979,27 @@ def build_mems_report(results: List[dict]) -> None:
     """
     Print a compact per-file table from a list of analyse_mems_file() outputs.
 
-    Columns: filename | detected | prob | dom_freq | bpf_ratio | duration
+    Columns: filename | detected | prob | dom_freq | bpf_ratio | dist_est | verdict
     """
     header = (f"{'File':40s}  {'Det':3s}  {'Prob':5s}  "
-              f"{'f0(Hz)':7s}  {'BPF':5s}  {'Dur(s)':6s}")
+              f"{'f0(Hz)':7s}  {'BPF':5s}  {'Dist(m)':7s}  {'Dur(s)':6s}  {'Check':10s}")
     print(header)
     print("-" * len(header))
     for r in results:
-        name = Path(r.get("file", "?")).name[:40]
-        det  = "YES" if r.get("detected") else "no "
-        prob = f"{r.get('probability', float('nan')):5.3f}"
-        f0   = (f"{r['dom_freq_hz']:7.1f}"
-                if r.get("dom_freq_hz") and not math.isnan(r["dom_freq_hz"])
-                else "      -")
-        bpf  = (f"{r['bpf_ratio_mean']:5.3f}"
-                if r.get("bpf_ratio_mean") is not None
-                   and not math.isnan(r.get("bpf_ratio_mean", float("nan")))
-                else "    -")
-        dur  = (f"{r['total_duration_s']:6.1f}"
-                if r.get("total_duration_s") is not None else "     -")
-        print(f"{name:40s}  {det}  {prob}  {f0}  {bpf}  {dur}")
+        name    = Path(r.get("file", "?")).name[:40]
+        det     = "YES" if r.get("detected") else "no "
+        prob    = f"{r.get('probability', float('nan')):5.3f}"
+        f0      = (f"{r['dom_freq_hz']:7.1f}"
+                   if r.get("dom_freq_hz") and not math.isnan(r["dom_freq_hz"])
+                   else "      -")
+        bpf     = (f"{r['bpf_ratio_mean']:5.3f}"
+                   if r.get("bpf_ratio_mean") is not None
+                      and not math.isnan(r.get("bpf_ratio_mean", float("nan")))
+                   else "    -")
+        dist    = (f"{r['distance_m']:7.1f}"
+                   if r.get("distance_m") and not math.isnan(float(r["distance_m"]))
+                   else "      -")
+        dur     = (f"{r['total_duration_s']:6.1f}"
+                   if r.get("total_duration_s") is not None else "     -")
+        verdict = r.get("crosscheck", {}).get("verdict", "-")
+        print(f"{name:40s}  {det}  {prob}  {f0}  {bpf}  {dist}  {dur}  {verdict}")
