@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="LocalizationCNN" id="loc-cnn-diagram">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="loc-0" parent="" />
+        <mxCell id="loc-1" parent="loc-0" />
+
+        <!-- ── Title ── -->
+        <mxCell id="loc-title"
+          value="LocalizationCNN — Multi-Microphone Acoustic Localizer"
+          style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="150" y="20" width="1000" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════
+             LEFT BRANCH — MEL ENCODER
+        ══════════════════════════════════════════ -->
+
+        <!-- Mel input -->
+        <mxCell id="loc-mel-input"
+          value="&lt;b&gt;Mel Input&lt;/b&gt;&lt;br&gt;(B, 3, 64, T)&lt;br&gt;&lt;font color='#555555'&gt;3 mics × log-mel spectrogram&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=12;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="80" y="80" width="220" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel encoder container -->
+        <mxCell id="loc-mel-container"
+          value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#aaaaaa;dashed=1;arcSize=4;verticalAlign=top;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="50" y="178" width="280" height="530" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc-mel-container-lbl"
+          value="Mel Encoder"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=2;fontColor=#555555;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="58" y="182" width="110" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel Block 1 -->
+        <mxCell id="loc-mb1"
+          value="Block 1: Conv2d 3 → 32&lt;br&gt;BatchNorm2d · ReLU · MaxPool2d(2)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 32, 32, T/2)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="208" width="240" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel Block 2 -->
+        <mxCell id="loc-mb2"
+          value="Block 2: Conv2d 32 → 64&lt;br&gt;BatchNorm2d · ReLU · MaxPool2d(2)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 64, 16, T/4)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="288" width="240" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel Block 3 -->
+        <mxCell id="loc-mb3"
+          value="Block 3: Conv2d 64 → 128&lt;br&gt;BatchNorm2d · ReLU · MaxPool2d(2)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 128, 8, T/8)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="368" width="240" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel Block 4 -->
+        <mxCell id="loc-mb4"
+          value="Block 4: Conv2d 128 → 256&lt;br&gt;BatchNorm2d · ReLU · MaxPool2d(2)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 256, 4, T/16)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="448" width="240" height="58" as="geometry"/>
+        </mxCell>
+
+        <!-- Adaptive avg pool -->
+        <mxCell id="loc-mb-aap"
+          value="AdaptiveAvgPool2d(4 × 4)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 256, 4, 4)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="528" width="240" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Flatten -->
+        <mxCell id="loc-mb-flat"
+          value="Flatten&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 4096)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="70" y="595" width="240" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- Mel encoder arrows -->
+        <mxCell id="loc-mba1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mel-input" target="loc-mb1" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-mba2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb1"       target="loc-mb2" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-mba3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb2"       target="loc-mb3" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-mba4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb3"       target="loc-mb4" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-mba5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb4"       target="loc-mb-aap"  parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-mba6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb-aap"    target="loc-mb-flat" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ══════════════════════════════════════════
+             RIGHT BRANCH — IPD ENCODER
+        ══════════════════════════════════════════ -->
+
+        <!-- IPD input -->
+        <mxCell id="loc-ipd-input"
+          value="&lt;b&gt;IPD Input&lt;/b&gt;&lt;br&gt;(B, 3) or (B, 4)&lt;br&gt;&lt;font color='#555555'&gt;[τ₁₂, τ₁₃, τ₂₃] + optional BPF ratio&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=12;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="820" y="80" width="240" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- IPD branch container -->
+        <mxCell id="loc-ipd-container"
+          value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#aaaaaa;dashed=1;arcSize=4;verticalAlign=top;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="790" y="178" width="310" height="420" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc-ipd-container-lbl"
+          value="IPD Branch (wider, deeper)"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=2;fontColor=#555555;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="798" y="182" width="220" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- IPD FC layer 1 -->
+        <mxCell id="loc-ipd-fc1"
+          value="Linear(3/4 → 64)&lt;br&gt;BatchNorm1d(64)&lt;br&gt;ReLU · Dropout(0.2)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="810" y="210" width="270" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- IPD FC layer 2 -->
+        <mxCell id="loc-ipd-fc2"
+          value="Linear(64 → 128)&lt;br&gt;BatchNorm1d(128)&lt;br&gt;ReLU · Dropout(0.2)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="810" y="310" width="270" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- IPD FC layer 3 -->
+        <mxCell id="loc-ipd-fc3"
+          value="Linear(128 → 64)&lt;br&gt;BatchNorm1d(64)&lt;br&gt;ReLU&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 64)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="810" y="410" width="270" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- IPD branch arrows -->
+        <mxCell id="loc-ipda1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-ipd-input" target="loc-ipd-fc1" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-ipda2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-ipd-fc1"   target="loc-ipd-fc2" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-ipda3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-ipd-fc2"   target="loc-ipd-fc3" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ══════════════════════════════════════════
+             FUSION / CONCAT
+        ══════════════════════════════════════════ -->
+        <mxCell id="loc-concat"
+          value="Concatenate&lt;br&gt;mel_feat (4096) ‖ ipd_feat (64)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 4160)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;arcSize=12;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="380" y="700" width="360" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- Fusion arrows from branches -->
+        <mxCell id="loc-fa1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-mb-flat"  target="loc-concat" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-fa2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-ipd-fc3"  target="loc-concat" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ══════════════════════════════════════════
+             FUSION HEAD
+        ══════════════════════════════════════════ -->
+
+        <!-- Head container -->
+        <mxCell id="loc-head-container"
+          value=""
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;arcSize=4;verticalAlign=top;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="310" y="800" width="500" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc-head-container-lbl"
+          value="Fusion Head"
+          style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=2;fontColor=#1a5e20;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="318" y="804" width="110" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- Head layer 1 -->
+        <mxCell id="loc-head1"
+          value="Linear(4160 → 512)&lt;br&gt;ReLU · Dropout(0.4)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="330" y="832" width="220" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Head layer 2 -->
+        <mxCell id="loc-head2"
+          value="Linear(512 → 128)&lt;br&gt;ReLU · Dropout(0.2)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="400" y="912" width="220" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Head layer 3 -->
+        <mxCell id="loc-head3"
+          value="Linear(128 → 4)&lt;br&gt;&lt;font color='#888888'&gt;→ (B, 4)&lt;/font&gt;"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="460" y="987" width="200" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Head arrows -->
+        <mxCell id="loc-ha0" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-concat" target="loc-head1" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-ha1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-head1"  target="loc-head2" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc-ha2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-head2"  target="loc-head3" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ══════════════════════════════════════════
+             OUTPUT
+        ══════════════════════════════════════════ -->
+        <mxCell id="loc-output"
+          value="&lt;b&gt;Output&lt;/b&gt;: (B, 4)&lt;br&gt;[sin(az), cos(az), dist / MAX_DIST, ht / MAX_DIST]"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;arcSize=12;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="380" y="1060" width="360" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc-out-arrow" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc-head3" target="loc-output" parent="loc-1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ══════════════════════════════════════════
+             LOSS ANNOTATION
+        ══════════════════════════════════════════ -->
+        <mxCell id="loc-loss"
+          value="Loss = 2 × (1 − cos_sim(pred_az, true_az))  +  1 × SmoothL1(dist, focal-weighted)  +  0.7 × SmoothL1(ht, focal-weighted)"
+          style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="240" y="1135" width="640" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════
+             DIMENSION ANNOTATION BOXES (right side)
+        ══════════════════════════════════════════ -->
+        <mxCell id="loc-dim-note"
+          value="&lt;b&gt;Key dimensions&lt;/b&gt;&lt;br&gt;mel_feat: 256 × 4 × 4 = 4096&lt;br&gt;ipd_feat: 64&lt;br&gt;fused: 4096 + 64 = 4160&lt;br&gt;&lt;br&gt;ipd_in_dim = 3 (standard)&lt;br&gt;ipd_in_dim = 4 (+ BPF energy ratio)"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#aaaaaa;fontSize=10;align=left;verticalAlign=top;"
+          vertex="1" parent="loc-1">
+          <mxGeometry x="1140" y="700" width="260" height="130" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" version="21.0.0">
+  <diagram name="Full Pipeline" id="full-pipeline">
+    <mxGraphModel dx="1400" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Drone Detection &amp; Localization — Full Inference Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="16" width="1100" height="36" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 0: RAW AUDIO INPUT
+        ═══════════════════════════════════════════ -->
+        <mxCell id="raw_audio" value="&lt;b&gt;Raw Audio Input&lt;/b&gt;&lt;br&gt;3-channel WAV (or mono for detection)&lt;br&gt;&lt;font color=&quot;#555&quot;&gt;Any duration · Any sample rate&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="510" y="70" width="280" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 1: SLIDING WINDOW SEGMENTATION
+        ═══════════════════════════════════════════ -->
+        <mxCell id="slide_bg" value="" style="rounded=1;fillColor=#f5f5f5;strokeColor=#aaaaaa;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="168" width="500" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="slide_lbl" value="Sliding Window Segmentation" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#555;" vertex="1" parent="1">
+          <mxGeometry x="408" y="172" width="210" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="slide" value="Segment: 1.0 s window · 50% overlap&lt;br&gt;Resample → 22,050 Hz · Mono convert&lt;br&gt;Pad/truncate → 3.0 s (66,150 samples)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#aaaaaa;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="420" y="185" width="460" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 2: FEATURE EXTRACTION
+        ═══════════════════════════════════════════ -->
+        <mxCell id="feat_bg" value="" style="rounded=1;fillColor=#fff9e6;strokeColor=#d6b656;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="262" width="920" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_lbl" value="Feature Extraction (AudioProcessor)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#7d6608;" vertex="1" parent="1">
+          <mxGeometry x="208" y="266" width="240" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_mel" value="log-mel spectrogram&lt;br&gt;(64 bins, fft=1024, hop=256)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="220" y="288" width="190" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_pcen" value="PCEN&lt;br&gt;(gain=0.8, bias=10, τ=0.4)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="435" y="288" width="190" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_delta" value="Delta-mel&lt;br&gt;(1st-order temporal gradient)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="288" width="190" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="feat_stack" value="Z-score normalise + Stack&lt;br&gt;→ (B, 3, 64, T)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="880" y="288" width="220" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="fa_mel" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_mel" target="feat_stack" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="fa_pcen" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_pcen" target="feat_stack" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="fa_delta" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_delta" target="feat_stack" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 3: THREE-STAGE DETECTION CASCADE
+        ═══════════════════════════════════════════ -->
+        <mxCell id="det_bg" value="" style="rounded=1;fillColor=#f9f0ff;strokeColor=#9673a6;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="390" width="1010" height="185" as="geometry"/>
+        </mxCell>
+        <mxCell id="det_lbl" value="Three-Stage Detection Cascade" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#4a235a;" vertex="1" parent="1">
+          <mxGeometry x="158" y="394" width="240" height="16" as="geometry"/>
+        </mxCell>
+
+        <!-- GATE -->
+        <mxCell id="rms_gate" value="Stage 1: RMS Gate&lt;br&gt;rms_db &lt; −45 dBFS ?&lt;br&gt;&lt;font color=&quot;#b85450&quot;&gt;→ reject as silence&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="170" y="415" width="180" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- CNN -->
+        <mxCell id="det_cnn" value="Stage 2: DetectionCNN&lt;br&gt;4-block encoder + freq-attn&lt;br&gt;→ P_cnn ∈ [0,1]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="430" width="200" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- HEURISTIC -->
+        <mxCell id="heur" value="Stage 3: Signal-Processing Heuristic&lt;br&gt;RMS · entropy · crest factor · f0 stability&lt;br&gt;harmonic comb · centroid · rolloff&lt;br&gt;→ P_heur ∈ [0,1]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="650" y="420" width="240" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- FUSION -->
+        <mxCell id="det_fuse" value="Fusion&lt;br&gt;0.80 × P_cnn + 0.20 × P_heur&lt;br&gt;(+0.06 bonus if both &gt;0.45)&lt;br&gt;(cap at 0.40 if veto active)&lt;br&gt;→ P_fused" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="940" y="415" width="200" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- FUSION ARROWS -->
+        <mxCell id="df1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="det_cnn" target="det_fuse" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="df2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="heur" target="det_fuse" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- THRESHOLD DECISION -->
+        <mxCell id="thr" value="Threshold&lt;br&gt;P_fused ≥ 0.62 ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="955" y="520" width="170" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="thr_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="det_fuse" target="thr" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- NO DRONE BRANCH -->
+        <mxCell id="no_drone" value="No drone detected&lt;br&gt;&lt;font color=&quot;#b85450&quot;&gt;return result&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="548" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="no_lbl" value="NO" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontStyle=1;fontColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1155" y="558" width="40" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="no_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="thr" target="no_drone" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- REJECT from gate -->
+        <mxCell id="gate_rej" value="Silent — rejected" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="548" width="130" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="gate_rej_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="rms_gate" target="gate_rej" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 4: GCC-PHAT TDOA ESTIMATION
+        ═══════════════════════════════════════════ -->
+        <mxCell id="tdoa_bg" value="" style="rounded=1;fillColor=#f0fff0;strokeColor=#82b366;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="640" width="770" height="95" as="geometry"/>
+        </mxCell>
+        <mxCell id="tdoa_lbl" value="GCC-PHAT TDOA Estimation (3-channel)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#1a5e20;" vertex="1" parent="1">
+          <mxGeometry x="158" y="644" width="270" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="tdoa_bp" value="Bandpass filter&lt;br&gt;200–5000 Hz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="170" y="665" width="150" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="tdoa_gcc" value="GCC-PHAT per pair&lt;br&gt;(mic01, mic02, mic12)&lt;br&gt;4× upsampling + parabolic interp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="345" y="655" width="230" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="tdoa_out" value="τ₁₂, τ₁₃, τ₂₃&lt;br&gt;+ BPF energy ratio&lt;br&gt;→ IPD vector (3 or 4 dims)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="655" width="200" height="65" as="geometry"/>
+        </mxCell>
+        <mxCell id="tdoa_a1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="tdoa_bp" target="tdoa_gcc" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="tdoa_a2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="tdoa_gcc" target="tdoa_out" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- YES branch from threshold to TDOA -->
+        <mxCell id="yes_lbl" value="YES" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontStyle=1;fontColor=#2e7d32;" vertex="1" parent="1">
+          <mxGeometry x="520" y="598" width="40" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="yes_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="thr" target="tdoa_bp" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 5: LOCALIZATION CNN
+        ═══════════════════════════════════════════ -->
+        <mxCell id="loc_bg" value="" style="rounded=1;fillColor=#e6f3ff;strokeColor=#6c8ebf;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="760" width="770" height="115" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc_lbl" value="LocalizationCNN" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#1a3f6f;" vertex="1" parent="1">
+          <mxGeometry x="158" y="764" width="140" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc_mel_enc" value="Mel Encoder&lt;br&gt;4 × Conv-BN-ReLU-MaxPool&lt;br&gt;+ AdaptiveAvgPool(4×4)&lt;br&gt;→ flatten (B, 4096)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="170" y="785" width="210" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc_ipd_enc" value="IPD Branch&lt;br&gt;FC(3/4→64) BN ReLU Drop(0.2)&lt;br&gt;FC(64→128) BN ReLU Drop(0.2)&lt;br&gt;FC(128→64) BN ReLU → (B, 64)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="785" width="240" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc_head" value="Concat → (B,4160)&lt;br&gt;FC(4160→512) ReLU Drop(0.4)&lt;br&gt;FC(512→128) ReLU Drop(0.2)&lt;br&gt;FC(128→4) → (B, 4)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="785" width="240" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc_a1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc_mel_enc" target="loc_head" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="loc_a2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc_ipd_enc" target="loc_head" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Connections from earlier stages to LocalizationCNN -->
+        <mxCell id="to_mel" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_stack" target="loc_mel_enc" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="to_ipd" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="tdoa_out" target="loc_ipd_enc" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 6: POSITION DECODING
+        ═══════════════════════════════════════════ -->
+        <mxCell id="decode" value="Position Decoding&lt;br&gt;az = atan2(sin_az, cos_az)&lt;br&gt;dist = pred[2] × 25 m&lt;br&gt;ht = pred[3] × 25 m" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="960" y="795" width="220" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="dec_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc_head" target="decode" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 7: KALMAN TRACKER
+        ═══════════════════════════════════════════ -->
+        <mxCell id="kalman_bg" value="" style="rounded=1;fillColor=#fce8e6;strokeColor=#b85450;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="910" width="500" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="kalman_lbl" value="Kalman Tracker (KalmanTracker)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#7f0000;" vertex="1" parent="1">
+          <mxGeometry x="788" y="914" width="240" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="kf_predict" value="Predict: F·x, F·P·Fᵀ + Q&lt;br&gt;State: [x, y, vx, vy]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="935" width="200" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="kf_match" value="Greedy NN match&lt;br&gt;gate = 8.0 m" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="935" width="160" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="kf_update" value="Update (Kalman gain)&lt;br&gt;min_hits=1, max_coast=4" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="935" width="180" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="kfa1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="kf_predict" target="kf_match" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="kfa2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="kf_match" target="kf_update" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="dec_to_kf" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="decode" target="kf_predict" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- ═══════════════════════════════════════════
+             STAGE 8: OUTPUT
+        ═══════════════════════════════════════════ -->
+        <mxCell id="final_out" value="&lt;b&gt;Pipeline Output&lt;/b&gt;&lt;br&gt;detected: bool · probability: float&lt;br&gt;azimuth_deg · distance_m · height_m&lt;br&gt;tracks: [KalmanTrack] · drones: [dict]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1055" width="340" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="final_a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="kf_update" target="final_out" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- MULTI-DRONE BRANCH NOTE -->
+        <mxCell id="multi_note" value="Multi-drone mode:&lt;br&gt;GCC-PHAT multi-peak extraction&lt;br&gt;TDOA triplet self-consistency filtering&lt;br&gt;Cartesian Nelder-Mead per candidate&lt;br&gt;Position dedup (0.5 m gate)&lt;br&gt;Hessian confidence radius" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9e6;strokeColor=#d6b656;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="870" width="230" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- STAGE CONNECTORS (main flow) -->
+        <mxCell id="s0s1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="raw_audio" target="slide" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1s2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="slide" target="feat_mel" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1s2b" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="slide" target="feat_pcen" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s1s2c" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="slide" target="feat_delta" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2s3a" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_stack" target="rms_gate" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2s3b" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_stack" target="det_cnn" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s2s3c" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="feat_stack" target="heur" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="s3s4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="thr" target="tdoa_bp" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Legend -->
+        <mxCell id="leg_bg" value="" style="rounded=1;fillColor=#f9f9f9;strokeColor=#aaaaaa;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1010" width="340" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg_title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1015" width="60" height="16" as="geometry"/>
+        </mxCell>
+        <mxCell id="leg1" value="" style="rounded=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="70" y="1038" width="24" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg1t" value="Feature extraction" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;align=left;" vertex="1" parent="1"><mxGeometry x="102" y="1038" width="140" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg2" value="" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="70" y="1064" width="24" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg2t" value="Neural network (CNN/MLP)" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;align=left;" vertex="1" parent="1"><mxGeometry x="102" y="1064" width="180" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg3" value="" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1"><mxGeometry x="70" y="1090" width="24" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg3t" value="Fusion / decoding" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;align=left;" vertex="1" parent="1"><mxGeometry x="102" y="1090" width="140" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg4" value="" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="70" y="1116" width="24" height="18" as="geometry"/></mxCell>
+        <mxCell id="leg4t" value="Tracking / decision" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;align=left;" vertex="1" parent="1"><mxGeometry x="102" y="1116" width="140" height="18" as="geometry"/></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

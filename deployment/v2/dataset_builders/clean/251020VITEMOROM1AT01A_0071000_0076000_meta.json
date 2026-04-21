@@ -1,0 +1,44 @@
+{
+  "clip": {
+    "source_file": "Dunakeszi_Data\\251020VITEMOROM1AT01A.wav",
+    "source_type": "MEMS",
+    "output_wav": "Dunakeszi_Data\\clean_drone_sections\\MEMS\\251020VITEMOROM1AT01A_0071000_0076000.wav",
+    "start_s": 71.0,
+    "end_s": 76.0,
+    "duration_s": 5.0,
+    "sample_rate": 22050,
+    "start_utc": "2025-10-20T12:58:32.000000Z",
+    "end_utc": "2025-10-20T12:58:37.000000Z",
+    "flight_phase": "cruise"
+  },
+  "signal_metrics": {
+    "rms": 0.019047,
+    "peak": 0.096583,
+    "rms_dbfs": -34.4,
+    "peak_dbfs": -20.3,
+    "dc_offset": -6e-06,
+    "crest_factor": 5.071,
+    "kurtosis": 0.314,
+    "snr_db": 3.69,
+    "noise_floor_dbfs": -36.31,
+    "rms_db_mean": -34.67,
+    "rms_db_std": 1.508,
+    "silence_pct": 0.0,
+    "clip_pct": 0.0,
+    "spectral_centroid_hz": 1369.3,
+    "dominant_freq_hz": 5.38,
+    "noise_slope": -1.569,
+    "noise_colour": "brownian"
+  },
+  "rpm": {},
+  "gpx": {
+    "n_points": 0,
+    "trackpoints": []
+  },
+  "detection": {
+    "detector_logic": "or",
+    "detected_start_s": 71.0,
+    "detected_end_s": 76.0,
+    "trim_applied": false
+  }
+}

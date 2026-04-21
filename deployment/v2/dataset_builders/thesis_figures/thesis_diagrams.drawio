@@ -1,0 +1,285 @@
+<mxfile host="app.diagrams.net" modified="2026-04-18T00:00:00.000Z" agent="Claude" version="21.0.0" type="device">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 1 — End-to-end system overview
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <diagram id="fig1" name="Fig 1 — System overview">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <!-- Outer frame -->
+        <mxCell id="f1" value="Drone acoustic detection and localisation system" style="rounded=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="30" width="1080" height="750" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Real datasets container ── -->
+        <mxCell id="rd" value="Real acoustic datasets" style="rounded=1;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="70" y="80" width="480" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="rd1" value="PannoniaFS (indoor)&#xa;192 kHz · 24-bit · 12-ch array&#xa;3 DJI drones · 75 labelled events&#xa;BPF SNR 18–34 dB&#xa;GP1 2165 mm · GP2 2500 mm baseline" style="rounded=1;fillColor=#9FE1CB;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="90" y="130" width="210" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="rd2" value="Dunakeszi (outdoor)&#xa;192 kHz · 24-bit · 14-ch array&#xa;1 UAV · 408 s labelled flight&#xa;BPF SNR 5–10 dB (wind noise)&#xa;GPX ground truth · 10 Hz" style="rounded=1;fillColor=#9FE1CB;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="320" y="130" width="210" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Synthetic data container ── -->
+        <mxCell id="sd" value="Synthetic data generation" style="rounded=1;fillColor=#EEEDFE;strokeColor=#534AB7;fontColor=#26215C;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="590" y="80" width="500" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="sd1" value="BPF-matched synthesis&#xa;Mavic Pro → 209 Hz  (±50 Hz)&#xa;Mavic 2 Pro → 193 Hz  (±50 Hz)&#xa;Mavic Mini → 360 Hz  (±50 Hz)&#xa;Harmonic comb · n_blades modelled" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="610" y="130" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="sd2" value="Real noise injection&#xa;Indoor: −82.7 dB · HVAC peaks&#xa;  627 Hz, 1637 Hz, 4363 Hz&#xa;Outdoor: Brownian f⁻² · −78 dB&#xa;Mixed randomly per sample" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;align=left;" vertex="1" parent="1">
+          <mxGeometry x="850" y="130" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Feature extraction ── -->
+        <mxCell id="fe" value="Feature extraction" style="rounded=1;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#042C53;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="70" y="330" width="1000" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe1" value="3-channel mel spectrogram&#xa;log-mel · PCEN · delta-mel&#xa;Shape: (B, 3, 64, T)" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="90" y="380" width="280" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe2" value="IPD features (3 mic-pair TDOA delays)&#xa;+ BPF energy ratio (v16 new)&#xa;Shape: (B, 4)" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="420" y="380" width="300" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="fe3" value="Measured Q2 BPF ratios&#xa;Mv2: 0.36–0.54 · Pro: 0.10–0.46&#xa;Mini: 0.20–0.40" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="780" y="380" width="270" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Models ── -->
+        <mxCell id="det" value="Detection CNN&#xa;4× ConvBNReLU + freq. attention&#xa;FocalLoss (γ=2, α=0.6)&#xa;Binary output: drone / non-drone&#xa;Input: 3-ch mel (B, 3, 64, T)" style="rounded=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#412402;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="70" y="510" width="430" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="loc" value="Localisation CNN  (v16)&#xa;Mel enc (4× conv, 4096-d) + IPD branch (4→64→128→64)&#xa;Fused: 4160-d → head 512→128→4&#xa;Loss: cosine-dist az + focal SmoothL1 dist/ht&#xa;Output: [sin az, cos az, dist/d_max, ht/d_max]" style="rounded=1;fillColor=#FAECE7;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="570" y="510" width="500" height="130" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Kalman / output ── -->
+        <mxCell id="out" value="Kalman tracker  ·  Multi-drone output  ·  Real dataset evaluation (PannoniaFS hover segs + Dunakeszi flight window)" style="rounded=1;fillColor=#EAF3DE;strokeColor=#3B6D11;fontColor=#173404;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="700" width="700" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Connectors ── -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="rd" target="fe" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="sd" target="fe" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fe" target="det" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fe" target="loc" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="det" target="out" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="loc" target="out" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="rd1" target="sd1" parent="1">
+          <mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 2 — LocalisationCNN v16 architecture
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <diagram id="fig2" name="Fig 2 — LocalisationCNN v16">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="LocalisationCNN — v16 architecture and data flow" style="text;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="769" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Mel input ── -->
+        <mxCell id="mi" value="Mel spectrogram input&#xa;(B, 3, 64, T)  —  3 mics × 64 mel bands × T frames" style="rounded=1;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#042C53;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="400" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ── IPD input ── -->
+        <mxCell id="ii" value="IPD + BPF ratio input&#xa;(B, 4)  —  τ₀₁, τ₀₂, τ₁₂ (TDOA delays)  +  BPF energy ratio" style="rounded=1;fillColor=#EEEDFE;strokeColor=#534AB7;fontColor=#26215C;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="400" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Mel encoder ── -->
+        <mxCell id="me" value="Mel encoder" style="rounded=1;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#042C53;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="50" y="190" width="400" height="330" as="geometry"/>
+        </mxCell>
+        <mxCell id="me1" value="Conv2d 3→32 · BatchNorm · ReLU · MaxPool2d" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="230" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="me2" value="Conv2d 32→64 · BatchNorm · ReLU · MaxPool2d" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="280" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="me3" value="Conv2d 64→128 · BatchNorm · ReLU · MaxPool2d" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="330" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="me4" value="Conv2d 128→256 · BatchNorm · ReLU · MaxPool2d" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="380" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="me5" value="AdaptiveAvgPool2d(4,4) → flatten → 4096-d vector" style="rounded=1;fillColor=#B5D4F4;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="430" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="me_note" value="(same as v15 — unchanged)" style="text;fontSize=10;fontColor=#888780;align=center;" vertex="1" parent="1">
+          <mxGeometry x="70" y="480" width="360" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ── IPD branch ── -->
+        <mxCell id="ib" value="IPD branch  (v16 — redesigned)" style="rounded=1;fillColor=#EEEDFE;strokeColor=#534AB7;fontColor=#26215C;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="720" y="190" width="400" height="330" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib1" value="Linear 4→64 · BatchNorm1d · ReLU · Dropout(0.2)" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="230" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib2" value="Linear 64→128 · BatchNorm1d · ReLU · Dropout(0.2)" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="280" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib3" value="Linear 128→64 · BatchNorm1d · ReLU" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="330" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib4" value="Output: 64-d vector" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="740" y="380" width="360" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib_note" value="v15 was: Linear(3→32)→ReLU→Linear(32→32)→ReLU → 32-d" style="text;fontSize=10;fontColor=#888780;align=center;" vertex="1" parent="1">
+          <mxGeometry x="740" y="440" width="360" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="ib_note2" value="Capacity increase: 32-d → 64-d output, deeper path, BN + Dropout" style="text;fontSize=10;fontColor=#993C1D;align=center;" vertex="1" parent="1">
+          <mxGeometry x="740" y="460" width="360" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Concat ── -->
+        <mxCell id="cat" value="Concatenate  [4096-d mel  ‖  64-d IPD]  =  4160-d fused vector" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="570" width="670" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Regression head ── -->
+        <mxCell id="hd" value="Regression head" style="rounded=1;fillColor=#FAEEDA;strokeColor=#854F0B;fontColor=#412402;fontSize=13;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="250" y="670" width="670" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="hd1" value="Linear 4160→512 · ReLU · Dropout(0.4)" style="rounded=1;fillColor=#FAC775;strokeColor=#854F0B;fontColor=#412402;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="270" y="710" width="300" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="hd2" value="Linear 512→128 · ReLU · Dropout(0.2)  →  Linear 128→4" style="rounded=1;fillColor=#FAC775;strokeColor=#854F0B;fontColor=#412402;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="580" y="710" width="320" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="hd3" value="Output: [sin(az),  cos(az),  dist/d_max,  height/d_max]" style="text;fontSize=11;fontColor=#412402;align=center;" vertex="1" parent="1">
+          <mxGeometry x="270" y="760" width="630" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ── Loss boxes ── -->
+        <mxCell id="l1" value="Azimuth loss  (v16)&#xa;L_az = 1 − (sin_p·sin_t + cos_p·cos_t)&#xa;Cosine distance — circular-correct" style="rounded=1;fillColor=#FAECE7;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="50" y="750" width="280" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2" value="Dist + height loss  (unchanged)&#xa;SmoothL1(pred, target)&#xa;× focal weight (1 + target.clamp(0,1))" style="rounded=1;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="840" y="750" width="280" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3" value="Total = 2 × L_az  +  1 × L_dist  +  0.7 × L_ht" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="840" width="570" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- connectors -->
+        <mxCell id="c1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="mi" target="me" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="ii" target="ib" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="me" target="cat" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="ib" target="cat" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="cat" target="hd" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c6" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="hd" target="l1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c7" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="hd" target="l2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c8" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l1" target="l3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c9" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="l2" target="l3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       PAGE 3 — Training and evaluation strategy
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <diagram id="fig3" name="Fig 3 — Training and evaluation strategy">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="Hybrid training and evaluation strategy" style="text;fontSize=16;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="769" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- TRAIN -->
+        <mxCell id="tr" value="TRAIN" style="rounded=1;fillColor=#EEEDFE;strokeColor=#534AB7;fontColor=#26215C;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="310" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="tr1" value="Synthetic data only&#xa;SyntheticLocDatasetV2" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="130" width="270" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="tr2" value="2000 samples per epoch&#xa;Grid-conditioned positions (55%)&#xa;Free interpolation (45%)" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="190" width="270" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="tr3" value="BPF-matched: Pro 209 Hz · Mv2 193 Hz · Mini 360 Hz&#xa;Drone type dist: 30% Pro · 30% Mv2 · 25% Mini · 15% generic&#xa;Noise: indoor −82.7 dB OR outdoor Brownian (random)" style="rounded=1;fillColor=#CECBF6;strokeColor=#534AB7;fontColor=#26215C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="260" width="270" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- VALIDATE -->
+        <mxCell id="va" value="VALIDATE" style="rounded=1;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#085041;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="310" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="va1" value="UaVirBASE — position-grouped split&#xa;128 real sessions · 32 unique positions" style="rounded=1;fillColor=#9FE1CB;strokeColor=#0F6E56;fontColor=#04342C;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="130" width="270" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="va2" value="20 positions → train split&#xa;6 positions → val split&#xa;6 positions → test split&#xa;Zero position overlap enforced" style="rounded=1;fillColor=#9FE1CB;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="190" width="270" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="va3" value="Azimuth MAE · Distance MAE · Height MAE&#xa;Val loss monitors early stopping (patience 20)" style="rounded=1;fillColor=#9FE1CB;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="280" width="270" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- TEST -->
+        <mxCell id="te" value="TEST  (no labels in training)" style="rounded=1;fillColor=#FAECE7;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="810" y="80" width="310" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="te1" value="PannoniaFS — hover segments&#xa;12 segments · 3 drones × 4 altitudes&#xa;Known GPS positions as ground truth" style="rounded=1;fillColor=#F5C4B3;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="830" y="130" width="270" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="te2" value="Dunakeszi — flight window&#xa;408 s · GPX 10 Hz ground truth&#xa;Outdoor · wind noise · 122 m max AGL&#xa;Domain gap measured (no fine-tuning)" style="rounded=1;fillColor=#F5C4B3;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="830" y="210" width="270" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="te3" value="Evaluates generalisation to real recordings&#xa;Tests indoor→outdoor transfer" style="rounded=1;fillColor=#F5C4B3;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="830" y="300" width="270" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Flow arrows -->
+        <mxCell id="e1" value="tunes" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="tr" target="va" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="tests" style="edgeStyle=orthogonalEdgeStyle;fontSize=11;" edge="1" source="va" target="te" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Optimiser row -->
+        <mxCell id="opt_title" value="Optimiser configuration  (v16)" style="text;fontSize=13;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="400" width="1070" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="o1" value="LR schedule&#xa;3-epoch linear warmup&#xa;cosine anneal → 5% base LR" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="50" y="440" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="o2" value="AdamW optimiser&#xa;Base LR = 3×10⁻⁴&#xa;Weight decay = 1×10⁻³" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="310" y="440" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="o3" value="Gradient clipping&#xa;Max norm = 1.0&#xa;(was 2.0 in v15)" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="570" y="440" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="o4" value="Early stopping&#xa;Patience = 20 epochs&#xa;Monitor: val_loss" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="830" y="440" width="240" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Loss row -->
+        <mxCell id="l_title" value="Loss functions" style="text;fontSize=13;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="540" width="1070" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="l1" value="Azimuth — cosine distance  (v16 NEW)&#xa;L_az = 1 − (sin_p·sin_t + cos_p·cos_t)&#xa;Correct circular loss, no bias near ±180°&#xa;Weight: ×2" style="rounded=1;fillColor=#FAECE7;strokeColor=#993C1D;fontColor=#4A1B0C;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="380" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="l2" value="Distance — focal SmoothL1  (v16 improved)&#xa;L_dist = SmoothL1(pred, target) × (1 + target.clamp(0,1))&#xa;Up-weights hard examples (far drones, low SNR)&#xa;Weight: ×1" style="rounded=1;fillColor=#E1F5EE;strokeColor=#0F6E56;fontColor=#04342C;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="450" y="580" width="380" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="l3" value="Height — focal SmoothL1&#xa;Same structure as distance loss&#xa;Weight: ×0.7" style="rounded=1;fillColor=#E6F1FB;strokeColor=#185FA5;fontColor=#042C53;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="850" y="580" width="270" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="total" value="Total loss = 2 × L_az  +  1 × L_dist  +  0.7 × L_ht" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="700" width="670" height="50" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+</mxfile>
