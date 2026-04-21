@@ -174,6 +174,15 @@ from .dataset_visualizer import (
     plot_test_session, 
 )
 
+# ── MEMS inference ────────────────────────────────────────────────────────────
+from .mems_inference import (
+    analyse_mems_file,
+    batch_analyse_mems,
+    analyse_mems_with_meta,
+    build_mems_report,
+    print_crosscheck,
+)
+
 # ── Me ─────────────────────────────────────────────────────────────
 __all__ = [
     # config
