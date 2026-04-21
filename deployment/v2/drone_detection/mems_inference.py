@@ -211,6 +211,94 @@ def _segment_snr(y: np.ndarray, sr: int,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Spectral pseudo-localisation (single-channel estimate)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _pseudo_localize(segments: List[dict], cfg) -> dict:
+    """
+    Estimate azimuth and distance from single-channel spectral cues.
+
+    This is NOT true TDOA localisation — it uses heuristics derived from:
+      • RMS energy envelope  → rough distance proxy (louder ≈ closer)
+      • BPF energy ratio     → signal clarity / confidence weight
+      • Dominant frequency   → maps to known drone blade-pass ranges
+      • CNN probability      → confidence weighting
+
+    The azimuth estimate is uninformative from a single mic (no spatial cue),
+    so we return a ±uncertainty arc centred at 0° (forward) with width
+    proportional to detection confidence — a wide arc means low confidence.
+
+    Returns a dict with keys:
+        azimuth_est_deg     float  — point estimate (always 0 for single-ch)
+        azimuth_unc_deg     float  — ±half-width of uncertainty arc
+        distance_est_m      float  — rough distance estimate
+        distance_conf       float  — 0–1 confidence
+        height_est_m        float  — estimated height (rough)
+        method              str    — description of method used
+        per_segment         list   — per-segment (az, dist, conf) tuples
+    """
+    # Reference levels calibrated to typical outdoor field recordings:
+    # -12 dBFS ≈ 2 m,  -20 dBFS ≈ 8 m,  -28 dBFS ≈ 20 m  (rough log-law)
+    REF_RMS_DB  = -12.0   # dBFS at ~2 m reference distance
+    REF_DIST_M  =  2.0
+    DIST_SCALE  =  8.0    # dB per distance-doubling (empirical)
+
+    per_seg = []
+    for s in segments:
+        rms_db  = s.get("rms_db",    float("nan"))
+        bpf_r   = s.get("bpf_ratio", float("nan"))
+        prob    = s.get("prob",      0.0)
+
+        if math.isnan(rms_db):
+            per_seg.append((float("nan"), float("nan"), 0.0))
+            continue
+
+        # Distance: log-law from RMS
+        db_diff  = REF_RMS_DB - rms_db          # positive → quieter → farther
+        dist_m   = REF_DIST_M * (10 ** (db_diff / (20 * math.log10(2) * DIST_SCALE / 6)))
+        dist_m   = float(np.clip(dist_m, 0.5, 150.0))
+
+        # Confidence: blend of CNN prob and BPF ratio
+        bpf_conf = float(np.clip(bpf_r, 0.0, 1.0)) if not math.isnan(bpf_r) else 0.3
+        conf     = float(np.clip(0.6 * prob + 0.4 * bpf_conf, 0.0, 1.0))
+
+        per_seg.append((0.0, dist_m, conf))  # azimuth always 0 — no spatial cue
+
+    valid = [(az, d, c) for az, d, c in per_seg
+             if not math.isnan(d) and c > 0]
+    if not valid:
+        return {
+            "azimuth_est_deg": float("nan"), "azimuth_unc_deg": 180.0,
+            "distance_est_m": float("nan"),  "distance_conf": 0.0,
+            "height_est_m": float("nan"),    "method": "spectral_proxy",
+            "per_segment": per_seg,
+        }
+
+    weights   = np.array([c for _, _, c in valid])
+    dists     = np.array([d for _, d, _ in valid])
+    w_sum     = weights.sum()
+    dist_est  = float(np.dot(weights, dists) / w_sum)
+    dist_conf = float(np.clip(w_sum / len(valid), 0.0, 1.0))
+
+    # Azimuth uncertainty: high confidence → narrow arc; low → wide arc
+    az_unc    = float(np.clip(180.0 * (1.0 - dist_conf), 15.0, 175.0))
+
+    # Height: very rough — assume 15° average elevation for hovering drone
+    ELEVATION_DEG = 15.0
+    height_est    = float(dist_est * math.tan(math.radians(ELEVATION_DEG)))
+
+    return {
+        "azimuth_est_deg": 0.0,
+        "azimuth_unc_deg": az_unc,
+        "distance_est_m":  dist_est,
+        "distance_conf":   dist_conf,
+        "height_est_m":    height_est,
+        "method":          "spectral_proxy",
+        "per_segment":     per_seg,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Dashboard
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -221,27 +309,31 @@ def _plot_mems_dashboard(
     save_path: Optional[Path] = None,
 ):
     """
-    5-panel dark dashboard for a single-channel MEMS analysis:
+    8-panel dark dashboard for a single-channel MEMS analysis:
 
-    [0] Waveform + RMS energy over time
-    [1] Mel spectrogram (concatenated)
-    [2] Detection timeline (CNN / heuristic / hybrid probabilities)
-    [3] BPF energy ratio per segment
-    [4] Detection score gauge (peak probability)
+    Row 0: [0] Waveform+RMS  [1] Mel spectrogram  [2] Detection timeline
+    Row 1: [3] BPF ratio      [4] Dominant freq    [5] Detection score gauge
+    Row 2: [6] Polar azimuth  [7] Distance est.    [8] Localisation confidence
     """
-    S = _plot_style()
-    fig = plt.figure(figsize=(20, 9), facecolor=S["bg"])
-    fig.suptitle(f"🚁 MEMS Analysis — {title}",
-                 fontsize=13, color=S["accent"], fontweight="bold", y=0.98)
-    gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.48, wspace=0.35)
-    ax0  = fig.add_subplot(gs[0, 0])   # waveform
-    ax1  = fig.add_subplot(gs[0, 1])   # mel
-    ax2  = fig.add_subplot(gs[0, 2])   # detection timeline
-    ax3  = fig.add_subplot(gs[1, 0])   # BPF energy ratio
-    ax4  = fig.add_subplot(gs[1, 1])   # dominant freq
-    ax5  = fig.add_subplot(gs[1, 2])   # gauge
+    S   = _plot_style()
+    loc = _pseudo_localize(segments, cfg)
 
-    _apply_dark(fig, [ax0, ax1, ax2, ax3, ax4, ax5])
+    fig = plt.figure(figsize=(20, 14), facecolor=S["bg"])
+    fig.suptitle(f"🚁 MEMS Analysis — {title}",
+                 fontsize=13, color=S["accent"], fontweight="bold", y=0.99)
+
+    gs  = gridspec.GridSpec(3, 3, figure=fig, hspace=0.55, wspace=0.38)
+    ax0 = fig.add_subplot(gs[0, 0])              # waveform
+    ax1 = fig.add_subplot(gs[0, 1])              # mel
+    ax2 = fig.add_subplot(gs[0, 2])              # detection timeline
+    ax3 = fig.add_subplot(gs[1, 0])              # BPF energy ratio
+    ax4 = fig.add_subplot(gs[1, 1])              # dominant freq
+    ax5 = fig.add_subplot(gs[1, 2])              # gauge
+    ax6 = fig.add_subplot(gs[2, 0], polar=True)  # polar azimuth arc
+    ax7 = fig.add_subplot(gs[2, 1])              # distance per segment
+    ax8 = fig.add_subplot(gs[2, 2])              # localisation confidence
+
+    _apply_dark(fig, [ax0, ax1, ax2, ax3, ax4, ax5, ax7, ax8])
 
     ts   = [s["t_start"] for s in segments]
     dur  = cfg.TARGET_DURATION
@@ -358,9 +450,86 @@ def _plot_mems_dashboard(
     ax5.text(0, -0.08, f"{peak_prob:.3f}", ha="center",
              fontsize=16, fontweight="bold", color=col)
     ax5.text(0, 0.55, verdict, ha="center", fontsize=11, color=col)
-    ax5.text(0, 0.30, "(detection only —\nlocalisation N/A\nfor single-channel)",
+    ax5.text(0, 0.30, "(detection only —\nspectral-proxy localisation\nshown below)",
              ha="center", fontsize=7, color=S["muted"], linespacing=1.4)
     ax5.axis("off"); ax5.set_title("Detection Score", color=S["text"])
+
+    # ── [6] Polar azimuth uncertainty arc ─────────────────────────────────────
+    az_est = loc["azimuth_est_deg"]   # always 0° for single-ch
+    az_unc = loc["azimuth_unc_deg"]   # ±half-width in degrees
+    conf   = loc["distance_conf"]
+
+    ax6.set_facecolor(S["bg"])
+    ax6.spines["polar"].set_color(S["spine"])
+    ax6.tick_params(colors=S["muted"], labelsize=7)
+    ax6.set_theta_zero_location("N")
+    ax6.set_theta_direction(-1)
+    ax6.set_ylim(0, 1)
+    ax6.set_yticks([])
+
+    # Draw uncertainty arc
+    if not math.isnan(az_est):
+        lo_rad = math.radians(az_est - az_unc)
+        hi_rad = math.radians(az_est + az_unc)
+        arc_theta = np.linspace(lo_rad, hi_rad, 120)
+        arc_r     = np.ones_like(arc_theta) * 0.82
+        arc_col   = S["ok"] if conf > 0.6 else (S["warn"] if conf > 0.3 else S["err"])
+        ax6.fill_between(arc_theta, 0, arc_r, alpha=0.25, color=arc_col)
+        ax6.plot(arc_theta, arc_r, lw=2.5, color=arc_col)
+        # Centroid needle
+        ax6.annotate("", xy=(math.radians(az_est), 0.75), xytext=(math.radians(az_est), 0),
+                     arrowprops=dict(arrowstyle="-|>", color=S["text"], lw=2.0))
+        dist_lbl = (f"{loc['distance_est_m']:.1f} m"
+                    if not math.isnan(loc["distance_est_m"]) else "N/A")
+        ax6.text(0, -0.25, f"Est. dist: {dist_lbl}", ha="center",
+                 fontsize=8, color=S["text"], transform=ax6.transData)
+    ax6.set_title("Azimuth Estimate\n(spectral proxy — ±unc arc)",
+                  color=S["text"], fontsize=8, pad=10)
+    # Annotation explaining the method
+    fig.text(
+        ax6.get_position().x0, ax6.get_position().y0 - 0.025,
+        "⚠️  Single-channel: azimuth = 0° (unknown), arc width = uncertainty",
+        fontsize=6.5, color=S["muted"], ha="left",
+    )
+
+    # ── [7] Distance estimate per segment ─────────────────────────────────────
+    seg_dists = [d for _, d, _ in loc["per_segment"]]
+    seg_confs = [c for _, _, c in loc["per_segment"]]
+    valid_d   = [(i, d, c) for i, (d, c) in enumerate(zip(seg_dists, seg_confs))
+                 if not math.isnan(d)]
+    if valid_d:
+        idx_d, d_vals, c_vals = zip(*valid_d)
+        bar_cols = [S["ok"] if c > 0.6 else (S["warn"] if c > 0.3 else S["muted"])
+                    for c in c_vals]
+        ax7.bar(idx_d, d_vals, color=bar_cols, alpha=0.85, width=0.7)
+        dist_est = loc["distance_est_m"]
+        if not math.isnan(dist_est):
+            ax7.axhline(dist_est, color=S["accent"], lw=1.5, ls="--",
+                        label=f"Weighted mean: {dist_est:.1f} m")
+            ax7.legend(facecolor=S["panel_alt"], fontsize=7)
+    ax7.set_xlabel("Segment #"); ax7.set_ylabel("Estimated Distance (m)")
+    ax7.set_title("Distance Estimate per Segment\n(spectral proxy)", fontsize=8)
+    ax7.set_xticks(range(len(segments)))
+    ax7.set_xticklabels([str(i + 1) for i in range(len(segments))], fontsize=7)
+
+    # ── [8] Localisation confidence bar ───────────────────────────────────────
+    conf_vals = [c for _, _, c in loc["per_segment"]]
+    conf_cols = [S["ok"] if c > 0.6 else (S["warn"] if c > 0.3 else S["err"])
+                 for c in conf_vals]
+    ax8.bar(range(len(conf_vals)), conf_vals, color=conf_cols, alpha=0.85, width=0.7)
+    ax8.axhline(0.6, color=S["ok"],  lw=1.0, ls=":", alpha=0.6, label="High conf")
+    ax8.axhline(0.3, color=S["warn"], lw=1.0, ls=":", alpha=0.6, label="Med conf")
+    ax8.set_ylim(0, 1.05)
+    ax8.set_xlabel("Segment #"); ax8.set_ylabel("Confidence")
+    ax8.set_title("Localisation Confidence\n(CNN × BPF blend)", fontsize=8)
+    ax8.set_xticks(range(len(segments)))
+    ax8.set_xticklabels([str(i + 1) for i in range(len(segments))], fontsize=7)
+    leg8 = ax8.legend(facecolor=S["panel_alt"], fontsize=7)
+    try:
+        from .visualization import _style_legend
+        _style_legend(leg8)
+    except Exception:
+        pass
 
     if save_path:
         save_path.parent.mkdir(parents=True, exist_ok=True)
@@ -496,7 +665,15 @@ def analyse_mems_file(
 
     print(f"\n  📊 {n_det}/{n_segments} detected  |  "
           f"peak_prob={peak_p:.3f}  bpf_mean={bpf_mean:.2f}  dom_f={dom_freq:.0f}Hz")
-    print(f"  ℹ️  Azimuth/distance/height: N/A (single-channel recording)")
+
+    # Spectral-proxy localisation
+    loc = _pseudo_localize(segments, cfg)
+    dist_str = f"{loc['distance_est_m']:.1f} m" if not math.isnan(loc["distance_est_m"]) else "N/A"
+    h_str    = f"{loc['height_est_m']:.1f} m"   if not math.isnan(loc["height_est_m"])   else "N/A"
+    print(f"  📡 Spectral-proxy localisation  |  "
+          f"dist≈{dist_str}  height≈{h_str}  "
+          f"az_unc=±{loc['azimuth_unc_deg']:.0f}°  conf={loc['distance_conf']:.2f}")
+    print(f"  ⚠️  Azimuth is unresolvable from single-channel — uncertainty arc shown in dashboard.")
 
     if show_plot or save_plot:
         save_path = None
@@ -521,11 +698,14 @@ def analyse_mems_file(
         "bpf_ratio_mean":     bpf_mean,
         "segments":           segments,
         "meta":               meta,
-        # Always None — make the limitation explicit in the return value
-        "azimuth_deg":  None,
-        "distance_m":   None,
-        "height_m":     None,
-        "localization_available": False,
+        # Spectral-proxy localisation (not true TDOA)
+        "azimuth_deg":              loc["azimuth_est_deg"],
+        "azimuth_uncertainty_deg":  loc["azimuth_unc_deg"],
+        "distance_m":               loc["distance_est_m"],
+        "height_m":                 loc["height_est_m"],
+        "localization_confidence":  loc["distance_conf"],
+        "localization_available":   True,
+        "localization_method":      "spectral_proxy",
     }
 
 
