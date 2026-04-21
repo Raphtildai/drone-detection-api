@@ -576,6 +576,133 @@ def configure_custom_dataset(
     print(f"✅ Custom dataset configured: {base_in}")
     return str(base_in)
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Thesis figure generation
+# ══════════════════════════════════════════════════════════════════════════════
+def build_thesis_figures(
+    cfg,
+    dataset_root: str,
+    out_figures: str = "./thesis_figures",
+    bpf_hz: float = 82.0,
+    pre_counts: dict = None,
+    figs: list = None,
+) -> dict:
+    """
+    Build all thesis figures from an already-configured pipeline state.
+
+    Call this AFTER the detection pipeline cells have run
+    (import_custom_builder_dataset, generate_mixed_drone_training_audio, etc.)
+    so that cfg, processed dirs, and mel cache are already populated.
+
+    Parameters
+    ----------
+    cfg          : live Config object (already patched by quickstart_notebook_setup_v2)
+    dataset_root : path to custom dataset root (where clean_drone_sections/ lives)
+    out_figures  : output directory for saved PNGs
+    bpf_hz       : blade-pass fundamental Hz (default 82)
+    pre_counts   : optional dict of pre-augmentation counts for fig2.
+                   If None, post_counts is used for both panels (conservative).
+    figs         : list of figure numbers to generate, e.g. [1, 3, 7].
+                   Defaults to all 10.
+
+    Returns
+    -------
+    dict with keys: post_counts, mel_counts, loc_result, out_figures
+    """
+    from pathlib import Path
+    from collections import defaultdict
+    from drone_detection.datasets import MelCacheManager
+    from drone_detection.build_training_datasets_and_figures import (
+        run_localization_pipeline,
+        fig1_detection_class_balance,
+        fig2_detection_source_breakdown,
+        fig3_mel_grid,
+        fig4_bpf_ratio,
+        fig5_mix_snr_distribution,
+        fig6_mel_cache_balance,
+        fig7_loc_spatial_coverage,
+        fig8_loc_dist_height,
+        fig9_synth_bpf_by_type,
+        fig10_noise_profiles,
+        _list_wavs,
+        _infer_source,
+    )
+
+    builder_root = Path(dataset_root)
+    out_dir      = Path(out_figures)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    figs         = figs or list(range(1, 11))
+
+    # ── 1. Snapshot post-augmentation counts from disk ────────────────────────
+    det = cfg.PROCESSED_DIR / "detection"
+
+    def _snapshot(det_root):
+        counts = {}
+        for split in ["train", "val", "test"]:
+            counts[split] = {}
+            for label in ["drone", "non_drone"]:
+                wavs = _list_wavs(det_root / split / label, recursive=False)
+                by_src = defaultdict(int)
+                for w in wavs:
+                    by_src[_infer_source(w)] += 1
+                counts[split][label] = dict(by_src)
+                counts[split][label]["total"] = len(wavs)
+        return counts
+
+    post_counts = _snapshot(det)
+    _pre        = pre_counts if pre_counts is not None else post_counts
+
+    print("📊 Detection counts (post-augmentation):")
+    for split in ["train", "val", "test"]:
+        for label in ["drone", "non_drone"]:
+            print(f"   {split}/{label}: {post_counts[split][label]}")
+
+    # ── 2. Mel cache ──────────────────────────────────────────────────────────
+    mel_counts = {}
+    print("\n🎵 Mel cache …")
+    try:
+        mcm = MelCacheManager(cfg)
+        mcm.build(force=False)
+        mcm.inject_synthetic(force=False)
+        mel_counts = mcm.count()
+        print(f"   {mel_counts}")
+    except Exception as e:
+        print(f"   ⚠  Mel cache step skipped: {e}")
+
+    # ── 3. Localization pipeline ──────────────────────────────────────────────
+    print("\n📍 Localization pipeline …")
+    loc_result = run_localization_pipeline(cfg)
+
+    # ── 4. Figures ────────────────────────────────────────────────────────────
+    print(f"\n🖼️  Generating figures → {out_dir}")
+    fig_map = {
+        1:  lambda: fig1_detection_class_balance(post_counts, out_dir),
+        2:  lambda: fig2_detection_source_breakdown(_pre, post_counts, out_dir),
+        3:  lambda: fig3_mel_grid(cfg, builder_root, out_dir),
+        4:  lambda: fig4_bpf_ratio(cfg, builder_root, out_dir, bpf_hz),
+        5:  lambda: fig5_mix_snr_distribution(cfg, out_dir),
+        6:  lambda: fig6_mel_cache_balance(mel_counts, out_dir),
+        7:  lambda: fig7_loc_spatial_coverage(cfg, loc_result, out_dir),
+        8:  lambda: fig8_loc_dist_height(cfg, loc_result, out_dir),
+        9:  lambda: fig9_synth_bpf_by_type(cfg, loc_result, out_dir),
+        10: lambda: fig10_noise_profiles(cfg, builder_root, out_dir),
+    }
+    for n in figs:
+        if n not in fig_map:
+            print(f"   ⚠  No figure {n} defined"); continue
+        print(f"   fig{n} …", end=" ")
+        try:
+            fig_map[n]()
+        except Exception as e:
+            print(f"failed — {e}")
+
+    print(f"\n✅ Done. Figures saved to {out_dir}")
+    return {
+        "post_counts": post_counts,
+        "mel_counts":  mel_counts,
+        "loc_result":  loc_result,
+        "out_figures": str(out_dir),
+    }
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Training entry points

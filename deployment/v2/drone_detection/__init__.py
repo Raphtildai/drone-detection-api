@@ -126,6 +126,7 @@ from .orchestration import (
     verify_tdoa_accuracy,
     quick_demo,
     launch_ui,
+    build_thesis_figures,
 )
 
 # ── Utils (selected public helpers) ───────────────────────────────────────────
@@ -227,4 +228,6 @@ __all__ = [
     # dataset visualization
     "plot_dataset_overview", "plot_sample_session", "plot_position_coverage",
     "plot_noise_profiles", "plot_all", "plot_test_zip_overview", "plot_test_session",
+    # thesis figure generation
+    "build_thesis_figures",
 ]

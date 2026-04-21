@@ -184,11 +184,13 @@ def print_detection_report(y_true, y_prob, threshold):
 
 # ─── Checkpoint helpers ───────────────────────────────────────────────────────
 
-def _save_ckpt(path, model, epoch, metric_dict, sched=None):
+def _save_ckpt(path, model, epoch, metric_dict, sched=None, opt=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     ck = {"model_state": model.state_dict(), "epoch": epoch, **metric_dict}
     if sched is not None:
         ck["sched_state"] = sched.state_dict()
+    if opt is not None:
+        ck["opt_state"] = opt.state_dict()
     torch.save(ck, path)
 
 
@@ -199,6 +201,27 @@ def _build_sched(opt, start_epoch, total_epochs, warmup_epochs, min_lr_factor,
     current run, and restore state_dict if available in the checkpoint.
     """
     sched_last_epoch = max(-1, start_epoch - 2)
+
+    # ──When resuming (sched_last_epoch >= 0), PyTorch requires
+    # 'initial_lr' to already exist in every param group.  Inject it
+    # from the checkpoint optimizer state if available, otherwise fall
+    # back to the current lr value in each group.
+    if sched_last_epoch >= 0:
+        opt_state_loaded = False
+        if latest_path.exists():
+            ck_cpu = torch.load(latest_path, map_location="cpu")
+            if "opt_state" in ck_cpu:
+                try:
+                    opt.load_state_dict(ck_cpu["opt_state"])
+                    opt_state_loaded = True
+                    print("   🔧 Optimizer state restored.")
+                except Exception as e:
+                    print(f"   ⚠️  Could not restore optimizer state: {e}")
+        if not opt_state_loaded:
+            # Fallback: stamp initial_lr from each group's current lr
+            for group in opt.param_groups:
+                group.setdefault("initial_lr", group["lr"])
+
     sched = WarmupCosineScheduler(
         opt,
         warmup_epochs=warmup_epochs,

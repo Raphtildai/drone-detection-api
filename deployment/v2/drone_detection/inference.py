@@ -666,17 +666,40 @@ def comprehensive_pipeline_test(
     use_tracker: bool = True,
     timestamp: Optional[float] = None,
     auto_upload_if_missing: bool = True,
+    show_plots: bool = True,
+    save_plots: bool = True,
 ) -> dict:
-    """End-to-end test for load_3ch() and run_pipeline()."""
+    """
+    End-to-end test for load_3ch() and run_pipeline().
+
+    Additions vs original:
+    • Per-file 6-panel analysis dashboard (waveform+RMS, mel spectrogram,
+      detection timeline, localization bars, polar compass, score gauge).
+    • Polar azimuth summary plot across all detected azimuths.
+    • Multi-drone position map when run_multi_drone=True.
+    • Kalman track trajectory plot when tracks are confirmed.
+    • All figures saved to cfg.DRIVE_PLOTS / "pipeline_test_<stem>.png".
+    """
+    import time
+    from pathlib import Path
+    from .visualization import (
+        _plot_analysis_report,
+        plot_polar_azimuth,
+        plot_multi_drone_positions,
+        plot_track_trajectory,
+    )
+
     cfg = cfg or config
     if wav_paths is None:
         if not auto_upload_if_missing:
             raise ValueError("wav_paths is None and auto_upload_if_missing=False.")
         wav_paths = _upload_test_audio_triplet_colab()
     wav_paths = _validate_test_audio_paths(wav_paths)
+
     print("🔄 Loading models...")
     load_detection_model(cfg)
     load_localization_model(cfg)
+
     print("\n🔊 Loading 3-channel audio...")
     channels = load_3ch(wav_paths, cfg)
     if len(channels) != 3:
@@ -685,21 +708,165 @@ def comprehensive_pipeline_test(
     if len(set(ch_lengths)) != 1:
         raise AssertionError(f"Channels do not have equal lengths: {ch_lengths}")
     channel_summary = _summarize_loaded_channels(channels)
+
     tracker_single = tracker_multi = None
     if use_tracker:
         from .tracking import KalmanTracker
         tracker_single = KalmanTracker(cfg)
         tracker_multi  = KalmanTracker(cfg) if run_multi_drone else None
+
+    # ── Per-file analysis dashboards ──────────────────────────────────────────
+    # Build one analysis dashboard per WAV file so each mic channel
+    # gets its own waveform / mel / detection / localization breakdown.
+    per_file_results = []
+    all_detected_azimuths = []
+
+    for file_idx, wav_path in enumerate(wav_paths):
+        mic_label = f"Mic{file_idx + 1}_{Path(wav_path).stem}"
+        print(f"\n📊 Analysing {Path(wav_path).name} (channel {file_idx + 1})...")
+
+        ap      = AudioProcessor(cfg)
+        y_full  = ap.load(wav_path, mono=True)
+        total_s = len(y_full) / cfg.SR
+        seg_n   = int(cfg.TARGET_DURATION * cfg.SR)
+        n_segs  = max(1, int(np.ceil(total_s / cfg.TARGET_DURATION)))
+        hop     = seg_n  # non-overlapping for the dashboard
+
+        # Determine if localization model is available
+        try:
+            load_localization_model(cfg)
+            can_localize = True
+        except FileNotFoundError:
+            can_localize = False
+
+        from .tracking import KalmanTracker
+        file_tracker = KalmanTracker(cfg)
+        base_ts      = time.time()
+        segments     = []
+
+        for seg_i in range(n_segs):
+            start = min(seg_i * hop, max(0, len(y_full) - seg_n))
+            audio = y_full[start : start + seg_n]
+            if len(audio) < seg_n:
+                audio = np.pad(audio, (0, seg_n - len(audio)))
+
+            t_s    = start / cfg.SR
+            mel_fr = ap.mel(ap.pad_or_truncate(audio))
+            rms_db = float(20 * np.log10(np.sqrt(np.mean(audio ** 2)) + 1e-8))
+
+            det       = detect([audio, audio, audio], cfg)
+            drone_loc = None
+
+            if det["detected"] and can_localize:
+                try:
+                    drone_loc = localize([audio, audio, audio], cfg)
+                except Exception:
+                    drone_loc = {
+                        "azimuth_deg": 0.0, "distance_m": 0.0,
+                        "height_m": 0.0,
+                        "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
+                    }
+
+            positions = [drone_loc["xy_position"]] if drone_loc else []
+            tracks    = file_tracker.step(positions, base_ts + t_s)
+
+            segments.append({
+                "seg":                   seg_i + 1,
+                "t_start":               t_s,
+                "detected":              det["detected"],
+                "prob":                  det["probability"],
+                "cnn_probability":       det.get("cnn_probability",       float("nan")),
+                "heuristic_probability": det.get("heuristic_probability", float("nan")),
+                "xy":  drone_loc["xy_position"] if drone_loc else None,
+                "loc": drone_loc,
+                "mel": mel_fr,
+                "rms_db": rms_db,
+                "waveform": audio.tolist(),
+            })
+
+            icon = "🚁" if det["detected"] else "🌳"
+            print(f"  Seg {seg_i + 1:3d}  {icon}  "
+                  f"conf={det['probability']:.3f}  rms={rms_db:.1f} dB")
+
+            if drone_loc is not None:
+                all_detected_azimuths.append(drone_loc["azimuth_deg"])
+
+        confirmed = file_tracker.all_confirmed()
+        n_det     = sum(s["detected"] for s in segments)
+        print(f"\n  📊 {n_det}/{n_segs} segments detected  |  "
+              f"{len(confirmed)} confirmed track(s)")
+
+        per_file_results.append({
+            "wav_path":  wav_path,
+            "mic_label": mic_label,
+            "segments":  segments,
+            "confirmed": confirmed,
+            "n_detected": n_det,
+        })
+
+        # 6-panel analysis dashboard for this file
+        if show_plots:
+            print(f"\n🖼️  Generating analysis dashboard for {Path(wav_path).name}...")
+            _plot_analysis_report(segments, confirmed, cfg, mic_label)
+
+        # Track trajectory plot (only if tracks were confirmed)
+        if show_plots and confirmed:
+            print(f"  📍 Plotting Kalman tracks for {Path(wav_path).name}...")
+            if save_plots:
+                cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
+                save_path = cfg.DRIVE_PLOTS / f"tracks_{mic_label}.png"
+            else:
+                save_path = None
+            plot_track_trajectory(confirmed, cfg, save=save_plots)
+
+    # ── Full-pipeline single/multi-drone runs ─────────────────────────────────
     print("\n🚁 Running single-drone pipeline...")
-    single_result = run_pipeline(wav_paths=wav_paths, cfg=cfg,
-                                 tracker=tracker_single, multi_drone=False,
-                                 timestamp=timestamp)
+    single_result = run_pipeline(
+        wav_paths=wav_paths, cfg=cfg,
+        tracker=tracker_single, multi_drone=False,
+        timestamp=timestamp,
+    )
+
     multi_result = None
     if run_multi_drone:
         print("\n🚁🚁 Running multi-drone pipeline...")
-        multi_result = run_pipeline(wav_paths=wav_paths, cfg=cfg,
-                                    tracker=tracker_multi, multi_drone=True,
-                                    timestamp=timestamp)
+        multi_result = run_pipeline(
+            wav_paths=wav_paths, cfg=cfg,
+            tracker=tracker_multi, multi_drone=True,
+            timestamp=timestamp,
+        )
+
+    # ── Cross-file summary plots ──────────────────────────────────────────────
+    if show_plots:
+        # Polar azimuth compass — all detections across all files
+        if all_detected_azimuths:
+            print(f"\n🧭 Polar azimuth summary ({len(all_detected_azimuths)} detections)...")
+            plot_polar_azimuth(
+                all_detected_azimuths,
+                title="Detected Azimuths — All Mic Channels",
+                cfg=cfg,
+                save=save_plots,
+            )
+
+        # Multi-drone position map from the full pipeline run
+        if multi_result and multi_result.get("drones"):
+            print("\n🗺️  Multi-drone position map...")
+            plot_multi_drone_positions(multi_result["drones"], cfg=cfg, save=save_plots)
+
+        # Kalman trajectories from the single-drone pipeline tracker
+        if tracker_single is not None:
+            all_single_tracks = tracker_single.all_confirmed()
+            if all_single_tracks:
+                print("\n📍 Single-drone pipeline Kalman trajectories...")
+                plot_track_trajectory(all_single_tracks, cfg=cfg, save=save_plots)
+
     _print_pipeline_test_summary(wav_paths, channel_summary, single_result, multi_result)
-    return {"wav_paths": wav_paths, "channels_loaded": channel_summary,
-            "single_result": single_result, "multi_result": multi_result}
+
+    return {
+        "wav_paths":        wav_paths,
+        "channels_loaded":  channel_summary,
+        "single_result":    single_result,
+        "multi_result":     multi_result,
+        "per_file_results": per_file_results,
+        "all_azimuths":     all_detected_azimuths,
+    }
