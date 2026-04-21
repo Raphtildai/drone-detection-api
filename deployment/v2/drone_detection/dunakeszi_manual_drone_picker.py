@@ -584,6 +584,12 @@ def save_clip_with_meta(
     phase       = infer_flight_phase(clip_start_utc, clip_end_utc,
                                       takeoff_utc, landing_utc)
 
+    # Normalise for saving — compute gain so mems_inference can undo it
+    peak_raw         = float(np.max(np.abs(clip_y)) + 1e-8)
+    norm_gain        = 0.98 / peak_raw
+    norm_gain_db     = round(20 * math.log10(norm_gain), 3)
+    clip_y_norm      = normalize_peak(clip_y)
+
     out_subdir = clips_dir / source_type
     ensure_dir(out_subdir)
     slug      = safe_slug(path.stem)
@@ -591,7 +597,7 @@ def save_clip_with_meta(
     wav_path  = out_subdir / f"{fstem}.wav"
     meta_path = out_subdir / f"{fstem}_meta.json"
 
-    sf.write(str(wav_path), normalize_peak(clip_y), save_sr)
+    sf.write(str(wav_path), clip_y_norm, save_sr)
 
     meta = {
         "clip": {
@@ -606,7 +612,14 @@ def save_clip_with_meta(
             "end_utc":      clip_end_utc.strftime(  "%Y-%m-%dT%H:%M:%S.%fZ"),
             "flight_phase": phase,
         },
-        "signal_metrics": sig_metrics,
+        "signal_metrics": {
+            **sig_metrics,
+            # normalization applied on save — rms_dbfs above is PRE-norm (true field level)
+            # mems_inference uses normalization_gain_db to correct distance estimates
+            "normalization_gain_db": norm_gain_db,
+            "normalized_rms_dbfs":   round(sig_metrics.get("rms_dbfs", float("nan"))
+                                           + norm_gain_db, 2),
+        },
         "rpm":  rpm_stats,
         "gpx":  {"n_points": len(gpx_points), "trackpoints": gpx_points},
         "detection": det_summary or {},

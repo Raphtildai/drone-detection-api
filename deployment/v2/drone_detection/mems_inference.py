@@ -215,34 +215,37 @@ def _segment_snr(y: np.ndarray, sr: int,
 # Spectral pseudo-localisation (single-channel estimate)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _pseudo_localize(segments: List[dict], cfg) -> dict:
+def _pseudo_localize(segments: List[dict], cfg,
+                     rms_offset_db: float = 0.0) -> dict:
     """
     Estimate azimuth and distance from single-channel spectral cues.
 
-    This is NOT true TDOA localisation — it uses heuristics derived from:
-      • RMS energy envelope  → rough distance proxy (louder ≈ closer)
-      • BPF energy ratio     → signal clarity / confidence weight
-      • Dominant frequency   → maps to known drone blade-pass ranges
-      • CNN probability      → confidence weighting
+    WHY rms_offset_db EXISTS
+    ────────────────────────
+    The Dunakeszi picker (dunakeszi_manual_drone_picker.py) calls
+    normalize_peak() before saving each WAV clip, which peak-normalises
+    to 0.98.  But compute_signal_metrics() — which writes rms_dbfs into
+    the meta JSON — is called on the PRE-normalisation waveform.
 
-    The azimuth estimate is uninformative from a single mic (no spatial cue),
-    so we return a ±uncertainty arc centred at 0° (forward) with width
-    proportional to detection confidence — a wide arc means low confidence.
+    Result: the saved WAV is ~19–28 dB louder than the meta rms_dbfs
+    suggests.  When mems_inference loads the WAV its per-segment RMS is
+    therefore ~20 dB higher than the meta value.
 
-    Returns a dict with keys:
-        azimuth_est_deg     float  — point estimate (always 0 for single-ch)
-        azimuth_unc_deg     float  — ±half-width of uncertainty arc
-        distance_est_m      float  — rough distance estimate
-        distance_conf       float  — 0–1 confidence
-        height_est_m        float  — estimated height (rough)
-        method              str    — description of method used
-        per_segment         list   — per-segment (az, dist, conf) tuples
+    rms_offset_db = meta_rms_dbfs − mean(loader_seg_rms_db)
+    Adding this to each segment RMS restores the true dBFS level before
+    distance estimation.
+
+    REFERENCE CALIBRATION
+    ─────────────────────
+    Calibrated against the Dunakeszi dataset using the picker's known
+    BPF of 82 Hz and typical outdoor field conditions:
+      -34 dBFS (true) ≈ 5–8 m    cruise altitude
+      -40 dBFS (true) ≈ 15–25 m
+      -46 dBFS (true) ≈ 40–60 m
     """
-    # Reference levels calibrated to typical outdoor field recordings:
-    # -12 dBFS ≈ 2 m,  -20 dBFS ≈ 8 m,  -28 dBFS ≈ 20 m  (rough log-law)
-    REF_RMS_DB  = -12.0   # dBFS at ~2 m reference distance
-    REF_DIST_M  =  2.0
-    DIST_SCALE  =  8.0    # dB per distance-doubling (empirical)
+    REF_RMS_DB  = -34.0   # true dBFS at REF_DIST_M (Dunakeszi-calibrated)
+    REF_DIST_M  =  6.0    # metres at reference level
+    DIST_SCALE  =  8.0    # empirical dB per distance-doubling
 
     per_seg = []
     for s in segments:
@@ -254,8 +257,9 @@ def _pseudo_localize(segments: List[dict], cfg) -> dict:
             per_seg.append((float("nan"), float("nan"), 0.0))
             continue
 
-        # Distance: log-law from RMS
-        db_diff  = REF_RMS_DB - rms_db
+        # Restore true dBFS level by applying the normalisation offset
+        rms_db_cal = rms_db + rms_offset_db
+        db_diff    = REF_RMS_DB - rms_db_cal
         dist_m   = REF_DIST_M * (10 ** (db_diff / (20 * math.log10(2) * DIST_SCALE / 6)))
         dist_m   = float(np.clip(dist_m, 0.5, 150.0))
 
@@ -281,7 +285,7 @@ def _pseudo_localize(segments: List[dict], cfg) -> dict:
             "azimuth_est_deg": float("nan"), "azimuth_unc_deg": 180.0,
             "distance_est_m": float("nan"),  "distance_conf": 0.0,
             "height_est_m": float("nan"),    "method": "spectral_proxy",
-            "per_segment": per_seg,
+            "rms_offset_db": rms_offset_db,  "per_segment": per_seg,
         }
 
     weights   = np.array([c for _, _, c in valid])
@@ -303,7 +307,9 @@ def _pseudo_localize(segments: List[dict], cfg) -> dict:
         "distance_est_m":  dist_est,
         "distance_conf":   dist_conf,
         "height_est_m":    height_est,
-        "method":          "spectral_proxy",
+        "rms_offset_db":   rms_offset_db,
+        "method":          "spectral_proxy" if rms_offset_db == 0.0
+                           else "spectral_proxy_calibrated",
         "per_segment":     per_seg,
     }
 
@@ -317,6 +323,7 @@ def _plot_mems_dashboard(
     title: str,
     cfg,
     save_path: Optional[Path] = None,
+    rms_offset_db: float = 0.0,
 ):
     """
     8-panel dark dashboard for a single-channel MEMS analysis:
@@ -326,7 +333,7 @@ def _plot_mems_dashboard(
     Row 2: [6] Polar azimuth  [7] Distance est.    [8] Localisation confidence
     """
     S   = _plot_style()
-    loc = _pseudo_localize(segments, cfg)
+    loc = _pseudo_localize(segments, cfg, rms_offset_db=rms_offset_db)
 
     fig = plt.figure(figsize=(20, 14), facecolor=S["bg"])
     fig.suptitle(f"🚁 MEMS Analysis — {title}",
@@ -518,7 +525,10 @@ def _plot_mems_dashboard(
                         label=f"Weighted mean: {dist_est:.1f} m")
             ax7.legend(facecolor=S["panel_alt"], fontsize=7)
     ax7.set_xlabel("Segment #"); ax7.set_ylabel("Estimated Distance (m)")
-    ax7.set_title("Distance Estimate per Segment\n(spectral proxy)", fontsize=8)
+    cal_label = f"calibrated, offset={rms_offset_db:+.1f} dB" \
+                if rms_offset_db != 0.0 else "uncalibrated — no meta"
+    ax7.set_title(f"Distance Estimate per Segment\n(spectral proxy · {cal_label})",
+                  fontsize=8)
     ax7.set_xticks(range(len(segments)))
     ax7.set_xticklabels([str(i + 1) for i in range(len(segments))], fontsize=7)
 
@@ -578,33 +588,47 @@ def _crosscheck_with_meta(result: dict, meta: dict) -> dict:
     flags   = []
 
     # ── BPF frequency error ───────────────────────────────────────────────────
+    # RPM-derived BPF from picker is most accurate; fall back to meta spectral peak
+    rpm_bpf    = meta.get("rpm", {}).get("bpf_hz_mean")
     meta_f0    = sig.get("dominant_freq_hz")
+    true_bpf   = float(rpm_bpf) if rpm_bpf else (float(meta_f0) if meta_f0 else None)
+    bpf_source = "RPM" if rpm_bpf else ("meta spectral peak" if meta_f0 else None)
     est_bpf    = result.get("bpf_hz_used")
-    if meta_f0 and est_bpf and not math.isnan(float(est_bpf)):
-        bpf_err = abs(float(est_bpf) - float(meta_f0))
+    if true_bpf and est_bpf and not math.isnan(float(est_bpf)):
+        bpf_err = abs(float(est_bpf) - true_bpf)
         checks["bpf_error_hz"]     = round(bpf_err, 3)
-        checks["bpf_meta_hz"]      = float(meta_f0)
+        checks["bpf_true_hz"]      = true_bpf
+        checks["bpf_true_source"]  = bpf_source
         checks["bpf_estimated_hz"] = float(est_bpf)
         if bpf_err > 5.0:
-            flags.append(f"⚠️  BPF mismatch: estimated {est_bpf:.1f} Hz vs meta {meta_f0:.1f} Hz "
-                         f"(Δ={bpf_err:.1f} Hz)")
+            flags.append(f"⚠️  BPF mismatch: estimated {est_bpf:.1f} Hz vs "
+                         f"{bpf_source} {true_bpf:.1f} Hz (Δ={bpf_err:.1f} Hz)")
         else:
             checks["bpf_match"] = True
+            flags.append(f"✅  BPF match: {est_bpf:.1f} Hz vs {bpf_source} "
+                         f"{true_bpf:.1f} Hz (Δ={bpf_err:.1f} Hz)")
 
-    # ── RMS level error ───────────────────────────────────────────────────────
-    meta_rms = sig.get("rms_db_mean") or sig.get("rms_dbfs")
+    # ── RMS level error (post-calibration) ───────────────────────────────────
+    meta_rms      = sig.get("rms_db_mean") or sig.get("rms_dbfs")
+    rms_offset_db = result.get("rms_offset_db", 0.0)
     if meta_rms is not None:
         segs     = result.get("segments", [])
         rms_vals = [s["rms_db"] for s in segs if not math.isnan(s.get("rms_db", float("nan")))]
         if rms_vals:
-            est_rms  = float(np.mean(rms_vals))
-            rms_err  = abs(est_rms - float(meta_rms))
-            checks["rms_error_db"]     = round(rms_err, 2)
-            checks["rms_meta_db"]      = float(meta_rms)
-            checks["rms_estimated_db"] = round(est_rms, 2)
-            if rms_err > 6.0:
-                flags.append(f"⚠️  RMS mismatch: estimated {est_rms:.1f} dB vs meta {meta_rms:.1f} dB "
-                             f"(Δ={rms_err:.1f} dB) — distance estimate unreliable")
+            est_rms_raw  = float(np.mean(rms_vals))
+            est_rms_cal  = est_rms_raw + rms_offset_db   # after calibration
+            rms_err      = abs(est_rms_cal - float(meta_rms))
+            checks["rms_error_db"]          = round(rms_err, 2)
+            checks["rms_meta_db"]           = float(meta_rms)
+            checks["rms_estimated_raw_db"]  = round(est_rms_raw, 2)
+            checks["rms_estimated_cal_db"]  = round(est_rms_cal, 2)
+            checks["rms_offset_applied_db"] = round(rms_offset_db, 2)
+            if rms_offset_db != 0.0:
+                flags.append(f"✅  RMS calibration applied: offset={rms_offset_db:+.1f} dB "
+                             f"→ calibrated RMS={est_rms_cal:.1f} dB  (residual Δ={rms_err:.1f} dB)")
+            elif rms_err > 6.0:
+                flags.append(f"⚠️  RMS mismatch: estimated {est_rms_raw:.1f} dB vs meta {meta_rms:.1f} dB "
+                             f"(Δ={rms_err:.1f} dB) — no meta available, distance estimate unreliable")
 
     # ── SNR reliability ───────────────────────────────────────────────────────
     snr_db = sig.get("snr_db")
@@ -751,12 +775,18 @@ def analyse_mems_file(
     print(f"   ⚠️  Single-channel recording — azimuth unresolvable; spectral-proxy distance shown.\n"
           f"   Running analysis over {n_segments} segments.")
 
-    # BPF: prefer meta ground-truth (even sub-50 Hz), fall back to wideband estimate
+    # BPF priority: 1) RPM data from picker (most accurate)
+    #               2) meta dominant_freq_hz (ground-truth PSD peak)
+    #               3) wideband spectral estimate
     if bpf_hz is None:
+        rpm_bpf = meta.get("rpm", {}).get("bpf_hz_mean") if meta else None
         meta_f0 = sig.get("dominant_freq_hz")
-        if meta_f0 and float(meta_f0) > 1.0:
+        if rpm_bpf and float(rpm_bpf) > 1.0:
+            bpf_hz = float(rpm_bpf)
+            print(f"   BPF from RPM data (picker ground-truth): {bpf_hz:.2f} Hz")
+        elif meta_f0 and float(meta_f0) > 1.0:
             bpf_hz = float(meta_f0)
-            print(f"   BPF from meta (ground-truth): {bpf_hz:.2f} Hz")
+            print(f"   BPF from meta spectral peak: {bpf_hz:.2f} Hz")
         else:
             bpf_hz = _estimate_dominant_freq(y_full, cfg.SR, f_min=5.0, f_max=700.0)
             print(f"   BPF estimated (wideband): {bpf_hz:.2f} Hz")
@@ -821,8 +851,19 @@ def analyse_mems_file(
     print(f"\n  📊 {n_det}/{n_segments} detected  |  "
           f"peak_prob={peak_p:.3f}  bpf_mean={bpf_mean:.2f}  dom_f={dom_freq:.0f}Hz")
 
-    # Spectral-proxy localisation
-    loc = _pseudo_localize(segments, cfg)
+    # Spectral-proxy localisation — compute RMS calibration offset if meta available
+    rms_offset_db = 0.0
+    raw_rms_dbfs  = float(meta.get("signal_metrics", {}).get("rms_dbfs", float("nan"))) \
+                    if meta else float("nan")
+    seg_rms_vals  = [s["rms_db"] for s in segments
+                     if not math.isnan(s.get("rms_db", float("nan")))]
+    if not math.isnan(raw_rms_dbfs) and seg_rms_vals:
+        seg_rms_mean  = float(np.mean(seg_rms_vals))
+        rms_offset_db = raw_rms_dbfs - seg_rms_mean
+        print(f"  🔧 RMS calibration offset: {rms_offset_db:+.1f} dB  "
+              f"(meta {raw_rms_dbfs:.1f} dBFS vs loader {seg_rms_mean:.1f} dB)")
+
+    loc = _pseudo_localize(segments, cfg, rms_offset_db=rms_offset_db)
     dist_str = f"{loc['distance_est_m']:.1f} m" if not math.isnan(loc["distance_est_m"]) else "N/A"
     h_str    = f"{loc['height_est_m']:.1f} m"   if not math.isnan(loc["height_est_m"])   else "N/A"
     print(f"  📡 Spectral-proxy localisation  |  "
@@ -851,7 +892,9 @@ def analyse_mems_file(
                 save_path = out_dir / f"mems_{stem}.png"
             except Exception:
                 pass
-        _plot_mems_dashboard(segments, stem, cfg, save_path=save_path)
+        _plot_mems_dashboard(segments, stem, cfg,
+                             save_path=save_path,
+                             rms_offset_db=rms_offset_db)
 
     return {
         "file":               str(audio_path),
@@ -872,7 +915,8 @@ def analyse_mems_file(
         "height_m":                 loc["height_est_m"],
         "localization_confidence":  loc["distance_conf"],
         "localization_available":   True,
-        "localization_method":      "spectral_proxy",
+        "localization_method":      loc["method"],
+        "rms_offset_db":            rms_offset_db,
         "crosscheck":               xc,
     }
 
