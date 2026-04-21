@@ -251,7 +251,7 @@ def _make_cfg(base_dir: Path, colab: bool, picker_output: Path,
             "'drone_detection' package folder."
         )
 
-    from drone_detection.config import Config
+    from .config import Config
     cfg = Config()
 
     # Override all path attributes
@@ -370,13 +370,13 @@ def run_detection_pipeline(cfg, builder_root: Path,
     Mirrors train_detection() but stops before DetectionTrainer.run().
     Returns a summary of all counts at each stage.
     """
-    from drone_detection.datasets import (
+    from .datasets import (
         DroneAudioDatasetManager, MelCacheManager, report_detection_split_counts
     )
-    from drone_detection.orchestration import (
+    from .orchestration import (
         import_custom_builder_dataset, generate_mixed_drone_training_audio
     )
-    from drone_detection.utils import _set_seed
+    from .utils import _set_seed
     _set_seed(cfg.SEED)
 
     print("\n" + "="*68)
@@ -401,7 +401,7 @@ def run_detection_pipeline(cfg, builder_root: Path,
     if download_external:
         print("\n🌐 [2/3] External audio scraping …")
         try:
-            from drone_detection.dataset_builder import (
+            from .dataset_builder import (
                 AudioWebScraper, _incorporate_scraped_audio
             )
             AudioWebScraper(cfg).download(force=False)
@@ -510,11 +510,11 @@ def run_localization_pipeline(cfg) -> Dict:
     SyntheticLocDatasetV2. Stops before optimizer step.
     Returns dataset size summary.
     """
-    from drone_detection.datasets import (
+    from .datasets import (
         UaVirBASEDatasetManager, LocalizationDataset,
         SyntheticLocDatasetV2
     )
-    from drone_detection.utils import _set_seed
+    from .utils import _set_seed
     _set_seed(cfg.SEED)
 
     print("\n" + "="*68)
@@ -967,8 +967,8 @@ def fig8_loc_dist_height(cfg, loc_result: Dict, out_dir: Path):
 # ── Fig 9: Synthetic BPF energy ratio by drone type ──────────────────────────
 
 def fig9_synth_bpf_by_type(cfg, loc_result: Dict, out_dir: Path):
-    from drone_detection.config import DRONE_BPF_PROFILES, DRONE_BPF_ENERGY_RATIOS
-    from drone_detection.audio_processing import AudioProcessor
+    from .config import DRONE_BPF_PROFILES, DRONE_BPF_ENERGY_RATIOS
+    from .audio_processing import AudioProcessor
 
     synth_ds = loc_result.get("synth_dataset_train")
     if synth_ds is None:
@@ -997,7 +997,7 @@ def fig9_synth_bpf_by_type(cfg, loc_result: Dict, out_dir: Path):
                 item = synth_ds[i]
                 # item = (mel_tensor, ipd_tensor, label_tensor)
                 # We need the audio — re-synthesise cheaply
-                from drone_detection.audio_processing import synthesise_drone
+                from .audio_processing import synthesise_drone
                 pos = synth_ds.positions[i]
                 chs = synthesise_drone(
                     cfg.MIC_POSITIONS, pos[:2],
@@ -1046,7 +1046,7 @@ def fig9_synth_bpf_by_type(cfg, loc_result: Dict, out_dir: Path):
 # ── Fig 10: Noise profile PSD comparison ─────────────────────────────────────
 
 def fig10_noise_profiles(cfg, builder_root: Path, out_dir: Path):
-    from drone_detection.audio_processing import _make_indoor_noise, _make_outdoor_noise
+    from .audio_processing import _make_indoor_noise, _make_outdoor_noise
 
     sr  = cfg.SR
     dur = 4.0
@@ -1105,7 +1105,7 @@ def fig10_noise_profiles(cfg, builder_root: Path, out_dir: Path):
 # =============================================================================
 
 def run_training(cfg, det_epochs: int, loc_epochs: int):
-    from drone_detection.orchestration import train_all
+    from .orchestration import train_all
     print("\n" + "="*68)
     print(f"  TRAINING  det_epochs={det_epochs}  loc_epochs={loc_epochs}")
     print("="*68)
