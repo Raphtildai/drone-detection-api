@@ -174,6 +174,7 @@ from .dataset_visualizer import (
     plot_test_session, 
 )
 
+# ── Me ─────────────────────────────────────────────────────────────
 __all__ = [
     # config
     "Config", "config", "AUDIO_EXTS",
@@ -230,4 +231,6 @@ __all__ = [
     "plot_noise_profiles", "plot_all", "plot_test_zip_overview", "plot_test_session",
     # thesis figure generation
     "build_thesis_figures",
+    # mems inference
+    "analyse_mems_file", "batch_analyse_mems", "analyse_mems_with_meta", "build_mems_report",
 ]
