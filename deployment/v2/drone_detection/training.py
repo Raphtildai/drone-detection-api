@@ -123,7 +123,7 @@ class WarmupCosineScheduler(torch.optim.lr_scheduler._LRScheduler):
 
 # ─── IPD MixUp ────────────────────────────────────────────────────────────────
 
-def _mixup_ipd_batch(mel, ipd, lbl, alpha=0.3):
+def _mixup_ipd_batch(mel, ipd, lbl, alpha=0.05):
     """MixUp on IPD scalars only (not mel) to avoid corrupting TDOA phase."""
     if alpha <= 0 or mel.size(0) < 2:
         return mel, ipd, lbl
@@ -447,7 +447,7 @@ def train_localization(
     early_stop_patience=12, # was 20
     min_delta=0.005,        # new — minimum improvement to count
     warmup_epochs=3, min_lr_factor=0.05,
-    mixup_alpha=0.3,        # MixUp on IPD
+    mixup_alpha=0.05,        # MixUp on IPD
 ):
     from .datasets import LocalizationDataset, SyntheticLocDatasetV2, UaVirBASEDatasetManager
     import shutil

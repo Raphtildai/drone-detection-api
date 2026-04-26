@@ -224,7 +224,8 @@ def localization_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     which correspond to drones at longer range where SNR is lower.
     """
     # ── Azimuth: cosine-distance loss  ──────────────────────────────
-    dot    = (pred[:, 0] * target[:, 0] + pred[:, 1] * target[:, 1]).clamp(-1.0, 1.0)
+    pred_az = F.normalize(pred[:, :2], dim=1) # (B, 2) unit vectors
+    dot = (pred_az[:, 0] * target[:, 0] + pred_az[:, 1] * target[:, 1]).clamp(-1.0, 1.0)
     loss_az = (1.0 - dot).mean()
 
     # ── Distance and height: SmoothL1 with hard-example focal weight ─────
@@ -239,4 +240,4 @@ def localization_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
     loss_ht   = (loss_ht_raw   * focal_w_ht  ).mean()
 
     # Overall: azimuth upweighted 2×, height 0.7× to reflect importance for performance
-    return 2.0 * loss_az + 1.0 * loss_dist + 0.7 * loss_ht
+    return 3.0 * loss_az + 1.0 * loss_dist + 0.7 * loss_ht
