@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dunakeszi Dataset Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --bg2: #161820;
+    --bg3: #1d1f27;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6df;
+    --text2: #8c8a82;
+    --text3: #4d4c47;
+    --accent: #6c8eff;
+    --accent2: #b084ff;
+    --green: #4caf7d;
+    --amber: #e6a832;
+    --coral: #e0654a;
+    --purple: #9f7be8;
+    --teal: #3fc1a0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* ── Drop zone ── */
+  #drop-screen {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--bg);
+    gap: 32px;
+  }
+  #drop-screen h1 {
+    font-family: var(--mono); font-size: 15px; font-weight: 400;
+    letter-spacing: 0.12em; color: var(--text2); text-transform: uppercase;
+  }
+  .drop-zone {
+    width: 520px; border: 1px dashed var(--border2);
+    border-radius: 6px; padding: 40px 32px; text-align: center;
+    transition: border-color 0.15s, background 0.15s; cursor: pointer;
+  }
+  .drop-zone.over { border-color: var(--accent); background: rgba(108,142,255,0.04); }
+  .drop-zone-icon {
+    font-family: var(--mono); font-size: 28px; color: var(--text3); margin-bottom: 16px;
+  }
+  .drop-zone p { color: var(--text2); font-size: 13px; line-height: 1.7; }
+  .drop-zone code { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+  #file-input { display: none; }
+  .btn {
+    margin-top: 16px; display: inline-block; padding: 8px 20px;
+    border: 1px solid var(--border2); border-radius: 4px; font-family: var(--mono);
+    font-size: 11px; letter-spacing: 0.08em; color: var(--text2); cursor: pointer;
+    background: transparent; transition: border-color 0.15s, color 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .file-list { width: 520px; }
+  .file-slot {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 11px;
+  }
+  .file-slot .fname { flex: 1; color: var(--text2); }
+  .file-slot .fstatus { color: var(--text3); }
+  .file-slot .fstatus.ok { color: var(--green); }
+  .file-slot .fstatus.err { color: var(--coral); }
+  #load-btn {
+    width: 520px; padding: 10px; border: 1px solid var(--accent);
+    border-radius: 4px; background: transparent; color: var(--accent);
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;
+    cursor: pointer; transition: background 0.15s;
+    display: none;
+  }
+  #load-btn:hover { background: rgba(108,142,255,0.08); }
+
+  /* ── Main app ── */
+  #app { display: none; }
+
+  header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: baseline; gap: 20px;
+  }
+  header h1 { font-family: var(--mono); font-size: 13px; font-weight: 400; color: var(--text2); letter-spacing: 0.1em; }
+  header .meta { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+  .stat-bar {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .stat-item {
+    padding: 14px 24px; border-right: 1px solid var(--border);
+    min-width: 120px; flex-shrink: 0;
+  }
+  .stat-item .sl { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-item .sv { font-family: var(--mono); font-size: 22px; color: var(--text); font-weight: 500; }
+  .stat-item .ss { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+  .tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .tab {
+    padding: 12px 18px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--text3); cursor: pointer; border-bottom: 1px solid transparent;
+    margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none;
+    transition: color 0.15s;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .content { padding: 24px 32px; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Timeline */
+  #timelineWrap { position: relative; width: 100%; overflow-x: auto; }
+
+  /* Segments */
+  .filters {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;
+  }
+  select {
+    background: var(--bg2); border: 1px solid var(--border2); color: var(--text2);
+    font-family: var(--mono); font-size: 11px; padding: 5px 10px; border-radius: 3px;
+    cursor: pointer; appearance: none;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+  .count-label { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-left: auto; }
+
+  .seg-table { width: 100%; border-collapse: collapse; }
+  .seg-table th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--text3);
+    text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border2);
+    text-transform: uppercase; font-weight: 400;
+  }
+  .seg-table td {
+    padding: 7px 10px; border-bottom: 1px solid var(--border); font-size: 12px;
+    vertical-align: middle;
+  }
+  .seg-table tr:hover td { background: var(--bg2); }
+  .seg-table .id-col { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .seg-table .desc-col { color: var(--text); max-width: 300px; }
+  .seg-table .time-col { font-family: var(--mono); font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .seg-table .dur-col  { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 3px;
+    font-family: var(--mono); font-size: 10px; white-space: nowrap;
+  }
+  .split-train { background: rgba(76,175,125,0.12); color: var(--green); }
+  .split-val   { background: rgba(108,142,255,0.12); color: var(--accent); }
+  .split-test  { background: rgba(230,168,50,0.12); color: var(--amber); }
+  .type-circle     { background: rgba(159,123,232,0.12); color: var(--purple); }
+  .type-hover      { background: rgba(63,193,160,0.12); color: var(--teal); }
+  .type-survey     { background: rgba(63,193,160,0.08); color: var(--teal); opacity:.7; }
+  .type-transit    { background: rgba(224,101,74,0.12); color: var(--coral); }
+  .type-diagonal   { background: rgba(224,101,74,0.15); color: var(--coral); }
+  .type-diagonal3d { background: rgba(230,168,50,0.12); color: var(--amber); }
+  .type-formation  { background: rgba(108,142,255,0.12); color: var(--accent); }
+  .type-figure8    { background: rgba(176,132,255,0.12); color: var(--accent2); }
+  .type-longrange  { background: rgba(140,138,130,0.12); color: var(--text2); }
+  .mems-yes { color: var(--green); font-family: var(--mono); font-size: 10px; }
+  .mems-no  { color: var(--text3); font-family: var(--mono); font-size: 10px; }
+
+  /* Drones grid */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; }
+  #droneChartWrap { position: relative; height: 280px; }
+
+  .file-index-list { font-size: 11px; max-height: 300px; overflow-y: auto; }
+  .fi-row {
+    display: flex; gap: 8px; align-items: flex-start; padding: 5px 0;
+    border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 10px;
+  }
+  .fi-name { color: var(--text3); min-width: 140px; flex-shrink: 0; }
+  .fi-ids { display: flex; flex-wrap: wrap; gap: 3px; }
+  .fi-id {
+    background: rgba(108,142,255,0.1); color: var(--accent);
+    padding: 0 5px; border-radius: 2px; font-size: 10px;
+  }
+
+  /* Arrays */
+  .arrays-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .array-card {
+    border: 1px solid var(--border); border-radius: 6px; padding: 16px;
+    background: var(--bg2);
+  }
+  .array-card h3 { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .array-card .array-sub { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .ch-table { width: 100%; border-collapse: collapse; }
+  .ch-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; font-weight: 400; padding: 4px 6px; border-bottom: 1px solid var(--border); }
+  .ch-table td { font-size: 11px; padding: 4px 6px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .ch-table td:first-child { font-family: var(--mono); color: var(--text3); }
+  .ch-table tr:last-child td { border: none; }
+  .tdoa-badge { background: rgba(108,142,255,0.12); color: var(--accent); font-family: var(--mono); font-size: 9px; padding: 1px 6px; border-radius: 2px; }
+  .dir-dot { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: rgba(108,142,255,0.12); color: var(--accent); font-family: var(--mono); font-size: 9px; }
+
+  .info-block { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-top: 16px; }
+  .info-row { display: flex; gap: 12px; padding: 3px 0; font-size: 11px; }
+  .info-row .ik { color: var(--text3); font-family: var(--mono); min-width: 140px; font-size: 10px; letter-spacing: 0.05em; }
+  .info-row .iv { color: var(--text2); font-family: var(--mono); font-size: 11px; }
+
+  .warn-box {
+    background: rgba(230,168,50,0.06); border: 1px solid rgba(230,168,50,0.2);
+    border-radius: 4px; padding: 10px 14px; margin-top: 12px;
+    font-family: var(--mono); font-size: 11px; color: var(--amber); line-height: 1.6;
+  }
+
+  /* Sessions tab */
+  .session-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .session-card {
+    border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px;
+    background: var(--bg2);
+  }
+  .session-card .s-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .session-card .s-id { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--text); }
+  .session-card .s-time { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .session-card .s-desc { font-size: 12px; color: var(--text2); margin-bottom: 8px; line-height: 1.5; }
+  .session-card .s-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .drone-chip { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; background: rgba(159,123,232,0.1); color: var(--purple); }
+  .mems-chip-on  { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; background: rgba(76,175,125,0.1); color: var(--green); }
+  .mems-chip-off { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; background: rgba(77,76,71,0.3); color: var(--text3); }
+  .s-note { font-size: 11px; color: var(--amber); margin-top: 6px; line-height: 1.5; }
+  .dur-chip { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+  /* ── Segment file expansion ── */
+  .seg-table tr.seg-main { cursor: pointer; }
+  .seg-table tr.seg-main:hover td { background: var(--bg3); }
+  .seg-table tr.seg-main td.toggle-col { color: var(--text3); font-family: var(--mono); font-size: 11px; user-select: none; }
+  .seg-table tr.seg-main.open td.toggle-col { color: var(--accent); }
+  .seg-files-row { display: none; }
+  .seg-files-row.open { display: table-row; }
+  .seg-files-row td { background: var(--bg3); padding: 10px 12px 12px 32px; border-bottom: 1px solid var(--border2); }
+  .files-grid { display: flex; flex-direction: column; gap: 6px; }
+  .file-group { display: flex; align-items: flex-start; gap: 10px; }
+  .file-group-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); min-width: 54px; padding-top: 2px; flex-shrink: 0; }
+  .file-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .ftag { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+  .ftag-pw   { background: rgba(108,142,255,0.1); color: var(--accent); border: 1px solid rgba(108,142,255,0.2); }
+  .ftag-mems { background: rgba(76,175,125,0.1);  color: var(--green);  border: 1px solid rgba(76,175,125,0.2); }
+  .ftag-gpx  { background: rgba(230,168,50,0.1);  color: var(--amber);  border: 1px solid rgba(230,168,50,0.2); }
+  .no-files  { font-family: var(--mono); font-size: 10px; color: var(--text3); font-style: italic; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── Drop screen ── -->
+<div id="drop-screen">
+  <h1>Dunakeszi Dataset · Ground Truth Viewer</h1>
+
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-zone-icon">[  ]</div>
+    <p>Drop your ground truth folder here, or select files individually.<br>
+    Required: <code>ground_truth_sessions.json</code> · <code>ground_truth_segments.json</code><br>
+    Optional: <code>file_index.json</code> · <code>drone_registry.json</code> · <code>mic_array_geometry.json</code> · <code>scorpio_channel_map.json</code></p>
+    <button class="btn" onclick="document.getElementById('file-input').click()">Browse files</button>
+    <input type="file" id="file-input" multiple accept=".json">
+  </div>
+
+  <div class="file-list" id="file-list">
+    <div class="file-slot" data-key="ground_truth_sessions"><span class="fname">ground_truth_sessions.json</span><span class="fstatus" id="st-sessions">waiting…</span></div>
+    <div class="file-slot" data-key="ground_truth_segments"><span class="fname">ground_truth_segments.json</span><span class="fstatus" id="st-segments">waiting…</span></div>
+    <div class="file-slot" data-key="file_index"><span class="fname">file_index.json</span><span class="fstatus" id="st-file_index">optional</span></div>
+    <div class="file-slot" data-key="drone_registry"><span class="fname">drone_registry.json</span><span class="fstatus" id="st-drone_registry">optional</span></div>
+    <div class="file-slot" data-key="mic_array_geometry"><span class="fname">mic_array_geometry.json</span><span class="fstatus" id="st-mic_array_geometry">optional</span></div>
+    <div class="file-slot" data-key="scorpio_channel_map"><span class="fname">scorpio_channel_map.json</span><span class="fstatus" id="st-scorpio_channel_map">optional</span></div>
+  </div>
+
+  <button id="load-btn" onclick="launchApp()">Load dataset →</button>
+</div>
+
+<!-- ── Main app ── -->
+<div id="app">
+  <header>
+    <h1>Dunakeszi · 2025-10-20</h1>
+    <span class="meta" id="header-meta"></span>
+  </header>
+
+  <div class="stat-bar" id="stat-bar"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('timeline',this)">Timeline</button>
+    <button class="tab" onclick="showTab('sessions',this)">Sessions</button>
+    <button class="tab" onclick="showTab('segments',this)">Segments</button>
+    <button class="tab" onclick="showTab('drones',this)">Drones &amp; Files</button>
+    <button class="tab" onclick="showTab('arrays',this)">Mic Arrays</button>
+  </div>
+
+  <div class="content">
+    <!-- Timeline -->
+    <div id="panel-timeline" class="panel active">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--purple);display:inline-block"></span>circle</div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--teal);display:inline-block"></span>hover/survey</div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--coral);display:inline-block"></span>transit/diagonal</div>
+        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>formation/other</div>
+        <div style="margin-left:auto;display:flex;gap:14px">
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block"></span>MEMS on</div>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--text3)"><span style="width:8px;height:8px;border-radius:50%;background:var(--text3);display:inline-block"></span>MEMS off</div>
+        </div>
+      </div>
+      <div id="timelineWrap" style="position:relative;width:100%;overflow-x:auto">
+        <canvas id="timelineChart" role="img" aria-label="Session timeline chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Sessions -->
+    <div id="panel-sessions" class="panel">
+      <div class="session-grid" id="sessionGrid"></div>
+    </div>
+
+    <!-- Segments -->
+    <div id="panel-segments" class="panel">
+      <div class="filters">
+        <select id="filterSplit" onchange="renderSegTable()">
+          <option value="">All splits</option>
+          <option>train</option><option>val</option><option>test</option>
+        </select>
+        <select id="filterType" onchange="renderSegTable()">
+          <option value="">All types</option>
+          <option>circle</option><option>hover</option><option>diagonal</option>
+          <option>transit</option><option>diagonal_3d</option><option>formation</option>
+          <option>survey</option><option>figure8</option><option>long_range</option>
+        </select>
+        <select id="filterDrones" onchange="renderSegTable()">
+          <option value="">Any drone count</option>
+          <option value="1">1 drone</option><option value="2">2 drones</option>
+          <option value="3">3 drones</option><option value="4">4 drones</option>
+          <option value="5">5 drones</option>
+        </select>
+        <select id="filterMems" onchange="renderSegTable()">
+          <option value="">MEMS: any</option>
+          <option value="true">MEMS: available</option>
+          <option value="false">MEMS: not available</option>
+        </select>
+        <span class="count-label" id="segCount"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="seg-table">
+          <thead>
+            <tr>
+              <th style="width:20px"></th>
+              <th>ID</th><th>Session</th><th>Description</th>
+              <th>Type</th><th>Split</th><th>Drones</th>
+              <th>Start</th><th>Dur</th><th>Alt</th><th>MEMS</th>
+            </tr>
+          </thead>
+          <tbody id="segBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Drones & Files -->
+    <div id="panel-drones" class="panel">
+      <div class="two-col">
+        <div>
+          <div class="section-label">Drone × show participation</div>
+          <div id="droneChartWrap"><canvas id="droneChart" role="img" aria-label="Drone participation per show"></canvas></div>
+        </div>
+        <div>
+          <div class="section-label">PolyWav chunks → segments</div>
+          <div class="file-index-list" id="fileIndexList"></div>
+          <div style="margin-top:16px">
+            <div class="section-label">MEMS audio → segments</div>
+            <div class="file-index-list" id="memsIndexList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mic Arrays -->
+    <div id="panel-arrays" class="panel">
+      <div class="arrays-grid" id="arraysGrid"></div>
+      <div class="info-block" id="coordInfo"></div>
+      <div class="warn-box" id="memsWarn"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const GT = { sessions: null, segments: null, fileIndex: null, droneRegistry: null, micGeometry: null, channelMap: null };
+const loaded = {};
+let droneChartInst = null, timelineChartInst = null;
+
+// ── File key detection ──
+function keyFor(filename) {
+  const f = filename.toLowerCase();
+  if (f.includes('session')) return 'ground_truth_sessions';
+  if (f.includes('segment')) return 'ground_truth_segments';
+  if (f.includes('file_index') || f === 'file_index.json') return 'file_index';
+  if (f.includes('drone_registry') || f.includes('registry')) return 'drone_registry';
+  if (f.includes('mic_array') || f.includes('geometry')) return 'mic_array_geometry';
+  if (f.includes('scorpio') || f.includes('channel_map')) return 'scorpio_channel_map';
+  return null;
+}
+
+function setStatus(key, msg, cls) {
+  const el = document.getElementById('st-' + key);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'fstatus ' + (cls || '');
+}
+
+async function readFiles(files) {
+  for (const file of files) {
+    const key = keyFor(file.name);
+    if (!key) continue;
+    try {
+      const text = await file.text();
+      loaded[key] = JSON.parse(text);
+      setStatus(key, '✓ loaded', 'ok');
+    } catch(e) {
+      setStatus(key, '✗ parse error', 'err');
+    }
+  }
+  const ready = loaded['ground_truth_sessions'] && loaded['ground_truth_segments'];
+  document.getElementById('load-btn').style.display = ready ? 'block' : 'none';
+}
+
+// Drop zone
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); readFiles(e.dataTransfer.files); });
+document.getElementById('file-input').addEventListener('change', e => readFiles(e.target.files));
+
+// ── Launch ──
+function launchApp() {
+  GT.sessions = loaded['ground_truth_sessions'];
+  GT.segments = loaded['ground_truth_segments'];
+  GT.fileIndex = loaded['file_index'] || null;
+  GT.droneRegistry = loaded['drone_registry'] || null;
+  GT.micGeometry = loaded['mic_array_geometry'] || null;
+  GT.channelMap = loaded['scorpio_channel_map'] || null;
+
+  document.getElementById('drop-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  buildStats();
+  buildTimeline();
+  buildSessions();
+  buildSegTable();
+  buildDrones();
+  buildArrays();
+}
+
+// ── Helpers ──
+function typeColor(t) {
+  return {circle:'#9f7be8',hover:'#3fc1a0',survey:'#3fc1a0',transit:'#e0654a',
+          diagonal:'#e0654a',diagonal_3d:'#e6a832',formation:'#6c8eff',
+          figure8:'#b084ff',long_range:'#8c8a82'}[t] || '#8c8a82';
+}
+function typeClass(t) {
+  const m = {circle:'type-circle',hover:'type-hover',survey:'type-survey',transit:'type-transit',
+             diagonal:'type-diagonal',diagonal_3d:'type-diagonal3d',formation:'type-formation',
+             figure8:'type-figure8',long_range:'type-longrange'};
+  return m[t] || 'type-longrange';
+}
+function timeToMin(hms) {
+  const p = hms.split(':').map(Number);
+  return p[0]*60 + p[1] + (p[2]||0)/60;
+}
+function fmtDur(s) { if (!s) return '—'; return s >= 60 ? Math.round(s/60)+'m '+Math.round(s%60)+'s' : s+'s'; }
+
+// ── Stats ──
+function buildStats() {
+  const s = GT.sessions, seg = GT.segments;
+  const droneSet = new Set(seg.flatMap(x => x.drones || []));
+  const totalS = seg.reduce((a,x) => a + (x.duration_s||0), 0);
+  const memsN = seg.filter(x => x.mems_available).length;
+  const meta = `${s.length} sessions · ${seg.length} segments · ${Math.round(totalS/60)} min drone audio`;
+  document.getElementById('header-meta').textContent = meta;
+
+  const stats = [
+    {l:'Sessions', v:s.length, s:'shows across the day'},
+    {l:'Segments', v:seg.length, s:'train '+seg.filter(x=>x.split==='train').length+' · val '+seg.filter(x=>x.split==='val').length+' · test '+seg.filter(x=>x.split==='test').length},
+    {l:'Drones', v:droneSet.size, s:[...droneSet].join(' · ')},
+    {l:'MEMS segs', v:memsN, s:Math.round(memsN/seg.length*100)+'% of segments'},
+    {l:'Total audio', v:Math.round(totalS/60)+'m', s:Math.round(totalS)+'s across segments'},
+    {l:'Max drones', v:Math.max(...seg.map(x=>x.n_drones||1)), s:'simultaneous'},
+  ];
+  const bar = document.getElementById('stat-bar');
+  bar.innerHTML = stats.map(x => `<div class="stat-item"><div class="sl">${x.l}</div><div class="sv">${x.v}</div><div class="ss">${x.s}</div></div>`).join('');
+}
+
+// ── Timeline ──
+function buildTimeline() {
+  const s = GT.sessions;
+  const refMin = timeToMin(s[0].local_start_hms || s[0].wall_clock || '13:36');
+
+  const domColors = {1:'#3fc1a0',2:'#e0654a',5:'#e0654a',7:'#e0654a',8:'#9f7be8',9:'#e6a832',
+    11:'#9f7be8',12:'#9f7be8',13:'#9f7be8',14:'#9f7be8',15:'#6c8eff',10:'#8c8a82'};
+
+  const labels = s.map(x => `Show ${x.show_number}  ${x.wall_clock || x.local_start_hms?.slice(0,5)}`);
+  const starts = s.map(x => timeToMin(x.local_start_hms || x.wall_clock) - refMin);
+  const durs = s.map(x => x.flight_time_min || 3);
+  const colors = s.map(x => domColors[x.show_number] || '#8c8a82');
+
+  const h = Math.max(s.length * 36 + 60, 240);
+  document.getElementById('timelineChart').style.height = h + 'px';
+
+  if (timelineChartInst) timelineChartInst.destroy();
+  timelineChartInst = new Chart(document.getElementById('timelineChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'offset', data: starts, backgroundColor: 'transparent', borderWidth: 0, stack: 's' },
+        { label: 'Duration (min)', data: durs, backgroundColor: colors, borderRadius: 3, stack: 's', borderSkipped: false }
+      ]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              if (ctx.datasetIndex === 0) return '';
+              const x = s[ctx.dataIndex];
+              return [
+                `${(x.flight_time_min||'?')} min`,
+                `${x.n_drones} drone${x.n_drones>1?'s':''}`,
+                `MEMS: ${x.mems_recording ? 'recording' : 'off'}`,
+                x.description
+              ];
+            }
+          },
+          backgroundColor: '#1d1f27', titleColor: '#e8e6df', bodyColor: '#8c8a82', borderColor: '#2d2f3a', borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          title: { display: true, text: 'Minutes from recording start', color: '#4d4c47', font: { family: "'IBM Plex Mono'", size: 10 } },
+          ticks: { color: '#4d4c47', font: { family: "'IBM Plex Mono'", size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+          stacked: true,
+          ticks: { color: '#8c8a82', font: { family: "'IBM Plex Mono'", size: 10 } },
+          grid: { display: false }
+        }
+      }
+    }
+  });
+}
+
+// ── Sessions ──
+function buildSessions() {
+  const grid = document.getElementById('sessionGrid');
+  grid.innerHTML = GT.sessions.map(s => {
+    const drones = (s.drones || []).map(d => `<span class="drone-chip">${d}</span>`).join('');
+    const mems = s.mems_recording
+      ? `<span class="mems-chip-on">MEMS on${s.mems_starts_at ? ' @ '+s.mems_starts_at : ''}</span>`
+      : `<span class="mems-chip-off">MEMS off</span>`;
+    const note = s.notes ? `<div class="s-note">⚠ ${s.notes}</div>` : '';
+    const segs = GT.segments.filter(x => x.session === s.session_id);
+    return `<div class="session-card">
+      <div class="s-head">
+        <span class="s-id">Show ${s.show_number} · ${s.wall_clock || s.local_start_hms?.slice(0,5)}</span>
+        <span class="dur-chip">${s.flight_time_min ? s.flight_time_min.toFixed(1)+'m' : '—'}</span>
+      </div>
+      <div class="s-desc">${s.description}</div>
+      <div class="s-meta">${drones} ${mems} <span style="font-family:var(--mono);font-size:10px;color:var(--text3)">${segs.length} seg${segs.length!==1?'s':''}</span></div>
+      ${note}
+    </div>`;
+  }).join('');
+}
+
+// ── Reverse file index: segId → { pw: [...], mems: [...], gpx: [...] } ──
+function buildReverseIndex() {
+  const fi = GT.fileIndex;
+  const rev = {};
+  if (!fi) return rev;
+  const add = (segId, category, filename) => {
+    if (!rev[segId]) rev[segId] = { pw: [], mems: [], gpx: [] };
+    if (!rev[segId][category].includes(filename)) rev[segId][category].push(filename);
+  };
+  for (const [fname, ids] of Object.entries(fi.polywav_chunks || {})) ids.forEach(id => add(id, 'pw', fname));
+  for (const [fname, ids] of Object.entries(fi.mems_audio || {}))    ids.forEach(id => add(id, 'mems', fname));
+  for (const [fname, ids] of Object.entries(fi.gpx_logs || {}))      ids.forEach(id => add(id, 'gpx', fname));
+  return rev;
+}
+
+// ── Segments table ──
+function renderSegTable() {
+  const fs = document.getElementById('filterSplit').value;
+  const ft = document.getElementById('filterType').value;
+  const fd = document.getElementById('filterDrones').value;
+  const fm = document.getElementById('filterMems').value;
+
+  const segs = GT.segments.filter(s => {
+    if (fs && s.split !== fs) return false;
+    if (ft && s.maneuver_type !== ft) return false;
+    if (fd && s.n_drones !== parseInt(fd)) return false;
+    if (fm === 'true' && !s.mems_available) return false;
+    if (fm === 'false' && s.mems_available) return false;
+    return true;
+  });
+
+  document.getElementById('segCount').textContent = segs.length + ' / ' + GT.segments.length + ' segments';
+
+  const rev = buildReverseIndex();
+  const hasIndex = GT.fileIndex !== null;
+
+  document.getElementById('segBody').innerHTML = segs.map(s => {
+    const drones = (s.drones || []).join(', ');
+    const rowId = 'seg-' + s.id;
+    const filesId = 'files-' + s.id;
+
+    // Build the file groups for this segment
+    const fmap = rev[s.id] || { pw: [], mems: [], gpx: [] };
+    let fileHtml = '';
+    if (!hasIndex) {
+      fileHtml = `<span class="no-files">Load file_index.json to see source files</span>`;
+    } else if (!fmap.pw.length && !fmap.mems.length && !fmap.gpx.length) {
+      fileHtml = `<span class="no-files">No file index entries for segment ${s.id}</span>`;
+    } else {
+      const groups = [
+        { key: 'pw',   label: 'PolyWav', cls: 'ftag-pw',   items: fmap.pw },
+        { key: 'mems', label: 'MEMS',    cls: 'ftag-mems',  items: fmap.mems },
+        { key: 'gpx',  label: 'GPX',     cls: 'ftag-gpx',   items: fmap.gpx },
+      ].filter(g => g.items.length);
+      fileHtml = groups.map(g =>
+        `<div class="file-group">
+          <span class="file-group-label">${g.label}</span>
+          <div class="file-tags">${g.items.map(f => `<span class="ftag ${g.cls}">${f}</span>`).join('')}</div>
+        </div>`
+      ).join('');
+    }
+
+    const totalFiles = fmap.pw.length + fmap.mems.length + fmap.gpx.length;
+    const toggleLabel = hasIndex ? (totalFiles > 0 ? `▶ ${totalFiles} file${totalFiles!==1?'s':''}` : '▶ 0') : '▶';
+
+    return `<tr class="seg-main" id="${rowId}" onclick="toggleFiles('${rowId}','${filesId}')">
+      <td class="toggle-col">${toggleLabel}</td>
+      <td class="id-col">${s.id}</td>
+      <td class="time-col">${s.session}</td>
+      <td class="desc-col">${s.description}</td>
+      <td><span class="pill ${typeClass(s.maneuver_type)}">${s.maneuver_type}</span></td>
+      <td><span class="pill split-${s.split}">${s.split}</span></td>
+      <td class="time-col">${s.n_drones}× ${drones}</td>
+      <td class="time-col">${s.local_start_hms || '—'}</td>
+      <td class="dur-col">${fmtDur(s.duration_s)}</td>
+      <td class="dur-col">${s.altitude_m != null ? s.altitude_m+'m' : '—'}</td>
+      <td class="${s.mems_available ? 'mems-yes' : 'mems-no'}">${s.mems_available ? '●' : '○'}</td>
+    </tr>
+    <tr class="seg-files-row" id="${filesId}">
+      <td colspan="11"><div class="files-grid">${fileHtml}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleFiles(rowId, filesId) {
+  const main = document.getElementById(rowId);
+  const files = document.getElementById(filesId);
+  const isOpen = files.classList.contains('open');
+  main.classList.toggle('open', !isOpen);
+  files.classList.toggle('open', !isOpen);
+  // Update toggle arrow
+  const tc = main.querySelector('.toggle-col');
+  if (tc) tc.textContent = tc.textContent.replace(/[▶▼]/, isOpen ? '▶' : '▼');
+}
+
+function buildSegTable() { renderSegTable(); }
+
+// ── Drones & Files ──
+function buildDrones() {
+  // Drone participation chart
+  const reg = GT.droneRegistry;
+  const sessions = GT.sessions;
+  const droneList = reg ? Object.keys(reg) : [...new Set(GT.segments.flatMap(s => s.drones || []))].sort();
+  const showNums = sessions.map(s => s.show_number);
+
+  const participation = {};
+  droneList.forEach(d => {
+    participation[d] = showNums.map((sn, si) => {
+      const sess = sessions[si];
+      return (sess.drones || []).includes(d) ? 1 : 0;
+    });
+  });
+
+  const datasets = droneList.map((d, di) => ({
+    label: d,
+    data: showNums.map((sn, si) => participation[d][si] ? { x: si, y: di } : null).filter(Boolean),
+    backgroundColor: '#6c8eff',
+    pointRadius: 10,
+    pointStyle: 'rect',
+  }));
+
+  if (droneChartInst) droneChartInst.destroy();
+  document.getElementById('droneChartWrap').style.height = Math.max(droneList.length * 48 + 60, 200) + 'px';
+  droneChartInst = new Chart(document.getElementById('droneChart'), {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => `${droneList[ctx.parsed.y]} · Show ${showNums[ctx.parsed.x]}` },
+          backgroundColor: '#1d1f27', bodyColor: '#8c8a82', borderColor: '#2d2f3a', borderWidth: 1
+        }
+      },
+      scales: {
+        x: { min: -0.5, max: showNums.length - 0.5, ticks: { callback: (v) => Number.isInteger(v) ? `S${showNums[v]||''}` : null, color: '#4d4c47', font: { family: "'IBM Plex Mono'", size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { min: -0.5, max: droneList.length - 0.5, ticks: { callback: (v) => Number.isInteger(v) ? droneList[v] : null, color: '#8c8a82', font: { family: "'IBM Plex Mono'", size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // File index
+  const fi = GT.fileIndex;
+  if (fi) {
+    const pw = fi.polywav_chunks || {};
+    document.getElementById('fileIndexList').innerHTML = Object.entries(pw).map(([f, ids]) =>
+      `<div class="fi-row"><span class="fi-name">${f.replace('251020VITEMOROM1AT01','…AT01').replace('.wav','')}</span><div class="fi-ids">${ids.map(id=>`<span class="fi-id">${id}</span>`).join('')}</div></div>`
+    ).join('') || '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">no polywav data</span>';
+
+    const mems = fi.mems_audio || {};
+    document.getElementById('memsIndexList').innerHTML = Object.entries(mems).map(([f, ids]) =>
+      `<div class="fi-row"><span class="fi-name">${f}</span><div class="fi-ids">${ids.map(id=>`<span class="fi-id">${id}</span>`).join('')}</div></div>`
+    ).join('') || '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">no MEMS data</span>';
+  } else {
+    document.getElementById('fileIndexList').innerHTML = '<span style="color:var(--text3);font-family:var(--mono);font-size:11px">file_index.json not loaded</span>';
+    document.getElementById('memsIndexList').innerHTML = '';
+  }
+}
+
+// ── Mic Arrays ──
+function buildArrays() {
+  const geo = GT.micGeometry;
+  const chmap = GT.channelMap;
+
+  if (!geo && !chmap) {
+    document.getElementById('arraysGrid').innerHTML = '<span style="color:var(--text3);font-family:var(--mono);font-size:12px">mic_array_geometry.json and scorpio_channel_map.json not loaded</span>';
+    return;
+  }
+
+  const arrays = geo ? geo.arrays : {};
+  const scorpio = chmap ? chmap.scorpio : {};
+  const tdoa = chmap ? (chmap.tdoa_channels || {}) : {};
+
+  // Build channel lookup per array
+  const chByArray = {};
+  Object.entries(scorpio).forEach(([ch, info]) => {
+    if (!info.useful) return;
+    const arr = info.array;
+    if (!arr) return;
+    if (!chByArray[arr]) chByArray[arr] = [];
+    chByArray[arr].push({ ch: parseInt(ch), ...info });
+  });
+
+  const arrCards = Object.entries(arrays).map(([name, arr]) => {
+    const chs = chByArray[name] || [];
+    const tdoaChs = tdoa[name] || [];
+    const chRows = chs.map(c => {
+      const isTdoa = tdoaChs.includes(c.ch);
+      return `<tr>
+        <td>${c.ch}</td>
+        <td><span class="dir-dot">${c.direction||'?'}</span></td>
+        <td>${c.label}</td>
+        <td style="color:var(--text3);font-family:var(--mono);font-size:10px">${c.serial||'—'}</td>
+        <td>${isTdoa ? '<span class="tdoa-badge">TDOA</span>' : ''}</td>
+      </tr>`;
+    }).join('');
+    const xy = arr.local_xy_m ? `${arr.local_xy_m.x >= 0 ? '+' : ''}${arr.local_xy_m.x} m E, ${arr.local_xy_m.y >= 0 ? '+' : ''}${arr.local_xy_m.y} m N` : '—';
+    const gps = arr.gps ? `${arr.gps.lat.toFixed(7)}, ${arr.gps.lon.toFixed(7)}` : '—';
+    return `<div class="array-card">
+      <h3>${name}</h3>
+      <div class="array-sub">Local XY: ${xy} · GPS: ${gps} · Type: ${arr.type||'—'}</div>
+      ${chs.length ? `<table class="ch-table">
+        <thead><tr><th>Ch</th><th>Dir</th><th>Label</th><th>Serial</th><th></th></tr></thead>
+        <tbody>${chRows}</tbody>
+      </table>` : '<span style="color:var(--text3);font-size:11px">No channel data (MEMS array)</span>'}
+    </div>`;
+  }).join('');
+
+  document.getElementById('arraysGrid').innerHTML = arrCards || '<span style="color:var(--text3)">No array data</span>';
+
+  // Coordinate info
+  if (geo) {
+    const origin = geo.origin || {};
+    const dist = geo.inter_array_distances_m || {};
+    const notes = geo.notes || {};
+    document.getElementById('coordInfo').innerHTML = `
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:10px">Coordinate frame</div>
+      <div class="info-row"><span class="ik">Origin GPS</span><span class="iv">${origin.lat||'—'}, ${origin.lon||'—'}</span></div>
+      <div class="info-row"><span class="ik">Origin definition</span><span class="iv">Midpoint of BK-6-E and BK-6-W</span></div>
+      <div class="info-row"><span class="ik">Frame</span><span class="iv">${notes.coordinate_frame||'X=East, Y=North, Z=Up'}</span></div>
+      <div class="info-row"><span class="ik">Survey method</span><span class="iv">${notes.survey_method||'—'}</span></div>
+      ${Object.entries(dist).map(([k,v])=>`<div class="info-row"><span class="ik">${k.replace(/_/g,' ')}</span><span class="iv">${v} m</span></div>`).join('')}
+      <div class="info-row"><span class="ik">Timezone</span><span class="iv">${notes.timezone||'CEST (UTC+2)'}</span></div>
+    `;
+  } else {
+    document.getElementById('coordInfo').innerHTML = '';
+  }
+
+  // MEMS warning
+  const fi = GT.fileIndex;
+  const warnEl = document.getElementById('memsWarn');
+  if (fi && fi._meta && fi._meta.WARNING_mems) {
+    warnEl.textContent = '⚠ ' + fi._meta.WARNING_mems;
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+}
+
+// ── Tab switching ──
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>

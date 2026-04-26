@@ -1,0 +1,291 @@
+[
+  {
+    "session_id": "show_1",
+    "show_number": 1,
+    "wall_clock": "13:36",
+    "flight_time_min": 8.43,
+    "maneuver_ids": [
+      0
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Range corners survey (pre-measurement)",
+    "mems_recording": false,
+    "notes": "13:44 gain increased to 60 dB; MEMS not recording",
+    "gpx_folder": "DRON-GPX/bySHOW/Show01/",
+    "local_start_s": 48960,
+    "smpte_start_s": 48960,
+    "onset_from_rec_s": 0,
+    "utc_start_s": 41760
+  },
+  {
+    "session_id": "show_2",
+    "show_number": 2,
+    "wall_clock": "13:50",
+    "flight_time_min": 9.7,
+    "maneuver_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Altitude hover series + rotations + linear/diagonal transits at 20m",
+    "mems_recording": false,
+    "notes": "Yaw rotations (m5, m6) not executed; MEMS not recording",
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "local_start_s": 49800,
+    "smpte_start_s": 49800,
+    "onset_from_rec_s": 840,
+    "utc_start_s": 42600
+  },
+  {
+    "session_id": "show_5",
+    "show_number": 5,
+    "wall_clock": "14:08",
+    "flight_time_min": 6.82,
+    "maneuver_ids": [
+      13,
+      14
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Diagonal transits at 60 m altitude",
+    "mems_recording": true,
+    "mems_starts_at": "14:06",
+    "notes": "MEMS recording starts 14:06 (before this show); show_5 log timestamps may be off (tmp log)",
+    "gpx_folder": "DRON-GPX/bySHOW/Show05/",
+    "local_start_s": 50880,
+    "smpte_start_s": 50880,
+    "onset_from_rec_s": 1920,
+    "utc_start_s": 43680
+  },
+  {
+    "session_id": "show_7",
+    "show_number": 7,
+    "wall_clock": "14:24",
+    "flight_time_min": 8.32,
+    "maneuver_ids": [
+      16,
+      17
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Diagonal transits at 120 m altitude",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show07/",
+    "local_start_s": 51840,
+    "smpte_start_s": 51840,
+    "onset_from_rec_s": 2880,
+    "utc_start_s": 44640
+  },
+  {
+    "session_id": "show_8",
+    "show_number": 8,
+    "wall_clock": "14:41",
+    "flight_time_min": 9.63,
+    "maneuver_ids": [
+      18,
+      19,
+      20,
+      21
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "description": "Single-drone circular orbits + figure-8",
+    "mems_recording": true,
+    "notes": "m18 (r=5m) \u2014 uncertain if always started from 5m; drone88 used",
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "local_start_s": 52860,
+    "smpte_start_s": 52860,
+    "onset_from_rec_s": 3900,
+    "utc_start_s": 45660
+  },
+  {
+    "session_id": "show_9",
+    "show_number": 9,
+    "wall_clock": "14:57",
+    "flight_time_min": 6.78,
+    "maneuver_ids": [
+      22,
+      23,
+      24,
+      25
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "description": "3D cube diagonal transits (all 4 diagonals)",
+    "mems_recording": true,
+    "notes": "drone130 could not descend to z=0 for vertical corners; used ~z=5m instead. Order: 22\u219225\u219223\u219224",
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "local_start_s": 53820,
+    "smpte_start_s": 53820,
+    "onset_from_rec_s": 4860,
+    "utc_start_s": 46620
+  },
+  {
+    "session_id": "show_11",
+    "show_number": 11,
+    "wall_clock": "15:13",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      27,
+      28,
+      29
+    ],
+    "n_drones": 2,
+    "drones": [
+      "drone65",
+      "drone130"
+    ],
+    "description": "2-drone circular orbits (r=5,30,60 m)",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show11/",
+    "local_start_s": 54780,
+    "smpte_start_s": 54780,
+    "onset_from_rec_s": 5820,
+    "utc_start_s": 47580
+  },
+  {
+    "session_id": "show_12",
+    "show_number": 12,
+    "wall_clock": "15:27",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      30,
+      31,
+      32
+    ],
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "description": "3-drone circular orbits (r=10,30,60 m)",
+    "mems_recording": true,
+    "notes": "r=5m too narrow \u2192 adjusted to r=10m",
+    "gpx_folder": "DRON-GPX/bySHOW/Show12/",
+    "local_start_s": 55620,
+    "smpte_start_s": 55620,
+    "onset_from_rec_s": 6660,
+    "utc_start_s": 48420
+  },
+  {
+    "session_id": "show_13",
+    "show_number": 13,
+    "wall_clock": "15:42",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      33,
+      34,
+      35
+    ],
+    "n_drones": 4,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone130",
+      "drone132"
+    ],
+    "description": "4-drone circular orbits (r=10,30,60 m)",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show13/",
+    "local_start_s": 56520,
+    "smpte_start_s": 56520,
+    "onset_from_rec_s": 7560,
+    "utc_start_s": 49320
+  },
+  {
+    "session_id": "show_14",
+    "show_number": 14,
+    "wall_clock": "15:57",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      36,
+      37,
+      38
+    ],
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "description": "5-drone circular orbits (r=10,30,60 m)",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show14/",
+    "local_start_s": 57420,
+    "smpte_start_s": 57420,
+    "onset_from_rec_s": 8460,
+    "utc_start_s": 50220
+  },
+  {
+    "session_id": "show_15",
+    "show_number": 15,
+    "wall_clock": "16:11",
+    "flight_time_min": 3.45,
+    "maneuver_ids": [
+      39,
+      40
+    ],
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "description": "5-drone V-formation transits (4 and 8 m/s)",
+    "mems_recording": true,
+    "notes": "V formation not always maintained",
+    "gpx_folder": "DRON-GPX/bySHOW/Show15/",
+    "local_start_s": 58260,
+    "smpte_start_s": 58260,
+    "onset_from_rec_s": 9300,
+    "utc_start_s": 51060
+  },
+  {
+    "session_id": "show_10",
+    "show_number": 10,
+    "wall_clock": "16:25",
+    "flight_time_min": null,
+    "maneuver_ids": [
+      41
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "description": "Long-range detection test: manual 300m NW\u2192SE approach",
+    "mems_recording": true,
+    "notes": "Audible ~200m on BK-6-E; flown manually (not show file)",
+    "gpx_folder": "DRON-GPX/bySHOW/Show10/",
+    "local_start_s": 59100,
+    "smpte_start_s": 59100,
+    "onset_from_rec_s": 10140,
+    "utc_start_s": 51900
+  }
+]

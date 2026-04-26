@@ -1,0 +1,16 @@
+{
+  "drone": {
+    "azimuth": 180.0,
+    "distance": 15.0,
+    "height": 20.0
+  },
+  "segment_id": 19,
+  "session": "show_8",
+  "maneuver_type": "circle",
+  "flight_phase": "orbit",
+  "n_drones": 1,
+  "split": "train",
+  "speed_mps": 4.0,
+  "radius_m": 30.0,
+  "duration_s": 94
+}

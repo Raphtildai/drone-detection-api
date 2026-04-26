@@ -1,0 +1,1557 @@
+[
+  {
+    "id": 0,
+    "session": "show_1",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "transit",
+    "flight_phase": "transit_linear",
+    "description": "Range corners survey",
+    "altitude_m": 10,
+    "speed_mps": null,
+    "radius_m": null,
+    "start_coord": null,
+    "end_coord": null,
+    "duration_s": 600,
+    "mems_available": false,
+    "quality_flags": [
+      "pre_measurement",
+      "gain_change_at_s600"
+    ],
+    "local_start_s": 48960,
+    "smpte_start_s": 48960,
+    "utc_start_s": 41760,
+    "onset_from_rec_s": 0,
+    "local_end_s": 49560,
+    "azimuth_deg_onset": null,
+    "distance_m_onset": null,
+    "gpx_folder": "DRON-GPX/bySHOW/Show01/",
+    "log_files": {
+      "drone78": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 1,
+    "session": "show_2",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "Hover 10 m, 1 min",
+    "altitude_m": 10,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      10
+    ],
+    "end_coord": [
+      0,
+      0,
+      10
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 49800,
+    "smpte_start_s": 49800,
+    "utc_start_s": 42600,
+    "onset_from_rec_s": 840,
+    "local_end_s": 49860,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 2,
+    "session": "show_2",
+    "within_session_offset_s": 63,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "Hover 20 m, 1 min",
+    "altitude_m": 20,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      20
+    ],
+    "end_coord": [
+      0,
+      0,
+      20
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 49863,
+    "smpte_start_s": 49863,
+    "utc_start_s": 42663,
+    "onset_from_rec_s": 903,
+    "local_end_s": 49923,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 3,
+    "session": "show_2",
+    "within_session_offset_s": 126,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "Hover 30 m, 1 min",
+    "altitude_m": 30,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      30
+    ],
+    "end_coord": [
+      0,
+      0,
+      30
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 49926,
+    "smpte_start_s": 49926,
+    "utc_start_s": 42726,
+    "onset_from_rec_s": 966,
+    "local_end_s": 49986,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 4,
+    "session": "show_2",
+    "within_session_offset_s": 189,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "Hover 40 m, 1 min",
+    "altitude_m": 40,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      40
+    ],
+    "end_coord": [
+      0,
+      0,
+      40
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [
+      "gain_60dB"
+    ],
+    "local_start_s": 49989,
+    "smpte_start_s": 49989,
+    "utc_start_s": 42789,
+    "onset_from_rec_s": 1029,
+    "local_end_s": 50049,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 5,
+    "session": "show_2",
+    "within_session_offset_s": 252,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "CCW yaw rotation 20 m, 1 min",
+    "altitude_m": 20,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      20
+    ],
+    "end_coord": [
+      0,
+      0,
+      20
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [
+      "yaw_not_executed"
+    ],
+    "local_start_s": 50052,
+    "smpte_start_s": 50052,
+    "utc_start_s": 42852,
+    "onset_from_rec_s": 1092,
+    "local_end_s": 50112,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 6,
+    "session": "show_2",
+    "within_session_offset_s": 315,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "hover",
+    "flight_phase": "hover",
+    "description": "CW yaw rotation 20 m, 1 min",
+    "altitude_m": 20,
+    "speed_mps": 0.0,
+    "radius_m": null,
+    "start_coord": [
+      0,
+      0,
+      20
+    ],
+    "end_coord": [
+      0,
+      0,
+      20
+    ],
+    "duration_s": 60,
+    "mems_available": false,
+    "quality_flags": [
+      "yaw_not_executed"
+    ],
+    "local_start_s": 50115,
+    "smpte_start_s": 50115,
+    "utc_start_s": 42915,
+    "onset_from_rec_s": 1155,
+    "local_end_s": 50175,
+    "azimuth_deg_onset": 0.0,
+    "distance_m_onset": 0.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 7,
+    "session": "show_2",
+    "within_session_offset_s": 378,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "transit",
+    "flight_phase": "transit_linear",
+    "description": "Linear transit 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      0,
+      20
+    ],
+    "end_coord": [
+      60,
+      0,
+      20
+    ],
+    "duration_s": 30,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 50178,
+    "smpte_start_s": 50178,
+    "utc_start_s": 42978,
+    "onset_from_rec_s": 1218,
+    "local_end_s": 50208,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 60.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 8,
+    "session": "show_2",
+    "within_session_offset_s": 411,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "transit",
+    "flight_phase": "transit_linear",
+    "description": "Linear transit 20 m, 8 m/s",
+    "altitude_m": 20,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      0,
+      20
+    ],
+    "end_coord": [
+      60,
+      0,
+      20
+    ],
+    "duration_s": 15,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 50211,
+    "smpte_start_s": 50211,
+    "utc_start_s": 43011,
+    "onset_from_rec_s": 1251,
+    "local_end_s": 50226,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 60.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 10,
+    "session": "show_2",
+    "within_session_offset_s": 429,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 20 m, 4 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      20
+    ],
+    "end_coord": [
+      60,
+      60,
+      20
+    ],
+    "duration_s": 66,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 50229,
+    "smpte_start_s": 50229,
+    "utc_start_s": 43029,
+    "onset_from_rec_s": 1269,
+    "local_end_s": 50295,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 11,
+    "session": "show_2",
+    "within_session_offset_s": 498,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 20 m, 8 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      20
+    ],
+    "end_coord": [
+      60,
+      60,
+      20
+    ],
+    "duration_s": 33,
+    "mems_available": false,
+    "quality_flags": [],
+    "local_start_s": 50298,
+    "smpte_start_s": 50298,
+    "utc_start_s": 43098,
+    "onset_from_rec_s": 1338,
+    "local_end_s": 50331,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "log_files": {
+      "drone78": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 13,
+    "session": "show_5",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 60 m, 4 m/s \u00d7 2",
+    "altitude_m": 60,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      60
+    ],
+    "end_coord": [
+      60,
+      60,
+      60
+    ],
+    "duration_s": 66,
+    "mems_available": true,
+    "quality_flags": [
+      "mems_starts_during_show5",
+      "show5_log_timestamps_unreliable"
+    ],
+    "local_start_s": 50880,
+    "smpte_start_s": 50880,
+    "utc_start_s": 43680,
+    "onset_from_rec_s": 1920,
+    "local_end_s": 50946,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show05/",
+    "log_files": {
+      "drone78": "20251020-003"
+    },
+    "split": "train"
+  },
+  {
+    "id": 14,
+    "session": "show_5",
+    "within_session_offset_s": 69,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 60 m, 8 m/s \u00d7 2",
+    "altitude_m": 60,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      60
+    ],
+    "end_coord": [
+      60,
+      60,
+      60
+    ],
+    "duration_s": 33,
+    "mems_available": true,
+    "quality_flags": [
+      "show5_log_timestamps_unreliable"
+    ],
+    "local_start_s": 50949,
+    "smpte_start_s": 50949,
+    "utc_start_s": 43749,
+    "onset_from_rec_s": 1989,
+    "local_end_s": 50982,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show05/",
+    "log_files": {
+      "drone78": "20251020-003"
+    },
+    "split": "train"
+  },
+  {
+    "id": 16,
+    "session": "show_7",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 120 m, 4 m/s \u00d7 2",
+    "altitude_m": 120,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      120
+    ],
+    "end_coord": [
+      60,
+      60,
+      120
+    ],
+    "duration_s": 66,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 51840,
+    "smpte_start_s": 51840,
+    "utc_start_s": 44640,
+    "onset_from_rec_s": 2880,
+    "local_end_s": 51906,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show07/",
+    "log_files": {
+      "drone78": "20251020-004"
+    },
+    "split": "train"
+  },
+  {
+    "id": 17,
+    "session": "show_7",
+    "within_session_offset_s": 69,
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Square diagonal 120 m, 8 m/s \u00d7 2",
+    "altitude_m": 120,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      120
+    ],
+    "end_coord": [
+      60,
+      60,
+      120
+    ],
+    "duration_s": 33,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 51909,
+    "smpte_start_s": 51909,
+    "utc_start_s": 44709,
+    "onset_from_rec_s": 2949,
+    "local_end_s": 51942,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show07/",
+    "log_files": {
+      "drone78": "20251020-004"
+    },
+    "split": "train"
+  },
+  {
+    "id": 18,
+    "session": "show_8",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "Circle r=5 m, 20 m, 4 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 5.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 16,
+    "mems_available": true,
+    "quality_flags": [
+      "uncertain_start_radius"
+    ],
+    "local_start_s": 52860,
+    "smpte_start_s": 52860,
+    "utc_start_s": 45660,
+    "onset_from_rec_s": 3900,
+    "local_end_s": 52876,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "log_files": {
+      "drone88": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 19,
+    "session": "show_8",
+    "within_session_offset_s": 19,
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "Circle r=30 m, 20 m, 4 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "start_coord": [
+      -15,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 94,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 52879,
+    "smpte_start_s": 52879,
+    "utc_start_s": 45679,
+    "onset_from_rec_s": 3919,
+    "local_end_s": 52973,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 15.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "log_files": {
+      "drone88": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 20,
+    "session": "show_8",
+    "within_session_offset_s": 116,
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "Circle r=60 m, 20 m, 4 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "start_coord": [
+      -30,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 52976,
+    "smpte_start_s": 52976,
+    "utc_start_s": 45776,
+    "onset_from_rec_s": 4016,
+    "local_end_s": 53164,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 30.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "log_files": {
+      "drone88": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 21,
+    "session": "show_8",
+    "within_session_offset_s": 307,
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "Figure-8 at 20 m, 4 m/s \u00d7 2",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": null,
+    "end_coord": null,
+    "duration_s": 63,
+    "mems_available": true,
+    "quality_flags": [
+      "approx_120m_span"
+    ],
+    "local_start_s": 53167,
+    "smpte_start_s": 53167,
+    "utc_start_s": 45967,
+    "onset_from_rec_s": 4207,
+    "local_end_s": 53230,
+    "azimuth_deg_onset": null,
+    "distance_m_onset": null,
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "log_files": {
+      "drone88": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 22,
+    "session": "show_9",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Cube diagonal A: (-60,-60,0)\u2192(60,60,120), 4 m/s",
+    "altitude_m": 60,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      -60,
+      0
+    ],
+    "end_coord": [
+      60,
+      60,
+      120
+    ],
+    "duration_s": 69,
+    "mems_available": true,
+    "quality_flags": [
+      "start_z_approx_5m_not_0"
+    ],
+    "local_start_s": 53820,
+    "smpte_start_s": 53820,
+    "utc_start_s": 46620,
+    "onset_from_rec_s": 4860,
+    "local_end_s": 53889,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "log_files": {
+      "drone130": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 25,
+    "session": "show_9",
+    "within_session_offset_s": 72,
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Cube diagonal D: (60,60,0)\u2192(-60,-60,120), 4 m/s",
+    "altitude_m": 60,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      60,
+      60,
+      0
+    ],
+    "end_coord": [
+      -60,
+      -60,
+      120
+    ],
+    "duration_s": 69,
+    "mems_available": true,
+    "quality_flags": [
+      "start_z_approx_5m_not_0"
+    ],
+    "local_start_s": 53892,
+    "smpte_start_s": 53892,
+    "utc_start_s": 46692,
+    "onset_from_rec_s": 4932,
+    "local_end_s": 53961,
+    "azimuth_deg_onset": 45.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "log_files": {
+      "drone130": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 23,
+    "session": "show_9",
+    "within_session_offset_s": 144,
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Cube diagonal B: (-60,60,0)\u2192(60,-60,120), 4 m/s",
+    "altitude_m": 60,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      60,
+      0
+    ],
+    "end_coord": [
+      60,
+      -60,
+      120
+    ],
+    "duration_s": 69,
+    "mems_available": true,
+    "quality_flags": [
+      "start_z_approx_5m_not_0"
+    ],
+    "local_start_s": 53964,
+    "smpte_start_s": 53964,
+    "utc_start_s": 46764,
+    "onset_from_rec_s": 5004,
+    "local_end_s": 54033,
+    "azimuth_deg_onset": 135.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "log_files": {
+      "drone130": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 24,
+    "session": "show_9",
+    "within_session_offset_s": 216,
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "maneuver_type": "diagonal",
+    "flight_phase": "transit_diagonal",
+    "description": "Cube diagonal C: (60,-60,0)\u2192(-60,60,120), 4 m/s",
+    "altitude_m": 60,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      60,
+      -60,
+      0
+    ],
+    "end_coord": [
+      -60,
+      60,
+      120
+    ],
+    "duration_s": 69,
+    "mems_available": true,
+    "quality_flags": [
+      "start_z_approx_5m_not_0"
+    ],
+    "local_start_s": 54036,
+    "smpte_start_s": 54036,
+    "utc_start_s": 46836,
+    "onset_from_rec_s": 5076,
+    "local_end_s": 54105,
+    "azimuth_deg_onset": -45.0,
+    "distance_m_onset": 84.9,
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "log_files": {
+      "drone130": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 27,
+    "session": "show_11",
+    "within_session_offset_s": 0,
+    "n_drones": 2,
+    "drones": [
+      "drone65",
+      "drone130"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "2\u00d7 circle r=5 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 5.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 8,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 54780,
+    "smpte_start_s": 54780,
+    "utc_start_s": 47580,
+    "onset_from_rec_s": 5820,
+    "local_end_s": 54788,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show11/",
+    "log_files": {
+      "drone65": "20251020-001",
+      "drone130": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 28,
+    "session": "show_11",
+    "within_session_offset_s": 11,
+    "n_drones": 2,
+    "drones": [
+      "drone65",
+      "drone130"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "2\u00d7 circle r=30 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 47,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 54791,
+    "smpte_start_s": 54791,
+    "utc_start_s": 47591,
+    "onset_from_rec_s": 5831,
+    "local_end_s": 54838,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show11/",
+    "log_files": {
+      "drone65": "20251020-001",
+      "drone130": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 29,
+    "session": "show_11",
+    "within_session_offset_s": 61,
+    "n_drones": 2,
+    "drones": [
+      "drone65",
+      "drone130"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "2\u00d7 circle r=60 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 54841,
+    "smpte_start_s": 54841,
+    "utc_start_s": 47641,
+    "onset_from_rec_s": 5881,
+    "local_end_s": 55029,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show11/",
+    "log_files": {
+      "drone65": "20251020-001",
+      "drone130": "20251020-002"
+    },
+    "split": "train"
+  },
+  {
+    "id": 30,
+    "session": "show_12",
+    "within_session_offset_s": 0,
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "3\u00d7 circle r=10 m, 20 m, 4 m/s (adjusted from r=5m)",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 10.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 8,
+    "mems_available": true,
+    "quality_flags": [
+      "radius_adjusted_from_5m_to_10m"
+    ],
+    "local_start_s": 55620,
+    "smpte_start_s": 55620,
+    "utc_start_s": 48420,
+    "onset_from_rec_s": 6660,
+    "local_end_s": 55628,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show12/",
+    "log_files": {
+      "drone65": "20251020-002",
+      "drone130": "20251020-003",
+      "drone132": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 31,
+    "session": "show_12",
+    "within_session_offset_s": 11,
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "3\u00d7 circle r=30 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 47,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 55631,
+    "smpte_start_s": 55631,
+    "utc_start_s": 48431,
+    "onset_from_rec_s": 6671,
+    "local_end_s": 55678,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show12/",
+    "log_files": {
+      "drone65": "20251020-002",
+      "drone130": "20251020-003",
+      "drone132": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 32,
+    "session": "show_12",
+    "within_session_offset_s": 61,
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "3\u00d7 circle r=60 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 55681,
+    "smpte_start_s": 55681,
+    "utc_start_s": 48481,
+    "onset_from_rec_s": 6721,
+    "local_end_s": 55869,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show12/",
+    "log_files": {
+      "drone65": "20251020-002",
+      "drone130": "20251020-003",
+      "drone132": "20251020-001"
+    },
+    "split": "train"
+  },
+  {
+    "id": 33,
+    "session": "show_13",
+    "within_session_offset_s": 0,
+    "n_drones": 4,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "4\u00d7 circle r=10 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 10.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 8,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 56520,
+    "smpte_start_s": 56520,
+    "utc_start_s": 49320,
+    "onset_from_rec_s": 7560,
+    "local_end_s": 56528,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show13/",
+    "log_files": {
+      "drone65": "20251020-003",
+      "drone78": "20251020-005",
+      "drone130": "20251020-004",
+      "drone132": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 34,
+    "session": "show_13",
+    "within_session_offset_s": 11,
+    "n_drones": 4,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "4\u00d7 circle r=30 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 47,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 56531,
+    "smpte_start_s": 56531,
+    "utc_start_s": 49331,
+    "onset_from_rec_s": 7571,
+    "local_end_s": 56578,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show13/",
+    "log_files": {
+      "drone65": "20251020-003",
+      "drone78": "20251020-005",
+      "drone130": "20251020-004",
+      "drone132": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 35,
+    "session": "show_13",
+    "within_session_offset_s": 61,
+    "n_drones": 4,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "4\u00d7 circle r=60 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 56581,
+    "smpte_start_s": 56581,
+    "utc_start_s": 49381,
+    "onset_from_rec_s": 7621,
+    "local_end_s": 56769,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show13/",
+    "log_files": {
+      "drone65": "20251020-003",
+      "drone78": "20251020-005",
+      "drone130": "20251020-004",
+      "drone132": "20251020-002"
+    },
+    "split": "val"
+  },
+  {
+    "id": 36,
+    "session": "show_14",
+    "within_session_offset_s": 0,
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "5\u00d7 circle r=10 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 10.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 8,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 57420,
+    "smpte_start_s": 57420,
+    "utc_start_s": 50220,
+    "onset_from_rec_s": 8460,
+    "local_end_s": 57428,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show14/",
+    "log_files": {
+      "drone65": "20251020-004",
+      "drone78": "20251020-006",
+      "drone88": "20251020-002",
+      "drone130": "20251020-005",
+      "drone132": "20251020-002"
+    },
+    "split": "test"
+  },
+  {
+    "id": 37,
+    "session": "show_14",
+    "within_session_offset_s": 11,
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "5\u00d7 circle r=30 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 47,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 57431,
+    "smpte_start_s": 57431,
+    "utc_start_s": 50231,
+    "onset_from_rec_s": 8471,
+    "local_end_s": 57478,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show14/",
+    "log_files": {
+      "drone65": "20251020-004",
+      "drone78": "20251020-006",
+      "drone88": "20251020-002",
+      "drone130": "20251020-005",
+      "drone132": "20251020-002"
+    },
+    "split": "test"
+  },
+  {
+    "id": 38,
+    "session": "show_14",
+    "within_session_offset_s": 61,
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "description": "5\u00d7 circle r=60 m, 20 m, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "start_coord": [
+      -2.5,
+      0,
+      20
+    ],
+    "end_coord": null,
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [],
+    "local_start_s": 57481,
+    "smpte_start_s": 57481,
+    "utc_start_s": 50281,
+    "onset_from_rec_s": 8521,
+    "local_end_s": 57669,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 2.5,
+    "gpx_folder": "DRON-GPX/bySHOW/Show14/",
+    "log_files": {
+      "drone65": "20251020-004",
+      "drone78": "20251020-006",
+      "drone88": "20251020-002",
+      "drone130": "20251020-005",
+      "drone132": "20251020-002"
+    },
+    "split": "test"
+  },
+  {
+    "id": 39,
+    "session": "show_15",
+    "within_session_offset_s": 0,
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "formation",
+    "flight_phase": "formation_v",
+    "description": "V-formation transit, 4 m/s",
+    "altitude_m": 20,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      0,
+      20
+    ],
+    "end_coord": [
+      60,
+      0,
+      20
+    ],
+    "duration_s": 60,
+    "mems_available": true,
+    "quality_flags": [
+      "v_formation_not_always_maintained"
+    ],
+    "local_start_s": 58260,
+    "smpte_start_s": 58260,
+    "utc_start_s": 51060,
+    "onset_from_rec_s": 9300,
+    "local_end_s": 58320,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 60.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show15/",
+    "log_files": {
+      "drone65": "20251020-005",
+      "drone78": "20251020-007",
+      "drone88": "20251020-003",
+      "drone130": "20251020-006",
+      "drone132": "20251020-003"
+    },
+    "split": "test"
+  },
+  {
+    "id": 40,
+    "session": "show_15",
+    "within_session_offset_s": 63,
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "maneuver_type": "formation",
+    "flight_phase": "formation_v",
+    "description": "V-formation transit, 8 m/s",
+    "altitude_m": 20,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -60,
+      0,
+      20
+    ],
+    "end_coord": [
+      60,
+      0,
+      20
+    ],
+    "duration_s": 30,
+    "mems_available": true,
+    "quality_flags": [
+      "v_formation_not_always_maintained"
+    ],
+    "local_start_s": 58323,
+    "smpte_start_s": 58323,
+    "utc_start_s": 51123,
+    "onset_from_rec_s": 9363,
+    "local_end_s": 58353,
+    "azimuth_deg_onset": 180.0,
+    "distance_m_onset": 60.0,
+    "gpx_folder": "DRON-GPX/bySHOW/Show15/",
+    "log_files": {
+      "drone65": "20251020-005",
+      "drone78": "20251020-007",
+      "drone88": "20251020-003",
+      "drone130": "20251020-006",
+      "drone132": "20251020-003"
+    },
+    "split": "test"
+  },
+  {
+    "id": 41,
+    "session": "show_10",
+    "within_session_offset_s": 0,
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "maneuver_type": "long_range",
+    "flight_phase": "long_range",
+    "description": "Max-range manual approach: 300m NW \u2192 300m SE, 20m altitude, 8 m/s",
+    "altitude_m": 20,
+    "speed_mps": 8.0,
+    "radius_m": null,
+    "start_coord": [
+      -212.0,
+      -212.0,
+      20
+    ],
+    "end_coord": [
+      212.0,
+      212.0,
+      20
+    ],
+    "duration_s": 188,
+    "mems_available": true,
+    "quality_flags": [
+      "manual_flight",
+      "audible_to_200m_BK6E"
+    ],
+    "local_start_s": 59100,
+    "smpte_start_s": 59100,
+    "utc_start_s": 51900,
+    "onset_from_rec_s": 10140,
+    "local_end_s": 59288,
+    "azimuth_deg_onset": -135.0,
+    "distance_m_onset": 299.8,
+    "gpx_folder": "DRON-GPX/bySHOW/Show10/",
+    "log_files": {
+      "drone130": "20251020-007"
+    },
+    "split": "test"
+  }
+]

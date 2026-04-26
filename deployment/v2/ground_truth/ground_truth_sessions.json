@@ -1,0 +1,316 @@
+[
+  {
+    "session_id": "show_1",
+    "show_number": 1,
+    "wall_clock": "13:36",
+    "flight_time_min": 8.43,
+    "maneuver_ids": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Range-corner survey + altitude hover series 10\u201340 m",
+    "mems_recording": false,
+    "notes": "MEMS not recording; 13:44 gain increased to 60 dB",
+    "gpx_folder": "DRON-GPX/bySHOW/Show01/",
+    "local_start_s": 48960,
+    "smpte_start_s": 48960,
+    "onset_from_rec_s": 0,
+    "utc_start_s": 41760,
+    "local_start_hms": "13:36:00",
+    "utc_start_hms": "11:36:00"
+  },
+  {
+    "session_id": "show_2",
+    "show_number": 2,
+    "wall_clock": "13:50",
+    "flight_time_min": 9.7,
+    "maneuver_ids": [
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Yaw rotations + linear/diagonal transits at 20 m",
+    "mems_recording": false,
+    "notes": "Yaw rotations (m5, m6) not executed; MEMS not recording",
+    "gpx_folder": "DRON-GPX/bySHOW/Show02/",
+    "local_start_s": 49800,
+    "smpte_start_s": 49800,
+    "onset_from_rec_s": 840,
+    "utc_start_s": 42600,
+    "local_start_hms": "13:50:00",
+    "utc_start_hms": "11:50:00"
+  },
+  {
+    "session_id": "show_5",
+    "show_number": 5,
+    "wall_clock": "14:08",
+    "flight_time_min": 6.82,
+    "maneuver_ids": [
+      13,
+      14
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Square diagonal transits at 60 m altitude (4 and 8 m/s)",
+    "mems_recording": true,
+    "mems_starts_at": "14:06",
+    "notes": "MEMS recording started at 14:06 (pre-show_5); show_5 drone log timestamps may be unreliable (saved as tmp log)",
+    "gpx_folder": "DRON-GPX/bySHOW/Show05/",
+    "local_start_s": 50880,
+    "smpte_start_s": 50880,
+    "onset_from_rec_s": 1920,
+    "utc_start_s": 43680,
+    "local_start_hms": "14:08:00",
+    "utc_start_hms": "12:08:00"
+  },
+  {
+    "session_id": "show_7",
+    "show_number": 7,
+    "wall_clock": "14:24",
+    "flight_time_min": 8.32,
+    "maneuver_ids": [
+      16,
+      17
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone78"
+    ],
+    "description": "Square diagonal transits at 120 m altitude (4 and 8 m/s)",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show07/",
+    "local_start_s": 51840,
+    "smpte_start_s": 51840,
+    "onset_from_rec_s": 2880,
+    "utc_start_s": 44640,
+    "local_start_hms": "14:24:00",
+    "utc_start_hms": "12:24:00"
+  },
+  {
+    "session_id": "show_8",
+    "show_number": 8,
+    "wall_clock": "14:41",
+    "flight_time_min": 9.63,
+    "maneuver_ids": [
+      18,
+      19,
+      20,
+      21
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "description": "Single-drone circular orbits r=5,30,60 m + figure-8 at 20 m",
+    "mems_recording": true,
+    "notes": "drone88 (not drone78); m18 r=5m \u2014 uncertain if always started from r=5m",
+    "gpx_folder": "DRON-GPX/bySHOW/Show08/",
+    "local_start_s": 52860,
+    "smpte_start_s": 52860,
+    "onset_from_rec_s": 3900,
+    "utc_start_s": 45660,
+    "local_start_hms": "14:41:00",
+    "utc_start_hms": "12:41:00"
+  },
+  {
+    "session_id": "show_9",
+    "show_number": 9,
+    "wall_clock": "14:57",
+    "flight_time_min": 6.78,
+    "maneuver_ids": [
+      22,
+      25,
+      23,
+      24
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "description": "3D cube diagonal transits (all 4 space diagonals at 4 m/s)",
+    "mems_recording": true,
+    "notes": "drone130 could not descend to z=0 for lower vertices; used ~z=5m instead. Execution order: 22\u219225\u219223\u219224",
+    "gpx_folder": "DRON-GPX/bySHOW/Show09/",
+    "local_start_s": 53820,
+    "smpte_start_s": 53820,
+    "onset_from_rec_s": 4860,
+    "utc_start_s": 46620,
+    "local_start_hms": "14:57:00",
+    "utc_start_hms": "12:57:00"
+  },
+  {
+    "session_id": "show_11",
+    "show_number": 11,
+    "wall_clock": "15:13",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      27,
+      28,
+      29
+    ],
+    "n_drones": 2,
+    "drones": [
+      "drone65",
+      "drone130"
+    ],
+    "description": "2-drone circular orbits r=5, 30, 60 m at 20 m altitude",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show11/",
+    "local_start_s": 54780,
+    "smpte_start_s": 54780,
+    "onset_from_rec_s": 5820,
+    "utc_start_s": 47580,
+    "local_start_hms": "15:13:00",
+    "utc_start_hms": "13:13:00"
+  },
+  {
+    "session_id": "show_12",
+    "show_number": 12,
+    "wall_clock": "15:27",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      30,
+      31,
+      32
+    ],
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "description": "3-drone circular orbits r=10, 30, 60 m at 20 m altitude",
+    "mems_recording": true,
+    "notes": "r=5m too narrow \u2192 adjusted to r=10m (may have been adjusted from show_12 onward)",
+    "gpx_folder": "DRON-GPX/bySHOW/Show12/",
+    "local_start_s": 55620,
+    "smpte_start_s": 55620,
+    "onset_from_rec_s": 6660,
+    "utc_start_s": 48420,
+    "local_start_hms": "15:27:00",
+    "utc_start_hms": "13:27:00"
+  },
+  {
+    "session_id": "show_13",
+    "show_number": 13,
+    "wall_clock": "15:42",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      33,
+      34,
+      35
+    ],
+    "n_drones": 4,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone130",
+      "drone132"
+    ],
+    "description": "4-drone circular orbits r=10, 30, 60 m at 20 m altitude",
+    "mems_recording": true,
+    "gpx_folder": "DRON-GPX/bySHOW/Show13/",
+    "local_start_s": 56520,
+    "smpte_start_s": 56520,
+    "onset_from_rec_s": 7560,
+    "utc_start_s": 49320,
+    "local_start_hms": "15:42:00",
+    "utc_start_hms": "13:42:00"
+  },
+  {
+    "session_id": "show_14",
+    "show_number": 14,
+    "wall_clock": "15:57",
+    "flight_time_min": 6.23,
+    "maneuver_ids": [
+      36,
+      37,
+      38
+    ],
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "description": "5-drone circular orbits r=10, 30, 60 m at 20 m altitude",
+    "mems_recording": true,
+    "notes": "drone132 log 20251020-002 same ID as show_13 \u2014 may be same log file or note error",
+    "gpx_folder": "DRON-GPX/bySHOW/Show14/",
+    "local_start_s": 57420,
+    "smpte_start_s": 57420,
+    "onset_from_rec_s": 8460,
+    "utc_start_s": 50220,
+    "local_start_hms": "15:57:00",
+    "utc_start_hms": "13:57:00"
+  },
+  {
+    "session_id": "show_15",
+    "show_number": 15,
+    "wall_clock": "16:11",
+    "flight_time_min": 3.45,
+    "maneuver_ids": [
+      39,
+      40
+    ],
+    "n_drones": 5,
+    "drones": [
+      "drone65",
+      "drone78",
+      "drone88",
+      "drone130",
+      "drone132"
+    ],
+    "description": "5-drone V-formation transits at 4 and 8 m/s",
+    "mems_recording": true,
+    "notes": "V formation not always maintained; Jegyz\u0151k\u00f6nyv lists ~16:25 which is the end time",
+    "gpx_folder": "DRON-GPX/bySHOW/Show15/",
+    "local_start_s": 58260,
+    "smpte_start_s": 58260,
+    "onset_from_rec_s": 9300,
+    "utc_start_s": 51060,
+    "local_start_hms": "16:11:00",
+    "utc_start_hms": "14:11:00"
+  },
+  {
+    "session_id": "show_10",
+    "show_number": 10,
+    "wall_clock": "16:25",
+    "flight_time_min": null,
+    "maneuver_ids": [
+      41
+    ],
+    "n_drones": 1,
+    "drones": [
+      "drone130"
+    ],
+    "description": "Max-range detection test: manual NW\u2192SE approach at 20 m, 300 m radius",
+    "mems_recording": true,
+    "notes": "Flown manually (no show file); audible ~200m on BK-6-E. 300m NW then 300m SE of origin.",
+    "gpx_folder": "DRON-GPX/bySHOW/Show10/",
+    "local_start_s": 59100,
+    "smpte_start_s": 59100,
+    "onset_from_rec_s": 10140,
+    "utc_start_s": 51900,
+    "local_start_hms": "16:25:00",
+    "utc_start_hms": "14:25:00"
+  }
+]

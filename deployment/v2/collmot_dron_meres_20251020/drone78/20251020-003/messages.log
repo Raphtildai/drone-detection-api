@@ -1,0 +1,603 @@
+1980-01-07 12:07:37 INFO  main_loop.c:906 Current mission: volk-2025-5
+1980-01-07 12:07:37 INFO  flyingzone.c:225 Reading flying zone file /data/missions/volk-2025-5/flyingzone.cfg...
+1980-01-07 12:07:37 INFO  flyingzone.c:280 Parsed 10 flying zone points, 0 holes, 0 rally points, 0 arena points and 0 target points of zone 'show'.
+1980-01-07 12:07:37 INFO  choreography.c:638 Reading choreography file /data/missions/volk-2025-5/choreography.cfg...
+1980-01-07 12:07:37 INFO  choreography.c:656 Parsed 2 choreography elements.
+1980-01-07 12:07:37 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-5/waypoints_ground.cfg ...
+1980-01-07 12:07:37 INFO  waypoints.c:226 Parsed 1 waypoints.
+1980-01-07 12:07:37 INFO  algorithms/waypoint.c:1248 Minimum safety margin between waypoints and flying zone: 18.7 m
+1980-01-07 12:07:37 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-5/waypoints.cfg ...
+1980-01-07 12:07:37 INFO  waypoints.c:226 Parsed 155 waypoints.
+1980-01-07 12:07:37 INFO  algorithms/waypoint.c:1248 Minimum safety margin between waypoints and flying zone: 15.0 m
+1980-01-07 12:07:37 INFO  main_loop.c:117 GPIO monitor initialized.
+1980-01-07 12:07:37 INFO  main_loop.c:150 Watching GPIO pin 88 (rising edge) for timesync pulse
+1980-01-07 12:07:37 INFO  networking/xbee.c:54 Initializing XBee on /dev/ttyAML2...
+1980-01-07 12:07:37 INFO  networking/radio.c:266 Initializing radio with address 0x004E on /dev/sik-radio...
+1980-01-07 12:07:37 INFO  networking/radio.c:823 Radio activated, receiving only.
+1980-01-07 12:07:37 INFO  networking/wireless.c:419 Waiting for wireless interface to come up.
+1980-01-07 12:07:37 INFO  autopilots/pixhawk/driver.c:110 Initializing MAVLink/PixHawk on /dev/ttyAML1...
+1980-01-07 12:07:37 WARN  main_loop.c:263 Could not initialize BMS.
+1980-01-07 12:07:37 WARN  main_loop.c:278 Could not initialize camera mount.
+1980-01-07 12:07:37 INFO  led_strip.c:67 Initializing serial LED strip on /dev/ttyAML0...
+1980-01-07 12:07:37 INFO  led_strip.c:83 LED strip initialized.
+1980-01-07 12:07:37 WARN  main_loop.c:346 Could not initialize sprayer.
+1980-01-07 12:07:37 INFO  main_loop.c:928 Initializing algorithms...
+1980-01-07 12:07:37 INFO  modules/silencer.c:112 Throttling telemetry traffic.
+1980-01-07 12:07:37 INFO  modules/slow_flight_mode.c:147 Slow flight mode deactivated. Resuming normal control output.
+1980-01-07 12:07:37 INFO  networking/console.c:205 Opening debug console on 127.0.0.1:4242
+1980-01-07 12:07:37 INFO  networking/jsonrpc.c:374 Opening JSON-RPC API handler on 127.0.0.1:4244
+1980-01-07 12:07:37 INFO  main_loop.c:396 Master switch: ch5, 6 states (3=enable)
+1980-01-07 12:07:37 INFO  main_loop.c:401 No algorithm selector channel is selected.
+1980-01-07 12:07:37 INFO  main_loop.c:401 No manual switch channel is selected.
+1980-01-07 12:07:37 INFO  main_loop.c:396 Return to home switch: ch8, 2 states (2=enable)
+1980-01-07 12:07:37 INFO  main_loop.c:396 Choreography switch: ch7, 2 states (2=enable)
+1980-01-07 12:07:37 INFO  main_loop.c:401 No pyro switch channel is selected.
+1980-01-07 12:07:37 INFO  main_loop.c:401 No slow flight mode switch channel is selected.
+1980-01-07 12:07:37 INFO  main_loop.c:401 No sprayer switch channel is selected.
+1980-01-07 12:07:37 INFO  main_loop.c:396 Suspend/resume switch: ch6, 2 states (2=enable)
+1980-01-07 12:07:37 INFO  main_loop.c:429 Auxiliary function of choreography switch: set LED color by group
+1980-01-07 12:07:37 INFO  main_loop.c:437 Default algorithm: manual
+1980-01-07 12:07:37 INFO  main_loop.c:445 Emergency algorithm: emergency
+1980-01-07 12:07:37 INFO  main_loop.c:1086 Entering main loop...
+1980-01-07 12:07:37 INFO  networking/wireless.c:592 Wireless link up at 10.0.0.78:4243 (UDP and TCP)
+1980-01-07 12:07:37 INFO  networking/wireless.c:614 Broadcasting wireless packets to 10.255.255.255:4243
+1980-01-07 12:07:37 INFO  networking/wireless.c:423 Wireless activated.
+1980-01-07 12:07:37 INFO  prearm.c:246 PASS - Error code is zero
+1980-01-07 12:07:37 INFO  prearm.c:398 PASS - High level sensor checks OK
+1980-01-07 12:07:37 INFO  prearm.c:412 PASS - GPS fix OK
+1980-01-07 12:07:37 INFO  prearm.c:463 PASS - Relative altitude OK
+1980-01-07 12:07:37 INFO  prearm.c:546 PASS - Flying zone OK
+1980-01-07 12:07:38 INFO  prearm.c:160 PASS - Heartbeat base and custom mode OK
+1980-01-07 12:07:38 INFO  prearm.c:160 PASS - Low level prearm checks OK
+1980-01-07 12:07:39 INFO  timesync.c:702 Fine time synchronization achieved.
+1980-01-07 12:07:41 INFO  autopilots/pixhawk/driver.c:1930 ArduPilot version: 3.6.7
+1980-01-07 12:07:41 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 520 (MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES), result: 0 (ACCEPTED).
+1980-01-07 12:07:41 INFO  autopilots/pixhawk/init.c:106 Initializing MAVLink/PixHawk data stream rates...
+1980-01-07 12:07:41 INFO  autopilots/pixhawk/init.c:129 Requesting important parameters from PixHawk...
+1980-01-07 12:07:41 INFO  autopilots/pixhawk/init.c:136 Uploading important parameters to PixHawk...
+1980-01-07 12:07:42 WARN  prearm.c:256 FAIL - Autopilot has not finished initializing yet
+1980-01-07 12:07:42 WARN  prearm.c:420 FAIL - No home position yet
+1980-01-07 12:07:43 INFO  autopilots/pixhawk/driver.c:1904 Compass #1 is not in use
+1980-01-07 12:07:46 INFO  autopilots/pixhawk/driver.c:1865 Acknowledgement of PARAM_SET, ID: COMPASS_DEC, new value: 0
+1980-01-07 12:07:46 INFO  autopilots/pixhawk/driver.c:1865 Acknowledgement of PARAM_SET, ID: COMPASS_AUTODEC, new value: 1
+1980-01-07 12:07:46 INFO  autopilots/pixhawk/driver.c:1900 GPS delay is 220 ms
+1980-01-07 12:07:46 INFO  autopilots/pixhawk/driver.c:1908 Compass #2 is in use
+1980-01-07 12:07:46 INFO  autopilots/pixhawk/driver.c:1912 Compass #3 is not in use
+1980-01-07 12:07:46 INFO  uav.c:1952 Initializing choreography step #1: 'wait_on_ground'
+1980-01-07 12:07:46 INFO  prearm.c:260 PASS - Autopilot is active and initialized
+1980-01-07 12:07:46 INFO  prearm.c:439 PASS - RC channels OK
+1980-01-07 12:07:46 INFO  prearm.c:160 PASS - PixHawk sensor status OK
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/whats_next=loiter
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_z=2
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_xy=7
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/velocity_z=2
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/velocity_xy=5
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_frict=1
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/v_frict=1
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/p_rep=1
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_spp=2
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/r0_rep=6
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: lighting/bytecode_player.enable=0
+1980-01-07 12:07:46 INFO  uav.c:1598 Setting parameter: algorithm/file=/data/missions/volk-2025-5/waypoints_ground.cfg
+1980-01-07 12:07:46 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-5/waypoints_ground.cfg ...
+1980-01-07 12:07:46 INFO  waypoints.c:226 Parsed 1 waypoints.
+1980-01-07 12:07:46 INFO  algo_manager.c:276 Master switch ON: activating algorithm 'waypoint'
+1980-01-07 12:07:46 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: waiting for pre-arm checking
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: Initialising APM (severity: 6 - INFO)
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: Updating barometer calibration (severity: 6 - INFO)
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: Barometer calibration complete (severity: 6 - INFO)
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 241 (MAV_CMD_PREFLIGHT_CALIBRATION), result: 0 (ACCEPTED).
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:592 Setting home position on PixHawk to (its current pos instead of) lat=47.6086363 lon=19.1469725 AMSL=136.64
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:1692 Home position on PixHawk: 47.6086363 19.1469728 @ 136.65m AMSL
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:1351 GPS global origin: 47.6086216 19.1469902 @ 123.01m AMSL
+1980-01-07 12:07:47 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 179 (MAV_CMD_DO_SET_HOME), result: 0 (ACCEPTED).
+1980-01-07 12:07:47 INFO  uav.c:2496 Autopilot accepted home position: lat=47.6086363 lon=19.1469725 AMSL=136.64
+1980-01-07 12:07:47 INFO  prearm.c:422 PASS - Home position OK
+1980-01-07 12:07:47 INFO  prearm.c:521 PASS - Takeoff placement OK
+1980-01-07 12:07:47 INFO  prearm.c:537 PASS - Flying height OK
+1980-01-07 12:07:47 WARN  prearm.c:168 FAIL - UAV system status message indicates sensor malfunction (52558895, 35781676, 52558892)
+       Not present: 
+       Not enabled: 3D_GYRO 3D_ACCEL
+       Not healthy: 3D_GYRO 3D_ACCEL
+1980-01-07 12:07:48 INFO  prearm.c:160 PASS - PixHawk sensor status OK
+1980-01-07 12:07:48 INFO  prearm.c:94 SUCCESS - Pre-arm checking is complete.
+1980-01-07 12:07:48 INFO  algorithms/waypoint.c:2221 Takeoff time is infinite, we will not takeoff.
+1980-01-07 12:07:48 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: waiting for others to initialize
+1980-01-07 12:07:51 INFO  algorithms/waypoint.c:899 1 UAVs are visible.
+1980-01-07 12:07:51 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: waiting for motors to turn on
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:879 Started processing motor on signal.
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:887 Sent preflight calibration command for barometer.
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:902 Sent home position command.
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:912 Sent command to arm motors.
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:1721 statustext: Updating barometer calibration (severity: 6 - INFO)
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:1721 statustext: Barometer calibration complete (severity: 6 - INFO)
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 241 (MAV_CMD_PREFLIGHT_CALIBRATION), result: 0 (ACCEPTED).
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:1692 Home position on PixHawk: 47.6086360 19.1469737 @ 136.76m AMSL
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:1351 GPS global origin: 47.6086216 19.1469902 @ 123.01m AMSL
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 179 (MAV_CMD_DO_SET_HOME), result: 0 (ACCEPTED).
+1980-01-07 12:08:30 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 400 (MAV_CMD_COMPONENT_ARM_DISARM), result: 0 (ACCEPTED).
+1980-01-07 12:08:30 INFO  log.c:152 Enabled logging.
+1980-01-07 12:08:30 INFO  modules/silencer.c:114 Normal telemetry traffic resumed.
+1980-01-07 12:08:30 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: takeoff procedure started
+1980-01-07 12:08:36 INFO  uav.c:1952 Initializing choreography step #2: 'go_on_route'
+1980-01-07 12:08:36 INFO  algo_manager.c:251 choreography switch changed: deactivating algorithm 'waypoint'
+1980-01-07 12:08:36 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: suspended
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/whats_next=land
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_z=2.90
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_xy=8.00
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/velocity_z=2.00
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/velocity_xy=5.00
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_frict=0
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/v_frict=3
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/p_rep=1.5
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_spp=0
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/r0_rep=4.00
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/minimum_altitude=3
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/altitude_setpoint=5.00
+1980-01-07 12:08:36 WARN  algorithms/waypoint.c:749 waypoint.altitude_setpoint is deprecated, use waypoint.takeoff_altitude
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: lighting/bytecode_player.filename=/data/missions/volk-2025-5/light_show.bin
+1980-01-07 12:08:36 INFO  lighting/lighting_bytecode_player.c:205 Loaded LED strip bytecode file: /data/missions/volk-2025-5/light_show.bin
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: lighting/bytecode_player.enable=1
+1980-01-07 12:08:36 INFO  uav.c:1598 Setting parameter: algorithm/file=/data/missions/volk-2025-5/waypoints.cfg
+1980-01-07 12:08:36 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-5/waypoints.cfg ...
+1980-01-07 12:08:37 INFO  waypoints.c:226 Parsed 155 waypoints.
+1980-01-07 12:08:37 INFO  algo_manager.c:276 choreography switch changed: activating algorithm 'waypoint'
+1980-01-07 12:08:37 INFO  algorithms/waypoint.c:2218 Takeoff starts immediately
+1980-01-07 12:08:37 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: waiting for motors to turn on
+1980-01-07 12:08:37 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: takeoff procedure started
+1980-01-07 12:08:37 INFO  autopilots/pixhawk/driver.c:760 Takeoff command successfully sent to PixHawk
+1980-01-07 12:08:37 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 22 (MAV_CMD_NAV_TAKEOFF), result: 0 (ACCEPTED).
+1980-01-07 12:08:37 INFO  uav.c:1367 Takeoff command acknowledged by the autopilot.
+1980-01-07 12:08:38 INFO  uav.c:1344 Takeoff ready, we are above minimum altitude of 3.0m
+1980-01-07 12:08:38 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: airborne, following waypoints
+1980-01-07 12:08:38 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU1 in-flight yaw alignment complete (severity: 6 - INFO)
+1980-01-07 12:08:39 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU0 in-flight yaw alignment complete (severity: 6 - INFO)
+1980-01-07 12:08:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:08:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:00 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:00 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:08 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:09:09 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:09 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:14 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:14 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:19 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:09:20 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:09:21 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:21 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:09:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:09:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:09:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:09:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:09:39 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:39 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:09:58 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:09:59 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:10:12 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:10:12 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:10:13 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:10:13 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:10:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:10:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:10:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:10:54 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:10:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:10:54 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:11:03 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:11:03 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:11:17 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:11:18 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:11:25 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:11:25 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:11:33 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:11:33 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:12:08 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:12:08 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:12:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:12:29 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:12:29 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:12:36 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:36 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:12:37 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:37 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:12:37 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:37 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:12:37 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:37 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:12:38 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:38 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:12:39 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:39 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:12:39 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:39 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:12:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:12:41 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:46 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:12:48 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:50 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:12:50 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:50 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:12:54 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:12:54 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:12:57 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:57 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.14 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.14 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:12:58 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:12:58 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:01 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:01 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:02 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:02 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:03 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:03 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:03 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:03 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:03 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:03 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:05 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:05 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:05 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:05 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:08 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:08 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:08 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:13:08 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:08 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:08 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:08 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:09 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:09 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:13:10 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:11 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:13 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:15 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:21 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:21 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:13:21 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:21 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:21 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.16 > 3.00 m)
+1980-01-07 12:13:22 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:22 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:23 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:23 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.14 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:24 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:24 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:25 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:13:25 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:26 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:26 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:27 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:27 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:27 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:27 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:27 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:27 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:29 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:29 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:29 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:29 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:30 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:30 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:31 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:13:31 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:32 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:13:32 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:32 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:13:33 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:13:33 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:33 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:34 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:34 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:37 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:38 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:40 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:40 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:43 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:13:48 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:48 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:13:48 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:48 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.14 > 3.00 m)
+1980-01-07 12:13:48 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:48 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:49 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:49 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.10 > 3.00 m)
+1980-01-07 12:13:49 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:49 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:49 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:49 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:49 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:49 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:49 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:50 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.16 > 3.00 m)
+1980-01-07 12:13:50 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:51 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.12 > 3.00 m)
+1980-01-07 12:13:51 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:51 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.08 > 3.00 m)
+1980-01-07 12:13:51 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:52 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.07 > 3.00 m)
+1980-01-07 12:13:52 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:52 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.05 > 3.00 m)
+1980-01-07 12:13:52 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:52 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:52 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.09 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.01 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.04 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.06 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.11 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.13 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:53 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.14 > 3.00 m)
+1980-01-07 12:13:53 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.15 > 3.00 m)
+1980-01-07 12:13:54 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:54 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.00 > 3.00 m)
+1980-01-07 12:13:54 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:13:54 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.02 > 3.00 m)
+1980-01-07 12:14:01 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:14:02 WARN  algorithms/waypoint.c:1099 Drift from waypoint is large (3.03 > 3.00 m)
+1980-01-07 12:14:02 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:02 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:04 INFO  algorithms/waypoint.c:1104 Drift from waypoint is under threshold again
+1980-01-07 12:14:04 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:05 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:39 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:39 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:45 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:45 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:14:54 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:14:54 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:15:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:15:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:15:26 INFO  algorithms/waypoint.c:1624 Last waypoint reached. Triggering landing algorithm.
+1980-01-07 12:15:26 INFO  algo_manager.c:251 landing requested by algorithm: deactivating algorithm 'waypoint'
+1980-01-07 12:15:26 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: suspended
+1980-01-07 12:15:26 INFO  algo_manager.c:276 landing requested by algorithm: activating algorithm 'landing'
+1980-01-07 12:15:26 INFO  algorithms/landing.c:407 Landing algorithm: starting
+1980-01-07 12:15:26 INFO  algorithms/landing.c:89 Activating landing from 0.23 m AGL
+1980-01-07 12:15:26 INFO  algorithms/landing.c:407 Landing algorithm: Descending in guided mode
+1980-01-07 12:15:26 INFO  autopilots/pixhawk/driver.c:457 Land command successfully sent to PixHawk
+1980-01-07 12:15:26 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 21 (MAV_CMD_NAV_LAND), result: 0 (ACCEPTED).
+1980-01-07 12:15:27 INFO  autopilots/pixhawk/driver.c:466 Landing is accepted by PixHawk
+1980-01-07 12:15:27 INFO  algorithms/landing.c:407 Landing algorithm: Descending with autopilot landing algo
+1980-01-07 12:15:29 INFO  uav.c:501 06:59 mm:ss flight time acknowledged.
+1980-01-07 12:15:29 INFO  algorithms/landing.c:407 Landing algorithm: landed
+1980-01-07 12:15:29 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 11 (MAVLINK_MSG_ID_SET_MODE), result: 0 (ACCEPTED).
+1980-01-07 12:15:29 INFO  autopilots/pixhawk/driver.c:1721 statustext: Initialising APM (severity: 6 - INFO)
+1980-01-07 12:15:29 INFO  autopilots/pixhawk/driver.c:1721 statustext: Updating barometer calibration (severity: 6 - INFO)
+1980-01-07 12:15:29 INFO  autopilots/pixhawk/driver.c:1721 statustext: Barometer calibration complete (severity: 6 - INFO)
+1980-01-07 12:15:29 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 241 (MAV_CMD_PREFLIGHT_CALIBRATION), result: 0 (ACCEPTED).
+1980-01-07 12:15:29 WARN  prearm.c:168 FAIL - UAV system status message indicates sensor malfunction (52558895, 35781676, 35781676)
+       Not present: 
+       Not enabled: 3D_GYRO 3D_ACCEL
+       Not healthy: 3D_GYRO 3D_ACCEL
+1980-01-07 12:15:30 INFO  prearm.c:160 PASS - PixHawk sensor status OK
+1980-01-07 12:15:30 INFO  prearm.c:94 SUCCESS - Pre-arm checking is complete.
+1980-01-07 12:15:57 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:15:57 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+1980-01-07 12:15:58 INFO  prearm.c:439 PASS - RC channels OK
+1980-01-07 12:15:58 INFO  prearm.c:94 SUCCESS - Pre-arm checking is complete.
+1980-01-07 12:16:07 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:16:07 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:16:08 INFO  algo_manager.c:251 Master switch OFF: deactivating algorithm 'landing'
+1980-01-07 12:16:08 INFO  algorithms/landing.c:407 Landing algorithm: suspended
+1980-01-07 12:16:08 INFO  modules/silencer.c:112 Throttling telemetry traffic.
+1980-01-07 12:16:08 INFO  uav.c:391 Clearing home position (saving as backup).
+1980-01-07 12:16:08 WARN  prearm.c:420 FAIL - No home position yet
+1980-01-07 12:16:08 WARN  prearm.c:168 FAIL - Guided mode is not turned on yet
+1980-01-07 12:16:34 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:16:34 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:17:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:17:15 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:17:17 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:17:17 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:17:57 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:17:57 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:18:02 WARN  timesync.c:695 Lost fine time synchronization; falling back to rough.
+1980-01-07 12:18:02 INFO  timesync.c:576 Fine time sync started to adjust -0.003004s offset
+1980-01-07 12:18:03 INFO  timesync.c:702 Fine time synchronization achieved.
+1980-01-07 12:18:11 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:18:11 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:18:55 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:18:55 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:18:58 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:18:58 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:18:59 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:18:59 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:19:13 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:19:14 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+1980-01-07 12:19:14 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:19:14 INFO  prearm.c:439 PASS - RC channels OK
+1980-01-07 12:19:18 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:19:18 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:19:23 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:19:23 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+1980-01-07 12:19:23 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:19:24 INFO  prearm.c:439 PASS - RC channels OK
+1980-01-07 12:19:30 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:19:30 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+1980-01-07 12:19:30 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:19:31 INFO  prearm.c:439 PASS - RC channels OK
+1980-01-07 12:20:22 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+1980-01-07 12:20:22 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+1980-01-07 12:20:27 INFO  main_loop.c:1096 Exited main loop.
+1980-01-07 12:20:27 INFO  main_loop.c:1101 Closing JSON-RPC API handler.
+1980-01-07 12:20:27 INFO  main_loop.c:1106 Closing console.
+1980-01-07 12:20:27 INFO  main_loop.c:1113 Closing flight logging.
+1980-01-07 12:20:27 INFO  main_loop.c:1117 Closing GPIO monitor.
+1980-01-07 12:20:27 INFO  main_loop.c:1126 Destroying lighting controller.
+1980-01-07 12:20:27 INFO  main_loop.c:1129 Destroying clocks.
+1980-01-07 12:20:27 INFO  main_loop.c:1132 Destroying algorithms.
+1980-01-07 12:20:27 INFO  main_loop.c:1138 Closing devices.
+1980-01-07 12:20:27 INFO  networking/radio.c:811 Radio subsystem destroyed.
+1980-01-07 12:20:27 INFO  networking/wireless.c:409 Wireless subsystem destroyed.
+1980-01-07 12:20:27 INFO  main_loop.c:1176 Destroying event bus.
+1980-01-07 12:20:27 INFO  main_loop.c:1179 Destroying UAV state.
+1980-01-07 12:20:27 INFO  uav.c:362 algo_update from Autopilot: received 63616 in 770.3s (82.58Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from XBee: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from LED: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from Pyro: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from AEKI: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:362 algo_update from Wireless: received 14025 in 769.5s (18.23Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from Radio: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from Pozyx: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from Sprayer: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from Camera mount: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  uav.c:365 algo_update from BMS: received 0 in 0s (0.0Hz)
+1980-01-07 12:20:27 INFO  main_loop.c:1182 Destroying mission manager.
+1980-01-07 12:20:27 INFO  main_loop.c:1185 Destroying persistent state store.
+1980-01-07 12:20:27 INFO  main_loop.c:1196 Destroying event loop.
+1980-01-07 12:20:27 INFO  main_loop.c:1199 Destroying timers.
+1980-01-07 12:20:27 INFO  main_loop.c:1202 Controller terminated.

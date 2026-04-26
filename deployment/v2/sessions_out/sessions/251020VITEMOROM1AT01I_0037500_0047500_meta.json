@@ -1,0 +1,56 @@
+{
+  "clip": {
+    "source_file": "251020VITEMOROM1AT01I.wav",
+    "output_wav": "sessions_out/sessions/251020VITEMOROM1AT01I_0037500_0047500.wav",
+    "start_s": 37.5,
+    "end_s": 47.5,
+    "duration_s": 10.0,
+    "sample_rate": 22050,
+    "flight_phase": "pre-flight",
+    "normalization_gain_db": 18.985
+  },
+  "detection": {
+    "peak_prob": 1.0,
+    "mean_prob": 0.9984,
+    "n_windows": 2,
+    "threshold": 0.945,
+    "windows": [
+      {
+        "start_s": 37.5,
+        "end_s": 42.5,
+        "probability": 0.9967742083817823,
+        "detected": true
+      },
+      {
+        "start_s": 40.0,
+        "end_s": 45.0,
+        "probability": 0.3317980220146259,
+        "detected": false
+      },
+      {
+        "start_s": 42.5,
+        "end_s": 47.5,
+        "probability": 1.0,
+        "detected": true
+      }
+    ]
+  },
+  "localization": {
+    "n_drones": 0,
+    "drones": []
+  },
+  "signal_metrics": {
+    "rms_dbfs": -35.58,
+    "peak_dbfs": -19.16,
+    "crest_factor": 6.619,
+    "snr_db": 3.97,
+    "spectral_centroid_hz": 648.3,
+    "dominant_freq_hz": 16.15
+  },
+  "ground_truth": {
+    "gpx_n_points": 0,
+    "gpx_trackpoints": [],
+    "rpm": {}
+  },
+  "spectrogram_png": "sessions_out/spectrograms/251020VITEMOROM1AT01I_seg001.png"
+}

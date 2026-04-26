@@ -1,0 +1,225 @@
+{
+  "polywav_chunks": {
+    "251020VITEMOROM1AT01.wav": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "251020VITEMOROM1AT01B.wav": [
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "251020VITEMOROM1AT01D.wav": [
+      13,
+      14
+    ],
+    "251020VITEMOROM1AT01E.wav": [
+      14
+    ],
+    "251020VITEMOROM1AT01G.wav": [
+      16,
+      17
+    ],
+    "251020VITEMOROM1AT01I.wav": [
+      18,
+      19
+    ],
+    "251020VITEMOROM1AT01J.wav": [
+      19,
+      20,
+      21
+    ],
+    "251020VITEMOROM1AT01L.wav": [
+      22,
+      25,
+      23,
+      24
+    ],
+    "251020VITEMOROM1AT01N.wav": [
+      27,
+      28,
+      29
+    ],
+    "251020VITEMOROM1AT01O.wav": [
+      29
+    ],
+    "251020VITEMOROM1AT01P.wav": [
+      30,
+      31,
+      32
+    ]
+  },
+  "mems_audio": {
+    "Audio 01_02.wav": [
+      13,
+      14
+    ],
+    "Audio 05_01.wav": [
+      16,
+      17
+    ],
+    "Audio 09_01.wav": [
+      18,
+      19
+    ],
+    "Audio 10_01.wav": [
+      19,
+      20,
+      21
+    ],
+    "Audio 11_01.wav": [
+      21
+    ]
+  },
+  "gpx_logs": {
+    "drone78/log_20251020-001": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "drone78/log_20251020-002": [
+      5,
+      6,
+      7,
+      8,
+      10,
+      11
+    ],
+    "drone78/log_20251020-003": [
+      13,
+      14
+    ],
+    "drone78/log_20251020-004": [
+      16,
+      17
+    ],
+    "drone88/log_20251020-001": [
+      18,
+      19,
+      20,
+      21
+    ],
+    "drone130/log_20251020-001": [
+      22,
+      25,
+      23,
+      24
+    ],
+    "drone65/log_20251020-001": [
+      27,
+      28,
+      29
+    ],
+    "drone130/log_20251020-002": [
+      27,
+      28,
+      29
+    ],
+    "drone65/log_20251020-002": [
+      30,
+      31,
+      32
+    ],
+    "drone130/log_20251020-003": [
+      30,
+      31,
+      32
+    ],
+    "drone132/log_20251020-001": [
+      30,
+      31,
+      32
+    ],
+    "drone65/log_20251020-003": [
+      33,
+      34,
+      35
+    ],
+    "drone78/log_20251020-005": [
+      33,
+      34,
+      35
+    ],
+    "drone130/log_20251020-004": [
+      33,
+      34,
+      35
+    ],
+    "drone132/log_20251020-002": [
+      33,
+      34,
+      35,
+      36,
+      37,
+      38
+    ],
+    "drone65/log_20251020-004": [
+      36,
+      37,
+      38
+    ],
+    "drone78/log_20251020-006": [
+      36,
+      37,
+      38
+    ],
+    "drone88/log_20251020-002": [
+      36,
+      37,
+      38
+    ],
+    "drone130/log_20251020-005": [
+      36,
+      37,
+      38
+    ],
+    "drone65/log_20251020-005": [
+      39,
+      40
+    ],
+    "drone78/log_20251020-007": [
+      39,
+      40
+    ],
+    "drone88/log_20251020-003": [
+      39,
+      40
+    ],
+    "drone130/log_20251020-006": [
+      39,
+      40
+    ],
+    "drone132/log_20251020-003": [
+      39,
+      40
+    ],
+    "drone130/log_20251020-007": [
+      41
+    ]
+  },
+  "_meta": {
+    "polywav_chunk_dur_s": 399.46,
+    "polywav_fs_hz": 192000,
+    "polywav_channels": 14,
+    "polywav_format": "float32",
+    "polywav_n_chunks": 17,
+    "mems_chunk_dur_s": 242.3,
+    "mems_format_verified": false,
+    "mems_assumed_fs_hz": 48000,
+    "mems_assumed_channels": 4,
+    "mems_assumed_bit_depth": 24,
+    "mems_start_local_s": 50760,
+    "mems_start_local_hms": "14:06:00",
+    "recording_ref_local_s": 48960,
+    "recording_ref_local_hms": "13:36:00",
+    "WARNING_mems": "MEMS format NOT verified from file header. Call verify_mems_format('/path/to/Audio 01_02.wav') then rebuild with build_ground_truth() for accurate timings."
+  }
+}

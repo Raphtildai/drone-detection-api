@@ -1,0 +1,219 @@
+{
+  "scorpio": {
+    "1": {
+      "label": "Mix L",
+      "array": null,
+      "direction": null,
+      "serial": null,
+      "useful": false,
+      "note": "Monitor mix left \u2014 not a raw mic signal"
+    },
+    "2": {
+      "label": "Mix R",
+      "array": null,
+      "direction": null,
+      "serial": null,
+      "useful": false,
+      "note": "Monitor mix right \u2014 not a raw mic signal"
+    },
+    "3": {
+      "label": "W\u2013E",
+      "array": "BK-6-W",
+      "direction": "E",
+      "serial": "2105962",
+      "useful": true
+    },
+    "4": {
+      "label": "W\u2013H",
+      "array": "BK-6-W",
+      "direction": "H",
+      "serial": "2113214",
+      "useful": true
+    },
+    "5": {
+      "label": "W\u2013B",
+      "array": "BK-6-W",
+      "direction": "B",
+      "serial": "2113215",
+      "useful": true
+    },
+    "6": {
+      "label": "W\u2013J",
+      "array": "BK-6-W",
+      "direction": "J",
+      "serial": "2113212",
+      "useful": true
+    },
+    "7": {
+      "label": "W\u2013F",
+      "array": "BK-6-W",
+      "direction": "F",
+      "serial": "2105972",
+      "useful": true
+    },
+    "8": {
+      "label": "W\u2013L",
+      "array": "BK-6-W",
+      "direction": "L",
+      "serial": "2105965",
+      "useful": true
+    },
+    "9": {
+      "label": "E\u2013E",
+      "array": "BK-6-E",
+      "direction": "E",
+      "serial": "2113216",
+      "useful": true
+    },
+    "10": {
+      "label": "E\u2013H",
+      "array": "BK-6-E",
+      "direction": "H",
+      "serial": "2113217",
+      "useful": true
+    },
+    "11": {
+      "label": "E\u2013B",
+      "array": "BK-6-E",
+      "direction": "B",
+      "serial": "2113213",
+      "useful": true
+    },
+    "12": {
+      "label": "E\u2013J",
+      "array": "BK-6-E",
+      "direction": "J",
+      "serial": "2105973",
+      "useful": true
+    },
+    "13": {
+      "label": "E\u2013F",
+      "array": "BK-6-E",
+      "direction": "F",
+      "serial": "2105966",
+      "useful": true
+    },
+    "14": {
+      "label": "E\u2013L",
+      "array": "BK-6-E",
+      "direction": "L",
+      "serial": "2105963",
+      "useful": true
+    }
+  },
+  "pix270i": {
+    "1": {
+      "label": "W\u2013E",
+      "array": "BK-6-W",
+      "direction": "E",
+      "serial": "2105962",
+      "useful": true,
+      "scorpio_ch": 3
+    },
+    "2": {
+      "label": "W\u2013H",
+      "array": "BK-6-W",
+      "direction": "H",
+      "serial": "2113214",
+      "useful": true,
+      "scorpio_ch": 4
+    },
+    "3": {
+      "label": "W\u2013B",
+      "array": "BK-6-W",
+      "direction": "B",
+      "serial": "2113215",
+      "useful": true,
+      "scorpio_ch": 5
+    },
+    "4": {
+      "label": "W\u2013J",
+      "array": "BK-6-W",
+      "direction": "J",
+      "serial": "2113212",
+      "useful": true,
+      "scorpio_ch": 6
+    },
+    "5": {
+      "label": "W\u2013F",
+      "array": "BK-6-W",
+      "direction": "F",
+      "serial": "2105972",
+      "useful": true,
+      "scorpio_ch": 7
+    },
+    "6": {
+      "label": "W\u2013L",
+      "array": "BK-6-W",
+      "direction": "L",
+      "serial": "2105965",
+      "useful": true,
+      "scorpio_ch": 8
+    },
+    "7": {
+      "label": "E\u2013E",
+      "array": "BK-6-E",
+      "direction": "E",
+      "serial": "2113216",
+      "useful": true,
+      "scorpio_ch": 9
+    },
+    "8": {
+      "label": "E\u2013H",
+      "array": "BK-6-E",
+      "direction": "H",
+      "serial": "2113217",
+      "useful": true,
+      "scorpio_ch": 10
+    },
+    "9": {
+      "label": "E\u2013B",
+      "array": "BK-6-E",
+      "direction": "B",
+      "serial": "2113213",
+      "useful": true,
+      "scorpio_ch": 11
+    },
+    "10": {
+      "label": "E\u2013J",
+      "array": "BK-6-E",
+      "direction": "J",
+      "serial": "2105973",
+      "useful": true,
+      "scorpio_ch": 12
+    },
+    "11": {
+      "label": "E\u2013F",
+      "array": "BK-6-E",
+      "direction": "F",
+      "serial": "2105966",
+      "useful": true,
+      "scorpio_ch": 13
+    },
+    "12": {
+      "label": "E\u2013L",
+      "array": "BK-6-E",
+      "direction": "L",
+      "serial": "2105963",
+      "useful": true,
+      "scorpio_ch": 14
+    }
+  },
+  "tdoa_channels": {
+    "BK-6-W": [
+      3,
+      4,
+      5
+    ],
+    "BK-6-E": [
+      9,
+      10,
+      11
+    ]
+  },
+  "notes": {
+    "scorpio_useful_channels": "3\u201314 (ch 1\u20132 are mix bus, not raw mic)",
+    "pix270i_channels": "1\u201312 correspond to Scorpio ch 3\u201314",
+    "tdoa_subset": "First 3 channels per array (E, H, B directions)"
+  }
+}

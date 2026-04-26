@@ -1,0 +1,1928 @@
+[
+  {
+    "detected": false,
+    "probability": 0.17201139350945216,
+    "label": "non_drone",
+    "cnn_probability": 0.03815576434135437,
+    "heuristic_probability": 0.7074339101818433,
+    "start_s": 0.0,
+    "end_s": 5.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1803554133789174,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.026965884491801262,
+    "heuristic_probability": 0.7939135289273819,
+    "start_s": 2.5,
+    "end_s": 7.5
+  },
+  {
+    "detected": false,
+    "probability": 0.18625395577904577,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.034997791051864624,
+    "heuristic_probability": 0.7912786146877704,
+    "start_s": 5.0,
+    "end_s": 10.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18860000615631653,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04186702519655228,
+    "heuristic_probability": 0.7755319299953735,
+    "start_s": 7.5,
+    "end_s": 12.5
+  },
+  {
+    "detected": false,
+    "probability": 0.192169312167752,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.044816724956035614,
+    "heuristic_probability": 0.7815796610146175,
+    "start_s": 10.0,
+    "end_s": 15.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17622402325625003,
+    "label": "non_drone",
+    "cnn_probability": 0.0437626838684082,
+    "heuristic_probability": 0.7060693808076172,
+    "start_s": 12.5,
+    "end_s": 17.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1611434677045124,
+    "label": "non_drone",
+    "cnn_probability": 0.0326506607234478,
+    "heuristic_probability": 0.6751146956287708,
+    "start_s": 15.0,
+    "end_s": 20.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18296866656548993,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.0328962504863739,
+    "heuristic_probability": 0.783258330881954,
+    "start_s": 17.5,
+    "end_s": 22.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17401621789576133,
+    "label": "non_drone",
+    "cnn_probability": 0.03567313402891159,
+    "heuristic_probability": 0.7273885533631602,
+    "start_s": 20.0,
+    "end_s": 25.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17902769911996708,
+    "label": "non_drone",
+    "cnn_probability": 0.054361093789339066,
+    "heuristic_probability": 0.6776941204424791,
+    "start_s": 22.5,
+    "end_s": 27.5
+  },
+  {
+    "detected": false,
+    "probability": 0.18993759711558336,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04985273629426956,
+    "heuristic_probability": 0.7502770404008385,
+    "start_s": 25.0,
+    "end_s": 30.0
+  },
+  {
+    "detected": false,
+    "probability": 0.9259463463542132,
+    "label": "possible_drone",
+    "cnn_probability": 0.8621463179588318,
+    "heuristic_probability": 0.8811464599357389,
+    "start_s": 27.5,
+    "end_s": 32.5
+  },
+  {
+    "detected": false,
+    "probability": 0.500698437174063,
+    "label": "possible_drone",
+    "cnn_probability": 0.4210215210914612,
+    "heuristic_probability": 0.8194061015044707,
+    "start_s": 30.0,
+    "end_s": 35.0
+  },
+  {
+    "detected": false,
+    "probability": 0.3201653410388964,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.18333381414413452,
+    "heuristic_probability": 0.8674914486179438,
+    "start_s": 32.5,
+    "end_s": 37.5
+  },
+  {
+    "detected": false,
+    "probability": 0.27924428547583946,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.14088457822799683,
+    "heuristic_probability": 0.83268311446721,
+    "start_s": 35.0,
+    "end_s": 40.0
+  },
+  {
+    "detected": true,
+    "probability": 0.9967742083817823,
+    "label": "drone",
+    "cnn_probability": 0.9665810465812683,
+    "heuristic_probability": 0.817546855583838,
+    "start_s": 37.5,
+    "end_s": 42.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3317980220146259,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.21731741726398468,
+    "heuristic_probability": 0.7897204410171906,
+    "start_s": 40.0,
+    "end_s": 45.0
+  },
+  {
+    "detected": true,
+    "probability": 1.0,
+    "label": "drone",
+    "cnn_probability": 0.9833030104637146,
+    "heuristic_probability": 0.7856129947626695,
+    "start_s": 42.5,
+    "end_s": 47.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19886469489835,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05385968089103699,
+    "heuristic_probability": 0.7788847509276019,
+    "start_s": 45.0,
+    "end_s": 50.0
+  },
+  {
+    "detected": false,
+    "probability": 0.62487353968643,
+    "label": "possible_drone",
+    "cnn_probability": 0.5646934509277344,
+    "heuristic_probability": 0.5655938947212119,
+    "start_s": 47.5,
+    "end_s": 52.5
+  },
+  {
+    "detected": true,
+    "probability": 0.9555808374774086,
+    "label": "drone",
+    "cnn_probability": 0.9809240102767944,
+    "heuristic_probability": 0.5542081462798648,
+    "start_s": 50.0,
+    "end_s": 55.0
+  },
+  {
+    "detected": false,
+    "probability": 0.163379594595021,
+    "label": "non_drone",
+    "cnn_probability": 0.014674226753413677,
+    "heuristic_probability": 0.7582010659614502,
+    "start_s": 52.5,
+    "end_s": 57.5
+  },
+  {
+    "detected": false,
+    "probability": 0.6208553547712814,
+    "label": "possible_drone",
+    "cnn_probability": 0.46589091420173645,
+    "heuristic_probability": 0.9407131170494611,
+    "start_s": 55.0,
+    "end_s": 60.0
+  },
+  {
+    "detected": true,
+    "probability": 1.0,
+    "label": "drone",
+    "cnn_probability": 0.9891788959503174,
+    "heuristic_probability": 0.7836091029233527,
+    "start_s": 57.5,
+    "end_s": 62.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17899353513759803,
+    "label": "non_drone",
+    "cnn_probability": 0.022396598011255264,
+    "heuristic_probability": 0.805381283642969,
+    "start_s": 60.0,
+    "end_s": 65.0
+  },
+  {
+    "detected": false,
+    "probability": 0.5980777003157927,
+    "label": "possible_drone",
+    "cnn_probability": 0.4764259457588196,
+    "heuristic_probability": 0.7846847185436847,
+    "start_s": 62.5,
+    "end_s": 67.5
+  },
+  {
+    "detected": false,
+    "probability": 0.6770887572947373,
+    "label": "possible_drone",
+    "cnn_probability": 0.5827894806861877,
+    "heuristic_probability": 0.754285863728935,
+    "start_s": 65.0,
+    "end_s": 70.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17783569762861895,
+    "label": "non_drone",
+    "cnn_probability": 0.02052777074277401,
+    "heuristic_probability": 0.8070674051719986,
+    "start_s": 67.5,
+    "end_s": 72.5
+  },
+  {
+    "detected": false,
+    "probability": 0.21579664222629052,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.0628785565495491,
+    "heuristic_probability": 0.8274689849332562,
+    "start_s": 70.0,
+    "end_s": 75.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1961288485689141,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.029207034036517143,
+    "heuristic_probability": 0.863816106698502,
+    "start_s": 72.5,
+    "end_s": 77.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17990821284934022,
+    "label": "non_drone",
+    "cnn_probability": 0.021418873220682144,
+    "heuristic_probability": 0.8138655713639724,
+    "start_s": 75.0,
+    "end_s": 80.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18059187045639707,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.017219610512256622,
+    "heuristic_probability": 0.8340809102329588,
+    "start_s": 77.5,
+    "end_s": 82.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16236137602835687,
+    "label": "non_drone",
+    "cnn_probability": 0.006724236998707056,
+    "heuristic_probability": 0.7849099321469561,
+    "start_s": 80.0,
+    "end_s": 85.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1738713868647727,
+    "label": "non_drone",
+    "cnn_probability": 0.004433070309460163,
+    "heuristic_probability": 0.8516246530860228,
+    "start_s": 82.5,
+    "end_s": 87.5
+  },
+  {
+    "detected": false,
+    "probability": 0.173213357741334,
+    "label": "non_drone",
+    "cnn_probability": 0.00962122157216072,
+    "heuristic_probability": 0.8275819024180271,
+    "start_s": 85.0,
+    "end_s": 90.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16718134189563197,
+    "label": "non_drone",
+    "cnn_probability": 0.0046872165985405445,
+    "heuristic_probability": 0.8171578430839976,
+    "start_s": 87.5,
+    "end_s": 92.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1795018220496035,
+    "label": "non_drone",
+    "cnn_probability": 0.03291403129696846,
+    "heuristic_probability": 0.7658529850601435,
+    "start_s": 90.0,
+    "end_s": 95.0
+  },
+  {
+    "detected": false,
+    "probability": 0.21131334498384094,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.07366827875375748,
+    "heuristic_probability": 0.7618936099041748,
+    "start_s": 92.5,
+    "end_s": 97.5
+  },
+  {
+    "detected": false,
+    "probability": 0.5707944088991805,
+    "label": "possible_drone",
+    "cnn_probability": 0.49511629343032837,
+    "heuristic_probability": 0.5735068707745887,
+    "start_s": 95.0,
+    "end_s": 100.0
+  },
+  {
+    "detected": false,
+    "probability": 0.12849389483042145,
+    "label": "non_drone",
+    "cnn_probability": 0.020336942747235298,
+    "heuristic_probability": 0.561121703163166,
+    "start_s": 97.5,
+    "end_s": 102.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1672195980255385,
+    "label": "non_drone",
+    "cnn_probability": 0.013232805766165257,
+    "heuristic_probability": 0.7831667670630315,
+    "start_s": 100.0,
+    "end_s": 105.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2152137234269988,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.07292284071445465,
+    "heuristic_probability": 0.7843772542771752,
+    "start_s": 102.5,
+    "end_s": 107.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19577945579835998,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.043071821331977844,
+    "heuristic_probability": 0.8066099936638884,
+    "start_s": 105.0,
+    "end_s": 110.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17506402217143657,
+    "label": "non_drone",
+    "cnn_probability": 0.02813909761607647,
+    "heuristic_probability": 0.7627637203928769,
+    "start_s": 107.5,
+    "end_s": 112.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16127228702127072,
+    "label": "non_drone",
+    "cnn_probability": 0.016698839142918587,
+    "heuristic_probability": 0.7395660785346793,
+    "start_s": 110.0,
+    "end_s": 115.0
+  },
+  {
+    "detected": false,
+    "probability": 0.22645476613398796,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.09657898545265198,
+    "heuristic_probability": 0.7459578888593318,
+    "start_s": 112.5,
+    "end_s": 117.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16831120764934504,
+    "label": "non_drone",
+    "cnn_probability": 0.010280298069119453,
+    "heuristic_probability": 0.8004348459702473,
+    "start_s": 115.0,
+    "end_s": 120.0
+  },
+  {
+    "detected": false,
+    "probability": 0.22811971047458773,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.0882575586438179,
+    "heuristic_probability": 0.787568317797667,
+    "start_s": 117.5,
+    "end_s": 122.5
+  },
+  {
+    "detected": false,
+    "probability": 0.20856288786849053,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06355983018875122,
+    "heuristic_probability": 0.7885751185874477,
+    "start_s": 120.0,
+    "end_s": 125.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17650141829381863,
+    "label": "non_drone",
+    "cnn_probability": 0.021331235766410828,
+    "heuristic_probability": 0.7971821484034498,
+    "start_s": 122.5,
+    "end_s": 127.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16845866981385396,
+    "label": "non_drone",
+    "cnn_probability": 0.014851859770715237,
+    "heuristic_probability": 0.7828859099864087,
+    "start_s": 125.0,
+    "end_s": 130.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1756805771284383,
+    "label": "non_drone",
+    "cnn_probability": 0.0067492397502064705,
+    "heuristic_probability": 0.8514059266413655,
+    "start_s": 127.5,
+    "end_s": 132.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16745853375699787,
+    "label": "non_drone",
+    "cnn_probability": 0.0028856080025434494,
+    "heuristic_probability": 0.8257502367748155,
+    "start_s": 130.0,
+    "end_s": 135.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1618469380161709,
+    "label": "non_drone",
+    "cnn_probability": 0.010309306904673576,
+    "heuristic_probability": 0.7679974624621602,
+    "start_s": 132.5,
+    "end_s": 137.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16801600856805282,
+    "label": "non_drone",
+    "cnn_probability": 0.014222700148820877,
+    "heuristic_probability": 0.7831892422449805,
+    "start_s": 135.0,
+    "end_s": 140.0
+  },
+  {
+    "detected": false,
+    "probability": 0.28380042313922177,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.15930648148059845,
+    "heuristic_probability": 0.781776189773715,
+    "start_s": 137.5,
+    "end_s": 142.5
+  },
+  {
+    "detected": false,
+    "probability": 0.8041414924966088,
+    "label": "possible_drone",
+    "cnn_probability": 0.7280508279800415,
+    "heuristic_probability": 0.808504150562878,
+    "start_s": 140.0,
+    "end_s": 145.0
+  },
+  {
+    "detected": false,
+    "probability": 0.30476877075280717,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.17784754931926727,
+    "heuristic_probability": 0.8124536564869668,
+    "start_s": 142.5,
+    "end_s": 147.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17716262205428743,
+    "label": "non_drone",
+    "cnn_probability": 0.013441191986203194,
+    "heuristic_probability": 0.8320483423266243,
+    "start_s": 145.0,
+    "end_s": 150.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1756669169211863,
+    "label": "non_drone",
+    "cnn_probability": 0.013356580398976803,
+    "heuristic_probability": 0.8249082630100243,
+    "start_s": 147.5,
+    "end_s": 152.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1698602330576685,
+    "label": "non_drone",
+    "cnn_probability": 0.008207367733120918,
+    "heuristic_probability": 0.8164716943558589,
+    "start_s": 150.0,
+    "end_s": 155.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1934273976023094,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.0413825623691082,
+    "heuristic_probability": 0.8016067385351141,
+    "start_s": 152.5,
+    "end_s": 157.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1925658738734375,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.027908949181437492,
+    "heuristic_probability": 0.8511935726414374,
+    "start_s": 155.0,
+    "end_s": 160.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19320794205149594,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.022822290658950806,
+    "heuristic_probability": 0.8747505476216764,
+    "start_s": 157.5,
+    "end_s": 162.5
+  },
+  {
+    "detected": false,
+    "probability": 0.24489019206445695,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.10465821623802185,
+    "heuristic_probability": 0.8058180953701973,
+    "start_s": 160.0,
+    "end_s": 165.0
+  },
+  {
+    "detected": false,
+    "probability": 0.32064241334499116,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.1870303750038147,
+    "heuristic_probability": 0.8550905667096969,
+    "start_s": 162.5,
+    "end_s": 167.5
+  },
+  {
+    "detected": false,
+    "probability": 0.30400377848286864,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.1809564083814621,
+    "heuristic_probability": 0.7961932588884947,
+    "start_s": 165.0,
+    "end_s": 170.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19795640219227356,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03534311801195145,
+    "heuristic_probability": 0.848409538913562,
+    "start_s": 167.5,
+    "end_s": 172.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19847932135306803,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.030696310102939606,
+    "heuristic_probability": 0.8696113663535817,
+    "start_s": 170.0,
+    "end_s": 175.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2356347327897919,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.08291182667016983,
+    "heuristic_probability": 0.8465263572682802,
+    "start_s": 172.5,
+    "end_s": 177.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3416374777836607,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.21376892924308777,
+    "heuristic_probability": 0.8531116719459525,
+    "start_s": 175.0,
+    "end_s": 180.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18012209362981965,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.02070264145731926,
+    "heuristic_probability": 0.8177999023198212,
+    "start_s": 177.5,
+    "end_s": 182.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17634396235059138,
+    "label": "non_drone",
+    "cnn_probability": 0.01044413074851036,
+    "heuristic_probability": 0.8399432887589154,
+    "start_s": 180.0,
+    "end_s": 185.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16810496974997183,
+    "label": "non_drone",
+    "cnn_probability": 0.007523658685386181,
+    "heuristic_probability": 0.8104302140083144,
+    "start_s": 182.5,
+    "end_s": 187.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19453406466201684,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03272596746683121,
+    "heuristic_probability": 0.8417664534427594,
+    "start_s": 185.0,
+    "end_s": 190.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18333798075941468,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.030761469155550003,
+    "heuristic_probability": 0.7936440271748733,
+    "start_s": 187.5,
+    "end_s": 192.5
+  },
+  {
+    "detected": false,
+    "probability": 0.18074371003214057,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.015827078372240067,
+    "heuristic_probability": 0.8404102366717424,
+    "start_s": 190.0,
+    "end_s": 195.0
+  },
+  {
+    "detected": false,
+    "probability": 0.21117138626990756,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.053660303354263306,
+    "heuristic_probability": 0.8412157179324845,
+    "start_s": 192.5,
+    "end_s": 197.5
+  },
+  {
+    "detected": false,
+    "probability": 0.21409732314928276,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05805913731455803,
+    "heuristic_probability": 0.8382500664881817,
+    "start_s": 195.0,
+    "end_s": 200.0
+  },
+  {
+    "detected": false,
+    "probability": 0.23150301591429162,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.09256838262081146,
+    "heuristic_probability": 0.7872415490882123,
+    "start_s": 197.5,
+    "end_s": 202.5
+  },
+  {
+    "detected": false,
+    "probability": 0.29647534134896725,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.16633252799510956,
+    "heuristic_probability": 0.8170465947643979,
+    "start_s": 200.0,
+    "end_s": 205.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18916926858598718,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.038607921451330185,
+    "heuristic_probability": 0.7914146571246151,
+    "start_s": 202.5,
+    "end_s": 207.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1766583092993082,
+    "label": "non_drone",
+    "cnn_probability": 0.03572039306163788,
+    "heuristic_probability": 0.7404099742499894,
+    "start_s": 205.0,
+    "end_s": 210.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1831052325482245,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.025950029492378235,
+    "heuristic_probability": 0.8117260447716096,
+    "start_s": 207.5,
+    "end_s": 212.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1965469219856094,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.050524622201919556,
+    "heuristic_probability": 0.7806361211203687,
+    "start_s": 210.0,
+    "end_s": 215.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20629274438515477,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06242581084370613,
+    "heuristic_probability": 0.7817604785509493,
+    "start_s": 212.5,
+    "end_s": 217.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19950213345610418,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05668686330318451,
+    "heuristic_probability": 0.7707632140677827,
+    "start_s": 215.0,
+    "end_s": 220.0
+  },
+  {
+    "detected": false,
+    "probability": 0.22301728272128363,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.07587867230176926,
+    "heuristic_probability": 0.8115717243993411,
+    "start_s": 217.5,
+    "end_s": 222.5
+  },
+  {
+    "detected": false,
+    "probability": 0.21814178368265286,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06657640635967255,
+    "heuristic_probability": 0.824403292974574,
+    "start_s": 220.0,
+    "end_s": 225.0
+  },
+  {
+    "detected": false,
+    "probability": 0.24135435776318687,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.09573516994714737,
+    "heuristic_probability": 0.8238311090273447,
+    "start_s": 222.5,
+    "end_s": 227.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3003797215854882,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.16740286350250244,
+    "heuristic_probability": 0.8322871539174312,
+    "start_s": 225.0,
+    "end_s": 230.0
+  },
+  {
+    "detected": false,
+    "probability": 0.3253226866615355,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.1982899159193039,
+    "heuristic_probability": 0.833453769630462,
+    "start_s": 227.5,
+    "end_s": 232.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1998431247564667,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.040378037840127945,
+    "heuristic_probability": 0.8377034724218216,
+    "start_s": 230.0,
+    "end_s": 235.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19411767452554496,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03362727910280228,
+    "heuristic_probability": 0.8360792562165156,
+    "start_s": 232.5,
+    "end_s": 237.5
+  },
+  {
+    "detected": false,
+    "probability": 0.18592996866538763,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.024269627407193184,
+    "heuristic_probability": 0.8325713336981653,
+    "start_s": 235.0,
+    "end_s": 240.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19032365849756527,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.028215743601322174,
+    "heuristic_probability": 0.8387553180825377,
+    "start_s": 237.5,
+    "end_s": 242.5
+  },
+  {
+    "detected": false,
+    "probability": 0.20891889814939393,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.047011326998472214,
+    "heuristic_probability": 0.8565491827530807,
+    "start_s": 240.0,
+    "end_s": 245.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2011473865295081,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.038403939455747604,
+    "heuristic_probability": 0.85212117482455,
+    "start_s": 242.5,
+    "end_s": 247.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2353584884513356,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.08201341331005096,
+    "heuristic_probability": 0.848738789016474,
+    "start_s": 245.0,
+    "end_s": 250.0
+  },
+  {
+    "detected": false,
+    "probability": 0.24609940430486615,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.09657712280750275,
+    "heuristic_probability": 0.8441885302943196,
+    "start_s": 247.5,
+    "end_s": 252.5
+  },
+  {
+    "detected": false,
+    "probability": 0.21693712160498507,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.060812827199697495,
+    "heuristic_probability": 0.8414342992261352,
+    "start_s": 250.0,
+    "end_s": 255.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2566513163688776,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.10847388207912445,
+    "heuristic_probability": 0.8493610535278902,
+    "start_s": 252.5,
+    "end_s": 257.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1988866595407477,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04022866487503052,
+    "heuristic_probability": 0.8335186382036163,
+    "start_s": 255.0,
+    "end_s": 260.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17787340802507579,
+    "label": "non_drone",
+    "cnn_probability": 0.01391187310218811,
+    "heuristic_probability": 0.8337195477166264,
+    "start_s": 257.5,
+    "end_s": 262.5
+  },
+  {
+    "detected": false,
+    "probability": 0.20385708128155652,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03886641189455986,
+    "heuristic_probability": 0.8638197588295431,
+    "start_s": 260.0,
+    "end_s": 265.0
+  },
+  {
+    "detected": false,
+    "probability": 0.23708818799272244,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.08296479284763336,
+    "heuristic_probability": 0.8535817685730787,
+    "start_s": 262.5,
+    "end_s": 267.5
+  },
+  {
+    "detected": false,
+    "probability": 0.4867161698374266,
+    "label": "possible_drone",
+    "cnn_probability": 0.3951578736305237,
+    "heuristic_probability": 0.8529493546650381,
+    "start_s": 265.0,
+    "end_s": 270.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20251852943457527,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04271311312913895,
+    "heuristic_probability": 0.8417401946563204,
+    "start_s": 267.5,
+    "end_s": 272.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17942019816336227,
+    "label": "non_drone",
+    "cnn_probability": 0.01597226969897747,
+    "heuristic_probability": 0.8332119120209015,
+    "start_s": 270.0,
+    "end_s": 275.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17904574536847892,
+    "label": "non_drone",
+    "cnn_probability": 0.012579559348523617,
+    "heuristic_probability": 0.8449104894483002,
+    "start_s": 272.5,
+    "end_s": 277.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17426822943958695,
+    "label": "non_drone",
+    "cnn_probability": 0.009511729702353477,
+    "heuristic_probability": 0.8332942283885209,
+    "start_s": 275.0,
+    "end_s": 280.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17423643071044256,
+    "label": "non_drone",
+    "cnn_probability": 0.00902247428894043,
+    "heuristic_probability": 0.835092256396451,
+    "start_s": 277.5,
+    "end_s": 282.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1822020015458529,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.01835789531469345,
+    "heuristic_probability": 0.8375784264704906,
+    "start_s": 280.0,
+    "end_s": 285.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18228142305476924,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.01668953150510788,
+    "heuristic_probability": 0.8446489892534146,
+    "start_s": 282.5,
+    "end_s": 287.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17659019484892605,
+    "label": "non_drone",
+    "cnn_probability": 0.011600241996347904,
+    "heuristic_probability": 0.8365500062592386,
+    "start_s": 285.0,
+    "end_s": 290.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19144904465150386,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.030951691791415215,
+    "heuristic_probability": 0.8334384560918583,
+    "start_s": 287.5,
+    "end_s": 292.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19549283194699313,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.038573671132326126,
+    "heuristic_probability": 0.8231694752056611,
+    "start_s": 290.0,
+    "end_s": 295.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20155261420947468,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.057379063218832016,
+    "heuristic_probability": 0.7782468181720452,
+    "start_s": 292.5,
+    "end_s": 297.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2643220651688518,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.1254856139421463,
+    "heuristic_probability": 0.8196678700756739,
+    "start_s": 295.0,
+    "end_s": 300.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18443899080101467,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03619815781712532,
+    "heuristic_probability": 0.777402322736572,
+    "start_s": 297.5,
+    "end_s": 302.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1794066161508859,
+    "label": "non_drone",
+    "cnn_probability": 0.021906720474362373,
+    "heuristic_probability": 0.8094061988569801,
+    "start_s": 300.0,
+    "end_s": 305.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17456456200941484,
+    "label": "non_drone",
+    "cnn_probability": 0.01477822009474039,
+    "heuristic_probability": 0.8137099296681125,
+    "start_s": 302.5,
+    "end_s": 307.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1990944415978873,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05064148083329201,
+    "heuristic_probability": 0.7929062846562683,
+    "start_s": 305.0,
+    "end_s": 310.0
+  },
+  {
+    "detected": false,
+    "probability": 0.192126544175167,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.044912535697221756,
+    "heuristic_probability": 0.7809825780869479,
+    "start_s": 307.5,
+    "end_s": 312.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1853619955916985,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03342186659574509,
+    "heuristic_probability": 0.7931225115755121,
+    "start_s": 310.0,
+    "end_s": 315.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16989402146384264,
+    "label": "non_drone",
+    "cnn_probability": 0.03306249529123306,
+    "heuristic_probability": 0.7172201261542809,
+    "start_s": 312.5,
+    "end_s": 317.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19738752677256133,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.08607452362775803,
+    "heuristic_probability": 0.6426395393517745,
+    "start_s": 315.0,
+    "end_s": 320.0
+  },
+  {
+    "detected": false,
+    "probability": 0.5700445005755201,
+    "label": "possible_drone",
+    "cnn_probability": 0.518998384475708,
+    "heuristic_probability": 0.4742289649747686,
+    "start_s": 317.5,
+    "end_s": 322.5
+  },
+  {
+    "detected": false,
+    "probability": 0.35257503985920935,
+    "label": "possible_drone",
+    "cnn_probability": 0.2695094048976898,
+    "heuristic_probability": 0.6848375797052876,
+    "start_s": 320.0,
+    "end_s": 325.0
+  },
+  {
+    "detected": false,
+    "probability": 0.24068008885668782,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.10310602188110352,
+    "heuristic_probability": 0.790976356759025,
+    "start_s": 322.5,
+    "end_s": 327.5
+  },
+  {
+    "detected": false,
+    "probability": 0.26039991967163945,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.12816786766052246,
+    "heuristic_probability": 0.7893281277161075,
+    "start_s": 325.0,
+    "end_s": 330.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16711013563943106,
+    "label": "non_drone",
+    "cnn_probability": 0.014757983386516571,
+    "heuristic_probability": 0.7765187446510889,
+    "start_s": 327.5,
+    "end_s": 332.5
+  },
+  {
+    "detected": false,
+    "probability": 0.15782959318575507,
+    "label": "non_drone",
+    "cnn_probability": 0.012802880257368088,
+    "heuristic_probability": 0.737936444899303,
+    "start_s": 330.0,
+    "end_s": 335.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1897336692310549,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.044186968356370926,
+    "heuristic_probability": 0.7719204727297907,
+    "start_s": 332.5,
+    "end_s": 337.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19655084591718888,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03873390704393387,
+    "heuristic_probability": 0.8278186014102088,
+    "start_s": 335.0,
+    "end_s": 340.0
+  },
+  {
+    "detected": false,
+    "probability": 0.21827335647117424,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06604833900928497,
+    "heuristic_probability": 0.8271734263187311,
+    "start_s": 337.5,
+    "end_s": 342.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3943790556370263,
+    "label": "possible_drone",
+    "cnn_probability": 0.2888619005680084,
+    "heuristic_probability": 0.8164476759130976,
+    "start_s": 340.0,
+    "end_s": 345.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20559989581963664,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04637594893574715,
+    "heuristic_probability": 0.8424956833551945,
+    "start_s": 342.5,
+    "end_s": 347.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2130236610050801,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05343981832265854,
+    "heuristic_probability": 0.8513590317347663,
+    "start_s": 345.0,
+    "end_s": 350.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20562177319290667,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04313147813081741,
+    "heuristic_probability": 0.8555829534412637,
+    "start_s": 347.5,
+    "end_s": 352.5
+  },
+  {
+    "detected": false,
+    "probability": 0.192730919165708,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.025326672941446304,
+    "heuristic_probability": 0.8623479040627547,
+    "start_s": 350.0,
+    "end_s": 355.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17476597810369932,
+    "label": "non_drone",
+    "cnn_probability": 0.009351017884910107,
+    "heuristic_probability": 0.8364258189788562,
+    "start_s": 352.5,
+    "end_s": 357.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1925936787348702,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.02689332328736782,
+    "heuristic_probability": 0.8553951005248797,
+    "start_s": 355.0,
+    "end_s": 360.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19841379121259042,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03355610743165016,
+    "heuristic_probability": 0.8578445263363513,
+    "start_s": 357.5,
+    "end_s": 362.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3030357392272955,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.16833283007144928,
+    "heuristic_probability": 0.8418473758506803,
+    "start_s": 360.0,
+    "end_s": 365.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1898673951936549,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.02788681723177433,
+    "heuristic_probability": 0.8377897070411772,
+    "start_s": 362.5,
+    "end_s": 367.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17359712614703812,
+    "label": "non_drone",
+    "cnn_probability": 0.008561288937926292,
+    "heuristic_probability": 0.8337404749834855,
+    "start_s": 365.0,
+    "end_s": 370.0
+  },
+  {
+    "detected": false,
+    "probability": 0.21911145743064775,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06446289271116257,
+    "heuristic_probability": 0.8377057163085884,
+    "start_s": 367.5,
+    "end_s": 372.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17309242352305218,
+    "label": "non_drone",
+    "cnn_probability": 0.012015986256301403,
+    "heuristic_probability": 0.8173981725900553,
+    "start_s": 370.0,
+    "end_s": 375.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17171848437276443,
+    "label": "non_drone",
+    "cnn_probability": 0.022979917004704475,
+    "heuristic_probability": 0.7666727538450042,
+    "start_s": 372.5,
+    "end_s": 377.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1263583645829677,
+    "label": "non_drone",
+    "cnn_probability": 0.017299527302384377,
+    "heuristic_probability": 0.562593713705301,
+    "start_s": 375.0,
+    "end_s": 380.0
+  },
+  {
+    "detected": false,
+    "probability": 0.31825935900858215,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.16123564541339874,
+    "heuristic_probability": 0.9463542133893157,
+    "start_s": 377.5,
+    "end_s": 382.5
+  },
+  {
+    "detected": false,
+    "probability": 0.7207436304175372,
+    "label": "possible_drone",
+    "cnn_probability": 0.5911001563072205,
+    "heuristic_probability": 0.9393175268588037,
+    "start_s": 380.0,
+    "end_s": 385.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2081405350855296,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.060125574469566345,
+    "heuristic_probability": 0.8002003775493826,
+    "start_s": 382.5,
+    "end_s": 387.5
+  },
+  {
+    "detected": false,
+    "probability": 0.9425169990776832,
+    "label": "possible_drone",
+    "cnn_probability": 0.9037299156188965,
+    "heuristic_probability": 0.7976653329128298,
+    "start_s": 385.0,
+    "end_s": 390.0
+  },
+  {
+    "detected": false,
+    "probability": 0.22282585597472312,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.0707131028175354,
+    "heuristic_probability": 0.8312768686034739,
+    "start_s": 387.5,
+    "end_s": 392.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1965698485229543,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.02849998138844967,
+    "heuristic_probability": 0.8688493170609729,
+    "start_s": 390.0,
+    "end_s": 395.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19638345832962686,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.028202082961797714,
+    "heuristic_probability": 0.8691089598009434,
+    "start_s": 392.5,
+    "end_s": 397.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17687485011265502,
+    "label": "non_drone",
+    "cnn_probability": 0.007604001555591822,
+    "heuristic_probability": 0.8539582443409078,
+    "start_s": 395.0,
+    "end_s": 400.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16982742398627876,
+    "label": "non_drone",
+    "cnn_probability": 0.008533020503818989,
+    "heuristic_probability": 0.8150050379161178,
+    "start_s": 397.5,
+    "end_s": 402.5
+  },
+  {
+    "detected": false,
+    "probability": 0.18447828436267427,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.024198230355978012,
+    "heuristic_probability": 0.8255985003894593,
+    "start_s": 400.0,
+    "end_s": 405.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16799913323866794,
+    "label": "non_drone",
+    "cnn_probability": 0.019475895911455154,
+    "heuristic_probability": 0.7620920825475191,
+    "start_s": 402.5,
+    "end_s": 407.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17641163536506893,
+    "label": "non_drone",
+    "cnn_probability": 0.023286573588848114,
+    "heuristic_probability": 0.7889118824699521,
+    "start_s": 405.0,
+    "end_s": 410.0
+  },
+  {
+    "detected": false,
+    "probability": 0.24019663373949168,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.09201979637145996,
+    "heuristic_probability": 0.8329039832116186,
+    "start_s": 407.5,
+    "end_s": 412.5
+  },
+  {
+    "detected": false,
+    "probability": 0.27674163530613066,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.13882963359355927,
+    "heuristic_probability": 0.8283896421564163,
+    "start_s": 410.0,
+    "end_s": 415.0
+  },
+  {
+    "detected": false,
+    "probability": 0.43840117825982283,
+    "label": "possible_drone",
+    "cnn_probability": 0.34432142972946167,
+    "heuristic_probability": 0.8147201723812676,
+    "start_s": 412.5,
+    "end_s": 417.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2047245575335937,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05466020107269287,
+    "heuristic_probability": 0.8049819833771968,
+    "start_s": 415.0,
+    "end_s": 420.0
+  },
+  {
+    "detected": false,
+    "probability": 0.19000918846062415,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.040801044553518295,
+    "heuristic_probability": 0.7868417640890475,
+    "start_s": 417.5,
+    "end_s": 422.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17111810268475544,
+    "label": "non_drone",
+    "cnn_probability": 0.009928494691848755,
+    "heuristic_probability": 0.8158765346563821,
+    "start_s": 420.0,
+    "end_s": 425.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1767213470581728,
+    "label": "non_drone",
+    "cnn_probability": 0.0168465469032526,
+    "heuristic_probability": 0.8162205476778536,
+    "start_s": 422.5,
+    "end_s": 427.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1676316906484242,
+    "label": "non_drone",
+    "cnn_probability": 0.007261642720550299,
+    "heuristic_probability": 0.8091118823599198,
+    "start_s": 425.0,
+    "end_s": 430.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17036805831914317,
+    "label": "non_drone",
+    "cnn_probability": 0.019873343408107758,
+    "heuristic_probability": 0.7723469179632848,
+    "start_s": 427.5,
+    "end_s": 432.5
+  },
+  {
+    "detected": false,
+    "probability": 0.22687420937498626,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.084800586104393,
+    "heuristic_probability": 0.7951687024573593,
+    "start_s": 430.0,
+    "end_s": 435.0
+  },
+  {
+    "detected": false,
+    "probability": 0.205871753598124,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05510881170630455,
+    "heuristic_probability": 0.8089235211654018,
+    "start_s": 432.5,
+    "end_s": 437.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17774697840026554,
+    "label": "non_drone",
+    "cnn_probability": 0.016883058473467827,
+    "heuristic_probability": 0.8212026581074563,
+    "start_s": 435.0,
+    "end_s": 440.0
+  },
+  {
+    "detected": false,
+    "probability": 0.20004139435988397,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.041195813566446304,
+    "heuristic_probability": 0.8354237175336345,
+    "start_s": 437.5,
+    "end_s": 442.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17644304011891715,
+    "label": "non_drone",
+    "cnn_probability": 0.010061688721179962,
+    "heuristic_probability": 0.8419684457098658,
+    "start_s": 440.0,
+    "end_s": 445.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17614919057883205,
+    "label": "non_drone",
+    "cnn_probability": 0.012553631328046322,
+    "heuristic_probability": 0.830531427581975,
+    "start_s": 442.5,
+    "end_s": 447.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16637630973557074,
+    "label": "non_drone",
+    "cnn_probability": 0.011901185847818851,
+    "heuristic_probability": 0.7842768052865782,
+    "start_s": 445.0,
+    "end_s": 450.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17268925674060845,
+    "label": "non_drone",
+    "cnn_probability": 0.028521530330181122,
+    "heuristic_probability": 0.7493601623823177,
+    "start_s": 447.5,
+    "end_s": 452.5
+  },
+  {
+    "detected": false,
+    "probability": 0.19099022650105327,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04288472235202789,
+    "heuristic_probability": 0.7834122430971547,
+    "start_s": 450.0,
+    "end_s": 455.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1892611633744667,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04700537398457527,
+    "heuristic_probability": 0.7582843209340322,
+    "start_s": 452.5,
+    "end_s": 457.5
+  },
+  {
+    "detected": false,
+    "probability": 0.20156477207316936,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06297475099563599,
+    "heuristic_probability": 0.7559248563833029,
+    "start_s": 455.0,
+    "end_s": 460.0
+  },
+  {
+    "detected": false,
+    "probability": 0.27372431131836156,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.1546642929315567,
+    "heuristic_probability": 0.7499643848655809,
+    "start_s": 457.5,
+    "end_s": 462.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2696316287819204,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.14209412038326263,
+    "heuristic_probability": 0.7797816623765514,
+    "start_s": 460.0,
+    "end_s": 465.0
+  },
+  {
+    "detected": false,
+    "probability": 0.2237004098434478,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.08635935932397842,
+    "heuristic_probability": 0.7730646119213253,
+    "start_s": 462.5,
+    "end_s": 467.5
+  },
+  {
+    "detected": false,
+    "probability": 0.20051823317242826,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.04464799165725708,
+    "heuristic_probability": 0.8239991992331128,
+    "start_s": 465.0,
+    "end_s": 470.0
+  },
+  {
+    "detected": false,
+    "probability": 0.21445810641211996,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.06097521260380745,
+    "heuristic_probability": 0.8283896816453699,
+    "start_s": 467.5,
+    "end_s": 472.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1855119264749046,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.037458617240190506,
+    "heuristic_probability": 0.7777251634137609,
+    "start_s": 470.0,
+    "end_s": 475.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16787895110054224,
+    "label": "non_drone",
+    "cnn_probability": 0.020231815055012703,
+    "heuristic_probability": 0.7584674952826602,
+    "start_s": 472.5,
+    "end_s": 477.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17436081856640467,
+    "label": "non_drone",
+    "cnn_probability": 0.012832106091082096,
+    "heuristic_probability": 0.820475668467695,
+    "start_s": 475.0,
+    "end_s": 480.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17122167490019763,
+    "label": "non_drone",
+    "cnn_probability": 0.01293841190636158,
+    "heuristic_probability": 0.8043547268755419,
+    "start_s": 477.5,
+    "end_s": 482.5
+  },
+  {
+    "detected": false,
+    "probability": 0.3956088021062938,
+    "label": "possible_drone",
+    "cnn_probability": 0.3006848990917206,
+    "heuristic_probability": 0.7753044141645864,
+    "start_s": 480.0,
+    "end_s": 485.0
+  },
+  {
+    "detected": false,
+    "probability": 0.3011000603421139,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.17506873607635498,
+    "heuristic_probability": 0.8052253574051494,
+    "start_s": 482.5,
+    "end_s": 487.5
+  },
+  {
+    "detected": false,
+    "probability": 0.41532474537154157,
+    "label": "possible_drone",
+    "cnn_probability": 0.314870685338974,
+    "heuristic_probability": 0.8171409855018118,
+    "start_s": 485.0,
+    "end_s": 490.0
+  },
+  {
+    "detected": true,
+    "probability": 0.9917198749339438,
+    "label": "drone",
+    "cnn_probability": 0.9589883685112,
+    "heuristic_probability": 0.8226459006249189,
+    "start_s": 487.5,
+    "end_s": 492.5
+  },
+  {
+    "detected": false,
+    "probability": 0.2180392305593027,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05828304588794708,
+    "heuristic_probability": 0.857063969244725,
+    "start_s": 490.0,
+    "end_s": 495.0
+  },
+  {
+    "detected": false,
+    "probability": 0.18359744442834805,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.011488388292491436,
+    "heuristic_probability": 0.8720336689717745,
+    "start_s": 492.5,
+    "end_s": 497.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17667729627831327,
+    "label": "non_drone",
+    "cnn_probability": 0.017312947660684586,
+    "heuristic_probability": 0.8141346907488279,
+    "start_s": 495.0,
+    "end_s": 500.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16961362372176625,
+    "label": "non_drone",
+    "cnn_probability": 0.007447731215506792,
+    "heuristic_probability": 0.818277193746804,
+    "start_s": 497.5,
+    "end_s": 502.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16565857127651942,
+    "label": "non_drone",
+    "cnn_probability": 0.008374364115297794,
+    "heuristic_probability": 0.7947953999214059,
+    "start_s": 500.0,
+    "end_s": 505.0
+  },
+  {
+    "detected": false,
+    "probability": 0.16866377220225565,
+    "label": "non_drone",
+    "cnn_probability": 0.010511097498238087,
+    "heuristic_probability": 0.8012744710183258,
+    "start_s": 502.5,
+    "end_s": 507.5
+  },
+  {
+    "detected": false,
+    "probability": 0.17091632631447162,
+    "label": "non_drone",
+    "cnn_probability": 0.007822340354323387,
+    "heuristic_probability": 0.8232922701550646,
+    "start_s": 505.0,
+    "end_s": 510.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17100545086120567,
+    "label": "non_drone",
+    "cnn_probability": 0.017182836309075356,
+    "heuristic_probability": 0.7862959090697268,
+    "start_s": 507.5,
+    "end_s": 512.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1868084686433169,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.03539109230041504,
+    "heuristic_probability": 0.7924779740149243,
+    "start_s": 510.0,
+    "end_s": 515.0
+  },
+  {
+    "detected": false,
+    "probability": 0.26803726235188097,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.14575065672397614,
+    "heuristic_probability": 0.7571836848635003,
+    "start_s": 512.5,
+    "end_s": 517.5
+  },
+  {
+    "detected": false,
+    "probability": 0.1963026404217307,
+    "label": "weak_possible_drone",
+    "cnn_probability": 0.05900125205516815,
+    "heuristic_probability": 0.745508193887981,
+    "start_s": 515.0,
+    "end_s": 520.0
+  },
+  {
+    "detected": false,
+    "probability": 0.17408457127851815,
+    "label": "non_drone",
+    "cnn_probability": 0.02179223857820034,
+    "heuristic_probability": 0.7832539020797893,
+    "start_s": 517.5,
+    "end_s": 522.5
+  },
+  {
+    "detected": false,
+    "probability": 0.16516644513829684,
+    "label": "non_drone",
+    "cnn_probability": 0.015558539889752865,
+    "heuristic_probability": 0.7635980661324727,
+    "start_s": 520.0,
+    "end_s": 525.0
+  },
+  {
+    "detected": false,
+    "probability": 0.11826024200124786,
+    "label": "non_drone",
+    "cnn_probability": 0.0035508282016962767,
+    "heuristic_probability": 0.5770978971994541,
+    "start_s": 522.5,
+    "end_s": 527.5
+  },
+  {
+    "detected": false,
+    "probability": 0.14727247804220256,
+    "label": "non_drone",
+    "cnn_probability": 0.036896128207445145,
+    "heuristic_probability": 0.5887778773812322,
+    "start_s": 525.0,
+    "end_s": 530.0
+  },
+  {
+    "detected": false,
+    "probability": 0.1316077602146533,
+    "label": "non_drone",
+    "cnn_probability": 0.020641928538680077,
+    "heuristic_probability": 0.5754710869185462,
+    "start_s": 527.5,
+    "end_s": 532.5
+  },
+  {
+    "detected": false,
+    "probability": 0.5679008727052088,
+    "label": "possible_drone",
+    "cnn_probability": 0.49200764298439026,
+    "heuristic_probability": 0.5714737915884832,
+    "start_s": 530.0,
+    "end_s": 533.0
+  },
+  {
+    "detected": false,
+    "probability": 0.11566904018759261,
+    "label": "non_drone",
+    "cnn_probability": 0.02229689061641693,
+    "heuristic_probability": 0.48915763847229526,
+    "start_s": 532.5,
+    "end_s": 533.0
+  }
+]

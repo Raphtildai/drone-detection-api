@@ -1,0 +1,209 @@
+2025-10-20 14:06:18 INFO  main_loop.c:906 Current mission: volk-2025-15
+2025-10-20 14:06:18 INFO  flyingzone.c:225 Reading flying zone file /data/missions/volk-2025-15/flyingzone.cfg...
+2025-10-20 14:06:18 INFO  flyingzone.c:280 Parsed 10 flying zone points, 0 holes, 0 rally points, 0 arena points and 0 target points of zone 'show'.
+2025-10-20 14:06:18 INFO  choreography.c:638 Reading choreography file /data/missions/volk-2025-15/choreography.cfg...
+2025-10-20 14:06:18 INFO  choreography.c:656 Parsed 2 choreography elements.
+2025-10-20 14:06:18 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-15/waypoints_ground.cfg ...
+2025-10-20 14:06:19 INFO  waypoints.c:226 Parsed 1 waypoints.
+2025-10-20 14:06:19 INFO  algorithms/waypoint.c:1248 Minimum safety margin between waypoints and flying zone: 27.8 m
+2025-10-20 14:06:19 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-15/waypoints.cfg ...
+2025-10-20 14:06:19 INFO  waypoints.c:226 Parsed 121 waypoints.
+2025-10-20 14:06:19 INFO  algorithms/waypoint.c:1248 Minimum safety margin between waypoints and flying zone: 15.3 m
+2025-10-20 14:06:19 INFO  main_loop.c:117 GPIO monitor initialized.
+2025-10-20 14:06:19 INFO  main_loop.c:150 Watching GPIO pin 88 (rising edge) for timesync pulse
+2025-10-20 14:06:19 INFO  networking/radio.c:266 Initializing radio with address 0x0082 on /dev/sik-radio...
+2025-10-20 14:06:19 INFO  networking/radio.c:823 Radio activated, receiving only.
+2025-10-20 14:06:19 INFO  networking/wireless.c:419 Waiting for wireless interface to come up.
+2025-10-20 14:06:19 INFO  autopilots/pixhawk/driver.c:110 Initializing MAVLink/PixHawk on /dev/ttyAML1...
+2025-10-20 14:06:19 WARN  main_loop.c:263 Could not initialize BMS.
+2025-10-20 14:06:19 WARN  main_loop.c:278 Could not initialize camera mount.
+2025-10-20 14:06:19 INFO  led_strip.c:67 Initializing serial LED strip on /dev/ttyAML0...
+2025-10-20 14:06:19 INFO  led_strip.c:83 LED strip initialized.
+2025-10-20 14:06:19 WARN  main_loop.c:346 Could not initialize sprayer.
+2025-10-20 14:06:19 INFO  main_loop.c:928 Initializing algorithms...
+2025-10-20 14:06:19 INFO  modules/silencer.c:112 Throttling telemetry traffic.
+2025-10-20 14:06:19 INFO  modules/slow_flight_mode.c:147 Slow flight mode deactivated. Resuming normal control output.
+2025-10-20 14:06:19 INFO  networking/console.c:205 Opening debug console on 127.0.0.1:4242
+2025-10-20 14:06:19 INFO  networking/jsonrpc.c:374 Opening JSON-RPC API handler on 127.0.0.1:4244
+2025-10-20 14:06:19 INFO  main_loop.c:396 Master switch: ch5, 6 states (3=enable)
+2025-10-20 14:06:19 INFO  main_loop.c:401 No algorithm selector channel is selected.
+2025-10-20 14:06:19 INFO  main_loop.c:401 No manual switch channel is selected.
+2025-10-20 14:06:19 INFO  main_loop.c:396 Return to home switch: ch8, 2 states (2=enable)
+2025-10-20 14:06:19 INFO  main_loop.c:396 Choreography switch: ch7, 2 states (2=enable)
+2025-10-20 14:06:19 INFO  main_loop.c:401 No pyro switch channel is selected.
+2025-10-20 14:06:19 INFO  main_loop.c:401 No slow flight mode switch channel is selected.
+2025-10-20 14:06:19 INFO  main_loop.c:401 No sprayer switch channel is selected.
+2025-10-20 14:06:19 INFO  main_loop.c:396 Suspend/resume switch: ch6, 2 states (2=enable)
+2025-10-20 14:06:19 INFO  main_loop.c:429 Auxiliary function of choreography switch: set LED color by group
+2025-10-20 14:06:19 INFO  main_loop.c:437 Default algorithm: manual
+2025-10-20 14:06:19 INFO  main_loop.c:445 Emergency algorithm: emergency
+2025-10-20 14:06:19 INFO  main_loop.c:1086 Entering main loop...
+2025-10-20 14:06:19 INFO  prearm.c:246 PASS - Error code is zero
+2025-10-20 14:06:19 INFO  prearm.c:398 PASS - High level sensor checks OK
+2025-10-20 14:06:19 INFO  prearm.c:412 PASS - GPS fix OK
+2025-10-20 14:06:19 INFO  prearm.c:463 PASS - Relative altitude OK
+2025-10-20 14:06:19 INFO  prearm.c:546 PASS - Flying zone OK
+2025-10-20 14:06:19 INFO  prearm.c:160 PASS - Low level prearm checks OK
+2025-10-20 14:06:21 INFO  prearm.c:398 PASS - High level sensor checks OK
+2025-10-20 14:24:00 INFO  timesync.c:481 System time is now 2025-10-20 14:24:00.906812 UTC
+2025-10-20 14:24:00 INFO  timesync.c:681 Basic time synchronization achieved.
+2025-10-20 14:24:01 INFO  networking/wireless.c:592 Wireless link up at 10.0.0.130:4243 (UDP and TCP)
+2025-10-20 14:24:01 INFO  networking/wireless.c:614 Broadcasting wireless packets to 10.255.255.255:4243
+2025-10-20 14:24:01 INFO  networking/wireless.c:423 Wireless activated.
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/driver.c:1930 ArduPilot version: 3.6.7
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 520 (MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES), result: 0 (ACCEPTED).
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/driver.c:1721 statustext: u-blox 1 HW: 00080000 SW: EXT CORE 3.01 (db0c89) (severity: 6 - INFO)
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/init.c:106 Initializing MAVLink/PixHawk data stream rates...
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/init.c:129 Requesting important parameters from PixHawk...
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/init.c:136 Uploading important parameters to PixHawk...
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/driver.c:1865 Acknowledgement of PARAM_SET, ID: COMPASS_DEC, new value: 0
+2025-10-20 14:24:02 INFO  autopilots/pixhawk/driver.c:1865 Acknowledgement of PARAM_SET, ID: COMPASS_AUTODEC, new value: 1
+2025-10-20 14:24:03 INFO  timesync.c:284 GPS PPS time - system time = 0.157260s
+2025-10-20 14:24:04 INFO  timesync.c:481 System time is now 2025-10-20 14:24:04.000259 UTC
+2025-10-20 14:24:04 INFO  timesync.c:693 Rough time synchronization achieved.
+2025-10-20 14:24:04 WARN  prearm.c:256 FAIL - Autopilot has not finished initializing yet
+2025-10-20 14:24:04 WARN  prearm.c:420 FAIL - No home position yet
+2025-10-20 14:24:04 WARN  prearm.c:168 FAIL - Guided mode is not turned on yet
+2025-10-20 14:24:04 INFO  autopilots/pixhawk/driver.c:1912 Compass #3 is not in use
+2025-10-20 14:24:05 INFO  timesync.c:702 Fine time synchronization achieved.
+2025-10-20 14:24:08 INFO  autopilots/pixhawk/driver.c:1900 GPS delay is 220 ms
+2025-10-20 14:24:08 INFO  autopilots/pixhawk/driver.c:1904 Compass #1 is in use
+2025-10-20 14:24:08 INFO  autopilots/pixhawk/driver.c:1908 Compass #2 is in use
+2025-10-20 14:24:09 INFO  prearm.c:260 PASS - Autopilot is active and initialized
+2025-10-20 14:24:09 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+2025-10-20 14:24:09 WARN  prearm.c:168 FAIL - UAV system status message indicates missing sensors (52493359, 35691567, 52493359)
+       Not present: RC_RECEIVER
+       Not enabled: RC_RECEIVER
+       Not healthy: RC_RECEIVER
+2025-10-20 14:24:10 WARN  prearm.c:458 FAIL - Relative altitude is strange (5.450m)
+2025-10-20 14:24:18 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF primary changed:1 (severity: 4 - WARNING)
+2025-10-20 14:24:19 INFO  prearm.c:463 PASS - Relative altitude OK
+2025-10-20 14:24:19 ERROR prearm.c:177 FAIL - PixHawk prearm check is failing
+2025-10-20 14:24:20 WARN  prearm.c:458 FAIL - Relative altitude is strange (13.410m)
+2025-10-20 14:24:20 INFO  prearm.c:160 PASS - Low level prearm checks OK
+2025-10-20 14:24:23 INFO  prearm.c:463 PASS - Relative altitude OK
+2025-10-20 14:24:23 ERROR prearm.c:177 FAIL - PixHawk prearm check is failing
+2025-10-20 14:24:24 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU1 is using GPS (severity: 6 - INFO)
+2025-10-20 14:24:25 WARN  prearm.c:458 FAIL - Relative altitude is strange (14.569m)
+2025-10-20 14:24:25 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU0 is using GPS (severity: 6 - INFO)
+2025-10-20 14:24:25 INFO  prearm.c:160 PASS - Low level prearm checks OK
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:24:27 INFO  uav.c:1952 Initializing choreography step #1: 'wait_on_ground'
+2025-10-20 14:24:27 INFO  prearm.c:439 PASS - RC channels OK
+2025-10-20 14:24:27 INFO  prearm.c:160 PASS - PixHawk sensor status OK
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/whats_next=loiter
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_z=2
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_xy=7
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/velocity_z=2
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/velocity_xy=5
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_frict=1
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/v_frict=1
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/p_rep=1
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_spp=2
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/r0_rep=6
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: lighting/bytecode_player.enable=0
+2025-10-20 14:24:27 INFO  uav.c:1598 Setting parameter: algorithm/file=/data/missions/volk-2025-15/waypoints_ground.cfg
+2025-10-20 14:24:27 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-15/waypoints_ground.cfg ...
+2025-10-20 14:24:27 INFO  waypoints.c:226 Parsed 1 waypoints.
+2025-10-20 14:24:27 INFO  algo_manager.c:276 Master switch ON: activating algorithm 'waypoint'
+2025-10-20 14:24:27 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: waiting for pre-arm checking
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 11 (MAVLINK_MSG_ID_SET_MODE), result: 0 (ACCEPTED).
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1721 statustext: Initialising APM (severity: 6 - INFO)
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1721 statustext: Updating barometer calibration (severity: 6 - INFO)
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1721 statustext: Barometer calibration complete (severity: 6 - INFO)
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 241 (MAV_CMD_PREFLIGHT_CALIBRATION), result: 0 (ACCEPTED).
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:592 Setting home position on PixHawk to (its current pos instead of) lat=47.6086357 lon=19.1469701 AMSL=137.76
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1692 Home position on PixHawk: 47.6086355 19.1469701 @ 137.55m AMSL
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:1351 GPS global origin: 47.6086111 19.1469643 @ 123.12m AMSL
+2025-10-20 14:24:27 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 179 (MAV_CMD_DO_SET_HOME), result: 0 (ACCEPTED).
+2025-10-20 14:24:27 INFO  uav.c:2496 Autopilot accepted home position: lat=47.6086357 lon=19.1469701 AMSL=137.76
+2025-10-20 14:24:28 INFO  prearm.c:422 PASS - Home position OK
+2025-10-20 14:24:28 ERROR prearm.c:506 FAIL - Takeoff placement tolerance (3m) exceeded: 8.06266m
+2025-10-20 14:24:28 INFO  prearm.c:537 PASS - Flying height OK
+2025-10-20 14:24:28 INFO  prearm.c:160 PASS - Heartbeat base and custom mode OK
+2025-10-20 14:24:28 WARN  prearm.c:168 FAIL - UAV system status message indicates sensor malfunction (52558895, 35781676, 52558892)
+       Not present: 
+       Not enabled: 3D_GYRO 3D_ACCEL
+       Not healthy: 3D_GYRO 3D_ACCEL
+2025-10-20 14:24:28 INFO  prearm.c:463 PASS - Relative altitude OK
+2025-10-20 14:24:29 INFO  prearm.c:160 PASS - PixHawk sensor status OK
+2025-10-20 14:24:33 INFO  algo_manager.c:251 Master switch OFF: deactivating algorithm 'waypoint'
+2025-10-20 14:24:33 INFO  algorithms/waypoint.c:1305 Waypoint algorithm: suspended
+2025-10-20 14:24:33 INFO  uav.c:391 Clearing home position (saving as backup).
+2025-10-20 14:24:33 WARN  prearm.c:420 FAIL - No home position yet
+2025-10-20 14:24:34 WARN  prearm.c:168 FAIL - Guided mode is not turned on yet
+2025-10-20 14:25:38 WARN  control/output.c:96 Motor on failed: prearm check is still in progress
+2025-10-20 14:25:40 INFO  log.c:152 Enabled logging.
+2025-10-20 14:25:40 INFO  modules/silencer.c:114 Normal telemetry traffic resumed.
+2025-10-20 14:25:40 INFO  uav.c:1450 Took of in manual flight mode; restoring last home position.
+2025-10-20 14:25:46 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:25:46 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:25:48 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU0 in-flight yaw alignment complete (severity: 6 - INFO)
+2025-10-20 14:25:48 INFO  autopilots/pixhawk/driver.c:1721 statustext: EKF2 IMU1 in-flight yaw alignment complete (severity: 6 - INFO)
+2025-10-20 14:25:53 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:25:53 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:25:58 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:25:58 ERROR uav.c:2128 Emergency algo is triggered in the following state:
+  status = 956433282, ALIVE MOTOR AIRBORNE CM_ALT_HOLD EMERGENCY ARMED RADIO RTK+ 
+  error_code = 7, Autopilot indicates that RC signal is lost
+2025-10-20 14:25:58 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:25:58 INFO  uav.c:1295 Normal operation, no error.
+2025-10-20 14:26:02 ERROR uav.c:2128 Emergency algo is triggered in the following state:
+  status = 956433282, ALIVE MOTOR AIRBORNE CM_ALT_HOLD EMERGENCY ARMED RADIO RTK+ 
+  error_code = 49, Outside of flying zone
+2025-10-20 14:26:50 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:26:50 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:28:06 INFO  uav.c:1952 Initializing choreography step #1: 'wait_on_ground'
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/whats_next=loiter
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_z=2
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/velocity_threshold_xy=7
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/velocity_z=2
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/velocity_xy=5
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_frict=1
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/v_frict=1
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/p_rep=1
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/r0_offset_spp=2
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/r0_rep=6
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: lighting/bytecode_player.enable=0
+2025-10-20 14:28:06 INFO  uav.c:1598 Setting parameter: algorithm/file=/data/missions/volk-2025-15/waypoints_ground.cfg
+2025-10-20 14:28:06 INFO  waypoints.c:210 Reading waypoint file /data/missions/volk-2025-15/waypoints_ground.cfg ...
+2025-10-20 14:28:06 INFO  waypoints.c:226 Parsed 1 waypoints.
+2025-10-20 14:28:06 INFO  algo_manager.c:276 Master switch ON: activating algorithm 'emergency'
+2025-10-20 14:28:06 INFO  autopilots/pixhawk/driver.c:2013 Acknowledgement OK, cmd: 11 (MAVLINK_MSG_ID_SET_MODE), result: 0 (ACCEPTED).
+2025-10-20 14:28:06 INFO  algorithms/emergency.c:141 trying to return to home or closest rally
+2025-10-20 14:28:50 INFO  algo_manager.c:251 Master switch OFF: deactivating algorithm 'emergency'
+2025-10-20 14:28:59 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:28:59 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:29:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:29:47 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:30:37 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:30:37 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:31:01 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:31:01 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:31:11 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:31:11 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:31:25 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:31:25 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:31:31 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:31:31 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:31:41 WARN  timesync.c:695 Lost fine time synchronization; falling back to rough.
+2025-10-20 14:31:42 INFO  timesync.c:576 Fine time sync started to adjust 0.003006s offset
+2025-10-20 14:31:42 INFO  timesync.c:702 Fine time synchronization achieved.
+2025-10-20 14:31:51 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:31:51 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding PX4IO_PPM (severity: 7 - DEBUG)
+2025-10-20 14:32:21 INFO  autopilots/pixhawk/driver.c:919 Sent command to disarm motors.
+2025-10-20 14:32:21 ERROR autopilots/pixhawk/driver.c:2035 Acknowledgement error, cmd: 400 (MAV_CMD_COMPONENT_ARM_DISARM), result: 4 (FAILED).
+2025-10-20 14:32:26 INFO  uav.c:501 06:46 mm:ss flight time acknowledged.
+2025-10-20 14:32:26 INFO  log.c:140 Disabled logging.
+2025-10-20 14:32:26 INFO  modules/silencer.c:112 Throttling telemetry traffic.
+2025-10-20 14:32:26 ERROR prearm.c:244 FAIL - Error code is 49
+2025-10-20 14:32:26 INFO  prearm.c:422 PASS - Home position OK
+2025-10-20 14:32:26 INFO  prearm.c:521 PASS - Takeoff placement OK
+2025-10-20 14:32:26 INFO  prearm.c:537 PASS - Flying height OK
+2025-10-20 14:32:31 INFO  autopilots/pixhawk/driver.c:1721 statustext: RCInput: decoding UNKNOWN (severity: 7 - DEBUG)
+2025-10-20 14:32:32 WARN  prearm.c:437 FAIL - 8 RC channels invalid
+2025-10-20 14:32:32 WARN  prearm.c:168 FAIL - Heartbeat system status should be STANDBY, not CRITICAL
+2025-10-20 14:32:32 WARN  prearm.c:168 FAIL - UAV system status message indicates sensor malfunction (52558895, 35765295, 52493359)
+       Not present: 
+       Not enabled: 
+       Not healthy: RC_RECEIVER

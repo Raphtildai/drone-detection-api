@@ -1,0 +1,5 @@
+duration_s,end_s,flight_phase,gpx_points,n_drones,output_meta,output_wav,peak_prob,sig_crest_factor,sig_dominant_freq_hz,sig_peak_dbfs,sig_rms_dbfs,sig_snr_db,sig_spectral_centroid_hz,source_file,start_s
+10.0,47.5,pre-flight,0,0,sessions_out/sessions/251020VITEMOROM1AT01I_0037500_0047500_meta.json,sessions_out/sessions/251020VITEMOROM1AT01I_0037500_0047500.wav,1.0,6.619,16.15,-19.16,-35.58,3.97,648.3,251020VITEMOROM1AT01I.wav,37.5
+5.0,55.0,pre-flight,0,0,sessions_out/sessions/251020VITEMOROM1AT01I_0050000_0055000_meta.json,sessions_out/sessions/251020VITEMOROM1AT01I_0050000_0055000.wav,0.9556,5.794,5.38,-19.96,-35.22,5.6,560.4,251020VITEMOROM1AT01I.wav,50.0
+5.0,62.5,pre-flight,0,0,sessions_out/sessions/251020VITEMOROM1AT01I_0057500_0062500_meta.json,sessions_out/sessions/251020VITEMOROM1AT01I_0057500_0062500.wav,1.0,6.128,16.15,-18.76,-34.51,5.43,649.5,251020VITEMOROM1AT01I.wav,57.5
+5.0,492.5,cruise,0,0,sessions_out/sessions/251020VITEMOROM1AT01I_0487500_0492500_meta.json,sessions_out/sessions/251020VITEMOROM1AT01I_0487500_0492500.wav,0.9917,3.881,21.53,-22.87,-34.65,2.93,255.9,251020VITEMOROM1AT01I.wav,487.5

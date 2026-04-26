@@ -1,0 +1,25 @@
+Dunakeszi Extraction Report
+==================================================
+Drone segments   : 0
+Background clips : 0
+
+Split breakdown:
+  train: 0 drone
+  val: 0 drone
+  test: 0 drone
+
+Timing: APPROXIMATE — set RECORDING_START_SMPTE_S from exact SMPTE frame
+
+Channel map (0-based index):
+  E-B: index 10 (Scorpio ch11)
+  E-E: index 8 (Scorpio ch9)
+  E-F: index 12 (Scorpio ch13)
+  E-H: index 9 (Scorpio ch10)
+  E-J: index 11 (Scorpio ch12)
+  E-L: index 13 (Scorpio ch14)
+  W-B: index 4 (Scorpio ch5)
+  W-E: index 2 (Scorpio ch3)
+  W-F: index 6 (Scorpio ch7)
+  W-H: index 3 (Scorpio ch4)
+  W-J: index 5 (Scorpio ch6)
+  W-L: index 7 (Scorpio ch8)

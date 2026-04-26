@@ -274,10 +274,10 @@ class Config:
             return 0.0
 
     def _setup_paths(self):
-        base  = "/content/drone_v15" if self.IN_COLAB else "/tmp/drone_v15"
+        base  = "/content/drone_v15" if self.IN_COLAB else str(Path(__file__).parent.parent)
         drive = (
             "/content/drive/MyDrive/drone_v15"
-            if self.IN_COLAB else "/tmp/drone_v15"
+            if self.IN_COLAB else str(Path(__file__).parent.parent)
         )
         B, D = Path(base), Path(drive)
 
