@@ -554,6 +554,7 @@ def run_test_dataset_evaluation(
     n_detected = 0
 
     header = (f"{'Session':28s}  {'Det':3s}  {'Prob':5s}  "
+              f"{'CNN_P':5s}  {'Heur_P':6s}  "
               f"{'Az_p':7s}  {'Az_t':7s}  {'Err':6s}  "
               f"{'Di_p':6s}  {'Di_t':6s}  {'Ht_p':5s}")
     print(header); print("-" * len(header))
@@ -564,6 +565,8 @@ def run_test_dataset_evaluation(
             det_res  = detect(channels, cfg)
             detected = det_res["detected"]
             prob     = det_res["probability"]
+            cnn_prob = det_res["cnn_probability"]
+            heur_prob = det_res["heuristic_probability"]
             if detected: n_detected += 1
             az_pred = dist_pred = ht_pred = float("nan")
             if detected:
@@ -587,6 +590,7 @@ def run_test_dataset_evaluation(
             az_e    = f"{az_err:6.1f}" if not math.isnan(az_err) else "     -"
             di_t    = f"{sess.distance_m:6.2f}" if sess.has_label else "     -"
             print(f"{sess.session_id:28.28s}  {det_str}  {prob:.3f}  "
+                  f"{cnn_prob:5.3f}  {heur_prob:6.3f}  "
                   f"{az_pred:7.1f}  {az_t}  {az_e}  "
                   f"{dist_pred:6.2f}  {di_t}  {ht_pred:5.2f}")
             session_results.append({

@@ -908,11 +908,16 @@ _PW_BYTES_PER_FRAME = 14 * 4   # 14 channels × float32
 _PW_FRAMES = _PW_SIZE_BYTES // _PW_BYTES_PER_FRAME
 PW_CHUNK_DUR_S = _PW_FRAMES / 192_000   # 399.46 s ≈ 6 min 39 s
 
+# FIX: the recording ran 13:36–16:28 (≈172 min = 10 328 s), requiring 26 chunks (slots 0-25).
+# The original list was hardcoded to 17 files (unlabeled + A–P, covering only to ~15:29).
+# Shows 13, 14, 15, 10 (15:42 onward) require files Q through Y — now included.
+# The extractor scans the WAV directory at runtime, so it will find any file present;
+# this list is used only for file_index.json cross-reference and consistency checks.
 POLYWAV_FILES: List[str] = (
-    ["251020VITEMOROM1AT01.wav"]                              # unlabeled first chunk
-    + [f"251020VITEMOROM1AT01{L}.wav" for L in "ABCDEFGHIJKLMNOP"]  # A–P
+    ["251020VITEMOROM1AT01.wav"]                                       # slot 0 — unlabeled
+    + [f"251020VITEMOROM1AT01{L}.wav" for L in "ABCDEFGHIJKLMNOPQRSTUVWXY"]  # slots 1-25 (A–Y)
 )
-assert len(POLYWAV_FILES) == 17, "Expected 17 PolyWav chunks"
+assert len(POLYWAV_FILES) == 26, "Expected 26 PolyWav chunks (unlabeled + A–Y)"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -978,10 +983,19 @@ def _enrich_segments(segments: list, sessions_by_id: dict) -> list:
         seg["bk_available"] = True
 
         # Azimuth and distance at onset (from start_coord XY)
+        # Coordinate frame: X=East, Y=North, Z=Up (mic_array_geometry.json)
+        # Azimuth convention: standard geographic bearing measured clockwise from North.
+        #   bearing = atan2(X, Y)  (NOT atan2(Y, X) which gives the math/Cartesian angle)
+        # Examples:
+        #   drone due North  → (x=0,  y=+60) → atan2(0,  60) =   0°
+        #   drone due East   → (x=+60,y=0  ) → atan2(60,  0) =  90°
+        #   drone due South  → (x=0,  y=-60) → atan2(0, -60) = 180°
+        #   drone due West   → (x=-60,y=0  ) → atan2(-60,0)  = -90° (= 270°)
+        # FIX: original used atan2(y, x) giving math angle, not bearing from North.
         sc = seg.get("start_coord")
         if sc and sc[0] is not None and sc[1] is not None:
             x, y = sc[0], sc[1]
-            seg["azimuth_deg_onset"]  = round(math.degrees(math.atan2(y, x)), 1)
+            seg["azimuth_deg_onset"]   = round(math.degrees(math.atan2(x, y)), 1)
             seg["distance_xy_m_onset"] = round(math.hypot(x, y), 1)
             seg["distance_3d_m_onset"] = round(math.hypot(x, y, sc[2] if len(sc) > 2 else 0), 1)
         else:
@@ -1395,3 +1409,12 @@ if __name__ == "__main__":
         print()
 
     build_ground_truth(args.out_dir)
+
+    # # Usage
+    # python dunakeszi_ground_truth_fixed.py --out_dir ground_truth/
+    # # Then in your extractor, import load_ground_truth and segments_for_file to access the data.
+    # python dunakeszi_segment_extractor_fixed.py \
+    # --segments ground_truth/ground_truth_segments.json \
+    # --wav-dir /path/containing/just/J_file/ \
+    # --array BK-6-E \
+    # --clip-position 0.5

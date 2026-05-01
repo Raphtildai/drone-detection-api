@@ -16,7 +16,6 @@
     "start_coord": null,
     "end_coord": null,
     "duration_s": 120,
-    "mems_available": false,
     "quality_flags": [
       "pre_measurement"
     ],
@@ -28,6 +27,8 @@
     "onset_from_rec_s": 0,
     "local_end_s": 49080,
     "local_end_hms": "13:38:00",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": null,
     "distance_xy_m_onset": null,
     "distance_3d_m_onset": null,
@@ -62,7 +63,6 @@
       10
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49083,
     "local_start_hms": "13:38:03",
@@ -72,6 +72,8 @@
     "onset_from_rec_s": 123,
     "local_end_s": 49143,
     "local_end_hms": "13:39:03",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 10.0,
@@ -106,7 +108,6 @@
       20
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49146,
     "local_start_hms": "13:39:06",
@@ -116,6 +117,8 @@
     "onset_from_rec_s": 186,
     "local_end_s": 49206,
     "local_end_hms": "13:40:06",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 20.0,
@@ -150,7 +153,6 @@
       30
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49209,
     "local_start_hms": "13:40:09",
@@ -160,6 +162,8 @@
     "onset_from_rec_s": 249,
     "local_end_s": 49269,
     "local_end_hms": "13:41:09",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 30.0,
@@ -194,7 +198,6 @@
       40
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [
       "gain_increased_to_60dB_at_t376s_from_rec_start"
     ],
@@ -206,6 +209,8 @@
     "onset_from_rec_s": 312,
     "local_end_s": 49332,
     "local_end_hms": "13:42:12",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 40.0,
@@ -240,7 +245,6 @@
       20
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [
       "yaw_not_executed",
       "effectively_hover"
@@ -253,6 +257,8 @@
     "onset_from_rec_s": 840,
     "local_end_s": 49860,
     "local_end_hms": "13:51:00",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 20.0,
@@ -287,7 +293,6 @@
       20
     ],
     "duration_s": 60,
-    "mems_available": false,
     "quality_flags": [
       "yaw_not_executed",
       "effectively_hover"
@@ -300,6 +305,8 @@
     "onset_from_rec_s": 903,
     "local_end_s": 49923,
     "local_end_hms": "13:52:03",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 0.0,
     "distance_xy_m_onset": 0.0,
     "distance_3d_m_onset": 20.0,
@@ -334,7 +341,6 @@
       20
     ],
     "duration_s": 30,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49926,
     "local_start_hms": "13:52:06",
@@ -344,7 +350,9 @@
     "onset_from_rec_s": 966,
     "local_end_s": 49956,
     "local_end_hms": "13:52:36",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 60.0,
     "distance_3d_m_onset": 63.2,
     "split": "train",
@@ -378,7 +386,6 @@
       20
     ],
     "duration_s": 15,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49959,
     "local_start_hms": "13:52:39",
@@ -388,7 +395,9 @@
     "onset_from_rec_s": 999,
     "local_end_s": 49974,
     "local_end_hms": "13:52:54",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 60.0,
     "distance_3d_m_onset": 63.2,
     "split": "train",
@@ -422,7 +431,6 @@
       20
     ],
     "duration_s": 66,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 49977,
     "local_start_hms": "13:52:57",
@@ -432,6 +440,8 @@
     "onset_from_rec_s": 1017,
     "local_end_s": 50043,
     "local_end_hms": "13:54:03",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 87.2,
@@ -466,7 +476,6 @@
       20
     ],
     "duration_s": 33,
-    "mems_available": false,
     "quality_flags": [],
     "local_start_s": 50046,
     "local_start_hms": "13:54:06",
@@ -476,6 +485,8 @@
     "onset_from_rec_s": 1086,
     "local_end_s": 50079,
     "local_end_hms": "13:54:39",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 87.2,
@@ -510,7 +521,6 @@
       60
     ],
     "duration_s": 66,
-    "mems_available": true,
     "quality_flags": [
       "mems_starts_120s_before_show_trigger",
       "show5_log_timestamps_unreliable"
@@ -523,6 +533,8 @@
     "onset_from_rec_s": 1920,
     "local_end_s": 50946,
     "local_end_hms": "14:09:06",
+    "mems_available": true,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 103.9,
@@ -557,7 +569,6 @@
       60
     ],
     "duration_s": 33,
-    "mems_available": true,
     "quality_flags": [
       "show5_log_timestamps_unreliable"
     ],
@@ -569,6 +580,8 @@
     "onset_from_rec_s": 1989,
     "local_end_s": 50982,
     "local_end_hms": "14:09:42",
+    "mems_available": true,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 103.9,
@@ -603,7 +616,6 @@
       120
     ],
     "duration_s": 66,
-    "mems_available": true,
     "quality_flags": [],
     "local_start_s": 51840,
     "local_start_hms": "14:24:00",
@@ -613,6 +625,8 @@
     "onset_from_rec_s": 2880,
     "local_end_s": 51906,
     "local_end_hms": "14:25:06",
+    "mems_available": true,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 147.0,
@@ -647,7 +661,6 @@
       120
     ],
     "duration_s": 33,
-    "mems_available": true,
     "quality_flags": [],
     "local_start_s": 51909,
     "local_start_hms": "14:25:09",
@@ -657,6 +670,8 @@
     "onset_from_rec_s": 2949,
     "local_end_s": 51942,
     "local_end_hms": "14:25:42",
+    "mems_available": true,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 147.0,
@@ -687,7 +702,6 @@
     ],
     "end_coord": null,
     "duration_s": 16,
-    "mems_available": true,
     "quality_flags": [
       "uncertain_start_radius",
       "short_segment"
@@ -700,7 +714,9 @@
     "onset_from_rec_s": 3900,
     "local_end_s": 52876,
     "local_end_hms": "14:41:16",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": true,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -730,7 +746,6 @@
     ],
     "end_coord": null,
     "duration_s": 94,
-    "mems_available": true,
     "quality_flags": [],
     "local_start_s": 52879,
     "local_start_hms": "14:41:19",
@@ -740,7 +755,9 @@
     "onset_from_rec_s": 3919,
     "local_end_s": 52973,
     "local_end_hms": "14:42:53",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": true,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 15.0,
     "distance_3d_m_onset": 25.0,
     "split": "train",
@@ -770,7 +787,6 @@
     ],
     "end_coord": null,
     "duration_s": 188,
-    "mems_available": true,
     "quality_flags": [],
     "local_start_s": 52976,
     "local_start_hms": "14:42:56",
@@ -780,7 +796,9 @@
     "onset_from_rec_s": 4016,
     "local_end_s": 53164,
     "local_end_hms": "14:46:04",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": true,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 30.0,
     "distance_3d_m_onset": 36.1,
     "split": "train",
@@ -806,7 +824,6 @@
     "start_coord": null,
     "end_coord": null,
     "duration_s": 63,
-    "mems_available": true,
     "quality_flags": [
       "approx_120m_total_span"
     ],
@@ -818,6 +835,8 @@
     "onset_from_rec_s": 4207,
     "local_end_s": 53230,
     "local_end_hms": "14:47:10",
+    "mems_available": true,
+    "bk_available": true,
     "azimuth_deg_onset": null,
     "distance_xy_m_onset": null,
     "distance_3d_m_onset": null,
@@ -852,10 +871,10 @@
       120
     ],
     "duration_s": 69,
-    "mems_available": true,
     "quality_flags": [
       "start_z_approx_5m_not_0",
-      "execution_order_1_of_4"
+      "execution_order_1_of_4",
+      "mems_ended_before_show"
     ],
     "local_start_s": 53820,
     "local_start_hms": "14:57:00",
@@ -865,6 +884,8 @@
     "onset_from_rec_s": 4860,
     "local_end_s": 53889,
     "local_end_hms": "14:58:09",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 85.0,
@@ -899,10 +920,10 @@
       120
     ],
     "duration_s": 69,
-    "mems_available": true,
     "quality_flags": [
       "start_z_approx_5m_not_0",
-      "execution_order_2_of_4"
+      "execution_order_2_of_4",
+      "mems_ended_before_show"
     ],
     "local_start_s": 53892,
     "local_start_hms": "14:58:12",
@@ -912,6 +933,8 @@
     "onset_from_rec_s": 4932,
     "local_end_s": 53961,
     "local_end_hms": "14:59:21",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": 45.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 85.0,
@@ -946,10 +969,10 @@
       120
     ],
     "duration_s": 69,
-    "mems_available": true,
     "quality_flags": [
       "start_z_approx_5m_not_0",
-      "execution_order_3_of_4"
+      "execution_order_3_of_4",
+      "mems_ended_before_show"
     ],
     "local_start_s": 53964,
     "local_start_hms": "14:59:24",
@@ -959,7 +982,9 @@
     "onset_from_rec_s": 5004,
     "local_end_s": 54033,
     "local_end_hms": "15:00:33",
-    "azimuth_deg_onset": 135.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -45.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 85.0,
     "split": "train",
@@ -993,10 +1018,10 @@
       120
     ],
     "duration_s": 69,
-    "mems_available": true,
     "quality_flags": [
       "start_z_approx_5m_not_0",
-      "execution_order_4_of_4"
+      "execution_order_4_of_4",
+      "mems_ended_before_show"
     ],
     "local_start_s": 54036,
     "local_start_hms": "15:00:36",
@@ -1006,7 +1031,9 @@
     "onset_from_rec_s": 5076,
     "local_end_s": 54105,
     "local_end_hms": "15:01:45",
-    "azimuth_deg_onset": -45.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": 135.0,
     "distance_xy_m_onset": 84.9,
     "distance_3d_m_onset": 85.0,
     "split": "train",
@@ -1037,9 +1064,9 @@
     ],
     "end_coord": null,
     "duration_s": 8,
-    "mems_available": true,
     "quality_flags": [
-      "short_segment"
+      "short_segment",
+      "mems_ended_before_show"
     ],
     "local_start_s": 54780,
     "local_start_hms": "15:13:00",
@@ -1049,7 +1076,9 @@
     "onset_from_rec_s": 5820,
     "local_end_s": 54788,
     "local_end_hms": "15:13:08",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1081,8 +1110,9 @@
     ],
     "end_coord": null,
     "duration_s": 47,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 54791,
     "local_start_hms": "15:13:11",
     "smpte_start_s": 54791,
@@ -1091,7 +1121,9 @@
     "onset_from_rec_s": 5831,
     "local_end_s": 54838,
     "local_end_hms": "15:13:58",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1123,8 +1155,9 @@
     ],
     "end_coord": null,
     "duration_s": 188,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 54841,
     "local_start_hms": "15:14:01",
     "smpte_start_s": 54841,
@@ -1133,7 +1166,9 @@
     "onset_from_rec_s": 5881,
     "local_end_s": 55029,
     "local_end_hms": "15:17:09",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1166,10 +1201,10 @@
     ],
     "end_coord": null,
     "duration_s": 8,
-    "mems_available": true,
     "quality_flags": [
       "radius_adjusted_from_5m_to_10m",
-      "short_segment"
+      "short_segment",
+      "mems_ended_before_show"
     ],
     "local_start_s": 55620,
     "local_start_hms": "15:27:00",
@@ -1179,7 +1214,9 @@
     "onset_from_rec_s": 6660,
     "local_end_s": 55628,
     "local_end_hms": "15:27:08",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1213,8 +1250,9 @@
     ],
     "end_coord": null,
     "duration_s": 47,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 55631,
     "local_start_hms": "15:27:11",
     "smpte_start_s": 55631,
@@ -1223,7 +1261,9 @@
     "onset_from_rec_s": 6671,
     "local_end_s": 55678,
     "local_end_hms": "15:27:58",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1257,8 +1297,9 @@
     ],
     "end_coord": null,
     "duration_s": 188,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 55681,
     "local_start_hms": "15:28:01",
     "smpte_start_s": 55681,
@@ -1267,7 +1308,9 @@
     "onset_from_rec_s": 6721,
     "local_end_s": 55869,
     "local_end_hms": "15:31:09",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "train",
@@ -1302,9 +1345,9 @@
     ],
     "end_coord": null,
     "duration_s": 8,
-    "mems_available": true,
     "quality_flags": [
-      "short_segment"
+      "short_segment",
+      "mems_ended_before_show"
     ],
     "local_start_s": 56520,
     "local_start_hms": "15:42:00",
@@ -1314,7 +1357,9 @@
     "onset_from_rec_s": 7560,
     "local_end_s": 56528,
     "local_end_hms": "15:42:08",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "val",
@@ -1350,8 +1395,9 @@
     ],
     "end_coord": null,
     "duration_s": 47,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 56531,
     "local_start_hms": "15:42:11",
     "smpte_start_s": 56531,
@@ -1360,7 +1406,9 @@
     "onset_from_rec_s": 7571,
     "local_end_s": 56578,
     "local_end_hms": "15:42:58",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "val",
@@ -1396,8 +1444,9 @@
     ],
     "end_coord": null,
     "duration_s": 188,
-    "mems_available": true,
-    "quality_flags": [],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
     "local_start_s": 56581,
     "local_start_hms": "15:43:01",
     "smpte_start_s": 56581,
@@ -1406,7 +1455,9 @@
     "onset_from_rec_s": 7621,
     "local_end_s": 56769,
     "local_end_hms": "15:46:09",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "val",
@@ -1443,10 +1494,10 @@
     ],
     "end_coord": null,
     "duration_s": 8,
-    "mems_available": true,
     "quality_flags": [
       "short_segment",
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
     ],
     "local_start_s": 57420,
     "local_start_hms": "15:57:00",
@@ -1456,7 +1507,9 @@
     "onset_from_rec_s": 8460,
     "local_end_s": 57428,
     "local_end_hms": "15:57:08",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "test",
@@ -1494,9 +1547,9 @@
     ],
     "end_coord": null,
     "duration_s": 47,
-    "mems_available": true,
     "quality_flags": [
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
     ],
     "local_start_s": 57431,
     "local_start_hms": "15:57:11",
@@ -1506,7 +1559,9 @@
     "onset_from_rec_s": 8471,
     "local_end_s": 57478,
     "local_end_hms": "15:57:58",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "test",
@@ -1544,9 +1599,9 @@
     ],
     "end_coord": null,
     "duration_s": 188,
-    "mems_available": true,
     "quality_flags": [
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
     ],
     "local_start_s": 57481,
     "local_start_hms": "15:58:01",
@@ -1556,7 +1611,9 @@
     "onset_from_rec_s": 8521,
     "local_end_s": 57669,
     "local_end_hms": "16:01:09",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 2.5,
     "distance_3d_m_onset": 20.2,
     "split": "test",
@@ -1598,9 +1655,9 @@
       20
     ],
     "duration_s": 60,
-    "mems_available": true,
     "quality_flags": [
-      "v_formation_not_always_maintained"
+      "v_formation_not_always_maintained",
+      "mems_ended_before_show"
     ],
     "local_start_s": 58260,
     "local_start_hms": "16:11:00",
@@ -1610,7 +1667,9 @@
     "onset_from_rec_s": 9300,
     "local_end_s": 58320,
     "local_end_hms": "16:12:00",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 60.0,
     "distance_3d_m_onset": 63.2,
     "split": "test",
@@ -1652,9 +1711,9 @@
       20
     ],
     "duration_s": 30,
-    "mems_available": true,
     "quality_flags": [
-      "v_formation_not_always_maintained"
+      "v_formation_not_always_maintained",
+      "mems_ended_before_show"
     ],
     "local_start_s": 58323,
     "local_start_hms": "16:12:03",
@@ -1664,7 +1723,9 @@
     "onset_from_rec_s": 9363,
     "local_end_s": 58353,
     "local_end_hms": "16:12:33",
-    "azimuth_deg_onset": 180.0,
+    "mems_available": false,
+    "bk_available": true,
+    "azimuth_deg_onset": -90.0,
     "distance_xy_m_onset": 60.0,
     "distance_3d_m_onset": 63.2,
     "split": "test",
@@ -1702,11 +1763,11 @@
       20
     ],
     "duration_s": 188,
-    "mems_available": true,
     "quality_flags": [
       "manual_flight",
       "no_show_file",
-      "audible_to_200m_on_BK6E"
+      "audible_to_200m_on_BK6E",
+      "mems_ended_before_show"
     ],
     "local_start_s": 59100,
     "local_start_hms": "16:25:00",
@@ -1716,6 +1777,8 @@
     "onset_from_rec_s": 10140,
     "local_end_s": 59288,
     "local_end_hms": "16:28:08",
+    "mems_available": false,
+    "bk_available": true,
     "azimuth_deg_onset": -135.0,
     "distance_xy_m_onset": 299.8,
     "distance_3d_m_onset": 300.5,

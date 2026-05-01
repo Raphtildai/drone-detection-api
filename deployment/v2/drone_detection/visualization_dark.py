@@ -6,7 +6,7 @@ All plotting functions for the drone detection & localization pipeline.
 
 Contents
 ────────
-Light-themed analysis dashboard     _plot_analysis_report()
+Dark-themed analysis dashboard     _plot_analysis_report()
 External detection scores plot      _plot_external_detection_scores()
 Training curve plots                plot_training_logs()
 Confusion matrix                    plot_confusion_matrix_styled()
@@ -50,35 +50,34 @@ from .config import Config, config
 
 matplotlib.use("Agg")
 
-# ── Global font sizes (increased for thesis PDF) ───────────────────────────
 matplotlib.rcParams.update({
-    "font.size": 13,
-    "axes.titlesize": 15,
-    "axes.labelsize": 14,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12,
-    "legend.fontsize": 12,
-    "figure.titlesize": 17,
+    "font.size": 10,
+    "axes.titlesize": 12,
+    "axes.labelsize": 11,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
+    "legend.fontsize": 9,
+    "figure.titlesize": 14,
 })
 
-# ── Colour palette (light / print-friendly) ────────────────────────────────
+# ── Colour palette ─────────────────────────────────────────────────────────
 PLOT_STYLE = {
-    "bg":        "#ffffff",   # white page background
-    "panel":     "#f8f9fa",   # very light grey panel fill
-    "panel_alt": "#e9ecef",   # slightly darker for legend boxes
-    "accent":    "#1565c0",   # dark blue (was sky-blue)
-    "warn":      "#e65100",   # dark orange (was amber)
-    "ok":        "#2e7d32",   # dark green (was bright green)
-    "err":       "#c62828",   # dark red (was light red)
-    "grid":      "#b0bec5",   # medium grey grid lines
-    "text":      "#212121",   # near-black text
-    "text_soft": "#37474f",   # soft dark text
-    "muted":     "#546e7a",   # muted blue-grey
-    "spine":     "#90a4ae",   # light grey spines
-    "purple":    "#6a1b9a",   # dark purple (was lavender)
+    "bg":        "#08111f",
+    "panel":     "#0f1b2d",
+    "panel_alt": "#14233a",
+    "accent":    "#38bdf8",
+    "warn":      "#fbbf24",
+    "ok":        "#4ade80",
+    "err":       "#f87171",
+    "grid":      "#47607d",
+    "text":      "#f8fafc",
+    "text_soft": "#dbeafe",
+    "muted":     "#b6c2cf",
+    "spine":     "#6b85a3",
+    "purple":    "#a78bfa",
 }
 
-# Thesis palette (unchanged — already print-safe colours)
+# Thesis palette
 C_GOOD   = "#1D9E75"
 C_MOD    = "#BA7517"
 C_POOR   = "#D85A30"
@@ -117,7 +116,6 @@ def _style_colorbar(cbar):
         pass
 
 def _apply_dark_style(fig, axes_flat):
-    """Apply light/print-friendly style (name kept for compatibility)."""
     fig.patch.set_facecolor(PLOT_STYLE["bg"])
 
     for ax in axes_flat:
@@ -131,7 +129,7 @@ def _apply_dark_style(fig, axes_flat):
             axis="both",
             colors=PLOT_STYLE["text"],
             labelcolor=PLOT_STYLE["text"],
-            labelsize=12,
+            labelsize=10,
         )
 
         # axis labels
@@ -148,7 +146,7 @@ def _apply_dark_style(fig, axes_flat):
             spine.set_linewidth(1.0)
 
         # grid
-        ax.grid(color=PLOT_STYLE["grid"], alpha=0.5, linewidth=0.8)
+        ax.grid(color=PLOT_STYLE["grid"], alpha=0.35, linewidth=0.8)
 
         # offset text such as 1e3 on axis
         try:
@@ -168,8 +166,7 @@ def _show_inline(fig):
             pass
 
 
-def _save_plot(fig, path: Optional[Path], dpi: int = 200):
-    """Save at higher DPI for crisp thesis figures."""
+def _save_plot(fig, path: Optional[Path], dpi: int = 150):
     if path:
         path.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(str(path), dpi=dpi, bbox_inches="tight")
@@ -181,7 +178,7 @@ def _save_plot(fig, path: Optional[Path], dpi: int = 200):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
-    """Light-themed training curves for detection and localization."""
+    """Dark-themed training curves for detection and localization."""
     cfg = cfg or config
     det_csv = cfg.DRIVE_LOGS / "detection_log.csv"
     loc_csv = cfg.DRIVE_LOGS / "localization_log.csv"
@@ -229,7 +226,7 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
         ax.plot(epochs, val_loss, "-s", color=PLOT_STYLE["warn"],   ms=4, label="Val")
         ax.set_xlabel("Epoch"); ax.set_ylabel("MSE loss"); ax.set_title("Localization — Loss")
         leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
-        _style_legend(leg)
+        _style_legend(leg)  
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, mae_az,   "-o", color=PLOT_STYLE["err"],    ms=4, label="MAE az (°)")
         ax.plot(epochs, mae_dist, "-s", color=PLOT_STYLE["purple"], ms=4, label="MAE dist (m)")
@@ -245,19 +242,19 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Analysis dashboard (6-panel light)
+# Analysis dashboard (6-panel dark)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _plot_analysis_report(segments, confirmed, cfg, title: str):
     """
-    Six-panel light-themed analysis dashboard.
+    Six-panel dark-themed analysis dashboard.
 
     Panels: waveform+RMS | mel spectrogram | detection timeline |
             localization bars | polar compass | detection gauge
     """
     import itertools
     fig = plt.figure(figsize=(20, 10), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=17,
+    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=14,
                  color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
     gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
     axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]
@@ -339,7 +336,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
                    color=PLOT_STYLE["accent"], edgecolor=PLOT_STYLE["bg"])
     ax_pol.set_theta_zero_location("N"); ax_pol.set_theta_direction(-1)
     ax_pol.set_title("Azimuth (N-up)", color=PLOT_STYLE["accent"], pad=12)
-    ax_pol.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+    ax_pol.grid(color=PLOT_STYLE["grid"], alpha=0.4)
 
     # [5] Detection score gauge
     ax = axes[5]
@@ -347,21 +344,21 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     final_score = float(np.max(all_probs)) if all_probs else 0.0
     theta_range = np.linspace(np.pi, 0, 200)
     ax.set_xlim(-1.2, 1.2); ax.set_ylim(-0.1, 1.2)
-    ax.plot(np.cos(theta_range), np.sin(theta_range), lw=18, color=PLOT_STYLE["panel_alt"])
+    ax.plot(np.cos(theta_range), np.sin(theta_range), lw=18, color=PLOT_STYLE["panel"])
     fill_theta = np.linspace(np.pi, np.pi * (1 - final_score), 200)
     col = PLOT_STYLE["ok"] if final_score >= cfg.DETECTION_THRESHOLD else PLOT_STYLE["err"]
     ax.plot(np.cos(fill_theta), np.sin(fill_theta), lw=18, color=col)
     needle = np.pi * (1 - final_score)
     ax.annotate("", xy=(0.8 * np.cos(needle), 0.8 * np.sin(needle)), xytext=(0, 0),
                 arrowprops=dict(arrowstyle="-|>", color=PLOT_STYLE["text"], lw=2))
-    ax.text(0, -0.08, f"{final_score:.3f}", ha="center", fontsize=18, fontweight="bold", color=col)
+    ax.text(0, -0.08, f"{final_score:.3f}", ha="center", fontsize=16, fontweight="bold", color=col)
     ax.text(0, 0.6, "DRONE" if final_score >= cfg.DETECTION_THRESHOLD else "CLEAR",
-            ha="center", fontsize=12, color=col)
+            ha="center", fontsize=10, color=col)
     ax.axis("off"); ax.set_title("Detection Score", color=PLOT_STYLE["text"])
 
     cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
     save_path = cfg.DRIVE_PLOTS / f"analysis_{Path(title).stem}.png"
-    plt.savefig(str(save_path), dpi=200, bbox_inches="tight")
+    plt.savefig(str(save_path), dpi=150, bbox_inches="tight")
     print(f"💾 Dashboard saved: {save_path}")
     _show_inline(fig); plt.close(fig)
 
@@ -369,7 +366,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
 def _plot_external_detection_scores(
     segment_results, threshold: float, cfg: Config, title: str
 ):
-    """Light-themed segment probability chart for external audio analysis."""
+    """Dark-themed segment probability chart for external audio analysis."""
     if not segment_results:
         return
     t     = [0.5 * (s["t_start_s"] + s["t_end_s"]) for s in segment_results]
@@ -402,9 +399,9 @@ def plot_confusion_matrix_styled(
     title: str = "Confusion Matrix",
     save_path: Optional[Path] = None,
 ):
-    """Light-themed confusion matrix with counts + percentages."""
+    """Dark-themed confusion matrix with counts + percentages."""
     from matplotlib.colors import LinearSegmentedColormap
-    cmap = LinearSegmentedColormap.from_list("drone_cm", ["#e3f2fd", PLOT_STYLE["accent"]])
+    cmap = LinearSegmentedColormap.from_list("drone_cm", [PLOT_STYLE["panel"], PLOT_STYLE["accent"]])
     fig, ax = plt.subplots(figsize=(6, 5))
     _apply_dark_style(fig, [ax])
     im = ax.imshow(cm_array, interpolation="nearest", cmap=cmap)
@@ -418,7 +415,7 @@ def plot_confusion_matrix_styled(
         for j in range(cm_array.shape[1]):
             pct = 100.0 * cm_array[i, j] / total[i, 0]
             ax.text(j, i, f"{cm_array[i,j]}\n({pct:.1f}%)",
-                    ha="center", va="center", color=PLOT_STYLE["text"], fontsize=12)
+                    ha="center", va="center", color=PLOT_STYLE["text"], fontsize=10)
     ax.set_xlabel("Predicted"); ax.set_ylabel("True")
     ax.set_title(title, color=PLOT_STYLE["text"])
     plt.tight_layout()
@@ -431,7 +428,7 @@ def plot_polar_azimuth(
     title:  str  = "Detected Drone Azimuths",
     cfg:    Optional[Config] = None,
     save:   bool = True,
-    true_azimuths: Optional[List[float]] = None,
+    true_azimuths: Optional[List[float]] = None,  
 ):
     cfg = cfg or config
     fig = plt.figure(figsize=(6, 6), facecolor=PLOT_STYLE["bg"])
@@ -454,10 +451,10 @@ def plot_polar_azimuth(
         ax.bar(centers, true_counts, width=edges[1] - edges[0], alpha=0.45,
                color=PLOT_STYLE["warn"], edgecolor=PLOT_STYLE["bg"], label="True")
         ax.legend(loc="upper right", facecolor=PLOT_STYLE["panel_alt"],
-                  labelcolor=PLOT_STYLE["text"], fontsize=11)
+                  labelcolor=PLOT_STYLE["text"], fontsize=8)
 
     ax.set_theta_zero_location("N"); ax.set_theta_direction(-1)
-    ax.set_title(title, pad=12); ax.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+    ax.set_title(title, pad=12); ax.grid(color=PLOT_STYLE["grid"], alpha=0.4)
     plt.tight_layout()
     if save:
         _save_plot(fig, cfg.DRIVE_PLOTS / "polar_azimuth.png")
@@ -621,10 +618,10 @@ def plot_azimuth_mae_per_position(save_path: Optional[Path] = None):
         mpatches.Patch(facecolor="white", edgecolor="#333", lw=1.2, label="Test split"),
         mpatches.Patch(facecolor="white", edgecolor="#666", lw=1.0, ls="--", label="Val split"),
     ]
-    ax.legend(handles=legend_handles, fontsize=10, loc="lower right")
+    ax.legend(handles=legend_handles, fontsize=8, loc="lower right")
     ax.invert_yaxis(); plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -639,13 +636,13 @@ def plot_val_test_comparison(save_path: Optional[Path] = None):
     b2 = ax.bar(x + w/2, test_vals, w, color=C_TEST, label="Test", edgecolor="none")
     for bar in list(b1) + list(b2):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
-                f"{bar.get_height():.1f}", ha="center", va="bottom", fontsize=11)
+                f"{bar.get_height():.1f}", ha="center", va="bottom", fontsize=8)
     ax.set_xticks(x); ax.set_xticklabels(metrics)
     ax.set_ylabel("Error"); ax.set_title("Val vs test — all metrics"); ax.legend()
     ax.set_ylim(0, max(val_vals + test_vals) * 1.25)
     plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -660,9 +657,9 @@ def plot_error_histogram(save_path: Optional[Path] = None):
     ax.axvline(90, color=C_RANDOM, lw=1.2, ls=":", label="Random baseline (90°)")
     ax.set_xlabel("Azimuth MAE (degrees)"); ax.set_ylabel("Number of positions")
     ax.set_title("Azimuth error distribution — test set"); ax.set_xlim(0, 180)
-    ax.legend(fontsize=11); plt.tight_layout()
+    ax.legend(fontsize=9); plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -677,7 +674,7 @@ def plot_predicted_vs_true(save_path: Optional[Path] = None):
         true_az.append(az_val); pred_az.append(pred)
         split_colors.append(C_TEST if v["split"] == "test" else C_VAL if v["split"] == "val" else C_GRAY)
     fig, ax = plt.subplots(figsize=(6, 6))
-    ax.scatter(true_az, pred_az, c=split_colors, s=60, alpha=0.85, edgecolors="none", zorder=3)
+    ax.scatter(true_az, pred_az, c=split_colors, s=55, alpha=0.85, edgecolors="none", zorder=3)
     ax.plot([-10, 370], [-10, 370], color=C_GRAY, lw=1.2, ls="--", label="Perfect prediction")
     ax.set_xlim(-10, 370); ax.set_ylim(-10, 370)
     ax.set_xticks(range(0, 361, 45)); ax.set_yticks(range(0, 361, 45))
@@ -689,9 +686,9 @@ def plot_predicted_vs_true(save_path: Optional[Path] = None):
         mpatches.Patch(color=C_GRAY, label="Train split"),
         plt.Line2D([0],[0], color=C_GRAY, ls="--", lw=1.2, label="Perfect prediction"),
     ]
-    ax.legend(handles=legend_handles, fontsize=11); plt.tight_layout()
+    ax.legend(handles=legend_handles, fontsize=8); plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -716,10 +713,10 @@ def plot_azimuth_distance_heatmap(save_path: Optional[Path] = None):
         for col in range(len(azimuths)):
             val = grid[row, col]
             ax.text(col, row, f"{val:.0f}°", ha="center", va="center",
-                    fontsize=11, color="#212121", fontweight="500")
+                    fontsize=9, color=PLOT_STYLE["text"], fontweight="500")
     plt.colorbar(im, ax=ax, label="MAE (°)", shrink=0.8); plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -742,15 +739,15 @@ def plot_training_curves(cfg: Optional[Config] = None, save_path: Optional[Path]
     ax1.plot(epochs, tr_loss,  color=C_VAL,  lw=1.5, label="Train loss")
     ax1.plot(epochs, val_loss, color=C_TEST, lw=1.5, label="Val loss")
     ax1.axvline(best_ep, color=C_GOOD, lw=1.2, ls="--", label=f"Best epoch ({best_ep})")
-    ax1.set_xlabel("Epoch"); ax1.set_ylabel("Loss"); ax1.set_title("Localization loss"); ax1.legend(fontsize=11)
+    ax1.set_xlabel("Epoch"); ax1.set_ylabel("Loss"); ax1.set_title("Localization loss"); ax1.legend(fontsize=9)
     ax2.plot(epochs, mae_az,   color=C_POOR,   lw=1.5, label="MAE azimuth (°)")
     ax2.plot(epochs, mae_dist, color=C_MOD,    lw=1.5, label="MAE distance (m)")
     ax2.plot(epochs, mae_ht,   color=C_PURPLE, lw=1.5, label="MAE height (m)")
     ax2.axvline(best_ep, color=C_GOOD, lw=1.2, ls="--", label=f"Best epoch ({best_ep})")
-    ax2.set_xlabel("Epoch"); ax2.set_ylabel("MAE"); ax2.set_title("Localization MAE"); ax2.legend(fontsize=11)
+    ax2.set_xlabel("Epoch"); ax2.set_ylabel("MAE"); ax2.set_title("Localization MAE"); ax2.legend(fontsize=9)
     plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -772,9 +769,9 @@ def plot_polar_mae(save_path: Optional[Path] = None):
     ax.plot(theta_closed, mae_closed, color=C_PURPLE, lw=2, zorder=3)
     for t, m in zip(theta, mean_maes):
         ax.scatter(t, m, color=_mae_color(m), s=60, zorder=4, edgecolors="white", lw=0.5)
-        ax.text(t, m + 14, f"{m:.0f}°", ha="center", va="center", fontsize=9, color="#212121")
+        ax.text(t, m + 14, f"{m:.0f}°", ha="center", va="center", fontsize=7.5, color=PLOT_STYLE["text"])
     ax.set_rticks([30, 60, 90, 120, 150]); ax.set_rlim(0, 160)
-    ax.set_thetagrids(azimuths, labels=[f"{a}°" for a in azimuths], fontsize=11)
+    ax.set_thetagrids(azimuths, labels=[f"{a}°" for a in azimuths], fontsize=9)
     ax.set_title("Mean azimuth MAE by direction\n(compass view)", pad=18)
     legend_handles = [
         mpatches.Patch(color=C_GOOD, label="Good (<30°)"),
@@ -782,10 +779,10 @@ def plot_polar_mae(save_path: Optional[Path] = None):
         mpatches.Patch(color=C_POOR, label="Poor (>60°)"),
         plt.Line2D([0],[0], color=C_RANDOM, ls="--", lw=1.2, label="Random baseline"),
     ]
-    ax.legend(handles=legend_handles, loc="lower left", bbox_to_anchor=(-0.15, -0.12), fontsize=10)
+    ax.legend(handles=legend_handles, loc="lower left", bbox_to_anchor=(-0.15, -0.12), fontsize=8)
     plt.tight_layout()
     if save_path:
-        fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
+        fig.savefig(str(save_path)); print(f"Saved: {save_path}")
     plt.show(); return fig
 
 
@@ -818,7 +815,7 @@ def plot_all_thesis_figures(cfg: Optional[Config] = None):
 
 def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     """
-    4-panel light dashboard from a list of ScenarioResult objects.
+    4-panel dark dashboard from a list of ScenarioResult objects.
     Works without re-running the suite.
     """
     cfg = cfg or config
@@ -829,7 +826,7 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
 
     fig = plt.figure(figsize=(22, 14), facecolor=PLOT_STYLE["bg"])
     fig.suptitle("Multi-Drone Test Suite — Results Dashboard",
-                 color=PLOT_STYLE["accent"], fontsize=17, fontweight="bold", y=0.98)
+                 color=PLOT_STYLE["accent"], fontsize=14, fontweight="bold", y=0.98)
     gs  = gridspec.GridSpec(2, 2, figure=fig, hspace=0.42, wspace=0.32)
     ax_det   = fig.add_subplot(gs[0, 0])
     ax_az    = fig.add_subplot(gs[0, 1])
@@ -845,8 +842,8 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     ax_det.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["warn"], ls="--", lw=1.5)
     for i, r in enumerate(results):
         ax_det.text(i, r.detection_probability + 0.02, f"{r.detected_n_drones}/{r.expected_n_drones}",
-                    ha="center", va="bottom", fontsize=10, color=PLOT_STYLE["text"])
-    ax_det.set_xticks(range(n)); ax_det.set_xticklabels(names, fontsize=9)
+                    ha="center", va="bottom", fontsize=8, color=PLOT_STYLE["text"])
+    ax_det.set_xticks(range(n)); ax_det.set_xticklabels(names, fontsize=7)
     ax_det.set_ylim(0, 1.18); ax_det.set_ylabel("Detection probability")
     ax_det.set_title(f"Detection ({sum(1 for r in results if r.detection_correct)}/{n} exact)")
 
@@ -855,10 +852,10 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     az_cols = [_mae_color(v) if not np.isnan(v) else PLOT_STYLE["muted"] for v in az_maes]
     ax_az.bar(range(n), [v if not np.isnan(v) else 0 for v in az_maes], color=az_cols, alpha=0.85, width=0.6)
     ax_az.axhline(90, color=PLOT_STYLE["muted"], ls=":", lw=1.2, label="Random (90°)")
-    ax_az.set_xticks(range(n)); ax_az.set_xticklabels(names, fontsize=9)
+    ax_az.set_xticks(range(n)); ax_az.set_xticklabels(names, fontsize=7)
     ax_az.set_ylabel("Azimuth MAE (°)"); ax_az.set_ylim(0, 180)
     ax_az.set_title(f"Localization accuracy (mean={float(np.nanmean(az_maes)):.1f}°)")
-    ax_az.legend(facecolor=PLOT_STYLE["panel"], fontsize=10)
+    ax_az.legend(facecolor=PLOT_STYLE["panel"], fontsize=8)
 
     # Top-down position map
     mics = cfg.MIC_POSITIONS
@@ -873,7 +870,7 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     ax_map.scatter([], [], marker="x", s=60, c="gray", alpha=0.55, label="Predicted pos")
     ax_map.set_xlabel("X (m)"); ax_map.set_ylabel("Y (m)")
     ax_map.set_title("True vs predicted positions"); ax_map.set_aspect("equal")
-    ax_map.legend(facecolor=PLOT_STYLE["panel"], fontsize=9)
+    ax_map.legend(facecolor=PLOT_STYLE["panel"], fontsize=7)
 
     # Track counts
     n_tracks  = [r.n_tracks_confirmed for r in results]
@@ -885,10 +882,10 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     ax_track.bar(xp + w/2, dist_norm, w, color=PLOT_STYLE["purple"], alpha=0.6,
                  label=f"Total dist (norm, max={max_dist:.1f}m)")
     for i, nt in enumerate(n_tracks):
-        ax_track.text(i - w/2, nt + 0.05, str(nt), ha="center", va="bottom", fontsize=10, color=PLOT_STYLE["text"])
-    ax_track.set_xticks(range(n)); ax_track.set_xticklabels(names, fontsize=9)
+        ax_track.text(i - w/2, nt + 0.05, str(nt), ha="center", va="bottom", fontsize=8, color=PLOT_STYLE["text"])
+    ax_track.set_xticks(range(n)); ax_track.set_xticklabels(names, fontsize=7)
     ax_track.set_ylabel("Confirmed tracks"); ax_track.set_title("Kalman tracker")
-    ax_track.legend(facecolor=PLOT_STYLE["panel"], fontsize=10)
+    ax_track.legend(facecolor=PLOT_STYLE["panel"], fontsize=8)
 
     plt.tight_layout(rect=[0, 0.02, 1, 0.97])
     _save_plot(fig, cfg.DRIVE_PLOTS / "multidrone_suite_dashboard.png")
@@ -904,7 +901,7 @@ def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios
     cmap_fn = plt.get_cmap("tab10")
     ax.scatter(mics[:, 0], mics[:, 1], marker="^", s=250, c=PLOT_STYLE["warn"], zorder=10, label="Mic array")
     for i, m in enumerate(mics):
-        ax.annotate(f"M{i}", m, textcoords="offset points", xytext=(6, 5), fontsize=11, color=PLOT_STYLE["text"])
+        ax.annotate(f"M{i}", m, textcoords="offset points", xytext=(6, 5), fontsize=8, color=PLOT_STYLE["text"])
     for sc_idx, r in enumerate(results):
         col = cmap_fn(sc_idx % 10)
         for d in r.raw.get("drone_locs", []):
@@ -914,7 +911,7 @@ def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios
     ax.scatter([], [], marker="x", s=80, c="gray", alpha=0.6, linewidths=2, label="TDOA prediction")
     ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
     ax.set_title("True vs predicted drone positions (all scenarios)")
-    ax.set_aspect("equal"); ax.legend(facecolor=PLOT_STYLE["panel"], fontsize=10)
+    ax.set_aspect("equal"); ax.legend(facecolor=PLOT_STYLE["panel"], fontsize=8)
     plt.tight_layout()
     _save_plot(fig, cfg.DRIVE_PLOTS / "multidrone_position_map.png")
     _show_inline(fig); plt.close(fig)

@@ -920,6 +920,197 @@ def analyse_mems_file(
         "crosscheck":               xc,
     }
 
+def analyse_bk_array_file(audio_path_ch0, audio_path_ch1, audio_path_ch2, cfg=None):
+    cfg = cfg or _cfg_default()
+    
+    # Load all 3 channels
+    audio_ch0, sr = sf.read(audio_path_ch0)
+    audio_ch1, _ = sf.read(audio_path_ch1)
+    audio_ch2, _ = sf.read(audio_path_ch2)
+    
+    # Stack into 3 channels (samples, channels)
+    multichannel = np.column_stack((audio_ch0, audio_ch1, audio_ch2))
+    
+    # Use AudioProcessor for preprocessing (same as mems_inference)
+    ap = _get_ap(cfg)
+    multichannel_padded = ap.pad_or_truncate(multichannel)
+    
+    # Transpose to (channels, samples) for detect()
+    if multichannel_padded.shape[1] == 3:
+        multichannel_padded = multichannel_padded.T
+    
+    # Use detect() directly, NOT run_pipeline()
+    detect = _get_detect(cfg)
+    result = detect(multichannel_padded, cfg)
+    
+    return {
+        "detected": result["detected"],
+        "probability": result["probability"],
+        "cnn_probability": result.get("cnn_probability", float("nan")),
+        "heuristic_probability": result.get("heuristic_probability", float("nan")),
+    }
+
+def batch_analyse_bk_array(
+    folder: str,
+    cfg=None,
+    pattern: str = "seg_*_circle_test_ch0.wav",
+    show_plots: bool = False,
+    save_plots: bool = True,
+    max_files: Optional[int] = None,
+) -> dict:
+    """
+    Batch analyse BK-6-W 3-channel array recordings from extracted segments.
+    
+    Expects files named like: seg_XXX_*_ch0.wav, seg_XXX_*_ch1.wav, seg_XXX_*_ch2.wav
+    
+    Parameters
+    ──────────
+    folder      : directory containing the 3-channel WAV files
+    cfg         : Config instance
+    pattern     : pattern for ch0 files (used to find base names)
+    show_plots  : display dashboards inline
+    save_plots  : save PNG to cfg.DRIVE_PLOTS
+    max_files   : cap number of files processed
+    
+    Returns
+    ───────
+    dict with results for each segment
+    """
+    cfg = cfg or _cfg_default()
+    root = Path(folder)
+    
+    # Find all ch0 files to get base names
+    ch0_files = sorted(root.glob(pattern))
+    if max_files:
+        ch0_files = ch0_files[:max_files]
+    
+    if not ch0_files:
+        print(f"⚠️  No files matching '{pattern}' in {folder}")
+        return {"results": [], "n_detected": 0, "detection_rate": 0.0}
+    
+    # Extract base names (remove _ch0.wav suffix)
+    base_names = []
+    for f in ch0_files:
+        name = str(f.name)
+        if name.endswith("_ch0.wav"):
+            base = name[:-8]  # Remove "_ch0.wav"
+            base_names.append(base)
+    
+    print(f"\n📂 Batch BK-6-W array analysis: {len(base_names)} segments in {root.name}/")
+    print("   ✅ 3-channel TDOA localization enabled (E, H, B directions)\n")
+    
+    results = []
+    n_detected = 0
+    
+    for i, base in enumerate(base_names, start=1):
+        ch0_path = root / f"{base}_ch0.wav"
+        ch1_path = root / f"{base}_ch1.wav"
+        ch2_path = root / f"{base}_ch2.wav"
+        
+        # Check if all channels exist
+        if not all(p.exists() for p in [ch0_path, ch1_path, ch2_path]):
+            print(f"\n[{i}/{len(base_names)}] {base} - MISSING CHANNELS")
+            continue
+        
+        print(f"\n[{i}/{len(base_names)}] {base}")
+        
+        try:
+            # Load all 3 channels
+            audio_ch0, sr = sf.read(ch0_path)
+            audio_ch1, _ = sf.read(ch1_path)
+            audio_ch2, _ = sf.read(ch2_path)
+            
+            # Stack into 3-channel array (samples x channels)
+            multichannel = np.column_stack((audio_ch0, audio_ch1, audio_ch2))
+            
+            # Use the pipeline's run_pipeline for full detection + localization
+            from .inference import run_pipeline
+            result = run_pipeline(multichannel, cfg)
+            
+            # Add segment info
+            result["segment_id"] = base
+            result["file_ch0"] = str(ch0_path)
+            result["file_ch1"] = str(ch1_path)
+            result["file_ch2"] = str(ch2_path)
+            
+            # Try to load label file if exists
+            label_path = root / f"{base}_label.json"
+            if label_path.exists():
+                with open(label_path) as f:
+                    label_data = json.load(f)
+                    result["ground_truth"] = label_data.get("drone", {})
+            
+            results.append(result)
+            if result.get("detected", False):
+                n_detected += 1
+            
+            # Print summary
+            loc = result.get("localization", {})
+            detection_prob = result.get("detection_probability", 0.0)
+            azimuth = loc.get("azimuth_deg", float("nan"))
+            distance = loc.get("distance_m", float("nan"))
+            
+            status = "🚁 DETECTED" if result.get("detected") else "🌳 CLEAR"
+            print(f"  {status} | prob={detection_prob:.3f} | az={azimuth:.1f}° | dist={distance:.1f}m")
+            
+            # Optional: save plot
+            if save_plots and show_plots:
+                from .visualization import _plot_analysis_report
+                # Would need to adapt to your segment format
+            
+        except Exception as e:
+            print(f"  ⚠️  Error: {e}")
+            import traceback
+            traceback.print_exc()
+            results.append({"segment_id": base, "error": str(e), "detected": False})
+    
+    det_rate = n_detected / max(len(base_names), 1)
+    
+    print(f"\n{'='*60}")
+    print(f"  BATCH SUMMARY — {len(base_names)} segments")
+    print(f"  Detection rate  : {det_rate:.1%}  ({n_detected}/{len(base_names)})")
+    
+    # Calculate mean metrics for detected segments
+    detected_results = [r for r in results if r.get("detected", False)]
+    if detected_results:
+        mean_az = np.mean([r.get("localization", {}).get("azimuth_deg", float("nan")) 
+                          for r in detected_results if not math.isnan(r.get("localization", {}).get("azimuth_deg", float("nan")))])
+        mean_dist = np.mean([r.get("localization", {}).get("distance_m", float("nan")) 
+                            for r in detected_results if not math.isnan(r.get("localization", {}).get("distance_m", float("nan")))])
+        print(f"  Mean azimuth    : {mean_az:.1f}°")
+        print(f"  Mean distance   : {mean_dist:.1f} m")
+    
+    print(f"  Localisation    : ✅ TDOA-based (3-channel BK-6-W array)")
+    print(f"{'='*60}\n")
+    
+    return {
+        "results": results,
+        "n_detected": n_detected,
+        "detection_rate": det_rate,
+        "n_segments": len(base_names),
+    }
+
+
+def batch_analyse_extracted_segments(
+    folder: str,
+    cfg=None,
+    max_files: Optional[int] = None,
+) -> dict:
+    """
+    Convenience wrapper for analysing the extracted dunakeszi_test_segments.
+    
+    Usage:
+        from mems_inference import batch_analyse_extracted_segments
+        results = batch_analyse_extracted_segments("dunakeszi_test_segments")
+    """
+    return batch_analyse_bk_array(
+        folder=folder,
+        cfg=cfg,
+        pattern="seg_*_ch0.wav",
+        show_plots=False,
+        save_plots=True,
+        max_files=max_files,
+    )
 
 def analyse_mems_with_meta(
     audio_path: str,

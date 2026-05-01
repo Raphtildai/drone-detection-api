@@ -1,0 +1,96 @@
+[
+  {
+    "session_id": "seg_020_circle_train",
+    "segment_id": 20,
+    "session": "show_8",
+    "split": "train",
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "onset_from_rec_s": 4016.0,
+    "duration_s": 188.0,
+    "clip_start_s": 92.5,
+    "clip_position": 0.5,
+    "altitude_m": 20.0,
+    "speed_mps": 4.0,
+    "radius_m": 60.0,
+    "azimuth_deg": -90.0,
+    "distance_xy_m": 30.0,
+    "distance_3d_m": 36.1,
+    "rms_ch0": 0.053191203624010086,
+    "rms_ch1": 0.06622038036584854,
+    "rms_ch2": 0.05693774297833443,
+    "rms_max_db": -23.6,
+    "array": "BK-6-E",
+    "polywav_channels": [
+      8,
+      9,
+      10
+    ],
+    "quality_flags": [],
+    "source_files": [
+      "251020VITEMOROM1AT01J.wav"
+    ],
+    "wav_ch0": "seg_020_circle_train_ch0.wav",
+    "wav_ch1": "seg_020_circle_train_ch1.wav",
+    "wav_ch2": "seg_020_circle_train_ch2.wav",
+    "label_json": "seg_020_circle_train_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 54.666666666666664,
+      "rms_db": -25.483201697246592,
+      "energy_ratio": 0.25090585300943963
+    }
+  },
+  {
+    "session_id": "seg_021_figure8_train",
+    "segment_id": 21,
+    "session": "show_8",
+    "split": "train",
+    "maneuver_type": "figure8",
+    "flight_phase": "figure8",
+    "n_drones": 1,
+    "drones": [
+      "drone88"
+    ],
+    "onset_from_rec_s": 4207.0,
+    "duration_s": 63.0,
+    "clip_start_s": 30.0,
+    "clip_position": 0.5,
+    "altitude_m": 20.0,
+    "speed_mps": 4.0,
+    "radius_m": null,
+    "azimuth_deg": null,
+    "distance_xy_m": null,
+    "distance_3d_m": null,
+    "rms_ch0": 0.040139611810445786,
+    "rms_ch1": 0.05199110507965088,
+    "rms_ch2": 0.0408465713262558,
+    "rms_max_db": -25.7,
+    "array": "BK-6-E",
+    "polywav_channels": [
+      8,
+      9,
+      10
+    ],
+    "quality_flags": [
+      "approx_120m_total_span"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01J.wav"
+    ],
+    "wav_ch0": "seg_021_figure8_train_ch0.wav",
+    "wav_ch1": "seg_021_figure8_train_ch1.wav",
+    "wav_ch2": "seg_021_figure8_train_ch2.wav",
+    "label_json": "seg_021_figure8_train_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 62.0,
+      "rms_db": -27.92853445508365,
+      "energy_ratio": 0.6484011757070733
+    }
+  }
+]

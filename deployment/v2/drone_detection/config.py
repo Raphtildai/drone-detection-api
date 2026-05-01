@@ -59,6 +59,10 @@ DRONE_BPF_PROFILES = {
     "dji_phantom": (90,  100, 200, 4),   # legacy estimate
     "generic_quad":(80,  110, 350, 4),   # fallback
     "hexarotor":   (60,   75, 195, 6),
+    "generic_low_altitude_high": (150, 220, 380, 4),  # existing close-range drones
+    "generic_high_altitude":     (50,   70, 120, 4),  # drones at 40-120m altitude
+    "dji_high_altitude": (45, 65, 90, 6),   # DJI drones at 40–120m altitude
+                                          # 6 harmonics: 65, 130, 195, 260, 325, 390 Hz
 }
 
 # BPF energy ratios measured per drone (mean across altitudes, from Q2)
@@ -67,6 +71,13 @@ DRONE_BPF_ENERGY_RATIOS = {
     "mavic_2_pro": 0.446,   # mean of 0.541, 0.454, 0.432, 0.358
     "mavic_mini":  0.307,   # mean of 0.398, 0.344, 0.282, 0.202
 }
+
+# ── Synthetic drone-type distribution ────────────────────────────────────────
+# Used by the synthetic data generator to sample drone types proportionally.
+# Weights must sum to 1.0.
+_SYNTH_DRONE_TYPES   = ["mavic_pro", "mavic_2_pro", "mavic_mini", "generic_quad", "dji_high_altitude"]
+_SYNTH_DRONE_WEIGHTS = [0.25,        0.25,          0.20,         0.15,           0.15]
+assert abs(sum(_SYNTH_DRONE_WEIGHTS) - 1.0) < 1e-9, "Synth drone weights must sum to 1.0"
 
 # ── Noise floor profiles from real measurements ──────────────────────────────
 # indoor: PannoniaFS pre-flight silence window (analysis.md Q1)
@@ -103,7 +114,7 @@ class Config:
         self.MIC_POSITIONS = _UAVIRBASE_POSITIONS.copy()
         self.SPEED_OF_SOUND        = 343.0
         self.ARRAY_CENTER          = self.MIC_POSITIONS.mean(axis=0)
-        self.MAX_LOCALIZATION_DIST = 25.0
+        self.MAX_LOCALIZATION_DIST = 120.0
 
         # ── Dataset download URLs ──────────────────────────────────────────
         self.UAVIRBASE_ZIP_URL = (
@@ -134,12 +145,15 @@ class Config:
         # ── Synthetic data ─────────────────────────────────────────────────
         self.SYNTHETIC_DET_SAMPLES = 500
         self.SYNTHETIC_SAMPLES     = 2000
-        # Use measured BPF profiles in synthesis 
+        # Use measured BPF profiles in synthesis
         self.SYNTHETIC_USE_MEASURED_BPF = True
         # Inject indoor + outdoor noise profiles during synthesis
         self.SYNTHETIC_NOISE_PROFILE = "mixed"  # "indoor" | "outdoor" | "mixed"
         # Append BPF energy ratio as extra scalar to IPD feature vector
         self.BPF_ENERGY_RATIO_AS_FEATURE = True
+        # Drone-type sampling distribution for the synthetic generator
+        self.SYNTH_DRONE_TYPES   = _SYNTH_DRONE_TYPES
+        self.SYNTH_DRONE_WEIGHTS = _SYNTH_DRONE_WEIGHTS
 
         # ── Training ──────────────────────────────────────────────────────
         self.BATCH_SIZE = 32
@@ -155,7 +169,7 @@ class Config:
         self.GRAD_CLIP    = 1.0    # tighter than 2.0
 
         # ── Detection thresholds ──────────────────────────────────────────
-        self.DETECTION_THRESHOLD      = 0.62
+        self.DETECTION_THRESHOLD      = 0.60
         self.DETECTION_THRESHOLD_LOW  = 0.35
         self.DETECTION_THRESHOLD_WEAK = 0.18
         self.CNN_WEIGHT               = 0.80

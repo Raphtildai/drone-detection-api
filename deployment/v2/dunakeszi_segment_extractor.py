@@ -5,53 +5,6 @@ dunakeszi_segment_extractor.py
 ───────────────────────────────
 Extract ground-truth audio segments from any Dunakeszi polywav file and
 package them as a test ZIP ready for the drone_detection pipeline.
-
-USAGE — drop any WAV file(s) from the repository and run:
-
-    python dunakeszi_segment_extractor.py --segments ground_truth/ground_truth_segments.json --wav-dir   wavs/ --output-dir dunakeszi_test_segments
-
-The extractor inspects EVERY .wav file in --wav-dir, determines its
-time-slot from the filename suffix (no suffix=slot 0, A=slot 1, B=slot 2 …
-U=slot 21 … and so on for the full ~28-slot, 3-hour recording), computes
-which ground-truth segments overlap that slot, extracts them, and skips
-segments whose files are absent.  You never need to download all files at
-once.
-
-Timing model
-────────────
-  The recording started at 13:36:00 local (CEST) = onset_from_rec_s = 0.
-  Each polywav file is exactly 4 GB → 399.46 s @ 192 kHz, 14 ch, float32.
-  File suffix → slot index:
-
-      251020VITEMOROM1AT01.wav   → slot  0  (13:36 – 13:43)
-      251020VITEMOROM1AT01A.wav  → slot  1  (13:43 – 13:49)
-      251020VITEMOROM1AT01B.wav  → slot  2  (13:49 – 13:56)
-      …
-      251020VITEMOROM1AT01I.wav  → slot  9  (14:35 – 14:42)
-      251020VITEMOROM1AT01J.wav  → slot 10  (14:42 – 14:49)
-      …
-      251020VITEMOROM1AT01U.wav  → slot 21  (15:55 – 16:02)
-      …
-
-  slot_start_s = slot_index × 399.46      (seconds from recording start)
-  within_file_sample = (onset_from_rec_s − slot_start_s) × NATIVE_SR
-
-Channel mapping (0-indexed in the 14-ch polywav)
-──────────────────────────────────────────────────
-  ch 0, 1    = Mix L/R (not used)
-  ch 2, 3, 4 = BK-6-W  E, H, B  (Scorpio ch 3, 4, 5)  ← TDOA subset used here
-  ch 5–7     = BK-6-W  J, F, L
-  ch 8, 9, 10= BK-6-E  E, H, B  (Scorpio ch 9, 10, 11) ← alternative TDOA subset
-  ch 11–13   = BK-6-E  J, F, L
-
-Output format: generic_triplet (directly loadable by the drone_detection pipeline)
-    <session_id>_ch0.wav   — BK-6-W E  (22 050 Hz, mono, 3.0 s)
-    <session_id>_ch1.wav   — BK-6-W H
-    <session_id>_ch2.wav   — BK-6-W B
-    <session_id>_label.json
-    labels.csv
-    manifest.json
-    dunakeszi_test_segments.zip
 """
 
 import argparse
@@ -96,16 +49,7 @@ _SUFFIX_RE = re.compile(
 )
 
 def wav_slot(path: Path) -> Optional[int]:
-    """
-    Return the slot index (0-based) for a polywav file, or None if not recognised.
-
-    Slot 0  = no suffix (13:36–13:43)
-    Slot 1  = suffix A
-    Slot 9  = suffix I  (14:35–14:42)
-    Slot 10 = suffix J  (14:42–14:49)
-    Slot 21 = suffix U  (15:55–16:02)
-    Slot 25 = suffix Y  (16:25–16:32)  ← show_10 long-range
-    """
+    """Return the slot index (0-based) for a polywav file, or None if not recognised."""
     m = _SUFFIX_RE.match(path.name)
     if m is None:
         return None
@@ -114,7 +58,6 @@ def wav_slot(path: Path) -> Optional[int]:
         return 0
     if len(suffix) == 1:
         return ord(suffix) - ord('A') + 1
-    # Two-char suffix: AA=27, AB=28 … (future-proof)
     if len(suffix) == 2:
         return 26 + (ord(suffix[0]) - ord('A')) * 26 + (ord(suffix[1]) - ord('A') + 1)
     return None
@@ -138,11 +81,7 @@ def read_polywav_window(
     n_frames: int,
     channels: List[int],
 ) -> np.ndarray:
-    """
-    Read n_frames samples from wav_path starting at start_sample,
-    selecting the given channel indices.
-    Returns (len(channels), n_frames) float32, zero-padded if past EOF.
-    """
+    """Read n_frames samples from wav_path starting at start_sample."""
     info = sf.info(str(wav_path))
     actual_start  = max(0, min(start_sample, info.frames - 1))
     actual_frames = min(n_frames, max(0, info.frames - actual_start))
@@ -165,11 +104,7 @@ def extract_overlap(
     wav_path: Path,
     slot: int,
 ) -> Tuple[np.ndarray, int]:
-    """
-    Extract the portion of `seg` that overlaps `slot` from `wav_path`.
-    Returns (audio_chunk, offset_samples_from_seg_start).
-    audio_chunk is (3, n_native) float32; may be empty if no overlap.
-    """
+    """Extract the portion of `seg` that overlaps `slot` from `wav_path`."""
     slot_start, slot_end = slot_time_range(slot)
     seg_onset = float(seg["onset_from_rec_s"])
     seg_end   = seg_onset + float(seg["duration_s"])
@@ -192,11 +127,7 @@ def assemble_segment(
     seg: dict,
     available: Dict[int, Path],
 ) -> Optional[np.ndarray]:
-    """
-    Assemble the full segment from whatever slot files are available.
-    Returns (3, n_native) float32, or None if nothing could be extracted.
-    Gaps where a file is missing are filled with silence.
-    """
+    """Assemble the full segment from whatever slot files are available."""
     seg_onset   = float(seg["onset_from_rec_s"])
     seg_dur     = float(seg["duration_s"])
     need_native = int(seg_dur * NATIVE_SR)
@@ -239,28 +170,77 @@ def resample_and_pad(audio_native: np.ndarray) -> np.ndarray:
 
 def make_label_json(seg: dict) -> dict:
     """Build label.json matching the format parse_label_json() expects."""
-    az   = seg.get("azimuth_deg_onset")
+    az = seg.get("azimuth_deg_onset")
     dist = seg.get("distance_xy_m_onset")
-    ht   = float(seg.get("altitude_m") or seg.get("distance_3d_m_onset") or 0.0)
-    if az   is None: az   = 0.0
-    if dist is None: dist = float(seg.get("distance_3d_m_onset") or 0.0)
+    ht = seg.get("altitude_m") or seg.get("distance_3d_m_onset") or 0.0
+    
+    # Convert to native Python types
+    if az is None:
+        az = 0.0
+    if dist is None:
+        dist = 0.0
+    
     return {
         "drone": {
-            "azimuth":  float(az),
-            "distance": float(dist),
-            "height":   ht,
+            "azimuth":  float(az),   # Ensure float
+            "distance": float(dist), # Ensure float
+            "height":   float(ht),   # Ensure float
         },
-        "segment_id":    seg["id"],
-        "session":       seg["session"],
-        "maneuver_type": seg["maneuver_type"],
-        "flight_phase":  seg["flight_phase"],
-        "n_drones":      seg["n_drones"],
-        "split":         seg["split"],
-        "speed_mps":     seg.get("speed_mps"),
-        "radius_m":      seg.get("radius_m"),
-        "duration_s":    seg["duration_s"],
+        "segment_id":    int(seg["id"]),  # Ensure int
+        "session":       str(seg["session"]),
+        "maneuver_type": str(seg["maneuver_type"]),
+        "flight_phase":  str(seg["flight_phase"]) if seg.get("flight_phase") else None,
+        "n_drones":      int(seg.get("n_drones", 1)),
+        "split":         str(seg["split"]),
+        "speed_mps":     float(seg["speed_mps"]) if seg.get("speed_mps") is not None else None,
+        "radius_m":      float(seg["radius_m"]) if seg.get("radius_m") is not None else None,
+        "duration_s":    float(seg["duration_s"]),
     }
 
+
+# ── Validation function ────────────────────────────────────────────────────────
+
+def validate_extracted_segment(audio_path: Path, label_path: Path, segment_name: str) -> dict:
+    """Validate that extracted segment contains drone audio using FFT analysis."""
+    try:
+        audio, sr = sf.read(str(audio_path))
+        
+        # Compute FFT for drone frequency detection
+        fft = np.abs(np.fft.rfft(audio))
+        freqs = np.fft.rfftfreq(len(audio), 1/sr)
+        
+        # Look for peak in drone BPF range (30-300 Hz)
+        drone_range = (freqs >= 30) & (freqs <= 300)
+        if np.any(drone_range):
+            peak_idx = np.argmax(fft[drone_range])
+            dom_freq = freqs[drone_range][peak_idx]
+        else:
+            dom_freq = np.nan
+        
+        # Calculate energy ratio in drone band
+        drone_energy = np.sum(fft[drone_range]**2) if np.any(drone_range) else 0
+        total_energy = np.sum(fft**2)
+        energy_ratio = drone_energy / total_energy if total_energy > 0 else 0
+        
+        rms_db = 20 * np.log10(np.sqrt(np.mean(audio**2)) + 1e-8)
+        
+        # Validation criteria - convert numpy types to Python native
+        is_valid = bool(
+            not np.isnan(dom_freq) and
+            dom_freq >= 30 and dom_freq <= 300 and
+            rms_db > -40 and
+            energy_ratio > 0.3
+        )
+        
+        # Return with native Python types
+        return {
+            "valid": is_valid,  # Now Python bool, not np.bool_
+            "dom_freq_hz": float(dom_freq) if not np.isnan(dom_freq) else None,
+            "rms_db": float(rms_db),
+            "energy_ratio": float(energy_ratio)
+        }
+    except Exception as e:
+        return {"valid": False, "error": str(e)}
 
 # ── Main extractor ─────────────────────────────────────────────────────────────
 
@@ -270,6 +250,7 @@ def extract_from_wav_dir(
     output_dir: Path,
     splits: Optional[List[str]] = None,
     skip_unlabelled: bool = False,
+    validate: bool = True,
     verbose: bool = True,
 ) -> List[dict]:
 
@@ -326,6 +307,7 @@ def extract_from_wav_dir(
     # ── Extract ───────────────────────────────────────────────────────────────
     manifest: List[dict] = []
     skipped = 0
+    validation_results = []
 
     for seg in candidates:
         sid        = seg["id"]
@@ -375,42 +357,69 @@ def extract_from_wav_dir(
             json.dump(make_label_json(seg), f, indent=2)
 
         rms_db = round(20 * np.log10(max_rms + 1e-10), 1)
+        
+        # ── Validate the extracted segment ────────────────────────────────────
+        validation = None
+        if validate:
+            ch0_path = output_dir / f"{session_id}_ch0.wav"
+            label_path = output_dir / f"{session_id}_label.json"
+            validation = validate_extracted_segment(ch0_path, label_path, session_id)
+            validation_results.append(validation)
+            
+            if validation.get('valid', False):
+                if verbose:
+                    print(f"✓  rms={rms_db} dB  | ✅ VALID (drone, {validation.get('dom_freq_hz', 0):.1f}Hz)")
+            else:
+                if verbose:
+                    error_msg = validation.get('error', 'no drone signature')
+                    print(f"✓  rms={rms_db} dB  | ⚠️ VALIDATION WARNING: {error_msg}")
+        else:
+            if verbose:
+                print(f"✓  rms={rms_db} dB")
+
         entry = {
-            "session_id":       session_id,
-            "segment_id":       sid,
-            "session":          seg["session"],
-            "split":            split,
-            "maneuver_type":    maneuver,
-            "flight_phase":     seg.get("flight_phase"),
-            "n_drones":         seg.get("n_drones", 1),
-            "drones":           seg.get("drones", []),
-            "onset_from_rec_s": onset,
-            "duration_s":       dur,
-            "altitude_m":       seg.get("altitude_m"),
-            "speed_mps":        seg.get("speed_mps"),
-            "radius_m":         seg.get("radius_m"),
-            "azimuth_deg":      seg.get("azimuth_deg_onset"),
-            "distance_xy_m":    seg.get("distance_xy_m_onset"),
-            "distance_3d_m":    seg.get("distance_3d_m_onset"),
-            "rms_ch0":          rms_vals[0],
-            "rms_ch1":          rms_vals[1],
-            "rms_ch2":          rms_vals[2],
-            "rms_max_db":       rms_db,
-            "quality_flags":    flags,
-            "source_files":     [available[s].name for s in sorted(needed & covered_slots)],
+            "session_id":       str(session_id),
+            "segment_id":       int(sid),  # Convert to int
+            "session":          str(seg["session"]),
+            "split":            str(split),
+            "maneuver_type":    str(maneuver),
+            "flight_phase":     str(seg.get("flight_phase")) if seg.get("flight_phase") else None,
+            "n_drones":         int(seg.get("n_drones", 1)),
+            "drones":           list(seg.get("drones", [])),  # Ensure list
+            "onset_from_rec_s": float(onset),
+            "duration_s":       float(dur),
+            "altitude_m":       float(seg["altitude_m"]) if seg.get("altitude_m") is not None else None,
+            "speed_mps":        float(seg["speed_mps"]) if seg.get("speed_mps") is not None else None,
+            "radius_m":         float(seg["radius_m"]) if seg.get("radius_m") is not None else None,
+            "azimuth_deg":      float(seg["azimuth_deg_onset"]) if seg.get("azimuth_deg_onset") is not None else None,
+            "distance_xy_m":    float(seg["distance_xy_m_onset"]) if seg.get("distance_xy_m_onset") is not None else None,
+            "distance_3d_m":    float(seg["distance_3d_m_onset"]) if seg.get("distance_3d_m_onset") is not None else None,
+            "rms_ch0":          float(rms_vals[0]),
+            "rms_ch1":          float(rms_vals[1]),
+            "rms_ch2":          float(rms_vals[2]),
+            "rms_max_db":       float(rms_db),
+            "quality_flags":    list(flags),  # Ensure list
+            "source_files":     list([available[s].name for s in sorted(needed & covered_slots)]),
             "array":            "BK-6-W",
             "array_geometry":   "gp2",
-            "polywav_channels": POLYWAV_CHANNELS,
+            "polywav_channels": [int(c) for c in POLYWAV_CHANNELS],  # List of ints
             "wav_ch0":          f"{session_id}_ch0.wav",
             "wav_ch1":          f"{session_id}_ch1.wav",
             "wav_ch2":          f"{session_id}_ch2.wav",
             "label_json":       f"{session_id}_label.json",
+            "validation":       validation if validate else None,
         }
         manifest.append(entry)
-        if verbose:
-            print(f"✓  rms={rms_db} dB")
 
     print(f"\n✅ Extracted {len(manifest)} segments  ({skipped} skipped)")
+    
+    # Print validation summary
+    if validate and validation_results:
+        valid_count = sum(1 for v in validation_results if v.get('valid', False))
+        print(f"\n📊 Validation Summary: {valid_count}/{len(validation_results)} segments passed drone validation")
+        if valid_count < len(validation_results):
+            print(f"   ⚠️ {len(validation_results) - valid_count} segments may not contain drone audio")
+    
     return manifest
 
 
@@ -419,11 +428,13 @@ def extract_from_wav_dir(
 def write_labels_csv(manifest: List[dict], output_dir: Path):
     import csv
     fieldnames = ["session_id", "azimuth_deg", "distance_m", "height_m",
-                  "split", "maneuver_type", "n_drones", "altitude_m", "speed_mps"]
+                  "split", "maneuver_type", "n_drones", "altitude_m", "speed_mps",
+                  "validation_valid", "validation_dom_freq_hz"]
     with open(output_dir / "labels.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
         for r in manifest:
+            val = r.get("validation", {})
             w.writerow({
                 "session_id":    r["session_id"],
                 "azimuth_deg":   r["azimuth_deg"]   if r["azimuth_deg"]   is not None else "",
@@ -434,6 +445,8 @@ def write_labels_csv(manifest: List[dict], output_dir: Path):
                 "n_drones":      r["n_drones"],
                 "altitude_m":    r["altitude_m"]     if r["altitude_m"]    is not None else "",
                 "speed_mps":     r["speed_mps"]      if r["speed_mps"]     is not None else "",
+                "validation_valid": val.get("valid", False) if val else "",
+                "validation_dom_freq_hz": val.get("dom_freq_hz", "") if val else "",
             })
     print(f"📋 labels.csv written")
 
@@ -472,6 +485,12 @@ def print_summary(manifest: List[dict]):
     print(f"\n  Labelled (az+dist+ht) : {labelled}/{len(manifest)}")
     rms_dbs = [r["rms_max_db"] for r in manifest]
     print(f"  RMS range             : {min(rms_dbs):.1f} … {max(rms_dbs):.1f} dB")
+    
+    # Validation summary
+    validated = [r for r in manifest if r.get("validation") is not None]
+    if validated:
+        valid_count = sum(1 for r in validated if r["validation"].get("valid", False))
+        print(f"  Validation passed     : {valid_count}/{len(validated)} ({100*valid_count/len(validated):.1f}%)")
     print("═" * 65)
 
 
@@ -493,6 +512,8 @@ def main():
                     help="Skip ZIP creation")
     ap.add_argument("--skip-unlabelled", action="store_true",
                     help="Skip segments with no azimuth label")
+    ap.add_argument("--no-validate", action="store_true",
+                    help="Skip audio validation")
     ap.add_argument("--dry-run",     action="store_true",
                     help="Print what would be extracted without writing files")
     args = ap.parse_args()
@@ -516,6 +537,7 @@ def main():
     print(f"  Output length  : {TARGET_DUR_S} s  ({TARGET_SAMPLES} samples)")
     print(f"  Channels       : polywav idx {POLYWAV_CHANNELS}  (BK-6-W E, H, B)")
     print(f"  Slot duration  : {CHUNK_DUR_S:.4f} s per file")
+    print(f"  Validate audio : {'NO' if args.no_validate else 'YES'}")
 
     if args.dry_run:
         with open(segments_json) as f:
@@ -543,6 +565,7 @@ def main():
         output_dir=output_dir,
         splits=args.splits,
         skip_unlabelled=args.skip_unlabelled,
+        validate=not args.no_validate,
         verbose=True,
     )
 
@@ -566,3 +589,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # # Usage examples:
+    # # Extract with validation (default)
+    # python dunakeszi_segment_extractor.py --segments ground_truth/ground_truth_segments.json --wav-dir wavs/
+
+    # # Extract without validation (faster)
+    # python dunakeszi_segment_extractor.py --segments ground_truth/ground_truth_segments.json --wav-dir wavs/ --no-validate
+
+    # # Dry run to see what would be extracted
+    # python dunakeszi_segment_extractor.py --segments ground_truth/ground_truth_segments.json --wav-dir wavs/ --dry-run

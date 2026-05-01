@@ -1,121 +1,5 @@
 [
   {
-    "session_id": "seg_033_circle_val",
-    "segment_id": 33,
-    "session": "show_13",
-    "split": "val",
-    "maneuver_type": "circle",
-    "flight_phase": "orbit",
-    "n_drones": 4,
-    "drones": [
-      "drone65",
-      "drone78",
-      "drone130",
-      "drone132"
-    ],
-    "onset_from_rec_s": 7560.0,
-    "duration_s": 8.0,
-    "altitude_m": 20,
-    "speed_mps": 4.0,
-    "radius_m": 10.0,
-    "azimuth_deg": 180.0,
-    "distance_xy_m": 2.5,
-    "distance_3d_m": 20.2,
-    "rms_ch0": 0.06593966484069824,
-    "rms_ch1": 0.06263449788093567,
-    "rms_ch2": 0.0672825276851654,
-    "quality_flags": [
-      "short_segment"
-    ],
-    "array": "BK-6-W",
-    "array_geometry": "gp2",
-    "polywav_channels": [
-      2,
-      3,
-      4
-    ],
-    "wav_ch0": "seg_033_circle_val_ch0.wav",
-    "wav_ch1": "seg_033_circle_val_ch1.wav",
-    "wav_ch2": "seg_033_circle_val_ch2.wav",
-    "label_json": "seg_033_circle_val_label.json"
-  },
-  {
-    "session_id": "seg_034_circle_val",
-    "segment_id": 34,
-    "session": "show_13",
-    "split": "val",
-    "maneuver_type": "circle",
-    "flight_phase": "orbit",
-    "n_drones": 4,
-    "drones": [
-      "drone65",
-      "drone78",
-      "drone130",
-      "drone132"
-    ],
-    "onset_from_rec_s": 7571.0,
-    "duration_s": 47.0,
-    "altitude_m": 20,
-    "speed_mps": 4.0,
-    "radius_m": 30.0,
-    "azimuth_deg": 180.0,
-    "distance_xy_m": 2.5,
-    "distance_3d_m": 20.2,
-    "rms_ch0": 0.04931848868727684,
-    "rms_ch1": 0.04725012928247452,
-    "rms_ch2": 0.04883408173918724,
-    "quality_flags": [],
-    "array": "BK-6-W",
-    "array_geometry": "gp2",
-    "polywav_channels": [
-      2,
-      3,
-      4
-    ],
-    "wav_ch0": "seg_034_circle_val_ch0.wav",
-    "wav_ch1": "seg_034_circle_val_ch1.wav",
-    "wav_ch2": "seg_034_circle_val_ch2.wav",
-    "label_json": "seg_034_circle_val_label.json"
-  },
-  {
-    "session_id": "seg_035_circle_val",
-    "segment_id": 35,
-    "session": "show_13",
-    "split": "val",
-    "maneuver_type": "circle",
-    "flight_phase": "orbit",
-    "n_drones": 4,
-    "drones": [
-      "drone65",
-      "drone78",
-      "drone130",
-      "drone132"
-    ],
-    "onset_from_rec_s": 7621.0,
-    "duration_s": 188.0,
-    "altitude_m": 20,
-    "speed_mps": 4.0,
-    "radius_m": 60.0,
-    "azimuth_deg": 180.0,
-    "distance_xy_m": 2.5,
-    "distance_3d_m": 20.2,
-    "rms_ch0": 0.05755266547203064,
-    "rms_ch1": 0.054878756403923035,
-    "rms_ch2": 0.057948023080825806,
-    "quality_flags": [],
-    "array": "BK-6-W",
-    "array_geometry": "gp2",
-    "polywav_channels": [
-      2,
-      3,
-      4
-    ],
-    "wav_ch0": "seg_035_circle_val_ch0.wav",
-    "wav_ch1": "seg_035_circle_val_ch1.wav",
-    "wav_ch2": "seg_035_circle_val_ch2.wav",
-    "label_json": "seg_035_circle_val_label.json"
-  },
-  {
     "session_id": "seg_036_circle_test",
     "segment_id": 36,
     "session": "show_14",
@@ -132,18 +16,23 @@
     ],
     "onset_from_rec_s": 8460.0,
     "duration_s": 8.0,
-    "altitude_m": 20,
+    "altitude_m": 20.0,
     "speed_mps": 4.0,
     "radius_m": 10.0,
     "azimuth_deg": 180.0,
     "distance_xy_m": 2.5,
     "distance_3d_m": 20.2,
-    "rms_ch0": 8.553446605219506e-06,
-    "rms_ch1": 1.9537826574378414e-06,
-    "rms_ch2": 3.1231913908413844e-06,
+    "rms_ch0": 0.06910794973373413,
+    "rms_ch1": 0.06677943468093872,
+    "rms_ch2": 0.06856415420770645,
+    "rms_max_db": -23.2,
     "quality_flags": [
       "short_segment",
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01U.wav"
     ],
     "array": "BK-6-W",
     "array_geometry": "gp2",
@@ -155,7 +44,13 @@
     "wav_ch0": "seg_036_circle_test_ch0.wav",
     "wav_ch1": "seg_036_circle_test_ch1.wav",
     "wav_ch2": "seg_036_circle_test_ch2.wav",
-    "label_json": "seg_036_circle_test_label.json"
+    "label_json": "seg_036_circle_test_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 53.0,
+      "rms_db": -23.209438831769234,
+      "energy_ratio": 0.6144506091521124
+    }
   },
   {
     "session_id": "seg_037_circle_test",
@@ -174,17 +69,22 @@
     ],
     "onset_from_rec_s": 8471.0,
     "duration_s": 47.0,
-    "altitude_m": 20,
+    "altitude_m": 20.0,
     "speed_mps": 4.0,
     "radius_m": 30.0,
     "azimuth_deg": 180.0,
     "distance_xy_m": 2.5,
     "distance_3d_m": 20.2,
-    "rms_ch0": 8.553446605219506e-06,
-    "rms_ch1": 1.9537826574378414e-06,
-    "rms_ch2": 3.1231913908413844e-06,
+    "rms_ch0": 0.07959620654582977,
+    "rms_ch1": 0.07767040282487869,
+    "rms_ch2": 0.07934938371181488,
+    "rms_max_db": -22.0,
     "quality_flags": [
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01U.wav"
     ],
     "array": "BK-6-W",
     "array_geometry": "gp2",
@@ -196,7 +96,13 @@
     "wav_ch0": "seg_037_circle_test_ch0.wav",
     "wav_ch1": "seg_037_circle_test_ch1.wav",
     "wav_ch2": "seg_037_circle_test_ch2.wav",
-    "label_json": "seg_037_circle_test_label.json"
+    "label_json": "seg_037_circle_test_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 53.33333333333333,
+      "rms_db": -21.982151617649933,
+      "energy_ratio": 0.5122086115854776
+    }
   },
   {
     "session_id": "seg_038_circle_test",
@@ -215,17 +121,22 @@
     ],
     "onset_from_rec_s": 8521.0,
     "duration_s": 188.0,
-    "altitude_m": 20,
+    "altitude_m": 20.0,
     "speed_mps": 4.0,
     "radius_m": 60.0,
     "azimuth_deg": 180.0,
     "distance_xy_m": 2.5,
     "distance_3d_m": 20.2,
-    "rms_ch0": 8.553446605219506e-06,
-    "rms_ch1": 1.9537826574378414e-06,
-    "rms_ch2": 3.1231913908413844e-06,
+    "rms_ch0": 0.07185176014900208,
+    "rms_ch1": 0.06884907931089401,
+    "rms_ch2": 0.07154318690299988,
+    "rms_max_db": -22.9,
     "quality_flags": [
-      "drone132_log_id_shared_with_show_13"
+      "drone132_log_id_shared_with_show_13",
+      "mems_ended_before_show"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01U.wav"
     ],
     "array": "BK-6-W",
     "array_geometry": "gp2",
@@ -237,6 +148,12 @@
     "wav_ch0": "seg_038_circle_test_ch0.wav",
     "wav_ch1": "seg_038_circle_test_ch1.wav",
     "wav_ch2": "seg_038_circle_test_ch2.wav",
-    "label_json": "seg_038_circle_test_label.json"
+    "label_json": "seg_038_circle_test_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 54.33333333333333,
+      "rms_db": -22.87125086305524,
+      "energy_ratio": 0.48855191253321595
+    }
   }
 ]

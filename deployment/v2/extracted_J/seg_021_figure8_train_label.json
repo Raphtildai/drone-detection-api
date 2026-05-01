@@ -1,0 +1,17 @@
+{
+  "drone": {
+    "azimuth": 0.0,
+    "distance": 0.0,
+    "height": 20.0
+  },
+  "segment_id": 21,
+  "session": "show_8",
+  "maneuver_type": "figure8",
+  "flight_phase": "figure8",
+  "n_drones": 1,
+  "split": "train",
+  "speed_mps": 4.0,
+  "radius_m": null,
+  "duration_s": 63.0,
+  "array": "BK-6-E"
+}

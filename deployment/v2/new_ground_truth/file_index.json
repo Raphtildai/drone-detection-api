@@ -53,6 +53,29 @@
       30,
       31,
       32
+    ],
+    "251020VITEMOROM1AT01Q.wav": [
+      32
+    ],
+    "251020VITEMOROM1AT01R.wav": [
+      33,
+      34
+    ],
+    "251020VITEMOROM1AT01S.wav": [
+      34,
+      35
+    ],
+    "251020VITEMOROM1AT01U.wav": [
+      36,
+      37,
+      38
+    ],
+    "251020VITEMOROM1AT01W.wav": [
+      39,
+      40
+    ],
+    "251020VITEMOROM1AT01Y.wav": [
+      41
     ]
   },
   "mems_audio": {
@@ -210,7 +233,7 @@
     "polywav_fs_hz": 192000,
     "polywav_channels": 14,
     "polywav_format": "float32",
-    "polywav_n_chunks": 17,
+    "polywav_n_chunks": 26,
     "mems_chunk_dur_s": 242.3,
     "mems_format_verified": false,
     "mems_assumed_fs_hz": 48000,

@@ -1,0 +1,7 @@
+session_id,azimuth_deg,distance_m,height_m,split,maneuver_type,n_drones,altitude_m,speed_mps,clip_start_s,clip_position,array,validation_valid,validation_dom_freq_hz,validation_energy_ratio
+seg_005_hover_val,0.0,0.0,20.0,val,hover,1,20.0,0.0,28.5,0.5,BK-6-E,False,49.666666666666664,0.41928107051359187
+seg_006_hover_val,0.0,0.0,20.0,val,hover,1,20.0,0.0,28.5,0.5,BK-6-E,False,51.0,0.2616564512282728
+seg_007_transit_train,-90.0,60.0,20.0,train,transit,1,20.0,4.0,13.5,0.5,BK-6-E,False,45.33333333333333,0.311691611815352
+seg_008_transit_train,-90.0,60.0,20.0,train,transit,1,20.0,8.0,6.0,0.5,BK-6-E,True,35.33333333333333,0.4105647156732682
+seg_010_diagonal_train,-135.0,84.9,20.0,train,diagonal,1,20.0,4.0,31.5,0.5,BK-6-E,True,56.33333333333333,0.350832379876045
+seg_011_diagonal_train,-135.0,84.9,20.0,train,diagonal,1,20.0,8.0,15.0,0.5,BK-6-E,True,46.0,0.04372343316380459

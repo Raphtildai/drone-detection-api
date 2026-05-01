@@ -12,5 +12,5 @@
   "split": "test",
   "speed_mps": 4.0,
   "radius_m": 60.0,
-  "duration_s": 188
+  "duration_s": 188.0
 }

@@ -1,7 +1,4 @@
-session_id,azimuth_deg,distance_m,height_m,split,maneuver_type,n_drones,altitude_m,speed_mps
-seg_033_circle_val,180.0,2.5,20,val,circle,4,20,4.0
-seg_034_circle_val,180.0,2.5,20,val,circle,4,20,4.0
-seg_035_circle_val,180.0,2.5,20,val,circle,4,20,4.0
-seg_036_circle_test,180.0,2.5,20,test,circle,5,20,4.0
-seg_037_circle_test,180.0,2.5,20,test,circle,5,20,4.0
-seg_038_circle_test,180.0,2.5,20,test,circle,5,20,4.0
+session_id,azimuth_deg,distance_m,height_m,split,maneuver_type,n_drones,altitude_m,speed_mps,validation_valid,validation_dom_freq_hz
+seg_036_circle_test,180.0,2.5,20.0,test,circle,5,20.0,4.0,True,53.0
+seg_037_circle_test,180.0,2.5,20.0,test,circle,5,20.0,4.0,True,53.33333333333333
+seg_038_circle_test,180.0,2.5,20.0,test,circle,5,20.0,4.0,True,54.33333333333333

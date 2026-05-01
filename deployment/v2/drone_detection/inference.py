@@ -259,34 +259,89 @@ def detect(
 ) -> dict:
     cfg = cfg or config
     ap  = AudioProcessor(cfg)
+
     y0  = ap.pad_or_truncate(np.asarray(channels[0], dtype=np.float32))
+
     rms_db = float(20 * math.log10(float(np.sqrt(np.mean(y0 ** 2))) + 1e-8))
+
+    # ── Early RMS veto ─────────────────────────────────────────────
     if rms_db < _RMS_FLOOR_DB:
-        return {"detected": False, "probability": 0.0, "label": "non_drone",
-                "cnn_probability": 0.0, "heuristic_probability": 0.0,
-                "heuristic_features": {"veto": "below_rms_floor", "rms_db": rms_db}}
+        return {
+            "detected": False,
+            "probability": 0.0,
+            "label": "non_drone",
+            "cnn_probability": 0.0,
+            "heuristic_probability": 0.0,
+            "heuristic_features": {"veto": "below_rms_floor", "rms_db": rms_db},
+        }
+
+    # ── CNN ────────────────────────────────────────────────────────
     m    = load_detection_model(cfg)
-    feat = ap.feature_stack(y0)   # [log-mel, PCEN, delta-mel] — matches training
+    feat = ap.feature_stack(y0)
     x    = torch.tensor(feat, dtype=torch.float32).unsqueeze(0).to(cfg.DEVICE)
+
     with torch.no_grad():
         cnn_prob = float(torch.softmax(m(x), dim=1)[0, 1].item())
-    heur           = heuristic_detect(y0, cfg)
+
+    # ── Heuristic ──────────────────────────────────────────────────
+    heur = heuristic_detect(y0, cfg)
     heuristic_prob = float(heur["probability"])
+    veto = heur["features"].get("veto")
+
+    # ── Threshold roles (NEW) ──────────────────────────────────────
+    TH_HIGH = cfg.DETECTION_THRESHOLD       # e.g. 0.60
+    TH_MID  = 0.60                          # agreement threshold
+    TH_LOW  = 0.40                          # weak confidence
+
+    TH_CNN_SURE = 0.90                      # CNN alone is trusted above this
+
     if use_hybrid:
         fused_prob = 0.80 * cnn_prob + 0.20 * heuristic_prob
-        if cnn_prob > 0.45 and heuristic_prob > 0.45:
-            fused_prob = min(1.0, fused_prob + 0.06)
-        if cnn_prob < 0.55 and heur["features"].get("veto"):
-            fused_prob = min(fused_prob, 0.40)
+
+        # Boost when both reasonably confident
+        if cnn_prob > TH_MID and heuristic_prob > TH_MID:
+            fused_prob = min(1.0, fused_prob + 0.05)
+
+        # Heuristic veto is skipped when the CNN is already very confident
+        # (>= TH_CNN_SURE). The model has seen the spectrogram directly and
+        # outweighs hand-crafted features in edge cases like low-entropy hover.
+        if veto and cnn_prob < TH_CNN_SURE:
+            if cnn_prob < TH_LOW:
+                fused_prob *= 0.5   # strong suppression
+            elif cnn_prob < TH_MID:
+                fused_prob *= 0.75  # moderate suppression
+            else:
+                fused_prob *= 0.90  # light penalty only
+
     else:
         fused_prob = cnn_prob
-    label = classify_detection_score(fused_prob, cfg)
-    return {"detected": bool(fused_prob >= cfg.DETECTION_THRESHOLD),
-            "probability": float(fused_prob), "label": label,
-            "cnn_probability": float(cnn_prob),
-            "heuristic_probability": float(heuristic_prob),
-            "heuristic_features": heur["features"]}
 
+    # ── Final decision ───────────────────────────────────────────────
+    # When the CNN is highly confident on its own, use it directly so a low
+    # heuristic score cannot pull fused_prob below TH_HIGH.
+    if cnn_prob >= TH_CNN_SURE:
+        detected = cnn_prob >= TH_HIGH
+    else:
+        detected = fused_prob >= TH_HIGH
+
+    label = classify_detection_score(fused_prob, cfg)
+
+    # print({
+    #     "cnn": cnn_prob,
+    #     "heur": heuristic_prob,
+    #     "fused_after": fused_prob,
+    #     "detected": detected,
+    #     "veto": veto
+    # })
+
+    return {
+        "detected": bool(detected),
+        "probability": float(fused_prob),
+        "label": label,
+        "cnn_probability": float(cnn_prob),
+        "heuristic_probability": float(heuristic_prob),
+        "heuristic_features": heur["features"],
+    }
 
 def _estimate_bpf_hz(y: np.ndarray, sr: int) -> float:
     """Quick spectral peak search 50–700 Hz for BPF estimation."""
@@ -870,3 +925,72 @@ def comprehensive_pipeline_test(
         "per_file_results": per_file_results,
         "all_azimuths":     all_detected_azimuths,
     }
+
+# If main analyze external audio file with robust method by default, but allow full pipeline test with --run_multi_drone and --use_tracker flags.
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Run comprehensive pipeline test or robust external audio analysis.")
+    parser.add_argument("--wav_paths", nargs=3, help="Paths to 3 audio files for Mic1, Mic2, and Mic3.")
+    parser.add_argument("--run_multi_drone", action="store_true", help="Whether to run the multi-drone pipeline.")
+    parser.add_argument("--use_tracker", action="store_true", help="Whether to use Kalman tracking in the pipelines.")
+    parser.add_argument("--show_plots", action="store_true", help="Whether to display analysis plots.")
+    args = parser.parse_args()
+    if args.run_multi_drone or args.use_tracker:
+        comprehensive_pipeline_test(
+            wav_paths=args.wav_paths,
+            run_multi_drone=args.run_multi_drone,
+            use_tracker=args.use_tracker,
+            show_plots=args.show_plots,
+        )
+    else:
+        # If not running the full pipeline test, run the robust external audio analysis on the first provided file or example file.
+        if args.wav_paths is None:
+            example_dir = Path(__file__).parent / "example_data"
+            example_files = sorted(example_dir.glob("*.wav"))
+            if not example_files:
+                raise FileNotFoundError(f"No example WAV files found in {example_dir}. Please provide --wav_paths.")
+            audio_path = str(example_files[0])
+            print(f"No wav_paths provided. Using example file: {audio_path}")
+        else:
+            audio_path = args.wav_paths[0]
+        analyse_external_audio_robust(
+            audio_path=audio_path,
+            cfg=None,
+            segment_sec=None,
+            overlap=None,
+            threshold=None,
+            min_pos_segments=None,
+            agg_mode=None,
+            topk=None,
+            show_plot=args.show_plots,
+        )
+# if __name__ == "__main__":
+#     import argparse
+#     parser = argparse.ArgumentParser(description="Comprehensive pipeline test for drone detection and localization.")
+#     parser.add_argument("--wav_paths", nargs=3, help="Paths to 3 audio files for Mic1, Mic2, and Mic3.")
+#     parser.add_argument("--run_multi_drone", action="store_true", help="Whether to run the multi-drone pipeline.")
+#     parser.add_argument("--use_tracker", action="store_true", help="Whether to use Kalman tracking in the pipelines.")
+#     parser.add_argument("--show_plots", action="store_true", help="Whether to display analysis plots.")
+#     args = parser.parse_args()
+
+#     if args.wav_paths is None:
+#         if _in_colab():
+#             print("No wav_paths provided. Launching interactive upload in Colab...")
+#             wav_paths = _upload_test_audio_triplet_colab()
+#         else:
+#             print("No wav_paths provided. Using example files from the 'example_data' directory...")
+#             example_dir = Path(__file__).parent / "example_data"
+#             wav_paths = sorted(example_dir.glob("*.wav"))[:3]
+#             if len(wav_paths) < 3:
+#                 raise FileNotFoundError(f"Expected at least 3 WAV files in {example_dir}, but found {len(wav_paths)}.")
+#             wav_paths = [str(p) for p in wav_paths]
+#             print(f"Using example files: {wav_paths}")
+#     else:
+#         wav_paths = _validate_test_audio_paths(args.wav_paths)
+
+#     comprehensive_pipeline_test(
+#         wav_paths=wav_paths,
+#         run_multi_drone=args.run_multi_drone,
+#         use_tracker=args.use_tracker,
+#         show_plots=args.show_plots,
+#     )

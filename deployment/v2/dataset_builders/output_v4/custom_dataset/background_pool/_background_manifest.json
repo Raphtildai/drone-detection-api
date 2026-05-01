@@ -1,0 +1,904 @@
+{
+  "rows": [
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold5_17578_7.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold5_17578_7.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "0724627b508bfe2fac1bb26462d3d5e3dd612b54"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold4_144007_13.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold4_144007_13.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "a922e91a126a062626a70c3f068692eda172c2ab"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold9_101729_11.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold9_101729_11.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "7e6e138cb565b68dbefc57f9c29b56884a708c6a"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold9_75743_13.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold9_75743_13.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "9bd4933e39f3f8f93d2e082f679e8609140a3ef2"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold1_118279_6.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold1_118279_6.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "be9d4b8b8afd889a9dd2b0da713a07a9344885b6"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold9_165454_8.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold9_165454_8.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "83198901b5d7292fc92757285a4e3c605ff36cce"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_76086_36.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_76086_36.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "3fd1faa6887fc5d465ca725a5fc8a638c33734e6"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold3_17853_2.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold3_17853_2.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "dd32ec6ceed9abc5559be8355e4d0b013d308b16"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold10_180127_17.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold10_180127_17.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "750bfada3fbc60576c753f472b8e18545b1bdd21"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold1_113205_4.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold1_113205_4.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "e77d48c8ec518d47e4ac497018286dbd23405c8d"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_100852_24.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_100852_24.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "3b6e9f4a1a9b83c87839acbb327f5cc5f5a2a278"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold9_101729_23.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold9_101729_23.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "83317580f01ad6ae16e5516ff9f862acb37531d2"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold1_57320_13.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold1_57320_13.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "deb02f9d66ad7a7c8ea0484f65a621bbc9a5b513"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold10_99192_28.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold10_99192_28.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "b5a2c66949ca9294b358897c3d9bd4b31ccd65fc"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold8_157868_12.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold8_157868_12.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "f132c016e138274cef5579f98918ef9969db77ae"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold7_177729_83.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold7_177729_83.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "9abb21db91d5b1a345c3a99e070ae53b05f0328c"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold1_146186_6.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold1_146186_6.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "63caca33c2b0a5021026e436c9c432d05555e2e8"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold6_71079_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold6_71079_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "1781e00ee8653b54d7bb32e100852f8e976f4538"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold9_188823_3.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold9_188823_3.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "0cdbb7e6afb295c3d2761da1d1100e684c1d1ad7"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_94710_1.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_94710_1.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "2cc75d099f132d4a0b487c35cf53a62adbba1603"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold6_58005_24.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold6_58005_24.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "13f5959b16fd4350de0c182dae2374c78fa5a142"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold4_154758_0.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold4_154758_0.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "b528bc2fa28823d0d5f49d10cef5302401591ffe"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_59594_2.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_59594_2.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "affd01fb889ba88b80dfedf2212b4af7a07dc8ae"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold8_205610_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold8_205610_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "8801b40b67057c31a1c3f4588b9756ce7253ddab"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_178686_38.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_178686_38.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "9718c71a97052ac49359354ad0e3ea5160b8b666"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold2_102871_5.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold2_102871_5.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "81bd63e672fdc0d558a997287a3ed93cd9ed49c8"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_22601_47.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_22601_47.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "6095b1d1901bd9e77eaac99c23fdfac502e0493c"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold7_71529_2.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold7_71529_2.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "f1f821dfad4fd521df3856f10b949d43d684870c"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_178686_68.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_178686_68.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "a2e06572f5c6ad24b6046dc7238919bc2559035f"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold6_66623_4.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold6_66623_4.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "43964fa880c96221acb5a3d69fb2d32a658ae528"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_201652_4.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_201652_4.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "6436e93284ff06422e97e6fd1711899abe014d87"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_22601_42.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_22601_42.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "9dade2ee38e998e3a21914f0465c145ac734f1e5"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold7_177729_63.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold7_177729_63.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "876b5a3d51f15a13065dbca894cae2ebe51e13e4"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_77751_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_77751_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "d8f1fa30772b99488bebb690358b808d15277fc6"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold6_204240_25.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold6_204240_25.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "d6e578ddf44b555305ff71dafe066f9f2e7de969"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold10_39847_0.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold10_39847_0.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "abff0cdf4d87c735ccce11c4847647de879bacdc"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold9_157866_8.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold9_157866_8.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "a43ca6ddfe462c3eb7549861fcac4f286422a6b6"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold9_79089_115.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold9_79089_115.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "114653d48c756be7654c84f52b113737900bc491"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold6_78651_12.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold6_78651_12.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "e6b15b51aa04bd80103208213ce7df86bb22a936"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_187075_5.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_187075_5.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "ce4a4783a1da0caeb874d1be869a46fee8cdb2e8"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold3_42937_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold3_42937_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "6cb64a83a07151d1ae1b8fe6cd1fa9eb7526f108"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold10_74364_8.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold10_74364_8.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "178ddbce95ca7f7c22b2bef3750478748486bb51"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold1_157867_14.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold1_157867_14.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "8b59f4fc7a01bdc3b2c4d614426eecf9e5c03f9a"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold8_96657_2.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold8_96657_2.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "f5ef69395e99032aac2bda03e0862df86bce0bf0"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_100852_5.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_100852_5.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "68cb6434ed6e72e978c528023a33e269744a12e7"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_177592_4.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_177592_4.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "68b61a7d8b8ffaec8d19bf06f615b5465d340ad3"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold6_124389_17.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold6_124389_17.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "6d7c1fa61485430e297daf8f909e22fe388d7340"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold3_31884_2.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold3_31884_2.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "bb50950de5f87a9e6e46264811686c70f8832f13"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold8_161129_6.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold8_161129_6.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "d3a818b1d9e08a05b5ff1c4dd5c6c3e7cfddd11a"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold6_124389_1.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold6_124389_1.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "bab7fd2d05cfb0c6b1ab630ed6ff4db8c367308e"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold7_149193_5.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold7_149193_5.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "073752850ef55fea8674fcce286865afd33d3cbd"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold3_63095_19.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold3_63095_19.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "c2488199fba8b3ed8014ea77c4dc133124e57ca8"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold8_125678_2.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold8_125678_2.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "28a9183be92df8f3fa4469317fd956e1b391ba54"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold3_103199_9.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold3_103199_9.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "c765394abb109592e722571327f7e24cd8dc6d85"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold4_169466_10.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold4_169466_10.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "e15615f96efa4c1b6f7c7c185255abd47681f936"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold1_134717_18.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold1_134717_18.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "8fb836b61affa4f394d7e826acaac60e3f1c7bd7"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold5_23219_9.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold5_23219_9.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "033090dc168dfd51cda381a4e9a25fa756c55496"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold6_94632_8.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold6_94632_8.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "acbfd6e06ea197041419dd0fd64a493735112718"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold5_205878_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold5_205878_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "06522da27d622cbeb302c83194227b631a6cdc1e"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold4_22883_4.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold4_22883_4.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "2b7d58a11c0f24e614d6a7772472fb619359af53"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_39856_0.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_39856_0.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "2dce9942c66adf47fd6d86e83a776aa7716793d5"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold6_30206_12.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold6_30206_12.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "306477f0fd34fbed917b97d13ee6e363f207d027"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_59594_4.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_59594_4.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "541e0534eb99cd74deaee2da85e87290bba81d69"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold4_144351_6.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold4_144351_6.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "b13be4c43e8585b13eb7f9953abd665b3809deba"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold2_159750_5.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold2_159750_5.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "1b1de53f0f46700bbe09c77a919875cd8ae4e1a4"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_201652_3.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_201652_3.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "35b84912aaafc54adffc78abd7a16cfb18c04665"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold1_134717_25.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold1_134717_25.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "0b31c63c0a4a3bc0ca37dcbfbb582d475cc6fbf2"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold5_203913_4.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold5_203913_4.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "616d7f0d89b68919203e75305edef2848baf9305"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold1_177621_47.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold1_177621_47.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "52be4aeac0e7cbc3720d522045f813f62ee96466"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold8_24728_0.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold8_24728_0.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "d50c7f628343db33b81097f47e21c8c197bc765b"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold1_103074_5.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold1_103074_5.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "f8241000925578c68a3292fc9df9d64d82d6b497"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_62567_6.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_62567_6.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "5cbc0c29436ca402e1c0a32b6ba4a72e115d6751"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_76086_43.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_76086_43.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "8e5fb16c00a75e92fb93562d84bba83012087c13"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold1_22962_1.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold1_22962_1.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "b78b4b4fd5a84dc82a3fce725abe1e8cea154aa0"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold8_117181_6.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold8_117181_6.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "3057e72001247a6f86d64d60effaf423f7ec10f7"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold8_177726_29.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold8_177726_29.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "be2fd8781594e6065dc624bdcc14747511596dd0"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold2_91396_1.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold2_91396_1.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "7039efa72b22bb342d8f39b5e4cc37ee3ca5ac0e"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_177592_2.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_177592_2.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "3237b3202802f6be88f5ab35c10051838c00cda9"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold5_156869_6.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold5_156869_6.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "82a9551aebef8203eabffd8d885507b8d68700ed"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold6_75490_1.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold6_75490_1.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "2364a77c05a087909862f8498f40d515149841b6"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold3_62837_64.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold3_62837_64.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "992b623c58644391eae6323fb27c34616deae55f"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold1_157867_26.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold1_157867_26.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "98fe81bd57e2f5d87e5873262f29846750caddc9"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold8_133473_5.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold8_133473_5.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "533aa94dbc3bf3bc8c63a7a72e5fc1b6779e8a03"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold2_106015_20.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold2_106015_20.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "a32bc007e1b1415c3b618377f6e03bd045a1f4af"
+    },
+    {
+      "background_path": "output_v4/background_pool/us8k_siren_siren_fold5_164782_1.wav",
+      "original_path": "backgrounds/urbansound8k_imported/us8k_siren_siren_fold5_164782_1.wav",
+      "background_group": "us8k_siren",
+      "background_sha1": "99bab3eceb268a3477b7fd38f280d265be830d31"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_178686_2.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_178686_2.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "a1f1d6d8e1974b5a2ca656e6478828f34bce9cd7"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold1_177621_35.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold1_177621_35.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "a00280e6054e67ecc3cdcfbc96ad05a497126c62"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold3_30204_4.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold3_30204_4.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "7734e750cdea457afe52fa7b4d4595b0300a9229"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold6_39884_7.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold6_39884_7.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "3f3b80b3239c03aa5bc79dadf73b641ba4871f3a"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold10_188813_0.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold10_188813_0.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "e44fc9f88db17666b84ffc779cafaf1ad123457c"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold1_180937_28.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold1_180937_28.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "fdd25d2d125ea556416180699d4fee87542cac53"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold2_159747_14.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold2_159747_14.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "41e5d2f8483411c5942f80acd7d2c0295736038d"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_34621_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_34621_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "40a0fadc1d217c2ce18baedc7a88b68947169b6f"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold3_177742_203.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold3_177742_203.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "15b25d4c7ffde0af24ebe4692e454440c0978e1b"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold1_180937_30.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold1_180937_30.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "e2ba0614e3ca9aad91ea11db0bff3af152469d02"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold10_187863_5.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold10_187863_5.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "046c1f624a309049ba24c4eaee3b89ec4deb6b14"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold8_180134_13.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold8_180134_13.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "92f8de36742895c77fe08bac5283ec76f0ff24ef"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold7_194962_1.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold7_194962_1.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "f51f895d005361960ef99aee78f99029eb420bed"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_103249_12.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_103249_12.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "77125a2a5417c8585fdc2dd316089cf90466d7df"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold1_55020_13.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold1_55020_13.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "0dad17280db3017bdf86bdd6a6eece9a595d6b1b"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold9_105029_14.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold9_105029_14.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "d588cc687850eb5e6b771f1a874b1b18d471b1fb"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold5_23219_5.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold5_23219_5.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "67f1187d2a9df1759f9c10a7fa2de4cf28e55127"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold10_39847_5.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold10_39847_5.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "f8ac99add8c7ca96c793c25f29a7bfa115806899"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold8_170022_0.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold8_170022_0.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "3aa4373c3f51239ca427055a08608015356b9150"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold1_22962_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold1_22962_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "95f704268aebd62e711b71fed7bad3e746738cd8"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold8_113202_10.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold8_113202_10.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "a8d2cccd88b0f0df9061890ba4b2e96c3d4f9caf"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold4_159752_2.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold4_159752_2.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "d78d807001458138360842697c4ad5db936a9f9c"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold10_159742_13.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold10_159742_13.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "c89829168a03d8b30cdc8165cf8fe8fa74cea050"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold6_121285_9.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold6_121285_9.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "5c189213d5de74211823f0f5c5725e6f0b050548"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_100852_15.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_100852_15.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "6cdba447a0fdef7f46a2c374917c7cd814cd165c"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold6_66623_6.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold6_66623_6.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "6749b33542c928db35c1e1783bede407ab59dd70"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold4_128160_1.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold4_128160_1.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "4c86bf5d2eedc1d4357e2bd77126371dcbbe471b"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_94636_3.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_94636_3.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "c30148f877af130cfe8b77f72b0d211abcd060ab"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold2_76086_17.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold2_76086_17.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "a0c6bfc6555554311ec7de89d31a4ecb0ad16cd0"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold8_54383_4.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold8_54383_4.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "e877b46131a8f36cf925feacc2002339e1e96440"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_94636_12.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_94636_12.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "e0d5be93701a8c54e529eb9ab77d240d45902215"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold1_103258_2.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold1_103258_2.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "56eb27e4549192332e75bdc43bd7eb81169db8ca"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold7_135849_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold7_135849_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "d7d119faf1252bae7f0d052a8442157454da99e5"
+    },
+    {
+      "background_path": "output_v4/background_pool/us8k_engine_idling_engine_idling_fold7_123685_4.wav",
+      "original_path": "backgrounds/urbansound8k_imported/us8k_engine_idling_engine_idling_fold7_123685_4.wav",
+      "background_group": "us8k_engine",
+      "background_sha1": "48138533d76918b63a02afc502c199b123491964"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold4_166942_5.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold4_166942_5.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "bb33ca109bbe46957691589339400f22516c34ca"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold3_62837_9.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold3_62837_9.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "6c0b08078cd74ccc2a73b75b982fd4bb0f0b7c35"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold1_159738_7.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold1_159738_7.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "25a43f8f433537052daf967a359deb35b6c3f12b"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_103249_10.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_103249_10.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "b2ff0fde91b79304fcdd73869d271049bb619672"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold10_159742_12.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold10_159742_12.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "539f7700efd2153626b4dc08e2a2f1b88e938cc1"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_94636_10.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_94636_10.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "163a843b8c7348aab42c4ee575e4b19750789a76"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold9_188823_4.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold9_188823_4.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "5b765498c084028da74e4f2db17f3b3a2e65175b"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold8_177726_33.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold8_177726_33.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "f282088dfc2d323f06f4c4e28c784b3dbbc892fa"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold3_22601_16.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold3_22601_16.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "ce3d927a3a8ff48ae7ea137be5cfa677f916ed99"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold1_180937_14.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold1_180937_14.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "f7aec93bead3338b5be8fdf4e8eb4878bcef3726"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold5_180125_0.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold5_180125_0.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "bbba71421a1d564df6b4b90be960767438340480"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold5_156869_7.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold5_156869_7.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "d57731d7268cff0458b19ef826b8680bbc318bdf"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold4_159751_0.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold4_159751_0.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "b14fc3857403dbcf7edf1aa3f038b4b692316774"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold9_119449_5.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold9_119449_5.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "49476899515fbc27943cec1bb1713f2fb5bb2115"
+    },
+    {
+      "background_path": "output_v4/background_pool/us8k_siren_siren_fold2_102871_0.wav",
+      "original_path": "backgrounds/urbansound8k_imported/us8k_siren_siren_fold2_102871_0.wav",
+      "background_group": "us8k_siren",
+      "background_sha1": "5094313a3e4fc926c0586f36694d00aa1f7fde13"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold4_24347_82.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold4_24347_82.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "0d6d2efec7b8fc85d4b8349a78054825feeeaca2"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold1_44736_1.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold1_44736_1.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "35542824e1c4d751156ed61f98eb3414e063412d"
+    },
+    {
+      "background_path": "output_v4/background_pool/engine_idling_fold10_15544_14.wav",
+      "original_path": "backgrounds/urbansound8k/engine_idling/engine_idling_fold10_15544_14.wav",
+      "background_group": "engine_idling_engine",
+      "background_sha1": "c41ca71486ff4b469a4355a836c48695eaf96e75"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold4_146709_44.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold4_146709_44.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "0b8d9e06b7290c42d79e85706bc86d7f91c21bcb"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold1_40722_8.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold1_40722_8.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "b2bd2d32ebfe4dbf1243e216a56fe9ad4acaa65f"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold5_187920_2.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold5_187920_2.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "2f963a84cc2ffd6c59285810b35d9558aea9028a"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold4_159751_4.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold4_159751_4.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "c9674ffb3e5eb68b3cb036df42b504909e3b9725"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold4_195969_22.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold4_195969_22.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "cd9e289a9c05a2b0b3e05844596b47002d0951c7"
+    },
+    {
+      "background_path": "output_v4/background_pool/jackhammer_fold1_180937_21.wav",
+      "original_path": "backgrounds/urbansound8k/jackhammer/jackhammer_fold1_180937_21.wav",
+      "background_group": "jackhammer_jackhammer",
+      "background_sha1": "fe2945c6accf66da807965fcc4d2e45ba63b82eb"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold8_162103_5.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold8_162103_5.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "ae933c7042a84c19102cce8a37bfbe1de50d14f4"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold4_144351_3.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold4_144351_3.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "b9cf004771f92147641519ea09ac0ebd36664151"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold6_204240_10.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold6_204240_10.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "4cec831dae7abef1b010031c31e1a5d93cb84297"
+    },
+    {
+      "background_path": "output_v4/background_pool/siren_fold9_157866_20.wav",
+      "original_path": "backgrounds/urbansound8k/siren/siren_fold9_157866_20.wav",
+      "background_group": "siren_siren",
+      "background_sha1": "8eee6ce30168f9bdd95044ae9506b49d1c4dc512"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold5_85569_0.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold5_85569_0.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "0ac2f8098bd9a30bf0a1594372770b9094f293c8"
+    },
+    {
+      "background_path": "output_v4/background_pool/air_conditioner_fold7_177729_91.wav",
+      "original_path": "backgrounds/urbansound8k/air_conditioner/air_conditioner_fold7_177729_91.wav",
+      "background_group": "air_conditioner_air",
+      "background_sha1": "5842d9a23efb282d3097a628ef058c244cacba77"
+    },
+    {
+      "background_path": "output_v4/background_pool/drilling_fold6_58005_17.wav",
+      "original_path": "backgrounds/urbansound8k/drilling/drilling_fold6_58005_17.wav",
+      "background_group": "drilling_drilling",
+      "background_sha1": "27446fea9e85ecde9e6a1ab61be4ffc54dba4e36"
+    }
+  ]
+}

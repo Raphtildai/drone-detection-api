@@ -1,0 +1,19 @@
+{
+  "azimuth_deg": -180.0,
+  "distance_m": 30.0,
+  "height_m": 20.0,
+  "source": "dunakeszi",
+  "original_bearing_deg": -90.0,
+  "segment_id": 20,
+  "session": "show_8",
+  "maneuver_type": "circle",
+  "flight_phase": "orbit",
+  "n_drones": 1,
+  "split": "train",
+  "array": "BK-6-E",
+  "speed_mps": 4.0,
+  "radius_m": 60.0,
+  "duration_s": 188.0,
+  "has_position": true,
+  "note": "bearing_from_north=-90.0\u00b0 \u2192 pipeline_math_az=-180.0\u00b0; dist=30.0m (norm@100m=0.300)"
+}

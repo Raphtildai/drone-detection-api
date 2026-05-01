@@ -1,0 +1,28 @@
+================================================================================
+EXTRACTED SEGMENTS VALIDATION REPORT
+================================================================================
+
+
+✅ VALID: seg_036_circle_test
+   Maneuver: circle / show_14
+   Azimuth: 180.0°
+   Distance: 2.5 m
+   Audio RMS: -23.2 dB, Peak: -12.9 dB
+   Duration: 3.00 s
+   Plots: seg_036_circle_test_validation.png, seg_036_circle_test_compass.png
+
+✅ VALID: seg_037_circle_test
+   Maneuver: circle / show_14
+   Azimuth: 180.0°
+   Distance: 2.5 m
+   Audio RMS: -22.0 dB, Peak: -9.8 dB
+   Duration: 3.00 s
+   Plots: seg_037_circle_test_validation.png, seg_037_circle_test_compass.png
+
+✅ VALID: seg_038_circle_test
+   Maneuver: circle / show_14
+   Azimuth: 180.0°
+   Distance: 2.5 m
+   Audio RMS: -22.9 dB, Peak: -11.6 dB
+   Duration: 3.00 s
+   Plots: seg_038_circle_test_validation.png, seg_038_circle_test_compass.png
