@@ -61,7 +61,7 @@ DRONE_BPF_PROFILES = {
     "hexarotor":   (60,   75, 195, 6),
     "generic_low_altitude_high": (150, 220, 380, 4),  # existing close-range drones
     "generic_high_altitude":     (50,   70, 120, 4),  # drones at 40-120m altitude
-    "dji_high_altitude": (45, 65, 90, 6),   # DJI drones at 40–120m altitude
+    "dji_high_altitude": (30, 55, 90, 6),   # DJI drones at 40–120m altitude
                                           # 6 harmonics: 65, 130, 195, 260, 325, 390 Hz
 }
 
@@ -184,7 +184,7 @@ class Config:
         self.EXTERNAL_TOPK             = 3
 
         # ── Mixed-audio augmentation ──────────────────────────────────────
-        self.MIXED_DRONE_SAMPLES   = 1200
+        self.MIXED_DRONE_SAMPLES   = 2000
         self.MIXED_DRONE_VAL_FRAC  = 0.15
         self.MIX_SNR_DB_RANGE      = (-5.0, 15.0)
         self.MIX_GAIN_RANGE_DB     = (-8.0, 8.0)

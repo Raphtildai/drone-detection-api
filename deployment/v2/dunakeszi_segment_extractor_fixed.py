@@ -691,4 +691,4 @@ if __name__ == "__main__":
     # For transit/circle segments, keep the default --clip-position 0.5
 
     # For 251020VITEMOROM1AT01J.wav file
-    # python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json  --wav-dir wavs/  --array BK-6-E  --clip-position 0.5  --output-dir extracted_J/
+    # python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json  --wav-dir wavs/  --array BK-6-E  --clip-position 0.5  --output-dir extracted_P/
