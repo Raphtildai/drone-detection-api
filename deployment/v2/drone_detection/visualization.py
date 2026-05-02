@@ -309,21 +309,36 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
     _style_legend(leg)
 
-    # [3] Localization bars
+    # [3] Localization bars — azimuth in degrees, distance as secondary axis
     ax = axes[3]
     locs = [s for s in segments if s.get("loc") is not None]
     if locs:
-        w       = cfg.TARGET_DURATION * 0.8
-        az_vals = [s["loc"]["azimuth_deg"] / 180.0 for s in locs]
-        t_locs  = [s["t_start"] for s in locs]
-        ax.bar(t_locs, az_vals, width=w, color=PLOT_STYLE["accent"], alpha=0.7, label="Az/180°")
+        w        = cfg.TARGET_DURATION * 0.8
+        az_vals  = [s["loc"]["azimuth_deg"] for s in locs]
+        dist_vals = [s["loc"]["distance_m"] for s in locs]
+        t_locs   = [s["t_start"] for s in locs]
+        ax.bar(t_locs, az_vals, width=w, color=PLOT_STYLE["accent"], alpha=0.7, label="Azimuth (°)")
+        ax.axhline(0, color=PLOT_STYLE["spine"], lw=0.8, ls="--")
+        ax.set_ylim(-185, 185)
+        ax.set_ylabel("Azimuth (°)", color=PLOT_STYLE["text"])
+        ax2_loc = ax.twinx()
+        ax2_loc.plot(t_locs, dist_vals, "D--", color=PLOT_STYLE["warn"],
+                     ms=5, lw=1.5, label="Distance (m)")
+        ax2_loc.set_ylabel("Distance (m)", color=PLOT_STYLE["warn"])
+        ax2_loc.tick_params(axis="y", colors=PLOT_STYLE["warn"])
+        for spine in ax2_loc.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+        lines1, labels1 = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2_loc.get_legend_handles_labels()
+        leg = ax.legend(lines1 + lines2, labels1 + labels2,
+                        facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"],
+                        loc="upper right", fontsize=8)
+        _style_legend(leg)
     else:
         ax.text(0.5, 0.5, "No localization data", ha="center", va="center",
                 color=PLOT_STYLE["muted"], transform=ax.transAxes)
-    ax.set_xlabel("Time (s)"); ax.set_ylabel("Normalised"); ax.set_title("Localization")
-    if locs:
-        leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
-        _style_legend(leg)
+        ax.set_ylabel("Azimuth (°)", color=PLOT_STYLE["text"])
+    ax.set_xlabel("Time (s)"); ax.set_title("Localization (Azimuth + Distance)")
 
     # [4] Polar compass
     axes[4].remove()

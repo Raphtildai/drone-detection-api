@@ -49,9 +49,11 @@ from .utils import bandpass, gcc_phat_peaks
 _MIN_SOLUTION_DIST_M = 0.30
 
 # TDOA dedup window (seconds).
-# Physical limit for a 20 cm baseline @ 343 m/s ≈ 0.58 ms.
-# We use 5 % of that as the dedup window (v1 fix).
-_TDOA_DEDUP_S = 0.029e-3        # 29 µs (original was 0.05 µs)
+# Physical limit for the UaVirBASE 3-mic selection (3.44 m baseline @ 343 m/s ≈ 10.0 ms).
+# We use 5% of that as the dedup window: 0.5 ms.
+# (The original 29 µs was designed for a 200 mm array and is 17× too tight
+#  for the 3.44 m baseline used in this thesis.)
+_TDOA_DEDUP_S = 0.5e-3          # 500 µs = 5% of 10 ms physical limit
 
 # Residual acceptance threshold.  Only solutions with TDOA residual below
 # this are accepted.  Tightened from 1e-6 to 1e-8 in v2.

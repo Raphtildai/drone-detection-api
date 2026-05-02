@@ -314,7 +314,7 @@ class Config:
         self.DRIVE_TRACKS = D / "tracks"
         self.DRIVE_PLOTS  = D / "logs" / "plots"
 
-        self.UAVIRBASE_RAW = Path("/data_extra/uavirbase_ssl/Microphone_array")   #  B / "uavirbase"
+        self.UAVIRBASE_RAW = B / "uavirbase" #Path("/data_extra/uavirbase_ssl/Microphone_array")   #  B / "uavirbase"
         self.DRONEDS_RAW   = B / "droneds"
 
     def _mount_drive(self):

@@ -499,19 +499,14 @@ def analyse_audio_file(
                 for p in tmp: os.unlink(p)
             drone_loc = res["drones"][0] if res["drones"] else None
         else:
+            # analyse_audio_file operates on a single mono file — detection
+            # only uses channel 0 so passing [audio]*3 is fine for detection,
+            # but localization requires real inter-channel delays and is
+            # intentionally disabled here. Use use_synthesis=True or
+            # run_pipeline() with 3 real microphone files for valid localization.
             det       = detect([audio, audio, audio], cfg)
             drone_loc = None
-            if det["detected"]:
-                if can_localize:
-                    try:    drone_loc = localize([audio, audio, audio], cfg)
-                    except Exception:
-                        drone_loc = {"azimuth_deg": 0.0, "distance_m": 0.0,
-                                     "height_m": 0.0,
-                                     "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32)}
-                else:
-                    drone_loc = {"azimuth_deg": 0.0, "distance_m": 0.0,
-                                 "height_m": 0.0,
-                                 "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32)}
+            # localization skipped — single-channel input has no spatial ITD
             positions = [drone_loc["xy_position"]] if drone_loc else []
             tracks    = tracker.step(positions, base_ts + t_s)
             res = {"detected": det["detected"], "probability": det["probability"],
@@ -809,12 +804,26 @@ def comprehensive_pipeline_test(
             mel_fr = ap.mel(ap.pad_or_truncate(audio))
             rms_db = float(20 * np.log10(np.sqrt(np.mean(audio ** 2)) + 1e-8))
 
-            det       = detect([audio, audio, audio], cfg)
+            # Use the actual 3 loaded channels — NOT [audio, audio, audio]
+            # which would make all IPD values zero and corrupt localization.
+            # detection uses only ch0 internally (mono feature extraction)
+            # but we pass all 3 so localize() gets real inter-channel delays.
+            ch_slice = [
+                np.asarray(channels[i][start : start + seg_n]
+                           if len(channels[i]) > start + seg_n
+                           else np.pad(channels[i][start:], (0, max(0, seg_n - len(channels[i]) + start))),
+                           dtype=np.float32)
+                for i in range(len(channels))
+            ]
+            # Pad each slice to exactly seg_n
+            ch_slice = [c[:seg_n] if len(c) >= seg_n else np.pad(c, (0, seg_n - len(c)))
+                        for c in ch_slice]
+            det       = detect(ch_slice, cfg)
             drone_loc = None
 
             if det["detected"] and can_localize:
                 try:
-                    drone_loc = localize([audio, audio, audio], cfg)
+                    drone_loc = localize(ch_slice, cfg)
                 except Exception:
                     drone_loc = {
                         "azimuth_deg": 0.0, "distance_m": 0.0,
