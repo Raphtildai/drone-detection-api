@@ -89,6 +89,7 @@ from .multidrone import localize_multi_drone
 from .visualization import plot_multi_drone_positions, plot_track_trajectory
 
 
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Custom dataset helpers
 # ══════════════════════════════════════════════════════════════════════════════
@@ -624,6 +625,7 @@ def build_thesis_figures(
         fig8_loc_dist_height,
         fig9_synth_bpf_by_type,
         fig10_noise_profiles,
+        fig_loc_dataset_distribution,
         _list_wavs,
         _infer_source,
     )
@@ -631,7 +633,7 @@ def build_thesis_figures(
     builder_root = Path(dataset_root)
     out_dir      = Path(out_figures)
     out_dir.mkdir(parents=True, exist_ok=True)
-    figs         = figs or list(range(1, 11))
+    figs         = figs or list(range(1, 12))
 
     # ── 1. Snapshot post-augmentation counts from disk ────────────────────────
     det = cfg.PROCESSED_DIR / "detection"
@@ -686,6 +688,7 @@ def build_thesis_figures(
         8:  lambda: fig8_loc_dist_height(cfg, loc_result, out_dir),
         9:  lambda: fig9_synth_bpf_by_type(cfg, loc_result, out_dir),
         10: lambda: fig10_noise_profiles(cfg, builder_root, out_dir),
+        11: lambda: fig_loc_dataset_distribution(cfg, loc_result, out_dir),
     }
     for n in figs:
         if n not in fig_map:

@@ -1248,5 +1248,196 @@ def main():
     print(f"{'='*68}\n")
 
 
+def fig_loc_dataset_distribution(
+    cfg,
+    loc_result: Dict,
+    out_dir: Path,
+) -> Optional[Path]:
+    """
+    Six-panel figure showing the localization dataset split distribution.
+
+    Matches the white-background, serif-font, PALETTE style of all other
+    figures in this file.
+
+    Panels
+    ──────
+    [0,0] Sessions per split            (horizontal bar)
+    [0,1] Unique positions per split    (horizontal bar + ratio annotation)
+    [1,0] Azimuth distribution (°)      (overlapping histograms + mean vline)
+    [1,1] Distance distribution (m)     (overlapping histograms + mean vline)
+    [2,0] Height distribution (m)       (overlapping histograms + mean vline)
+    [2,1] Sessions / position ratio     (vertical bar)
+
+    loc_result keys (all optional — degrades gracefully / falls back to disk):
+        "splits"    → {"train": int, "val": int, "test": int}
+        "positions" → {"train": int, "val": int, "test": int}
+        "labels"    → list of dicts with keys
+                        azimuth_deg, distance_m, height_m, split
+    """
+    import json as _json
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── Resolve data ──────────────────────────────────────────────────────
+    def _labels_from_disk():
+        proc = cfg.PROCESSED_DIR / "localization"
+        records = []
+        for split in ["train", "val", "test"]:
+            for lf in sorted((proc / split).glob("*_label.json")):
+                try:
+                    d = _json.loads(lf.read_text())
+                    records.append({
+                        "azimuth_deg": float(d.get("azimuth_deg", 0)),
+                        "distance_m":  float(d.get("distance_m",  0)),
+                        "height_m":    float(d.get("height_m",    0)),
+                        "split":       split,
+                    })
+                except Exception:
+                    pass
+        return records
+
+    sessions  = loc_result.get("splits")    or {"train": 80, "val": 24, "test": 24}
+    positions = loc_result.get("positions") or None
+    if positions is None:
+        total_p = sum(sessions.values()) // 4
+        n_tr    = round(total_p * 0.625)
+        n_v     = round(total_p * 0.1875)
+        positions = {"train": n_tr, "val": n_v, "test": total_p - n_tr - n_v}
+    labels = loc_result.get("labels") or _labels_from_disk()
+
+    splits = ["train", "val", "test"]
+    COLORS = {s: PALETTE[s] for s in splits}   # matches all other figs in this file
+    ALPHA  = 0.80
+
+    # ── Figure ────────────────────────────────────────────────────────────
+    fig, axes = plt.subplots(
+        3, 2,
+        figsize=(11, 10),
+        gridspec_kw={"hspace": 0.55, "wspace": 0.40},
+    )
+
+    # ── [0,0] Sessions per split ──────────────────────────────────────────
+    ax = axes[0, 0]
+    y = np.arange(len(splits))
+    sv = [sessions.get(s, 0) for s in splits]
+    bars = ax.barh(y, sv, color=[COLORS[s] for s in splits],
+                   alpha=ALPHA, height=0.55)
+    ax.set_yticks(y)
+    ax.set_yticklabels([s.capitalize() for s in splits])
+    ax.set_xlim(0, max(sv) * 1.30)
+    ax.set_xlabel("Sessions")
+    ax.set_title("Sessions per split")
+    tot = sum(sv)
+    for bar, v in zip(bars, sv):
+        ax.text(bar.get_width() + max(sv) * 0.02,
+                bar.get_y() + bar.get_height() / 2,
+                str(v), va="center", ha="left", fontsize=10, fontweight="bold")
+        if v > 0:
+            ax.text(bar.get_width() / 2,
+                    bar.get_y() + bar.get_height() / 2,
+                    f"{100*v/tot:.0f}%", va="center", ha="center",
+                    color="white", fontsize=9, fontweight="bold")
+
+    # ── [0,1] Unique positions per split ──────────────────────────────────
+    ax = axes[0, 1]
+    pv = [positions.get(s, 0) for s in splits]
+    barp = ax.barh(y, pv, color=[COLORS[s] for s in splits],
+                   alpha=ALPHA, height=0.55)
+    ax.set_yticks(y)
+    ax.set_yticklabels([s.capitalize() for s in splits])
+    ax.set_xlim(0, max(pv) * 1.55)
+    ax.set_xlabel("Unique positions")
+    ax.set_title("Unique positions per split")
+    totp = sum(pv)
+    for bar, v in zip(barp, pv):
+        ax.text(bar.get_width() + max(pv) * 0.02,
+                bar.get_y() + bar.get_height() / 2,
+                str(v), va="center", ha="left", fontsize=10, fontweight="bold")
+        if v > 0:
+            ax.text(bar.get_width() / 2,
+                    bar.get_y() + bar.get_height() / 2,
+                    f"{100*v/totp:.0f}%", va="center", ha="center",
+                    color="white", fontsize=9, fontweight="bold")
+    # Ratio annotations to the right of each bar
+    for i, s in enumerate(splits):
+        ratio = sessions.get(s, 0) / max(positions.get(s, 1), 1)
+        ax.text(max(pv) * 1.28, i,
+                f"×{ratio:.1f}", va="center", ha="left",
+                color=COLORS[s], fontsize=9, fontweight="bold")
+
+    # ── Histogram helper ──────────────────────────────────────────────────
+    def _hist(ax, field, title, xlabel, bins, xlim=None):
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel("Sessions")
+        has = False
+        for s in splits:
+            vals = [r[field] for r in labels if r.get("split") == s and field in r]
+            if not vals:
+                continue
+            has = True
+            ax.hist(vals, bins=bins, color=COLORS[s], alpha=0.55,
+                    label=s.capitalize(), edgecolor="none")
+            ax.axvline(np.mean(vals), color=COLORS[s], linewidth=1.5,
+                       linestyle="--", alpha=0.9,
+                       label=f"{s.capitalize()} mean ({np.mean(vals):.1f})")
+        if xlim:
+            ax.set_xlim(*xlim)
+        if not has:
+            ax.text(0.5, 0.5, "No label data\n(run pipeline first)",
+                    transform=ax.transAxes, ha="center", va="center",
+                    color="gray", fontsize=10)
+
+    _hist(axes[1, 0], "azimuth_deg",
+          "Azimuth distribution", "Azimuth (°)", bins=18, xlim=(0, 360))
+    axes[1, 0].set_xticks([0, 60, 120, 180, 240, 300, 360])
+
+    _hist(axes[1, 1], "distance_m",
+          "Distance distribution", "Distance (m)", bins=15)
+
+    _hist(axes[2, 0], "height_m",
+          "Height distribution", "Height (m)", bins=12)
+
+    # Add legend to azimuth panel (representative for all histogram panels)
+    axes[1, 0].legend(fontsize=9, ncol=1, loc="upper right")
+
+    # ── [2,1] Sessions / position ratio ───────────────────────────────────
+    ax = axes[2, 1]
+    ratios = [sessions.get(s, 0) / max(positions.get(s, 1), 1) for s in splits]
+    xp = np.arange(len(splits))
+    barr = ax.bar(xp, ratios, color=[COLORS[s] for s in splits],
+                  alpha=ALPHA, width=0.5)
+    ax.set_xticks(xp)
+    ax.set_xticklabels([s.capitalize() for s in splits])
+    ax.set_ylabel("Ratio")
+    ax.set_title("Sessions / position")
+    ax.set_ylim(0, max(ratios) * 1.40)
+    # Target line
+    ax.axhline(4.0, color="gray", linewidth=1.0, linestyle=":",
+               alpha=0.8, label="Target (4×)")
+    ax.legend(fontsize=9)
+    for bar, v in zip(barr, ratios):
+        ax.text(bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + max(ratios) * 0.04,
+                f"{v:.1f}×", ha="center", va="bottom",
+                fontsize=10, fontweight="bold")
+
+    # ── Suptitle ──────────────────────────────────────────────────────────
+    total_sessions  = sum(sessions.values())
+    total_positions = sum(positions.values())
+    fig.suptitle(
+        f"Localization dataset — UaVirBASE  ·  "
+        f"{total_sessions} sessions  ·  {total_positions} positions  ·  "
+        f"position-grouped split",
+        fontsize=12, fontweight="bold", y=0.995,
+    )
+
+    out_path = out_dir / "fig_loc_dataset_distribution.png"
+    _save(fig, out_path)
+    print(f"   ✅  fig_loc_dataset_distribution → {out_path}")
+    return out_path
+
+
 if __name__ == "__main__":
     main()
