@@ -1,0 +1,19 @@
+{
+  "azimuth_deg": null,
+  "distance_m": null,
+  "height_m": null,
+  "source": "dunakeszi",
+  "original_bearing_deg": null,
+  "segment_id": 7,
+  "session": "show_2",
+  "maneuver_type": "transit",
+  "flight_phase": "transit_linear",
+  "n_drones": 1,
+  "split": "train",
+  "array": "BK-6-E",
+  "speed_mps": 4.0,
+  "radius_m": null,
+  "duration_s": 30.0,
+  "has_position": false,
+  "note": "no_position: figure-8 or survey \u2014 valid for detection, not localization"
+}

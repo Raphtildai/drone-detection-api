@@ -1,0 +1,3 @@
+session_id,azimuth_at_clip_start_deg,azimuth_at_clip_mid_deg,azimuth_at_clip_end_deg,azimuth_swept_deg,distance_xy_at_mid_m,altitude_at_mid_m,is_approaching,trajectory_source,clip_start_s,clip_position,split,maneuver_type,n_drones,altitude_m,speed_mps,radius_m,array,onset_azimuth_deg,onset_distance_xy_m,validation_valid,validation_dom_freq_hz,validation_energy_ratio
+seg_030_circle_train,-32.7,1.67,33.76,66.46,10.0,20.0,False,analytic,2.5,0.5,train,circle,3,20.0,4.0,10.0,BK-6-E,-90.0,2.5,True,43.666666666666664,0.8932126830229887
+seg_031_circle_train,78.07,89.53,100.22,22.15,30.0,20.0,False,analytic,22.0,0.5,train,circle,3,20.0,4.0,30.0,BK-6-E,-90.0,2.5,True,34.0,0.41554223322536477

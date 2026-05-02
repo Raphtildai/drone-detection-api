@@ -1,4 +1,0 @@
-session_id,azimuth_deg,distance_m,height_m,original_bearing_deg,has_position,session,maneuver_type,n_drones,split,radius_m,speed_mps,duration_s,wav_ch0,wav_ch1,wav_ch2
-seg_030_circle_train,-180.0,2.5,20.0,-90.0,True,show_12,circle,3,train,10.0,4.0,8.0,seg_030_circle_train_ch0.wav,seg_030_circle_train_ch1.wav,seg_030_circle_train_ch2.wav
-seg_031_circle_train,-180.0,2.5,20.0,-90.0,True,show_12,circle,3,train,30.0,4.0,47.0,seg_031_circle_train_ch0.wav,seg_031_circle_train_ch1.wav,seg_031_circle_train_ch2.wav
-seg_032_circle_train,-180.0,2.5,20.0,-90.0,True,show_12,circle,3,train,60.0,4.0,188.0,seg_032_circle_train_ch0.wav,seg_032_circle_train_ch1.wav,seg_032_circle_train_ch2.wav

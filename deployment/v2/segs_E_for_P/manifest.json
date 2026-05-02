@@ -1,0 +1,122 @@
+[
+  {
+    "session_id": "seg_030_circle_train",
+    "segment_id": 30,
+    "session": "show_12",
+    "split": "train",
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "onset_from_rec_s": 6660.0,
+    "duration_s": 8.0,
+    "clip_start_s": 2.5,
+    "clip_position": 0.5,
+    "azimuth_at_clip_start_deg": -32.7,
+    "azimuth_at_clip_mid_deg": 1.67,
+    "azimuth_at_clip_end_deg": 33.76,
+    "azimuth_swept_deg": 66.46,
+    "distance_xy_at_mid_m": 10.0,
+    "distance_3d_at_mid_m": 22.36,
+    "altitude_at_mid_m": 20.0,
+    "is_approaching": false,
+    "trajectory_source": "analytic",
+    "onset_azimuth_deg": -90.0,
+    "onset_distance_xy_m": 2.5,
+    "onset_distance_3d_m": 20.2,
+    "altitude_m": 20.0,
+    "speed_mps": 4.0,
+    "radius_m": 10.0,
+    "rms_ch0": 0.0972633808851242,
+    "rms_ch1": 0.12773175537586212,
+    "rms_ch2": 0.0928700715303421,
+    "rms_max_db": -17.9,
+    "array": "BK-6-E",
+    "polywav_channels": [
+      8,
+      9,
+      10
+    ],
+    "quality_flags": [
+      "radius_adjusted_from_5m_to_10m",
+      "short_segment",
+      "mems_ended_before_show"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01P.wav"
+    ],
+    "wav_ch0": "seg_030_circle_train_ch0.wav",
+    "wav_ch1": "seg_030_circle_train_ch1.wav",
+    "wav_ch2": "seg_030_circle_train_ch2.wav",
+    "label_json": "seg_030_circle_train_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 43.666666666666664,
+      "rms_db": -20.241012274252714,
+      "energy_ratio": 0.8932126830229887
+    }
+  },
+  {
+    "session_id": "seg_031_circle_train",
+    "segment_id": 31,
+    "session": "show_12",
+    "split": "train",
+    "maneuver_type": "circle",
+    "flight_phase": "orbit",
+    "n_drones": 3,
+    "drones": [
+      "drone65",
+      "drone130",
+      "drone132"
+    ],
+    "onset_from_rec_s": 6671.0,
+    "duration_s": 47.0,
+    "clip_start_s": 22.0,
+    "clip_position": 0.5,
+    "azimuth_at_clip_start_deg": 78.07,
+    "azimuth_at_clip_mid_deg": 89.53,
+    "azimuth_at_clip_end_deg": 100.22,
+    "azimuth_swept_deg": 22.15,
+    "distance_xy_at_mid_m": 30.0,
+    "distance_3d_at_mid_m": 36.06,
+    "altitude_at_mid_m": 20.0,
+    "is_approaching": false,
+    "trajectory_source": "analytic",
+    "onset_azimuth_deg": -90.0,
+    "onset_distance_xy_m": 2.5,
+    "onset_distance_3d_m": 20.2,
+    "altitude_m": 20.0,
+    "speed_mps": 4.0,
+    "radius_m": 30.0,
+    "rms_ch0": 0.12185865640640259,
+    "rms_ch1": 0.14754997193813324,
+    "rms_ch2": 0.12245486676692963,
+    "rms_max_db": -16.6,
+    "array": "BK-6-E",
+    "polywav_channels": [
+      8,
+      9,
+      10
+    ],
+    "quality_flags": [
+      "mems_ended_before_show"
+    ],
+    "source_files": [
+      "251020VITEMOROM1AT01P.wav"
+    ],
+    "wav_ch0": "seg_031_circle_train_ch0.wav",
+    "wav_ch1": "seg_031_circle_train_ch1.wav",
+    "wav_ch2": "seg_031_circle_train_ch2.wav",
+    "label_json": "seg_031_circle_train_label.json",
+    "validation": {
+      "valid": true,
+      "dom_freq_hz": 34.0,
+      "rms_db": -18.282871564224127,
+      "energy_ratio": 0.41554223322536477
+    }
+  }
+]

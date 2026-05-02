@@ -38,10 +38,18 @@ _GP2_POSITIONS = np.array([
     [ _GP2_LEG / 2,      -_GP2_LEG / 3 * np.sin(np.pi / 2)],
 ], dtype=np.float32)
 
-# UaVirBASE compact array: equilateral triangle, 200 mm baseline
-_UAVIRBASE_POSITIONS = np.array(
-    [[0.00, 0.00], [0.20, 0.00], [0.10, 0.1732]], dtype=np.float32
-)
+# UaVirBASE real array: 8 NTG-2 mics at 1.72 m radius.
+# For the 3-mic thesis setup we select channels 1, 2, 4 (0-indexed: 0, 1, 3)
+# which sit at azimuths 0° (North), 90° (East) and 270° (West).
+# This gives a 2.43 m / 3.44 m baseline — 17× larger than the old placeholder —
+# and good azimuth discrimination on both N-S and E-W axes.
+# x = East = r*sin(az),  y = North = r*cos(az)
+_r = 1.72
+_UAVIRBASE_POSITIONS = np.array([
+    [0.0,  _r ],   # ch1, az=  0° (North)
+    [_r,   0.0],   # ch2, az= 90° (East)
+    [-_r,  0.0],   # ch4, az=270° (West)
+], dtype=np.float32)
 
 ARRAY_GEOMETRIES = {
     "uavirbase": _UAVIRBASE_POSITIONS,
@@ -114,16 +122,16 @@ class Config:
         self.MIC_POSITIONS = _UAVIRBASE_POSITIONS.copy()
         self.SPEED_OF_SOUND        = 343.0
         self.ARRAY_CENTER          = self.MIC_POSITIONS.mean(axis=0)
-        self.MAX_LOCALIZATION_DIST = 120.0
+        self.MAX_LOCALIZATION_DIST = 30.0   # dataset max = 20 m; +50 % margin
 
         # ── Dataset download URLs ──────────────────────────────────────────
         self.UAVIRBASE_ZIP_URL = (
             "https://zenodo.org/records/15391924/files/"
             "Microphone_array.zip?download=1"
         )
-        self.UAVIRBASE_MIC_INDICES = [0, 1, 2]
+        self.UAVIRBASE_MIC_INDICES = [0, 1, 3]   # ch1(N), ch2(E), ch4(W)
         self.UAVIRBASE_ORIG_SR     = 96_000
-        self.UAVIRBASE_FULL        = False
+        self.UAVIRBASE_FULL        = True    # use local copy, skip remote download
         self.UAVIRBASE_N_SESSIONS  = 2000
 
         self.DRONEDS_ZIP_URL = (
@@ -143,7 +151,7 @@ class Config:
         self.SCRAPE_YTDLP_ENABLED = False
 
         # ── Synthetic data ─────────────────────────────────────────────────
-        self.SYNTHETIC_DET_SAMPLES = 500
+        self.SYNTHETIC_DET_SAMPLES = 200
         self.SYNTHETIC_SAMPLES     = 2000
         # Use measured BPF profiles in synthesis
         self.SYNTHETIC_USE_MEASURED_BPF = True
@@ -306,7 +314,7 @@ class Config:
         self.DRIVE_TRACKS = D / "tracks"
         self.DRIVE_PLOTS  = D / "logs" / "plots"
 
-        self.UAVIRBASE_RAW = B / "uavirbase"
+        self.UAVIRBASE_RAW = Path("/data_extra/uavirbase_ssl/Microphone_array")   #  B / "uavirbase"
         self.DRONEDS_RAW   = B / "droneds"
 
     def _mount_drive(self):

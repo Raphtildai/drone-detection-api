@@ -18,7 +18,7 @@ Usage
         --output dunakeszi_pipeline_ready/ \
         [--max-dist 100.0]
 
-    python prepare_dunakeszi_for_pipeline.py --input  extracted_J/ --output dunakeszi_pipeline_ready/ --max-dist 100.0
+    python prepare_dunakeszi_for_pipeline.py --input  dunakeszi_test_segments_B/ --output dunakeszi_pipeline_ready_B/ --max-dist 100.0
     
 
 The output directory is a drop-in replacement for a LocalizationDataset

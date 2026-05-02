@@ -1,0 +1,4 @@
+session_id,segment_id,session,maneuver_type,flight_phase,n_drones,split,radius_m,speed_mps,duration_s,detected,probability,cnn_probability,heuristic_probability,pred_azimuth_deg,pred_distance_m,pred_height_m,gt_azimuth_deg,gt_distance_m,gt_height_m,has_position,az_error_deg,dist_error_m,ht_error_m,rms_db
+seg_030_circle_train,,,circle,,3,train,10.0,4.0,8.0,True,0.1966,0.0213,0.8978,176.05,9.37,,88.33,10.0,20.0,True,87.72,0.63,,-21.64
+seg_031_circle_train,,,circle,,3,train,30.0,4.0,47.0,True,0.2639,0.1039,0.9037,178.29,10.01,,0.47,30.0,20.0,True,177.82,19.99,,-17.01
+seg_032_circle_train,,,circle,,3,train,60.0,4.0,188.0,True,0.223,0.0764,0.8093,177.02,9.89,,-179.05,60.0,20.0,True,3.93,50.11,,-26.79

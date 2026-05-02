@@ -1,0 +1,349 @@
+{
+  "drone": {
+    "azimuth_deg": 0.0,
+    "distance_m": 0.0,
+    "height_m": 20.0,
+    "azimuth_at_clip_start_deg": -90.0,
+    "azimuth_at_clip_end_deg": 90.0,
+    "azimuth_swept_deg": -180.0,
+    "is_approaching": false
+  },
+  "trajectory": {
+    "trajectory_source": "analytic",
+    "sample_hz": 10.0,
+    "n_drones": 1,
+    "clip_start_s_in_seg": 13.5,
+    "clip_dur_s": 3.0,
+    "samples": [
+      {
+        "t_in_clip_s": 0.0,
+        "t_in_seg_s": 13.5,
+        "x_m": -6.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 6.0,
+        "distance_3d_m": 20.88
+      },
+      {
+        "t_in_clip_s": 0.1,
+        "t_in_seg_s": 13.6,
+        "x_m": -5.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 5.6,
+        "distance_3d_m": 20.77
+      },
+      {
+        "t_in_clip_s": 0.2,
+        "t_in_seg_s": 13.7,
+        "x_m": -5.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 5.2,
+        "distance_3d_m": 20.66
+      },
+      {
+        "t_in_clip_s": 0.3,
+        "t_in_seg_s": 13.8,
+        "x_m": -4.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 4.8,
+        "distance_3d_m": 20.57
+      },
+      {
+        "t_in_clip_s": 0.4,
+        "t_in_seg_s": 13.9,
+        "x_m": -4.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 4.4,
+        "distance_3d_m": 20.48
+      },
+      {
+        "t_in_clip_s": 0.5,
+        "t_in_seg_s": 14.0,
+        "x_m": -4.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 4.0,
+        "distance_3d_m": 20.4
+      },
+      {
+        "t_in_clip_s": 0.6,
+        "t_in_seg_s": 14.1,
+        "x_m": -3.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 3.6,
+        "distance_3d_m": 20.32
+      },
+      {
+        "t_in_clip_s": 0.7,
+        "t_in_seg_s": 14.2,
+        "x_m": -3.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 3.2,
+        "distance_3d_m": 20.25
+      },
+      {
+        "t_in_clip_s": 0.8,
+        "t_in_seg_s": 14.3,
+        "x_m": -2.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 2.8,
+        "distance_3d_m": 20.2
+      },
+      {
+        "t_in_clip_s": 0.9,
+        "t_in_seg_s": 14.4,
+        "x_m": -2.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 2.4,
+        "distance_3d_m": 20.14
+      },
+      {
+        "t_in_clip_s": 1.0,
+        "t_in_seg_s": 14.5,
+        "x_m": -2.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 2.0,
+        "distance_3d_m": 20.1
+      },
+      {
+        "t_in_clip_s": 1.1,
+        "t_in_seg_s": 14.6,
+        "x_m": -1.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 1.6,
+        "distance_3d_m": 20.06
+      },
+      {
+        "t_in_clip_s": 1.2,
+        "t_in_seg_s": 14.7,
+        "x_m": -1.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 1.2,
+        "distance_3d_m": 20.04
+      },
+      {
+        "t_in_clip_s": 1.3,
+        "t_in_seg_s": 14.8,
+        "x_m": -0.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 0.8,
+        "distance_3d_m": 20.02
+      },
+      {
+        "t_in_clip_s": 1.4,
+        "t_in_seg_s": 14.9,
+        "x_m": -0.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": -90.0,
+        "distance_xy_m": 0.4,
+        "distance_3d_m": 20.0
+      },
+      {
+        "t_in_clip_s": 1.5,
+        "t_in_seg_s": 15.0,
+        "x_m": 0.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 0.0,
+        "distance_xy_m": 0.0,
+        "distance_3d_m": 20.0
+      },
+      {
+        "t_in_clip_s": 1.6,
+        "t_in_seg_s": 15.1,
+        "x_m": 0.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 0.4,
+        "distance_3d_m": 20.0
+      },
+      {
+        "t_in_clip_s": 1.7,
+        "t_in_seg_s": 15.2,
+        "x_m": 0.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 0.8,
+        "distance_3d_m": 20.02
+      },
+      {
+        "t_in_clip_s": 1.8,
+        "t_in_seg_s": 15.3,
+        "x_m": 1.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 1.2,
+        "distance_3d_m": 20.04
+      },
+      {
+        "t_in_clip_s": 1.9,
+        "t_in_seg_s": 15.4,
+        "x_m": 1.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 1.6,
+        "distance_3d_m": 20.06
+      },
+      {
+        "t_in_clip_s": 2.0,
+        "t_in_seg_s": 15.5,
+        "x_m": 2.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 2.0,
+        "distance_3d_m": 20.1
+      },
+      {
+        "t_in_clip_s": 2.1,
+        "t_in_seg_s": 15.6,
+        "x_m": 2.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 2.4,
+        "distance_3d_m": 20.14
+      },
+      {
+        "t_in_clip_s": 2.2,
+        "t_in_seg_s": 15.7,
+        "x_m": 2.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 2.8,
+        "distance_3d_m": 20.2
+      },
+      {
+        "t_in_clip_s": 2.3,
+        "t_in_seg_s": 15.8,
+        "x_m": 3.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 3.2,
+        "distance_3d_m": 20.25
+      },
+      {
+        "t_in_clip_s": 2.4,
+        "t_in_seg_s": 15.9,
+        "x_m": 3.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 3.6,
+        "distance_3d_m": 20.32
+      },
+      {
+        "t_in_clip_s": 2.5,
+        "t_in_seg_s": 16.0,
+        "x_m": 4.0,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 4.0,
+        "distance_3d_m": 20.4
+      },
+      {
+        "t_in_clip_s": 2.6,
+        "t_in_seg_s": 16.1,
+        "x_m": 4.4,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 4.4,
+        "distance_3d_m": 20.48
+      },
+      {
+        "t_in_clip_s": 2.7,
+        "t_in_seg_s": 16.2,
+        "x_m": 4.8,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 4.8,
+        "distance_3d_m": 20.57
+      },
+      {
+        "t_in_clip_s": 2.8,
+        "t_in_seg_s": 16.3,
+        "x_m": 5.2,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 5.2,
+        "distance_3d_m": 20.66
+      },
+      {
+        "t_in_clip_s": 2.9,
+        "t_in_seg_s": 16.4,
+        "x_m": 5.6,
+        "y_m": 0.0,
+        "z_m": 20.0,
+        "azimuth_deg": 90.0,
+        "distance_xy_m": 5.6,
+        "distance_3d_m": 20.77
+      }
+    ],
+    "summary": {
+      "azimuth_at_start_deg": -90.0,
+      "azimuth_at_mid_deg": 0.0,
+      "azimuth_at_end_deg": 90.0,
+      "distance_xy_at_start_m": 6.0,
+      "distance_xy_at_mid_m": 0.0,
+      "distance_xy_at_end_m": 5.6,
+      "distance_3d_at_mid_m": 20.0,
+      "altitude_at_mid_m": 20.0,
+      "azimuth_swept_deg": -180.0,
+      "is_approaching": false
+    }
+  },
+  "segment_id": 7,
+  "session": "show_2",
+  "maneuver_type": "transit",
+  "flight_phase": "transit_linear",
+  "n_drones": 1,
+  "drones": [
+    "drone78"
+  ],
+  "split": "train",
+  "speed_mps": 4.0,
+  "radius_m": null,
+  "duration_s": 30.0,
+  "clip_start_s_in_seg": 13.5,
+  "array": "BK-6-E",
+  "onset_azimuth_deg": -90.0,
+  "onset_distance_xy_m": 60.0,
+  "onset_distance_3d_m": 63.2
+}

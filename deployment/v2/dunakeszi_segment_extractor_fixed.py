@@ -3,35 +3,47 @@
 """
 dunakeszi_segment_extractor_fixed.py
 ──────────────────────────────────────
-Fixed version of the Dunakeszi ground-truth segment extractor.
+Builds on the previous fixed version.  Additional bugs fixed:
 
-Bugs fixed vs original:
-  BUG 1 — POLYWAV_CHANNELS was [2,3,4] (BK-6-W / West array, Scorpio ch 3-5).
-           Changed to [8,9,10] = BK-6-E / East array (Scorpio ch 9-11),
-           matching the scorpio_channel_map.json TDOA subset and the labels
-           already used in validate_extracted_segments.py ("BK-6-E").
-           Add --array {BK-6-W,BK-6-E} CLI flag so callers can choose.
+  BUG 5 — args scoping: extract_from_wav_dir() referenced the global `args`
+           object (defined only in main()) for args.clip_duration and
+           args.clip_position.  This accidentally worked when run as __main__
+           but is a latent scoping bug.  All parameters are now passed
+           explicitly as function arguments.
 
-  BUG 2 — The 3-second clip was always taken from the start (onset) of each
-           segment.  For transit / circle / formation manoeuvres the drone can
-           be 60–300 m away at onset, producing near-silence.
-           Fix: sample from the segment CENTRE by default.  Add --clip-offset
-           {start,center,end,<float 0-1>} to make it explicit.
+  BUG 6 — Full-segment mode (clip_duration=0) was advertised but broken:
+             • clip_audio() correctly returned full audio for clip_dur_s=0,
+               but the resample → WAV write path still used TARGET_SAMPLES
+               (66 150 frames = 3 s) as an implicit assumption.
+             • make_label_json() was passed args.clip_duration but the
+               trajectory was still computed against a 3-second window
+               when seg_dur_native <= n_want_native, making clip_start_s=0
+               with the wrong duration propagated to the label.
+             • The manifest fields wav_ch0/1/2 and the channel-loop were
+               fine, but downstream consumers would see "clip_dur_s: 3.0"
+               in the label JSON even for a 45-second hover.
+           Fix: actual_clip_dur_s is now computed from the clipped audio
+           shape and propagated to make_label_json() and the manifest.
 
-  BUG 3 — Validation threshold energy_ratio > 0.30 is far too strict for
-           outdoor recordings where wind / 1/f noise dominates.  Real drone
-           recordings in open fields typically show energy ratios of 0.03–0.15
-           in the 30–300 Hz band.  Changed to > 0.03.  Validation is only a
-           quality flag now — it never silently drops a segment that has audio.
+  BUG 7 — clip_start_s was computed correctly for long segments but then
+           immediately overwritten unconditionally:
+               clip_start_s = clip_start_sample / NATIVE_SR   # set inside if
+               ...
+               clip_start_s = clip_start_sample / NATIVE_SR   # overwrite!
+           The second assignment always referenced clip_start_sample which
+           was only defined inside the if-branch, causing a NameError when
+           seg_dur_native <= n_want_native (short segments / full-seg mode).
+           Removed the duplicate assignment.
 """
 
 import argparse
 import json
+import math
 import re
 import sys
 import zipfile
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 import soundfile as sf
@@ -44,33 +56,157 @@ except ImportError:
 
 # ── Audio constants ────────────────────────────────────────────────────────────
 
-NATIVE_SR      = 192_000
-TARGET_SR      = 22_050
-TARGET_DUR_S   = 3.0
-TARGET_SAMPLES = int(TARGET_SR * TARGET_DUR_S)   # 66 150
+NATIVE_SR    = 192_000
+TARGET_SR    = 22_050
+# TARGET_DUR_S / TARGET_SAMPLES are only used as defaults when clip_duration>0
+DEFAULT_CLIP_DUR_S = 3.0
 
 # Exact 4 GB polywav → duration per file
 _BYTES_PER_FRAME = 14 * 4          # 14 channels × float32
 CHUNK_DUR_S      = (4 * 1024**3) / (_BYTES_PER_FRAME * NATIVE_SR)  # ≈ 399.4613 s
 
 # ── FIX 1: channel mappings for both arrays ────────────────────────────────────
-# Scorpio channel numbers are 1-indexed; polywav columns are 0-indexed.
-# Scorpio ch N  →  polywav column N-1.
-#
-#   BK-6-W (West):  Scorpio ch 3,4,5   → polywav columns [2,3,4]
-#   BK-6-E (East):  Scorpio ch 9,10,11 → polywav columns [8,9,10]  ← TDOA subset
-#
-# The original code used [2,3,4] (West) but the rest of the pipeline
-# (validate_extracted_segments.py labels, scorpio_channel_map tdoa_channels)
-# refers to BK-6-E as the primary array.  Default changed to East.
 ARRAY_CHANNELS = {
-    "BK-6-E": [8, 9, 10],   # East array — DEFAULT (was bug: West used instead)
-    "BK-6-W": [2, 3, 4],    # West array
+    "BK-6-E": [8, 9, 10],
+    "BK-6-W": [2, 3, 4],
 }
 DEFAULT_ARRAY = "BK-6-E"
 
-# Recording reference (onset_from_rec_s = 0 corresponds to this local time)
 REC_REF_LOCAL_S = 13 * 3600 + 36 * 60   # 48 960 s
+
+TRAJECTORY_SAMPLE_HZ = 10.0
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Trajectory computation  (unchanged from previous version)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def interpolate_position(seg: dict, t_within_seg: float) -> Tuple[float, float, float]:
+    mtype = seg.get("maneuver_type", "hover")
+    sc    = seg.get("start_coord") or [0.0, 0.0, seg.get("altitude_m", 0.0)]
+    ec    = seg.get("end_coord")
+    dur   = float(seg.get("duration_s", 1.0))
+    alt   = float(seg.get("altitude_m") or (sc[2] if len(sc) > 2 else 0.0))
+
+    t = max(0.0, min(t_within_seg, dur))
+
+    if mtype in ("hover", "survey"):
+        return (float(sc[0]), float(sc[1]), float(sc[2] if len(sc) > 2 else alt))
+
+    if mtype in ("transit", "diagonal", "diagonal_3d", "formation", "long_range"):
+        if ec is None:
+            ec = sc
+        frac = t / dur if dur > 0 else 0.0
+        x = sc[0] + frac * (ec[0] - sc[0])
+        y = sc[1] + frac * (ec[1] - sc[1])
+        z_s = sc[2] if len(sc) > 2 else alt
+        z_e = ec[2] if len(ec) > 2 else alt
+        z = z_s + frac * (z_e - z_s)
+        return (x, y, z)
+
+    if mtype == "circle":
+        r = float(seg.get("radius_m") or math.hypot(sc[0], sc[1]) or 30.0)
+        v = float(seg.get("speed_mps") or 4.0)
+        if r < 1e-3:
+            return (float(sc[0]), float(sc[1]), alt)
+        omega  = v / r
+        theta0 = math.atan2(sc[0], sc[1])
+        theta  = theta0 + omega * t
+        return (r * math.sin(theta), r * math.cos(theta), alt)
+
+    if mtype == "figure8":
+        r = float(seg.get("radius_m") or math.hypot(sc[0], sc[1]) or 30.0)
+        v = float(seg.get("speed_mps") or 4.0)
+        if r < 1e-3:
+            return (float(sc[0]), float(sc[1]), alt)
+        T_circle = 2 * math.pi * r / v
+        t_mod = t % (2 * T_circle)
+        if t_mod < T_circle:
+            cx, cy = r, 0.0
+            theta  = 2 * math.pi * t_mod / T_circle
+            x = cx + r * math.cos(math.pi + theta)
+            y = cy + r * math.sin(math.pi + theta)
+        else:
+            cx, cy = -r, 0.0
+            theta  = 2 * math.pi * (t_mod - T_circle) / T_circle
+            x = cx + r * math.cos(-theta)
+            y = cy + r * math.sin(-theta)
+        return (x, y, alt)
+
+    return (float(sc[0]), float(sc[1]), float(sc[2] if len(sc) > 2 else alt))
+
+
+def _pos_to_bearing(x: float, y: float, z: float) -> dict:
+    az  = math.degrees(math.atan2(x, y))
+    dxy = math.hypot(x, y)
+    d3d = math.hypot(x, y, z)
+    return {
+        "azimuth_deg":   round(az, 2),
+        "distance_xy_m": round(dxy, 2),
+        "distance_3d_m": round(d3d, 2),
+    }
+
+
+def compute_clip_trajectory(
+    seg: dict,
+    clip_start_s: float,
+    clip_dur_s: float,
+    sample_hz: float = TRAJECTORY_SAMPLE_HZ,
+) -> dict:
+    """
+    Compute analytic trajectory over the extracted clip window.
+    clip_dur_s=0 means the full segment was kept; the trajectory spans
+    the entire segment duration in that case.
+    """
+    actual_dur = clip_dur_s if clip_dur_s > 0 else float(seg.get("duration_s", 1.0))
+    n_samples  = max(1, int(actual_dur * sample_hz))
+    samples: List[dict] = []
+
+    for i in range(n_samples):
+        t_in_clip = i / sample_hz
+        t_in_seg  = clip_start_s + t_in_clip
+        x, y, z   = interpolate_position(seg, t_in_seg)
+        bearing   = _pos_to_bearing(x, y, z)
+        samples.append({
+            "t_in_clip_s": round(t_in_clip, 3),
+            "t_in_seg_s":  round(t_in_seg, 3),
+            "x_m":         round(x, 2),
+            "y_m":         round(y, 2),
+            "z_m":         round(z, 2),
+            **bearing,
+        })
+
+    mid_idx = len(samples) // 2
+    s_start = samples[0]
+    s_mid   = samples[mid_idx]
+    s_end   = samples[-1]
+
+    az_start = s_start["azimuth_deg"]
+    az_end   = s_end["azimuth_deg"]
+    az_diff  = ((az_end - az_start) + 180) % 360 - 180
+
+    summary = {
+        "azimuth_at_start_deg":    az_start,
+        "azimuth_at_mid_deg":      s_mid["azimuth_deg"],
+        "azimuth_at_end_deg":      az_end,
+        "distance_xy_at_start_m":  s_start["distance_xy_m"],
+        "distance_xy_at_mid_m":    s_mid["distance_xy_m"],
+        "distance_xy_at_end_m":    s_end["distance_xy_m"],
+        "distance_3d_at_mid_m":    s_mid["distance_3d_m"],
+        "altitude_at_mid_m":       s_mid["z_m"],
+        "azimuth_swept_deg":       round(az_diff, 2),
+        "is_approaching":          s_end["distance_xy_m"] < s_mid["distance_xy_m"],
+    }
+
+    return {
+        "trajectory_source":   "analytic",
+        "sample_hz":           sample_hz,
+        "n_drones":            int(seg.get("n_drones", 1)),
+        "clip_start_s_in_seg": round(clip_start_s, 3),
+        "clip_dur_s":          actual_dur,
+        "samples":             samples,
+        "summary":             summary,
+    }
 
 
 # ── File-slot resolver ─────────────────────────────────────────────────────────
@@ -102,6 +238,41 @@ def slot_local_hms(slot: int) -> str:
     return f"{s//3600:02d}:{(s%3600)//60:02d}"
 
 
+def find_best_window_by_distance(seg: dict, clip_dur_s: float) -> float:
+    dur = float(seg["duration_s"])
+    if dur <= clip_dur_s:
+        return 0.0
+    step     = 0.1
+    best_t   = 0.0
+    best_dist = float("inf")
+    t = 0.0
+    while t <= dur - clip_dur_s:
+        mid_t     = t + clip_dur_s / 2
+        x, y, z   = interpolate_position(seg, mid_t)
+        dist      = math.hypot(x, y)
+        if dist < best_dist:
+            best_dist = dist
+            best_t    = t
+        t += step
+    return best_t
+
+
+def find_best_window_by_energy(audio: np.ndarray, clip_dur_s: float) -> int:
+    n_total = audio.shape[1]
+    n_win   = int(clip_dur_s * NATIVE_SR)
+    if n_total <= n_win:
+        return 0
+    step       = int(0.1 * NATIVE_SR)
+    best_idx   = 0
+    best_energy = -1.0
+    for i in range(0, n_total - n_win, step):
+        energy = float(np.mean(audio[:, i:i+n_win] ** 2))
+        if energy > best_energy:
+            best_energy = energy
+            best_idx    = i
+    return best_idx
+
+
 # ── Audio I/O ──────────────────────────────────────────────────────────────────
 
 def read_polywav_window(
@@ -110,7 +281,7 @@ def read_polywav_window(
     n_frames: int,
     channels: List[int],
 ) -> np.ndarray:
-    info = sf.info(str(wav_path))
+    info          = sf.info(str(wav_path))
     actual_start  = max(0, min(start_sample, info.frames - 1))
     actual_frames = min(n_frames, max(0, info.frames - actual_start))
 
@@ -146,7 +317,7 @@ def extract_overlap(
     start_sample  = int(within_file_s * NATIVE_SR)
     n_frames      = int((ovlp_end - ovlp_start) * NATIVE_SR)
 
-    audio = read_polywav_window(wav_path, start_sample, n_frames, channels)
+    audio          = read_polywav_window(wav_path, start_sample, n_frames, channels)
     offset_samples = int((ovlp_start - seg_onset) * NATIVE_SR)
     return audio, offset_samples
 
@@ -160,11 +331,11 @@ def assemble_segment(
     seg_dur     = float(seg["duration_s"])
     need_native = int(seg_dur * NATIVE_SR)
 
-    start_slot = int(seg_onset          / CHUNK_DUR_S)
-    end_slot   = int((seg_onset+seg_dur) / CHUNK_DUR_S)
+    start_slot = int(seg_onset            / CHUNK_DUR_S)
+    end_slot   = int((seg_onset + seg_dur) / CHUNK_DUR_S)
 
     n_ch = len(channels)
-    buf = np.zeros((n_ch, need_native), dtype=np.float32)
+    buf  = np.zeros((n_ch, need_native), dtype=np.float32)
     any_data = False
 
     for slot in range(start_slot, end_slot + 1):
@@ -182,114 +353,132 @@ def assemble_segment(
     return buf if any_data else None
 
 
-# ── FIX 2: configurable clip position ─────────────────────────────────────────
-# Original always clipped from sample 0 (segment onset).
-# Many long segments (transits, circles) have the drone far away at onset.
-# Default changed to 0.5 = centre of segment, where the drone is closest on average.
+# ── FIX 2 + 5 + 6: clip_audio now purely a utility; clip_duration flows through ──
 
-def clip_audio(audio_native: np.ndarray, clip_position: float = 0.5) -> np.ndarray:
+def clip_audio(
+    audio_native: np.ndarray,
+    clip_position: float,
+    clip_dur_s: float,
+) -> Tuple[np.ndarray, int]:
     """
-    Select a TARGET_DUR_S window from audio_native.
+    Slice ``audio_native`` to the requested clip.
 
-    clip_position : float in [0, 1]
-        0.0 = start of segment (original behaviour)
-        0.5 = centre (new default — best for transits / circles)
-        1.0 = end of segment
+    Parameters
+    ──────────
+    clip_position : 0.0 = start, 0.5 = centre, 1.0 = end
+    clip_dur_s    : desired clip length in seconds.
+                    0 (or negative) → return the FULL segment unchanged.
+
+    Returns
+    ───────
+    (clipped_audio, start_sample_in_native)
+        start_sample_in_native lets the caller compute clip_start_s exactly.
     """
-    n_total = audio_native.shape[1]
-    n_want  = int(TARGET_DUR_S * NATIVE_SR)
+    if clip_dur_s <= 0:
+        # Full-segment mode: no clipping
+        return audio_native, 0
+
+    n_total  = audio_native.shape[1]
+    n_want   = int(clip_dur_s * NATIVE_SR)
 
     if n_total <= n_want:
-        # Shorter than 3 s — just pad
-        return audio_native
+        return audio_native, 0
 
-    # Start sample for the clip window
-    max_start = n_total - n_want
-    start     = int(clip_position * max_start)
-    return audio_native[:, start : start + n_want]
+    max_start  = n_total - n_want
+    start_samp = int(clip_position * max_start)
+    return audio_native[:, start_samp : start_samp + n_want], start_samp
 
 
-def resample_and_pad(audio_native: np.ndarray) -> np.ndarray:
-    """(N_ch, n) @ NATIVE_SR → (N_ch, TARGET_SAMPLES) @ TARGET_SR, float32."""
+def resample_audio(audio_native: np.ndarray) -> np.ndarray:
     out = []
     for ch in audio_native:
         r = librosa.resample(ch, orig_sr=NATIVE_SR, target_sr=TARGET_SR)
-        if len(r) >= TARGET_SAMPLES:
-            r = r[:TARGET_SAMPLES]
-        else:
-            r = np.pad(r, (0, TARGET_SAMPLES - len(r)))
         out.append(r.astype(np.float32))
     return np.stack(out, axis=0)
 
 
 # ── Label writer ───────────────────────────────────────────────────────────────
 
-def make_label_json(seg: dict, array: str) -> dict:
-    az   = seg.get("azimuth_deg_onset")   or 0.0
-    dist = seg.get("distance_xy_m_onset") or 0.0
-    ht   = seg.get("altitude_m") or seg.get("distance_3d_m_onset") or 0.0
+def make_label_json(
+    seg: dict,
+    array: str,
+    clip_start_s: float = 0.0,
+    clip_dur_s: float = DEFAULT_CLIP_DUR_S,
+) -> dict:
+    trajectory = compute_clip_trajectory(seg, clip_start_s, clip_dur_s=clip_dur_s)
+    summary    = trajectory["summary"]
 
     return {
         "drone": {
-            "azimuth":  float(az),
-            "distance": float(dist),
-            "height":   float(ht),
+            "azimuth_deg":               summary["azimuth_at_mid_deg"],
+            "distance_m":                summary["distance_xy_at_mid_m"],
+            "height_m":                  summary["altitude_at_mid_m"],
+            "azimuth_at_clip_start_deg": summary["azimuth_at_start_deg"],
+            "azimuth_at_clip_end_deg":   summary["azimuth_at_end_deg"],
+            "azimuth_swept_deg":         summary["azimuth_swept_deg"],
+            "is_approaching":            summary["is_approaching"],
         },
+        "trajectory":    trajectory,
         "segment_id":    int(seg["id"]),
         "session":       str(seg["session"]),
         "maneuver_type": str(seg["maneuver_type"]),
         "flight_phase":  str(seg["flight_phase"]) if seg.get("flight_phase") else None,
         "n_drones":      int(seg.get("n_drones", 1)),
+        "drones":        list(seg.get("drones", [])),
         "split":         str(seg["split"]),
         "speed_mps":     float(seg["speed_mps"])  if seg.get("speed_mps")  is not None else None,
         "radius_m":      float(seg["radius_m"])   if seg.get("radius_m")   is not None else None,
         "duration_s":    float(seg["duration_s"]),
+        "clip_start_s_in_seg": round(clip_start_s, 3),
+        "clip_dur_s":    clip_dur_s if clip_dur_s > 0 else float(seg["duration_s"]),
         "array":         array,
+        "onset_azimuth_deg":   float(seg["azimuth_deg_onset"])   if seg.get("azimuth_deg_onset")   is not None else None,
+        "onset_distance_xy_m": float(seg["distance_xy_m_onset"]) if seg.get("distance_xy_m_onset") is not None else None,
+        "onset_distance_3d_m": float(seg["distance_3d_m_onset"]) if seg.get("distance_3d_m_onset") is not None else None,
     }
 
 
-# ── FIX 3: validation — relaxed threshold, never drops segments ────────────────
-# Original: energy_ratio > 0.30 — far too strict for outdoor open-field recordings.
-# Fixed:    energy_ratio > 0.03 — realistic for broadband ambient + drone.
-# Also: validation result is a quality flag only; it NEVER causes a segment skip.
-# The segment is ground-truth data — the drone IS there by definition.
+# ── Validation ─────────────────────────────────────────────────────────────────
 
-DRONE_FREQ_MIN = 30    # Hz
-DRONE_FREQ_MAX = 300   # Hz
-ENERGY_RATIO_THRESHOLD = 0.03   # was 0.30 — relaxed for outdoor conditions
+DRONE_FREQ_MIN         = 30
+DRONE_FREQ_MAX         = 300
+ENERGY_RATIO_THRESHOLD = 0.03
 
 
 def validate_extracted_segment(audio_path: Path) -> dict:
     try:
         audio, sr = sf.read(str(audio_path))
+        # Use first 3 s for validation even if clip is longer
+        max_samples = int(3.0 * sr)
+        audio_v     = audio[:max_samples] if len(audio) > max_samples else audio
 
-        fft   = np.abs(np.fft.rfft(audio))
-        freqs = np.fft.rfftfreq(len(audio), 1 / sr)
+        fft   = np.abs(np.fft.rfft(audio_v))
+        freqs = np.fft.rfftfreq(len(audio_v), 1 / sr)
 
         drone_mask = (freqs >= DRONE_FREQ_MIN) & (freqs <= DRONE_FREQ_MAX)
 
         if np.any(drone_mask):
-            peak_idx  = np.argmax(fft[drone_mask])
-            dom_freq  = freqs[drone_mask][peak_idx]
+            peak_idx     = np.argmax(fft[drone_mask])
+            dom_freq     = freqs[drone_mask][peak_idx]
             drone_energy = np.sum(fft[drone_mask] ** 2)
         else:
-            dom_freq     = np.nan
+            dom_freq     = float("nan")
             drone_energy = 0.0
 
         total_energy = np.sum(fft ** 2)
         energy_ratio = drone_energy / total_energy if total_energy > 0 else 0.0
-        rms_db       = 20 * np.log10(np.sqrt(np.mean(audio ** 2)) + 1e-8)
+        rms_db       = 20 * np.log10(np.sqrt(np.mean(audio_v ** 2)) + 1e-8)
 
         is_valid = bool(
-            not np.isnan(dom_freq)
+            not math.isnan(dom_freq)
             and DRONE_FREQ_MIN <= dom_freq <= DRONE_FREQ_MAX
             and rms_db > -40
-            and energy_ratio > ENERGY_RATIO_THRESHOLD   # relaxed from 0.30 → 0.03
+            and energy_ratio > ENERGY_RATIO_THRESHOLD
         )
 
         return {
             "valid":        is_valid,
-            "dom_freq_hz":  float(dom_freq) if not np.isnan(dom_freq) else None,
+            "dom_freq_hz":  float(dom_freq) if not math.isnan(dom_freq) else None,
             "rms_db":       float(rms_db),
             "energy_ratio": float(energy_ratio),
         }
@@ -300,15 +489,16 @@ def validate_extracted_segment(audio_path: Path) -> dict:
 # ── Main extractor ─────────────────────────────────────────────────────────────
 
 def extract_from_wav_dir(
-    segments_json:  Path,
-    wav_dir:        Path,
-    output_dir:     Path,
-    array:          str  = DEFAULT_ARRAY,
-    clip_position:  float = 0.5,
-    splits:         Optional[List[str]] = None,
-    skip_unlabelled: bool = False,
-    validate:       bool = True,
-    verbose:        bool = True,
+    segments_json:   Path,
+    wav_dir:         Path,
+    output_dir:      Path,
+    array:           str   = DEFAULT_ARRAY,
+    clip_position:   float = 0.5,
+    clip_duration:   float = DEFAULT_CLIP_DUR_S,   # ← BUG 5 FIX: explicit arg, not global args
+    splits:          Optional[List[str]] = None,
+    skip_unlabelled: bool  = False,
+    validate:        bool  = True,
+    verbose:         bool  = True,
 ) -> List[dict]:
 
     polywav_channels = ARRAY_CHANNELS[array]
@@ -318,7 +508,6 @@ def extract_from_wav_dir(
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Discover WAV files
     available: Dict[int, Path] = {}
     for wp in sorted(wav_dir.glob("*.wav")):
         slot = wav_slot(wp)
@@ -332,9 +521,15 @@ def extract_from_wav_dir(
         print(f"ERROR: no recognised polywav files in {wav_dir}")
         sys.exit(1)
 
+    full_seg_mode = (clip_duration <= 0)
+
     if verbose:
         print(f"\nArray          : {array}  (polywav columns {polywav_channels})")
-        print(f"Clip position  : {clip_position:.2f}  (0=start, 0.5=centre, 1=end)")
+        if full_seg_mode:
+            print(f"Clip duration  : FULL SEGMENT (clip_duration=0)")
+        else:
+            print(f"Clip duration  : {clip_duration:.2f} s")
+            print(f"Clip position  : {clip_position:.2f}  (0=start, 0.5=centre, 1=end)")
         print(f"\nFound {len(available)} polywav file(s):")
         for slot in sorted(available):
             s, e = slot_time_range(slot)
@@ -342,7 +537,6 @@ def extract_from_wav_dir(
 
     covered_slots = set(available.keys())
 
-    # Filter segments
     candidates = []
     for seg in all_segments:
         if splits and seg.get("split") not in splits:
@@ -365,10 +559,9 @@ def extract_from_wav_dir(
         print("  No WAV file(s) cover any segments in the requested splits.")
         return []
 
-    # Extract
-    manifest: List[dict] = []
-    skipped   = 0
-    val_results = []
+    manifest:    List[dict] = []
+    skipped      = 0
+    val_results  = []
 
     for seg in candidates:
         sid        = seg["id"]
@@ -382,9 +575,8 @@ def extract_from_wav_dir(
         if verbose:
             print(f"  → {session_id}  onset={onset:.1f}s  dur={dur:.1f}s", end="  ")
 
-        # Partial coverage check
-        ss     = int(onset       / CHUNK_DUR_S)
-        es     = int((onset+dur) / CHUNK_DUR_S)
+        ss     = int(onset        / CHUNK_DUR_S)
+        es     = int((onset + dur) / CHUNK_DUR_S)
         needed = set(range(ss, es + 1))
         missing = needed - covered_slots
         if missing:
@@ -400,11 +592,47 @@ def extract_from_wav_dir(
             skipped += 1
             continue
 
-        # FIX 2: clip from configurable position (default = centre)
-        audio_clipped = clip_audio(audio_native, clip_position)
+        # ── BUG 6 + 7 FIX: clip_audio returns (audio, start_sample) ──────────
+        if full_seg_mode:
+            # Keep everything; skip the distance/energy window search entirely
+            audio_clipped   = audio_native
+            clip_start_samp = 0
+            clip_start_s    = 0.0
+        else:
+            seg_dur_native = audio_native.shape[1]
+            n_want_native  = int(clip_duration * NATIVE_SR)
+
+            if seg_dur_native > n_want_native:
+                # Find best window: closest approach ± energy refinement
+                approx_start_s    = find_best_window_by_distance(seg, clip_duration)
+                approx_start_samp = int(approx_start_s * NATIVE_SR)
+
+                search_radius = int(2 * NATIVE_SR)
+                sub_start     = max(0, approx_start_samp - search_radius)
+                sub_end       = min(audio_native.shape[1], approx_start_samp + search_radius)
+                sub_audio     = audio_native[:, sub_start:sub_end]
+
+                best_local      = find_best_window_by_energy(sub_audio, clip_duration)
+                clip_start_samp = sub_start + best_local
+            else:
+                clip_start_samp = 0
+
+            clip_start_s  = clip_start_samp / NATIVE_SR
+            audio_clipped, _ = clip_audio(audio_native, clip_position, clip_duration)
+            # Override with the distance+energy–selected start (more accurate)
+            n_want = int(clip_duration * NATIVE_SR)
+            audio_clipped = audio_native[:, clip_start_samp : clip_start_samp + n_want]
+            # Pad if edge of recording
+            if audio_clipped.shape[1] < n_want:
+                pad = np.zeros((audio_clipped.shape[0], n_want - audio_clipped.shape[1]),
+                               dtype=np.float32)
+                audio_clipped = np.concatenate([audio_clipped, pad], axis=1)
+
+        # ── actual_clip_dur_s: truth, not assumption ───────────────────────────
+        actual_clip_dur_s = audio_clipped.shape[1] / NATIVE_SR
 
         # Resample to model SR
-        audio_model = resample_and_pad(audio_clipped)
+        audio_model = resample_audio(audio_clipped)
 
         rms_vals = [float(np.sqrt(np.mean(ch ** 2))) for ch in audio_model]
         max_rms  = max(rms_vals)
@@ -415,40 +643,37 @@ def extract_from_wav_dir(
             skipped += 1
             continue
 
-        # Write WAV files
+        # Write WAV files (one per channel)
         for i, ch in enumerate(audio_model):
-            sf.write(str(output_dir / f"{session_id}_ch{i}.wav"),
-                     ch, TARGET_SR, subtype="FLOAT")
+            sf.write(
+                str(output_dir / f"{session_id}_ch{i}.wav"),
+                ch, TARGET_SR, subtype="FLOAT",
+            )
 
+        # Write label JSON — clip_dur_s now reflects actual extracted length
+        label = make_label_json(seg, array, clip_start_s, actual_clip_dur_s)
         with open(output_dir / f"{session_id}_label.json", "w") as f:
-            json.dump(make_label_json(seg, array), f, indent=2)
+            json.dump(label, f, indent=2)
 
         rms_db = round(20 * np.log10(max_rms + 1e-10), 1)
 
-        # FIX 3: validate but NEVER skip — just record result as a flag
         validation = None
         if validate:
-            ch0_path = output_dir / f"{session_id}_ch0.wav"
+            ch0_path   = output_dir / f"{session_id}_ch0.wav"
             validation = validate_extracted_segment(ch0_path)
             val_results.append(validation)
-
             status_icon = "✅" if validation.get("valid") else "⚠️"
-            freq_str    = f"{validation.get('dom_freq_hz', 0):.1f}Hz" if validation.get('dom_freq_hz') else "?"
+            freq_str    = f"{validation.get('dom_freq_hz', 0):.1f}Hz" if validation.get("dom_freq_hz") else "?"
             ratio_str   = f"ratio={validation.get('energy_ratio', 0):.3f}"
             if verbose:
-                print(f"✓  rms={rms_db} dB  {status_icon} {freq_str} {ratio_str}")
-
+                print(f"✓  {actual_clip_dur_s:.1f}s  rms={rms_db} dB  {status_icon} {freq_str} {ratio_str}")
             if not validation.get("valid"):
                 flags.append("validation_warning")
-                # NOTE: we do NOT skip — ground truth says drone is present
         else:
             if verbose:
-                print(f"✓  rms={rms_db} dB")
+                print(f"✓  {actual_clip_dur_s:.1f}s  rms={rms_db} dB")
 
-        # Clip timing metadata
-        seg_dur_native = audio_native.shape[1]
-        clip_start_s   = (clip_position * max(0, seg_dur_native - int(TARGET_DUR_S * NATIVE_SR))) / NATIVE_SR
-        clip_start_s   = round(clip_start_s, 3)
+        traj_summary = label["trajectory"]["summary"]
 
         entry = {
             "session_id":       str(session_id),
@@ -461,14 +686,29 @@ def extract_from_wav_dir(
             "drones":           list(seg.get("drones", [])),
             "onset_from_rec_s": float(onset),
             "duration_s":       float(dur),
-            "clip_start_s":     float(clip_start_s),    # offset into segment where 3s clip starts
-            "clip_position":    float(clip_position),
-            "altitude_m":       float(seg["altitude_m"])          if seg.get("altitude_m")          is not None else None,
-            "speed_mps":        float(seg["speed_mps"])           if seg.get("speed_mps")            is not None else None,
-            "radius_m":         float(seg["radius_m"])            if seg.get("radius_m")             is not None else None,
-            "azimuth_deg":      float(seg["azimuth_deg_onset"])   if seg.get("azimuth_deg_onset")    is not None else None,
-            "distance_xy_m":    float(seg["distance_xy_m_onset"]) if seg.get("distance_xy_m_onset")  is not None else None,
-            "distance_3d_m":    float(seg["distance_3d_m_onset"]) if seg.get("distance_3d_m_onset")  is not None else None,
+            # ── clip window ────────────────────────────────────────────────
+            "clip_start_s":     round(clip_start_s, 3),
+            "clip_dur_s":       round(actual_clip_dur_s, 3),    # BUG 6 FIX
+            "clip_position":    float(clip_position) if not full_seg_mode else None,
+            # ── trajectory summary ─────────────────────────────────────────
+            "azimuth_at_clip_start_deg": traj_summary["azimuth_at_start_deg"],
+            "azimuth_at_clip_mid_deg":   traj_summary["azimuth_at_mid_deg"],
+            "azimuth_at_clip_end_deg":   traj_summary["azimuth_at_end_deg"],
+            "azimuth_swept_deg":         traj_summary["azimuth_swept_deg"],
+            "distance_xy_at_mid_m":      traj_summary["distance_xy_at_mid_m"],
+            "distance_3d_at_mid_m":      traj_summary["distance_3d_at_mid_m"],
+            "altitude_at_mid_m":         traj_summary["altitude_at_mid_m"],
+            "is_approaching":            traj_summary["is_approaching"],
+            "trajectory_source":         label["trajectory"]["trajectory_source"],
+            # ── legacy onset snapshot ──────────────────────────────────────
+            "onset_azimuth_deg":   float(seg["azimuth_deg_onset"])   if seg.get("azimuth_deg_onset")   is not None else None,
+            "onset_distance_xy_m": float(seg["distance_xy_m_onset"]) if seg.get("distance_xy_m_onset") is not None else None,
+            "onset_distance_3d_m": float(seg["distance_3d_m_onset"]) if seg.get("distance_3d_m_onset") is not None else None,
+            # ── segment properties ─────────────────────────────────────────
+            "altitude_m":       float(seg["altitude_m"])  if seg.get("altitude_m")  is not None else None,
+            "speed_mps":        float(seg["speed_mps"])   if seg.get("speed_mps")   is not None else None,
+            "radius_m":         float(seg["radius_m"])    if seg.get("radius_m")    is not None else None,
+            # ── audio quality ──────────────────────────────────────────────
             "rms_ch0":          float(rms_vals[0]),
             "rms_ch1":          float(rms_vals[1]),
             "rms_ch2":          float(rms_vals[2]),
@@ -502,33 +742,26 @@ def extract_from_wav_dir(
 def write_labels_csv(manifest: List[dict], output_dir: Path):
     import csv
     fieldnames = [
-        "session_id", "azimuth_deg", "distance_m", "height_m",
-        "split", "maneuver_type", "n_drones", "altitude_m", "speed_mps",
-        "clip_start_s", "clip_position", "array",
+        "session_id",
+        "azimuth_at_clip_start_deg", "azimuth_at_clip_mid_deg", "azimuth_at_clip_end_deg",
+        "azimuth_swept_deg", "distance_xy_at_mid_m", "altitude_at_mid_m",
+        "is_approaching", "trajectory_source",
+        "clip_start_s", "clip_dur_s", "clip_position",
+        "split", "maneuver_type", "n_drones", "altitude_m", "speed_mps", "radius_m",
+        "array",
+        "onset_azimuth_deg", "onset_distance_xy_m",
         "validation_valid", "validation_dom_freq_hz", "validation_energy_ratio",
     ]
     with open(output_dir / "labels.csv", "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
         w.writeheader()
         for r in manifest:
             val = r.get("validation") or {}
-            w.writerow({
-                "session_id":               r["session_id"],
-                "azimuth_deg":              r["azimuth_deg"]   if r["azimuth_deg"]   is not None else "",
-                "distance_m":               r["distance_xy_m"] if r["distance_xy_m"] is not None else "",
-                "height_m":                 r["altitude_m"]    if r["altitude_m"]    is not None else "",
-                "split":                    r["split"],
-                "maneuver_type":            r["maneuver_type"],
-                "n_drones":                 r["n_drones"],
-                "altitude_m":               r["altitude_m"]    if r["altitude_m"]    is not None else "",
-                "speed_mps":                r["speed_mps"]     if r["speed_mps"]     is not None else "",
-                "clip_start_s":             r.get("clip_start_s", ""),
-                "clip_position":            r.get("clip_position", ""),
-                "array":                    r.get("array", ""),
-                "validation_valid":         val.get("valid", ""),
-                "validation_dom_freq_hz":   val.get("dom_freq_hz", ""),
-                "validation_energy_ratio":  val.get("energy_ratio", ""),
-            })
+            row = {k: r.get(k, "") for k in fieldnames}
+            row["validation_valid"]        = val.get("valid", "")
+            row["validation_dom_freq_hz"]  = val.get("dom_freq_hz", "")
+            row["validation_energy_ratio"] = val.get("energy_ratio", "")
+            w.writerow(row)
     print("📋 labels.csv written")
 
 
@@ -555,17 +788,30 @@ def print_summary(manifest: List[dict]):
     print(f"  Total extracted : {len(manifest)} segments")
     for sp, n in sorted(Counter(r["split"] for r in manifest).items()):
         print(f"    {sp:8s}: {n}")
+
     print(f"\n  Maneuver types:")
     for m, n in sorted(Counter(r["maneuver_type"] for r in manifest).items(), key=lambda x: -x[1]):
         print(f"    {m:20s}: {n}")
+
+    clip_durs = [r["clip_dur_s"] for r in manifest]
+    print(f"\n  Clip duration (s): min={min(clip_durs):.1f}  max={max(clip_durs):.1f}  "
+          f"mean={sum(clip_durs)/len(clip_durs):.1f}")
+
+    approaching = sum(1 for r in manifest if r.get("is_approaching"))
+    print(f"\n  Trajectory (analytic, 10 Hz):")
+    print(f"    Approaching at clip end  : {approaching}/{len(manifest)}")
+    swept = [abs(r["azimuth_swept_deg"]) for r in manifest if r.get("azimuth_swept_deg") is not None]
+    if swept:
+        print(f"    Azimuth swept (|°|)      : min={min(swept):.1f}  max={max(swept):.1f}  "
+              f"mean={sum(swept)/len(swept):.1f}")
+
     print(f"\n  Source files:")
     for f in sorted({f for r in manifest for f in r["source_files"]}):
         n = sum(1 for r in manifest if f in r["source_files"])
         print(f"    {f}  ({n} seg{'s' if n!=1 else ''})")
-    labelled = sum(1 for r in manifest if r["azimuth_deg"] is not None)
-    print(f"\n  Labelled (az+dist+ht): {labelled}/{len(manifest)}")
+
     rms_dbs = [r["rms_max_db"] for r in manifest]
-    print(f"  RMS range            : {min(rms_dbs):.1f} … {max(rms_dbs):.1f} dB")
+    print(f"\n  RMS range            : {min(rms_dbs):.1f} … {max(rms_dbs):.1f} dB")
     validated = [r for r in manifest if r.get("validation") is not None]
     if validated:
         n_valid = sum(1 for r in validated if r["validation"].get("valid"))
@@ -578,7 +824,7 @@ def print_summary(manifest: List[dict]):
 
 def main():
     ap = argparse.ArgumentParser(
-        description="Extract Dunakeszi ground-truth segments (fixed version)"
+        description="Extract Dunakeszi ground-truth segments (fixed v2)"
     )
     ap.add_argument("--segments",    required=True,
                     help="Path to ground_truth_segments.json")
@@ -590,9 +836,13 @@ def main():
                     help=f"Which mic array to extract (default: {DEFAULT_ARRAY}). "
                          f"BK-6-E = East (Scorpio ch 9-11), BK-6-W = West (ch 3-5)")
     ap.add_argument("--clip-position", type=float, default=0.5,
-                    help="Where in the segment to take the 3-second clip: "
+                    help="Where in the segment to take the clip: "
                          "0.0=start, 0.5=centre (default), 1.0=end.  "
-                         "For transits/circles 0.5 picks the closest-approach window.")
+                         "Ignored when --clip-duration 0 (full segment mode).")
+    ap.add_argument("--clip-duration", type=float, default=DEFAULT_CLIP_DUR_S,
+                    help=f"Duration of extracted clip in seconds (default: {DEFAULT_CLIP_DUR_S}). "
+                         "Set to 0 to keep the FULL segment (no clipping). "
+                         "In full-segment mode --clip-position is ignored.")
     ap.add_argument("--splits",      nargs="+", choices=["train", "val", "test"],
                     default=None, help="Restrict to specific splits")
     ap.add_argument("--no-zip",      action="store_true")
@@ -613,19 +863,24 @@ def main():
         if not p.exists():
             print(f"ERROR: {name} not found: {p}"); sys.exit(1)
 
+    full_seg_mode    = (args.clip_duration <= 0)
     polywav_channels = ARRAY_CHANNELS[args.array]
 
     print("═" * 65)
-    print("  Dunakeszi Ground-Truth Segment Extractor (fixed)")
+    print("  Dunakeszi Ground-Truth Segment Extractor (fixed v2)")
     print("═" * 65)
     print(f"  Segments JSON  : {segments_json}")
     print(f"  WAV directory  : {wav_dir}")
     print(f"  Output dir     : {output_dir}")
     print(f"  Array          : {args.array}  (polywav cols {polywav_channels})")
-    print(f"  Clip position  : {args.clip_position}  (0=start, 0.5=centre, 1=end)")
+    if full_seg_mode:
+        print(f"  Clip mode      : FULL SEGMENT (clip_duration=0, no clipping)")
+    else:
+        print(f"  Clip duration  : {args.clip_duration} s")
+        print(f"  Clip position  : {args.clip_position}  (0=start, 0.5=centre, 1=end)")
     print(f"  Splits         : {args.splits or 'all'}")
     print(f"  Resample       : {NATIVE_SR} Hz → {TARGET_SR} Hz")
-    print(f"  Output length  : {TARGET_DUR_S} s  ({TARGET_SAMPLES} samples)")
+    print(f"  Trajectory     : analytic 10 Hz over full clip duration")
     print(f"  Validate audio : {'NO' if args.no_validate else f'YES  (energy_ratio > {ENERGY_RATIO_THRESHOLD}, flagged only)'}")
 
     if args.dry_run:
@@ -643,21 +898,35 @@ def main():
             es    = int((onset + dur) / CHUNK_DUR_S)
             slots = set(range(ss, es + 1))
             has   = bool(slots & set(available.keys()))
+            traj_note = ""
+            if has:
+                mid_t   = dur / 2 if full_seg_mode else (
+                    args.clip_position * max(0, dur - args.clip_duration)
+                    + (args.clip_duration if args.clip_duration > 0 else dur) / 2
+                )
+                x, y, z = interpolate_position(seg, mid_t)
+                bearing  = _pos_to_bearing(x, y, z)
+                traj_note = (f"  az={bearing['azimuth_deg']:.0f}°"
+                             f"  d={bearing['distance_xy_m']:.0f}m"
+                             f"  h={z:.0f}m")
             print(f"  seg_{seg['id']:03d}_{seg['maneuver_type']:15s} "
                   f"slots={sorted(slots)}  dur={dur:.0f}s  "
-                  f"{'✓ extractable' if has else '-- not covered'}")
+                  f"{'✓ extractable' if has else '-- not covered'}"
+                  f"{traj_note}")
         return
 
+    # ── BUG 5 FIX: pass clip_duration explicitly, never rely on global args ───
     manifest = extract_from_wav_dir(
-        segments_json  = segments_json,
-        wav_dir        = wav_dir,
-        output_dir     = output_dir,
-        array          = args.array,
-        clip_position  = args.clip_position,
-        splits         = args.splits,
-        skip_unlabelled= args.skip_unlabelled,
-        validate       = not args.no_validate,
-        verbose        = True,
+        segments_json   = segments_json,
+        wav_dir         = wav_dir,
+        output_dir      = output_dir,
+        array           = args.array,
+        clip_position   = args.clip_position,
+        clip_duration   = args.clip_duration,   # ← explicit
+        splits          = args.splits,
+        skip_unlabelled = args.skip_unlabelled,
+        validate        = not args.no_validate,
+        verbose         = True,
     )
 
     if not manifest:
@@ -676,19 +945,16 @@ def main():
 if __name__ == "__main__":
     main()
 
-    # Recommended usage:
-    # python dunakeszi_segment_extractor_fixed.py \
-    #   --segments ground_truth/ground_truth_segments.json \
-    #   --wav-dir wavs/ \
-    #   --array BK-6-E \
-    #   --clip-position 0.5
+    # ── Recommended usage ─────────────────────────────────────────────────────
     #
-    # To compare both arrays:
-    # python dunakeszi_segment_extractor_fixed.py --segments ground_truth/ground_truth_segments.json --wav-dir wavs/ --array BK-6-E --output-dir segs_E --clip-position 0.5
-    # python dunakeszi_segment_extractor_fixed.py --segments ground_truth/ground_truth_segments.json --wav-dir wavs/ ... --array BK-6-W --output-dir segs_W --clip-position 0.5
+    # Full segment mode (no clipping — drone airborne duration preserved):
+    #   python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json --wav-dir wavs/ --array BK-6-E --clip-duration 0
     #
-    # For hover segments where onset == closest approach, use --clip-position 0.0
-    # For transit/circle segments, keep the default --clip-position 0.5
-
-    # For 251020VITEMOROM1AT01J.wav file
-    # python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json  --wav-dir wavs/  --array BK-6-E  --clip-position 0.5  --output-dir extracted_P/
+    # Standard 3-second clip from centre (original behaviour, now correct):
+    #   python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json --wav-dir wavs/ --array BK-6-E --clip-duration 3 --clip-position 0.5
+    #
+    # Custom 10-second clip from closest-approach window:
+    #   python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json --wav-dir wavs/ --array BK-6-E --clip-duration 10 --clip-position 0.5
+    #
+    # Dry run — preview coverage and mid-clip trajectory:
+    #   python dunakeszi_segment_extractor_fixed.py --segments new_ground_truth/ground_truth_segments.json --wav-dir wavs/ --dry-run

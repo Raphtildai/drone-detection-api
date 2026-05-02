@@ -1,0 +1,7 @@
+session_id,segment_id,session,maneuver_type,flight_phase,n_drones,split,radius_m,speed_mps,duration_s,detected,probability,cnn_probability,heuristic_probability,pred_azimuth_deg,pred_distance_m,pred_height_m,gt_azimuth_deg,gt_distance_m,gt_height_m,has_position,az_error_deg,dist_error_m,ht_error_m,rms_db
+seg_005_hover_val,,,hover,,1,val,,0.0,60.0,True,0.6969,0.7299,0.5652,-61.19,43.12,23.41,,,20.0,False,,,,-43.22
+seg_006_hover_val,,,hover,,1,val,,0.0,60.0,True,0.1586,0.0961,0.4088,-24.74,29.44,13.16,,,20.0,False,,,,-40.93
+seg_007_transit_train,,,transit,,1,train,,4.0,30.0,True,0.9731,0.9862,0.6707,-31.91,31.09,14.96,-180.0,60.0,20.0,True,148.09,28.91,5.04,-41.79
+seg_008_transit_train,,,transit,,1,train,,8.0,15.0,True,0.9739,0.9882,0.6667,-127.39,43.96,28.76,-180.0,60.0,20.0,True,52.61,16.04,8.76,-37.78
+seg_010_diagonal_train,,,diagonal,,1,train,,4.0,66.0,True,0.9838,0.9559,0.8453,-29.06,32.09,13.48,-135.0,84.9,20.0,True,105.94,52.81,6.52,-27.38
+seg_011_diagonal_train,,,diagonal,,1,train,,8.0,33.0,True,0.7365,0.6407,0.8698,-35.41,32.26,16.24,-135.0,84.9,20.0,True,99.59,52.64,3.76,-27.54

@@ -315,10 +315,21 @@ def _fractional_delay(signal: np.ndarray, delay_samples: float) -> np.ndarray:
 
 def compute_ipd_features(channels: List[np.ndarray], cfg) -> np.ndarray:
     """
-    Compute 3 Inter-microphone Phase Delay (IPD) features
-    (one per mic pair) from time-domain channels.
+    Compute 3 Inter-microphone Phase Delay (IPD) features via GCC-PHAT,
+    bounded to the physically reachable lag window for this array geometry.
+    Searching the full signal length (old behaviour) caused noise peaks far
+    outside the physical range to dominate, making the IPD branch useless.
     """
-    sr    = cfg.SR
+    sr = cfg.SR
+    c  = getattr(cfg, "SPEED_OF_SOUND", 343.0)
+    # Maximum inter-mic distance → maximum physical lag in samples (+10% margin)
+    max_dist = float(np.max([
+        np.linalg.norm(np.array(cfg.MIC_POSITIONS[i]) - np.array(cfg.MIC_POSITIONS[j]))
+        for i in range(len(cfg.MIC_POSITIONS))
+        for j in range(i + 1, len(cfg.MIC_POSITIONS))
+    ]))
+    max_tau_samples = int(np.ceil(max_dist / c * sr * 1.1))
+
     pairs = [(0, 1), (0, 2), (1, 2)]
     ipds  = []
     for i, j in pairs:
@@ -330,9 +341,10 @@ def compute_ipd_features(channels: List[np.ndarray], cfg) -> np.ndarray:
         cc = Xi * np.conj(Xj)
         cc /= np.abs(cc) + 1e-8
         tau = np.fft.irfft(cc, n=n)
-        pk  = int(np.argmax(np.abs(tau)))
-        if pk > n // 2:
-            pk -= n
+        # Only search within ±max_tau_samples (positive lags at start, negative at end)
+        search   = np.concatenate([tau[:max_tau_samples + 1], tau[-max_tau_samples:]])
+        pk_local = int(np.argmax(np.abs(search)))
+        pk       = pk_local if pk_local <= max_tau_samples else pk_local - len(search)
         ipds.append(float(pk) / sr)
     return np.array(ipds, dtype=np.float32)
 
@@ -441,6 +453,12 @@ def perturb_multichannel(channels: List[np.ndarray], cfg) -> List[np.ndarray]:
     """
     Apply correlated + per-channel perturbations to a 3-mic recording.
     Used in LocalizationDataset augmentation.
+
+    NOTE: independent per-channel fractional delay was intentionally removed.
+    Applying a different random delay to each channel destroys the inter-channel
+    time difference (ITD) that GCC-PHAT and the IPD branch rely on for azimuth.
+    Gain jitter, additive noise, and EQ tilt are safe because they do not
+    alter the relative timing between channels.
     """
     out       = []
     base_gain = random.uniform(-3.0, 3.0)
@@ -453,8 +471,6 @@ def perturb_multichannel(channels: List[np.ndarray], cfg) -> List[np.ndarray]:
             n     /= rms_energy(n) + 1e-8
             snr    = random.uniform(0, 20)
             x      = np.clip(x + n * sr_val / (10 ** (snr / 20.0)), -1, 1).astype(np.float32)
-        if random.random() < 0.25:
-            x = _fractional_delay(x, random.uniform(0.0, 2.0))
         if random.random() < 0.25:
             x = random_eq_tilt(x, cfg.SR, 0.25)
         out.append(np.clip(x, -1, 1).astype(np.float32))

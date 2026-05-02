@@ -661,14 +661,23 @@ class UaVirBASEDatasetManager:
             self._write_synthetic(proc)
             return True
         if getattr(self.cfg, "UAVIRBASE_FULL", False):
+            raw = self.cfg.UAVIRBASE_RAW
+            # If session folders already exist on disk, skip the download entirely.
+            already_extracted = raw.exists() and any(
+                True for _ in raw.rglob(self.LABEL_FILENAME)
+            )
             try:
-                self._download_full(self.cfg.UAVIRBASE_RAW)
-                self._process_local(self.cfg.UAVIRBASE_RAW, proc)
+                if not already_extracted:
+                    print(f"📥 Downloading full dataset to {raw} …")
+                    self._download_full(raw)
+                else:
+                    print(f"📂 Using local dataset at {raw} (skipping download)")
+                self._process_local(raw, proc)
             except Exception as e:
-                print(f"⚠️  Full download failed ({e}) → synthetic fallback.")
+                print(f"⚠️  Processing failed ({e}) → synthetic fallback.")
                 self._write_synthetic(proc)
         else:
-            n_sess = getattr(self.cfg, "UAVIRBASE_N_SESSIONS", 500)
+            n_sess = getattr(self.cfg, "UAVIRBASE_N_SESSIONS", 0)
             print(f"📥 Partial download: {n_sess} sessions via remotezip …")
             try:
                 _ensure_remotezip()
@@ -778,7 +787,21 @@ class UaVirBASEDatasetManager:
             z.extractall(str(dest))
         archive.unlink()
 
-    def _process_local(self, src, dst):
+    def _process_local(self, src, dst,
+                       clips_per_session_train: int = 10,
+                       clips_per_session_val:   int = 3):
+        """
+        Extract multiple random clips per 40-second session instead of always
+        taking the first TARGET_DURATION seconds.
+
+        The first 3s of a UaVirBASE recording is often setup/ambient noise
+        before the drone reaches its position — always cropping y[:n] produces
+        garbage IPD values.  This method samples clips from the safe interior
+        (skipping the first and last 2s) so every clip contains drone signal.
+
+        Result: ~128 sessions × 10 clips = ~1280 real training examples,
+        vs 88 examples from the broken first-3s approach.
+        """
         sessions = list(src.rglob(self.LABEL_FILENAME)) or list(src.rglob("annotation.json"))
         sessions = [p.parent for p in sessions]
         if not sessions:
@@ -790,8 +813,11 @@ class UaVirBASEDatasetManager:
             "val":   sessions[int(n * 0.70) : int(n * 0.85)],
             "test":  sessions[int(n * 0.85) :],
         }
+        clip_len    = int(self.cfg.SR * self.cfg.TARGET_DURATION)
+        total_written = 0
         for split, sess_list in splits.items():
-            out = dst / split; out.mkdir(parents=True, exist_ok=True)
+            out     = dst / split; out.mkdir(parents=True, exist_ok=True)
+            n_clips = clips_per_session_train if split == "train" else clips_per_session_val
             for sess in sess_list:
                 audio_file = next((sess / x for x in [self.AUDIO_FILENAME, "audio.wav"] if (sess / x).exists()), None)
                 label_file = next((sess / x for x in [self.LABEL_FILENAME, "annotation.json"] if (sess / x).exists()), None)
@@ -802,14 +828,45 @@ class UaVirBASEDatasetManager:
                     if parsed is None: continue
                     az, di, ht = parsed
                     channels = self.ap.load_channels(audio_file, channel_indices=self.cfg.UAVIRBASE_MIC_INDICES)
-                    sid = sess.name
-                    for i, ch in enumerate(channels):
-                        sf.write(str(out / f"{sid}_ch{i}.wav"), self.ap.pad_or_truncate(ch), self.cfg.SR)
-                    (out / f"{sid}_label.json").write_text(
-                        json.dumps({"azimuth_deg": az, "distance_m": di, "height_m": ht, "source": "real"})
-                    )
+                    if not channels: continue
+                    full_len = len(channels[0])
+                    sid      = sess.name
+
+                    if full_len <= clip_len:
+                        starts = [0]
+                    else:
+                        # Skip first and last 2s (setup / wind noise at edges)
+                        margin     = int(2.0 * self.cfg.SR)
+                        safe_start = margin
+                        safe_end   = full_len - clip_len - margin
+                        if safe_end <= safe_start:
+                            safe_start, safe_end = 0, max(1, full_len - clip_len)
+                        rng_clip = random.Random(hash(sid))
+                        step     = max(1, (safe_end - safe_start) // n_clips)
+                        starts   = []
+                        for k in range(n_clips):
+                            base   = safe_start + k * step
+                            jitter = rng_clip.randint(-step // 4, step // 4)
+                            starts.append(max(safe_start, min(safe_end, base + jitter)))
+
+                    for clip_idx, start in enumerate(starts):
+                        clip_chs = []
+                        for ch in channels:
+                            seg = ch[start : start + clip_len]
+                            if len(seg) < clip_len:
+                                seg = np.pad(seg, (0, clip_len - len(seg)))
+                            clip_chs.append(seg.astype(np.float32))
+                        clip_sid = f"{sid}_c{clip_idx:02d}"
+                        for i, ch in enumerate(clip_chs):
+                            sf.write(str(out / f"{clip_sid}_ch{i}.wav"), ch, self.cfg.SR)
+                        (out / f"{clip_sid}_label.json").write_text(
+                            json.dumps({"azimuth_deg": az, "distance_m": di,
+                                        "height_m": ht, "source": "real"})
+                        )
+                        total_written += 1
                 except Exception as e:
                     print(f"   ⚠️  {sess.name}: {e}")
+        print(f"   ✅ _process_local: {total_written} clips written across all splits")
 
     def _write_synthetic(self, proc, n_total=2400):
         print(f"🔬 Generating {n_total} synthetic localization samples …")

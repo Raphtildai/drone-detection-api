@@ -1,0 +1,7 @@
+session_id,azimuth_at_clip_start_deg,azimuth_at_clip_mid_deg,azimuth_at_clip_end_deg,azimuth_swept_deg,distance_xy_at_mid_m,altitude_at_mid_m,is_approaching,trajectory_source,clip_start_s,clip_position,split,maneuver_type,n_drones,altitude_m,speed_mps,radius_m,array,onset_azimuth_deg,onset_distance_xy_m,validation_valid,validation_dom_freq_hz,validation_energy_ratio
+seg_005_hover_val,0.0,0.0,0.0,0.0,0.0,20.0,False,analytic,28.5,0.5,val,hover,1,20.0,0.0,,BK-6-E,0.0,0.0,False,49.666666666666664,0.41928107051359187
+seg_006_hover_val,0.0,0.0,0.0,0.0,0.0,20.0,False,analytic,28.5,0.5,val,hover,1,20.0,0.0,,BK-6-E,0.0,0.0,False,51.0,0.2616564512282728
+seg_007_transit_train,-90.0,0.0,90.0,-180.0,0.0,20.0,False,analytic,13.5,0.5,train,transit,1,20.0,4.0,,BK-6-E,-90.0,60.0,False,45.33333333333333,0.311691611815352
+seg_008_transit_train,-90.0,0.0,90.0,-180.0,0.0,20.0,False,analytic,6.0,0.5,train,transit,1,20.0,8.0,,BK-6-E,-90.0,60.0,True,35.33333333333333,0.4105647156732682
+seg_010_diagonal_train,-135.0,0.0,45.0,-180.0,0.0,20.0,False,analytic,31.5,0.5,train,diagonal,1,20.0,4.0,,BK-6-E,-135.0,84.9,True,56.33333333333333,0.350832379876045
+seg_011_diagonal_train,-135.0,0.0,45.0,-180.0,0.0,20.0,False,analytic,15.0,0.5,train,diagonal,1,20.0,8.0,,BK-6-E,-135.0,84.9,True,46.0,0.04372343316380459

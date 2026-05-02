@@ -1,7 +1,0 @@
-session_id,azimuth_deg,distance_m,height_m,original_bearing_deg,has_position,session,maneuver_type,n_drones,split,radius_m,speed_mps,duration_s,wav_ch0,wav_ch1,wav_ch2
-seg_005_hover_val,,,,,False,show_2,hover,1,val,,,60.0,seg_005_hover_val_ch0.wav,seg_005_hover_val_ch1.wav,seg_005_hover_val_ch2.wav
-seg_006_hover_val,,,,,False,show_2,hover,1,val,,,60.0,seg_006_hover_val_ch0.wav,seg_006_hover_val_ch1.wav,seg_006_hover_val_ch2.wav
-seg_007_transit_train,-180.0,60.0,20.0,-90.0,True,show_2,transit,1,train,,4.0,30.0,seg_007_transit_train_ch0.wav,seg_007_transit_train_ch1.wav,seg_007_transit_train_ch2.wav
-seg_008_transit_train,-180.0,60.0,20.0,-90.0,True,show_2,transit,1,train,,8.0,15.0,seg_008_transit_train_ch0.wav,seg_008_transit_train_ch1.wav,seg_008_transit_train_ch2.wav
-seg_010_diagonal_train,-135.0,84.9,20.0,-135.0,True,show_2,diagonal,1,train,,4.0,66.0,seg_010_diagonal_train_ch0.wav,seg_010_diagonal_train_ch1.wav,seg_010_diagonal_train_ch2.wav
-seg_011_diagonal_train,-135.0,84.9,20.0,-135.0,True,show_2,diagonal,1,train,,8.0,33.0,seg_011_diagonal_train_ch0.wav,seg_011_diagonal_train_ch1.wav,seg_011_diagonal_train_ch2.wav
