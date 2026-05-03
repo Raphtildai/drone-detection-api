@@ -16,7 +16,7 @@ Track trajectory                    plot_track_trajectory()
 Multi-drone positions               plot_multi_drone_positions()
 Kalman trajectories (1-pt safe)     plot_kalman_trajectories()
 
-Thesis figures (7)
+Figures (7)
 ──────────────────
 plot_azimuth_mae_per_position()
 plot_val_test_comparison()
@@ -35,16 +35,20 @@ plot_position_map_from_data()
 
 import csv
 import math
+import warnings
+from pathlib import Path
 from collections import defaultdict
 from pathlib import Path
-from typing import List, Optional
 
 import matplotlib
 import matplotlib.cm as cm
 import matplotlib.gridspec as gridspec
 import matplotlib.patches as mpatches
+import matplotlib.ticker as mticker
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import Dict, List, Optional
+from scipy import signal
 
 from .config import Config, config
 
@@ -78,6 +82,9 @@ PLOT_STYLE = {
     "purple":    "#6a1b9a",   # dark purple (was lavender)
 }
 
+MIC_COLORS = ["#1565c0", "#2e7d32", "#6a1b9a"]   # ch0, ch1, ch2
+PAIR_COLORS = {"01": "#e65100", "02": "#1565c0", "12": "#2e7d32"}
+
 # Thesis palette (unchanged — already print-safe colours)
 C_GOOD   = "#1D9E75"
 C_MOD    = "#BA7517"
@@ -88,6 +95,57 @@ C_PURPLE = "#7F77DD"
 C_GRAY   = "#888780"
 C_RANDOM = "#AAAAAA"
 
+
+# Internal helper functions for consistent styling across plots
+def _apply_style(fig, axes_flat):
+    fig.patch.set_facecolor(PLOT_STYLE["bg"])
+    for ax in axes_flat:
+        if ax is None:
+            continue
+        ax.set_facecolor(PLOT_STYLE["panel"])
+        ax.tick_params(colors=PLOT_STYLE["text"], labelcolor=PLOT_STYLE["text"], labelsize=11)
+        ax.xaxis.label.set_color(PLOT_STYLE["text"])
+        ax.yaxis.label.set_color(PLOT_STYLE["text"])
+        ax.title.set_color(PLOT_STYLE["text"])
+        ax.title.set_fontweight("bold")
+        for spine in ax.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+            spine.set_linewidth(0.9)
+        ax.grid(color=PLOT_STYLE["grid"], alpha=0.45, linewidth=0.7)
+
+
+def _save(fig, path: Optional[Path], dpi: int = 200):
+    if path:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(str(path), dpi=dpi, bbox_inches="tight",
+                    facecolor=fig.get_facecolor())
+        print(f"💾 Saved: {path}")
+
+
+def _finite(arr):
+    return np.array([v for v in arr if v is not None and not math.isnan(float(v))],
+                    dtype=float)
+
+
+def _cc_lags(a: np.ndarray, b: np.ndarray, sr: int,
+             max_lag_ms: float = 10.0) -> tuple:
+    """
+    Normalised cross-correlation between two mono arrays.
+    Returns (lags_ms, cc_normalised).
+    """
+    n = len(a)
+    # Correlate on the first 3 s to keep it fast
+    clip = min(n, int(sr * 3.0))
+    x = a[:clip].astype(np.float64)
+    y = b[:clip].astype(np.float64)
+    x -= x.mean(); y -= y.mean()
+    cc = signal.correlate(x, y, mode="full")
+    denom = (np.std(x) * np.std(y) * clip) + 1e-10
+    cc /= denom
+    lag_samples = signal.correlation_lags(len(x), len(y), mode="full")
+    lag_ms      = lag_samples / sr * 1000.0
+    mask        = np.abs(lag_ms) <= max_lag_ms
+    return lag_ms[mask], cc[mask]
 
 def _mae_color(v: float) -> str:
     return C_GOOD if v < 30 else C_MOD if v < 60 else C_POOR
@@ -169,7 +227,7 @@ def _show_inline(fig):
 
 
 def _save_plot(fig, path: Optional[Path], dpi: int = 200):
-    """Save at higher DPI for crisp thesis figures."""
+    """Save at higher DPI for crisp figures."""
     if path:
         path.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(str(path), dpi=dpi, bbox_inches="tight")
@@ -247,80 +305,88 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
 # ══════════════════════════════════════════════════════════════════════════════
 # Analysis dashboard (6-panel light)
 # ══════════════════════════════════════════════════════════════════════════════
-
-def _plot_analysis_report(segments, confirmed, cfg, title: str):
+def _panel3_localisation(ax, segments, cfg, PLOT_STYLE):
     """
-    Six-panel light-themed analysis dashboard.
-
-    Panels: waveform+RMS | mel spectrogram | detection timeline |
-            localization bars | polar compass | detection gauge
+    Scatter plot of estimated (x, y) drone positions per segment.
+ 
+    Colour encodes hybrid detection confidence (plasma colormap).
+    Mic array triangle is overlaid for spatial reference.
+    Falls back to azimuth + distance twin-axis chart when xy_position is absent.
     """
-    import itertools
-    fig = plt.figure(figsize=(20, 10), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=17,
-                 color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
-    gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
-    axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]
-    _apply_dark_style(fig, axes)
-    ts_list = [s["t_start"] for s in segments]
-
-    # [0] Waveform + RMS
-    ax = axes[0]
-    if any("waveform" in s for s in segments):
-        wave = list(itertools.chain.from_iterable(s.get("waveform", []) for s in segments))
-        t_w  = np.linspace(0, max(ts_list) + cfg.TARGET_DURATION if ts_list else 3.0, len(wave))
-        ax.plot(t_w, wave, color=PLOT_STYLE["accent"], lw=0.6, alpha=0.7)
-    rms_vals = [s.get("rms_db", -60) for s in segments]
-    ax2 = ax.twinx()
-    ax2.plot(ts_list, rms_vals, "o-", color=PLOT_STYLE["warn"], ms=4, lw=1.5, label="RMS dB")
-    ax2.tick_params(axis="y", colors=PLOT_STYLE["text"], labelcolor=PLOT_STYLE["text"])
-    ax2.yaxis.label.set_color(PLOT_STYLE["text"])
-    ax2.set_ylabel("RMS (dB)", color=PLOT_STYLE["text"])
-    for spine in ax2.spines.values():
-        spine.set_color(PLOT_STYLE["spine"])
-    ax.set_xlabel("Time (s)"); ax.set_ylabel("Amplitude"); ax.set_title("Waveform + RMS")
-
-    # [1] Mel spectrogram
-    ax = axes[1]
-    if any("mel" in s for s in segments):
-        mel_frames = np.concatenate([s["mel"] for s in segments if "mel" in s], axis=1)
-        ax.imshow(mel_frames, aspect="auto", origin="lower", cmap="magma",
-                  extent=[0, max(ts_list) + cfg.TARGET_DURATION if ts_list else 3.0, 0, cfg.SR // 2 / 1000])
-        cbar = plt.colorbar(ax.images[0], ax=ax, label="dB")
-        _style_colorbar(cbar)
-    ax.set_xlabel("Time (s)"); ax.set_ylabel("Freq (kHz)"); ax.set_title("Mel Spectrogram")
-
-    # [2] Detection timeline
-    ax = axes[2]
-    prbs  = [s["prob"] for s in segments]
-    cnns  = [s.get("cnn_probability",  float("nan")) for s in segments]
-    heurs = [s.get("heuristic_probability", float("nan")) for s in segments]
-    cols  = [PLOT_STYLE["ok"] if s["detected"] else PLOT_STYLE["err"] for s in segments]
-    ax.bar(ts_list, prbs, width=cfg.TARGET_DURATION * 0.8, color=cols, alpha=0.55, label="Hybrid")
-    ax.fill_between(ts_list, prbs, alpha=0.15, color=PLOT_STYLE["text"])
-    if not all(math.isnan(v) for v in cnns):
-        ax.plot(ts_list, cnns,  "-o", color=PLOT_STYLE["accent"], ms=4, lw=1.5, label="CNN")
-    if not all(math.isnan(v) for v in heurs):
-        ax.plot(ts_list, heurs, "--s", color=PLOT_STYLE["purple"], ms=4, lw=1.5, label="Heuristic")
-    ax.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["warn"], lw=1.5, ls="--",
-               label=f"Thr={cfg.DETECTION_THRESHOLD:.2f}")
-    ax.set_xlim(left=0); ax.set_ylim(0, 1.05)
-    ax.set_xlabel("Time (s)"); ax.set_ylabel("Probability"); ax.set_title("Detection Timeline")
-    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
-    _style_legend(leg)
-
-    # [3] Localization bars — azimuth in degrees, distance as secondary axis
-    ax = axes[3]
     locs = [s for s in segments if s.get("loc") is not None]
-    if locs:
-        w        = cfg.TARGET_DURATION * 0.8
-        az_vals  = [s["loc"]["azimuth_deg"] for s in locs]
-        dist_vals = [s["loc"]["distance_m"] for s in locs]
-        t_locs   = [s["t_start"] for s in locs]
-        ax.bar(t_locs, az_vals, width=w, color=PLOT_STYLE["accent"], alpha=0.7, label="Azimuth (°)")
+ 
+    if not locs:
+        ax.text(0.5, 0.5, "No localisation data",
+                ha="center", va="center",
+                color=PLOT_STYLE["muted"], transform=ax.transAxes, fontsize=10)
+        ax.set_title("Localisation (x, y)", color=PLOT_STYLE["text"])
+        ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
+        return
+ 
+    # Check whether xy_position is available (it always should be after v18 patch)
+    first_xy = locs[0]["loc"].get("xy_position")
+    has_xy   = first_xy is not None and len(np.asarray(first_xy)) >= 2
+ 
+    if has_xy:
+        # ── Scatter (x, y) colour-coded by confidence ─────────────────────
+        xs    = [float(np.asarray(s["loc"]["xy_position"])[0]) for s in locs]
+        ys    = [float(np.asarray(s["loc"]["xy_position"])[1]) for s in locs]
+        confs = [float(s["prob"]) for s in locs]
+        ts    = [float(s["t_start"]) for s in locs]
+ 
+        sc = ax.scatter(xs, ys, c=confs, cmap="plasma", vmin=0, vmax=1,
+                        s=55, zorder=4, edgecolors=PLOT_STYLE["bg"], linewidths=0.4)
+ 
+        # Annotate a few points with their segment time so the user can
+        # see which part of the recording each estimate came from.
+        for x, y, t in zip(xs, ys, ts):
+            ax.annotate(f"{t:.0f}s", (x, y),
+                        textcoords="offset points", xytext=(4, 4),
+                        fontsize=6, color=PLOT_STYLE["muted"], zorder=5)
+ 
+        # Mic array triangle (orange triangles, same as track trajectory plot)
+        mic_positions = np.asarray(cfg.MIC_POSITIONS, dtype=float)
+        ax.scatter(mic_positions[:, 0], mic_positions[:, 1],
+                   marker="^", color=PLOT_STYLE["warn"],
+                   s=70, zorder=6, label="Mics")
+ 
+        # Array centre cross
+        centre = np.asarray(cfg.ARRAY_CENTER, dtype=float)
+        ax.plot(centre[0], centre[1], "+",
+                color=PLOT_STYLE["text"], ms=8, mew=1.2, zorder=7)
+ 
+        # Colorbar
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        try:
+            divider = make_axes_locatable(ax)
+            cax     = divider.append_axes("right", size="4%", pad=0.05)
+            cbar    = ax.figure.colorbar(sc, cax=cax)
+            cbar.set_label("Confidence", color=PLOT_STYLE["text"], fontsize=8)
+            cbar.ax.yaxis.set_tick_params(color=PLOT_STYLE["text"])
+            plt.setp(cbar.ax.yaxis.get_ticklabels(), color=PLOT_STYLE["text"])
+            cbar.outline.set_edgecolor(PLOT_STYLE["spine"])
+        except Exception:
+            pass  # colorbar is cosmetic — never crash the dashboard
+ 
+        ax.set_aspect("equal", adjustable="datalim")
+        ax.legend(facecolor=PLOT_STYLE["panel_alt"],
+                  edgecolor=PLOT_STYLE["spine"], fontsize=7)
+        ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
+        ax.set_title("Localisation (x, y)", color=PLOT_STYLE["text"])
+ 
+    else:
+        # ── Fallback: azimuth bars + distance twin axis ────────────────────
+        w         = cfg.TARGET_DURATION * 0.8
+        az_vals   = [s["loc"]["azimuth_deg"] for s in locs]
+        dist_vals = [s["loc"]["distance_m"]   for s in locs]
+        t_locs    = [s["t_start"] for s in locs]
+ 
+        ax.bar(t_locs, az_vals, width=w, color=PLOT_STYLE["accent"],
+               alpha=0.7, label="Azimuth (°)")
         ax.axhline(0, color=PLOT_STYLE["spine"], lw=0.8, ls="--")
         ax.set_ylim(-185, 185)
         ax.set_ylabel("Azimuth (°)", color=PLOT_STYLE["text"])
+ 
         ax2_loc = ax.twinx()
         ax2_loc.plot(t_locs, dist_vals, "D--", color=PLOT_STYLE["warn"],
                      ms=5, lw=1.5, label="Distance (m)")
@@ -328,57 +394,208 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
         ax2_loc.tick_params(axis="y", colors=PLOT_STYLE["warn"])
         for spine in ax2_loc.spines.values():
             spine.set_color(PLOT_STYLE["spine"])
+ 
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2_loc.get_legend_handles_labels()
         leg = ax.legend(lines1 + lines2, labels1 + labels2,
-                        facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"],
+                        facecolor=PLOT_STYLE["panel_alt"],
+                        edgecolor=PLOT_STYLE["spine"],
                         loc="upper right", fontsize=8)
+        from visualization import _style_legend   # noqa — adjust import path
         _style_legend(leg)
-    else:
-        ax.text(0.5, 0.5, "No localization data", ha="center", va="center",
-                color=PLOT_STYLE["muted"], transform=ax.transAxes)
-        ax.set_ylabel("Azimuth (°)", color=PLOT_STYLE["text"])
-    ax.set_xlabel("Time (s)"); ax.set_title("Localization (Azimuth + Distance)")
+ 
+        ax.set_xlabel("Time (s)")
+        ax.set_title("Localisation (Azimuth + Distance)", color=PLOT_STYLE["text"])
+ 
+    ax.grid(True, color=PLOT_STYLE["grid"], lw=0.4, alpha=0.6)
 
-    # [4] Polar compass
+def _panel4_polar_compass(fig, gs, axes, segments, cfg, PLOT_STYLE):
+    """
+    Polar histogram of detected azimuths. 
+    Uses all segments that have a loc dict (not just det["detected"]==True)
+    so the compass fills in whenever a position estimate exists.
+    """
     axes[4].remove()
     ax_pol = fig.add_subplot(gs[1, 1], projection="polar")
     ax_pol.set_facecolor(PLOT_STYLE["panel"])
     ax_pol.tick_params(colors=PLOT_STYLE["text"])
-    az_degs = [s["loc"]["azimuth_deg"] for s in segments if s.get("loc") is not None]
+ 
+    # Collect azimuths from all segments that were localised
+    az_degs = [
+        s["loc"]["azimuth_deg"]
+        for s in segments
+        if s.get("loc") is not None
+    ]
+ 
     if az_degs:
-        rads = np.radians([90 - a for a in az_degs])
-        counts, edges = np.histogram(rads, bins=24, range=(-np.pi, np.pi))
-        centers = 0.5 * (edges[:-1] + edges[1:])
-        ax_pol.bar(centers, counts, width=edges[1] - edges[0], alpha=0.8,
-                   color=PLOT_STYLE["accent"], edgecolor=PLOT_STYLE["bg"])
-    ax_pol.set_theta_zero_location("N"); ax_pol.set_theta_direction(-1)
+        # CORRECTED sign: -a rotates clockwise from North
+        rads   = np.radians([-a for a in az_degs])
+        counts, edges = np.histogram(rads, bins=36, range=(-np.pi, np.pi))
+        centers       = 0.5 * (edges[:-1] + edges[1:])
+        width         = edges[1] - edges[0]
+ 
+        # Colour bars by bin count so the dominant direction pops
+        max_c  = max(counts) if counts.max() > 0 else 1
+        colors = plt.cm.plasma(counts / max_c)
+ 
+        ax_pol.bar(centers, counts, width=width, alpha=0.85,
+                   color=colors, edgecolor=PLOT_STYLE["bg"], linewidth=0.3)
+ 
+        # Annotate the dominant direction
+        dom_idx = int(np.argmax(counts))
+        dom_deg = float(np.degrees(-centers[dom_idx])) % 360
+        ax_pol.annotate(
+            f"{dom_deg:.0f}°",
+            xy=(centers[dom_idx], counts[dom_idx]),
+            xytext=(centers[dom_idx], counts[dom_idx] * 1.25),
+            ha="center", va="center",
+            fontsize=7, color=PLOT_STYLE["accent"],
+        )
+    else:
+        # Draw a faint placeholder ring so the panel isn't empty
+        theta = np.linspace(0, 2 * np.pi, 60)
+        ax_pol.plot(theta, np.ones_like(theta) * 0.05,
+                    color=PLOT_STYLE["muted"], lw=0.8, ls="--")
+        ax_pol.text(0, 0, "no data", ha="center", va="center",
+                    color=PLOT_STYLE["muted"], fontsize=8,
+                    transform=ax_pol.transData)
+ 
+    ax_pol.set_theta_zero_location("N")
+    ax_pol.set_theta_direction(-1)
     ax_pol.set_title("Azimuth (N-up)", color=PLOT_STYLE["accent"], pad=12)
     ax_pol.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+ 
+    return ax_pol
 
-    # [5] Detection score gauge
+def _plot_analysis_report(segments, confirmed, cfg, title: str):
+    """
+    Six-panel light-themed analysis dashboard  (v18 patch).
+ 
+    Panels:
+      [0] Waveform + RMS
+      [1] Mel spectrogram
+      [2] Detection timeline  (CNN / Heuristic / Hybrid / threshold)
+      [3] Localisation (x, y) scatter 
+      [4] Polar azimuth compass         
+      [5] Detection score gauge
+    """
+    import itertools
+    import math
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+    import numpy as np
+    from pathlib import Path
+ 
+    # ── figure & axes ─────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(20, 10), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=17,
+                 color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
+    gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
+    axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]
+    _apply_dark_style(fig, axes)
+    ts_list = [s["t_start"] for s in segments]
+ 
+    # ── [0] Waveform + RMS ────────────────────────────────────────────────────
+    ax = axes[0]
+    if any("waveform" in s for s in segments):
+        wave = list(itertools.chain.from_iterable(
+            s.get("waveform", []) for s in segments))
+        t_w  = np.linspace(
+            0,
+            max(ts_list) + cfg.TARGET_DURATION if ts_list else 3.0,
+            len(wave),
+        )
+        ax.plot(t_w, wave, color=PLOT_STYLE["accent"], lw=0.6, alpha=0.7)
+    rms_vals = [s.get("rms_db", -60) for s in segments]
+    ax2 = ax.twinx()
+    ax2.plot(ts_list, rms_vals, "o-", color=PLOT_STYLE["warn"],
+             ms=4, lw=1.5, label="RMS dB")
+    ax2.tick_params(axis="y", colors=PLOT_STYLE["text"],
+                    labelcolor=PLOT_STYLE["text"])
+    ax2.yaxis.label.set_color(PLOT_STYLE["text"])
+    ax2.set_ylabel("RMS (dB)", color=PLOT_STYLE["text"])
+    for spine in ax2.spines.values():
+        spine.set_color(PLOT_STYLE["spine"])
+    ax.set_xlabel("Time (s)"); ax.set_ylabel("Amplitude")
+    ax.set_title("Waveform + RMS")
+ 
+    # ── [1] Mel spectrogram ───────────────────────────────────────────────────
+    ax = axes[1]
+    if any("mel" in s for s in segments):
+        mel_frames = np.concatenate(
+            [s["mel"] for s in segments if "mel" in s], axis=1)
+        ax.imshow(
+            mel_frames, aspect="auto", origin="lower", cmap="magma",
+            extent=[0, max(ts_list) + cfg.TARGET_DURATION if ts_list else 3.0,
+                    0, cfg.SR // 2 / 1000],
+        )
+        cbar = plt.colorbar(ax.images[0], ax=ax, label="dB")
+        _style_colorbar(cbar)
+    ax.set_xlabel("Time (s)"); ax.set_ylabel("Freq (kHz)")
+    ax.set_title("Mel Spectrogram")
+ 
+    # ── [2] Detection timeline ────────────────────────────────────────────────
+    ax   = axes[2]
+    prbs  = [s["prob"] for s in segments]
+    cnns  = [s.get("cnn_probability",       float("nan")) for s in segments]
+    heurs = [s.get("heuristic_probability", float("nan")) for s in segments]
+    cols  = [PLOT_STYLE["ok"] if s["detected"] else PLOT_STYLE["err"]
+             for s in segments]
+    ax.bar(ts_list, prbs, width=cfg.TARGET_DURATION * 0.8,
+           color=cols, alpha=0.55, label="Hybrid")
+    ax.fill_between(ts_list, prbs, alpha=0.15, color=PLOT_STYLE["text"])
+    if not all(math.isnan(v) for v in cnns):
+        ax.plot(ts_list, cnns,  "-o",  color=PLOT_STYLE["accent"],
+                ms=4, lw=1.5, label="CNN")
+    if not all(math.isnan(v) for v in heurs):
+        ax.plot(ts_list, heurs, "--s", color=PLOT_STYLE["purple"],
+                ms=4, lw=1.5, label="Heuristic")
+    ax.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["warn"],
+               lw=1.5, ls="--", label=f"Thr={cfg.DETECTION_THRESHOLD:.2f}")
+    ax.set_xlim(left=0); ax.set_ylim(0, 1.05)
+    ax.set_xlabel("Time (s)"); ax.set_ylabel("Probability")
+    ax.set_title("Detection Timeline")
+    leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"],
+                    edgecolor=PLOT_STYLE["spine"])
+    _style_legend(leg)
+ 
+    # ── [3] Localisation (x, y) scatter ───────────────────────────
+    _panel3_localisation(axes[3], segments, cfg, PLOT_STYLE)
+ 
+    # ── [4] Polar azimuth compass ──────────────────────────────────
+    _panel4_polar_compass(fig, gs, axes, segments, cfg, PLOT_STYLE)
+ 
+    # ── [5] Detection score gauge ─────────────────────────────────────────────
     ax = axes[5]
     all_probs   = [s["prob"] for s in segments]
     final_score = float(np.max(all_probs)) if all_probs else 0.0
     theta_range = np.linspace(np.pi, 0, 200)
     ax.set_xlim(-1.2, 1.2); ax.set_ylim(-0.1, 1.2)
-    ax.plot(np.cos(theta_range), np.sin(theta_range), lw=18, color=PLOT_STYLE["panel_alt"])
+    ax.plot(np.cos(theta_range), np.sin(theta_range),
+            lw=18, color=PLOT_STYLE["panel_alt"])
     fill_theta = np.linspace(np.pi, np.pi * (1 - final_score), 200)
-    col = PLOT_STYLE["ok"] if final_score >= cfg.DETECTION_THRESHOLD else PLOT_STYLE["err"]
+    col = (PLOT_STYLE["ok"] if final_score >= cfg.DETECTION_THRESHOLD
+           else PLOT_STYLE["err"])
     ax.plot(np.cos(fill_theta), np.sin(fill_theta), lw=18, color=col)
     needle = np.pi * (1 - final_score)
-    ax.annotate("", xy=(0.8 * np.cos(needle), 0.8 * np.sin(needle)), xytext=(0, 0),
-                arrowprops=dict(arrowstyle="-|>", color=PLOT_STYLE["text"], lw=2))
-    ax.text(0, -0.08, f"{final_score:.3f}", ha="center", fontsize=18, fontweight="bold", color=col)
-    ax.text(0, 0.6, "DRONE" if final_score >= cfg.DETECTION_THRESHOLD else "CLEAR",
+    ax.annotate(
+        "", xy=(0.8 * np.cos(needle), 0.8 * np.sin(needle)), xytext=(0, 0),
+        arrowprops=dict(arrowstyle="-|>", color=PLOT_STYLE["text"], lw=2),
+    )
+    ax.text(0, -0.08, f"{final_score:.3f}",
+            ha="center", fontsize=18, fontweight="bold", color=col)
+    ax.text(0, 0.6,
+            "DRONE" if final_score >= cfg.DETECTION_THRESHOLD else "CLEAR",
             ha="center", fontsize=12, color=col)
     ax.axis("off"); ax.set_title("Detection Score", color=PLOT_STYLE["text"])
-
+ 
+    # ── save ──────────────────────────────────────────────────────────────────
     cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
     save_path = cfg.DRIVE_PLOTS / f"analysis_{Path(title).stem}.png"
     plt.savefig(str(save_path), dpi=200, bbox_inches="tight")
     print(f"💾 Dashboard saved: {save_path}")
-    _show_inline(fig); plt.close(fig)
+    _show_inline(fig)
+    plt.close(fig)
 
 
 def _plot_external_detection_scores(
@@ -559,7 +776,7 @@ plot_kalman_trajectories = plot_track_trajectory
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Thesis figures
+# Figures
 # ══════════════════════════════════════════════════════════════════════════════
 
 # Hard-coded per-position results (from thesis_loc_report.json)
@@ -805,7 +1022,7 @@ def plot_polar_mae(save_path: Optional[Path] = None):
 
 
 def plot_all_thesis_figures(cfg: Optional[Config] = None):
-    """Generate and save all 7 thesis figures to cfg.DRIVE_PLOTS."""
+    """Generate and save all 7 figures to cfg.DRIVE_PLOTS."""
     cfg = cfg or config
     save_dir = Path(cfg.DRIVE_PLOTS)
     save_dir.mkdir(parents=True, exist_ok=True)
@@ -933,3 +1150,1574 @@ def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios
     plt.tight_layout()
     _save_plot(fig, cfg.DRIVE_PLOTS / "multidrone_position_map.png")
     _show_inline(fig); plt.close(fig)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Evaluation test plot functions
+# ─────────────────────────────────────────────────────────────────────────────
+"""
+Figure catalogue
+────────────────
+Fig A  Detection overview      — gauge + bar-chart of per-session probabilities
+Fig B  Detection breakdown      — detection-rate vs n_drones, noise_profile, drone_type
+Fig C  Azimuth polar compass    — predicted vs true rings, coloured by error magnitude
+Fig D  Predicted vs true az     — scatter with ±45° / ±90° error bands, identity line
+Fig E  Azimuth error histogram  — distribution with mean/median/random-baseline markers
+Fig F  Distance & height errors — paired violin + strip charts, error-vs-distance scatter
+Fig G  Per-session heatmap      — session × metric colour grid (suitable for appendix)
+Fig H  All-metrics summary      — MAE bar chart with uncertainty, radar chart overlay
+"""
+# ─────────────────────────────────────────────────────────────────────────────
+# Internal helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _finite(arr):
+    """Return numpy array of finite values from a list that may contain nan."""
+    return np.array([v for v in arr if v is not None and not math.isnan(v)],
+                    dtype=float)
+
+
+def _session_rows(results: Dict) -> List[Dict]:
+    """Extract per-session rows that have no 'error' key."""
+    return [r for r in results.get("sessions", []) if "error" not in r]
+
+
+def _labelled_rows(rows: List[Dict]) -> List[Dict]:
+    """Keep rows that have a finite az_err_deg."""
+    return [r for r in rows
+            if r.get("az_true_deg") is not None
+            and not math.isnan(r.get("az_err_deg", float("nan")))]
+
+
+def _group_by(rows: List[Dict], key: str) -> Dict[str, List[Dict]]:
+    out: Dict[str, List] = {}
+    for r in rows:
+        k = str(r.get(key, "unknown"))
+        out.setdefault(k, []).append(r)
+    return out
+
+
+def _angular_error(pred_deg: float, true_deg: float) -> float:
+    """Minimum angular distance on the circle [0, 180]."""
+    diff = abs(pred_deg - true_deg) % 360.0
+    return min(diff, 360.0 - diff)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure A — Detection overview
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_a_detection_overview(rows: List[Dict], cfg, title_prefix: str
+                               ) -> plt.Figure:
+    """Gauge + per-session probability bar chart."""
+    probs  = [r.get("probability", 0.0) for r in rows]
+    cnns   = [r.get("cnn_probability",  float("nan")) for r in rows]
+    heurs  = _finite([r.get("heuristic_probability", float("nan")) for r in rows])
+    dets   = [r.get("detected", False) for r in rows]
+    n      = len(rows)
+    thr    = cfg.DETECTION_THRESHOLD
+    det_rate = sum(dets) / max(n, 1)
+
+    fig = plt.figure(figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig A: Detection Overview",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    gs = gridspec.GridSpec(1, 4, figure=fig, wspace=0.38)
+    ax_bar  = fig.add_subplot(gs[0, :3])
+    ax_gauge = fig.add_subplot(gs[0, 3])
+    _apply_dark_style(fig, [ax_bar, ax_gauge])
+
+    # Per-session probability bars
+    xs   = np.arange(n)
+    cols = [PLOT_STYLE["ok"] if d else PLOT_STYLE["err"] for d in dets]
+    ax_bar.bar(xs, probs, color=cols, alpha=0.6, width=0.7, label="Hybrid prob")
+    cnn_finite = _finite(cnns)
+    if len(cnn_finite) == n:
+        ax_bar.plot(xs, cnns, "o-", color=PLOT_STYLE["accent"],
+                    ms=3, lw=1.2, label="CNN prob", zorder=5)
+    if len(heurs) == n:
+        ax_bar.plot(xs, heurs, "--s", color=PLOT_STYLE["purple"],
+                    ms=3, lw=1.2, label="Heuristic prob", zorder=5)
+    ax_bar.axhline(thr, color=PLOT_STYLE["warn"], lw=1.5, ls="--",
+                   label=f"Threshold ({thr:.2f})")
+    ax_bar.set_xlim(-0.8, n - 0.2)
+    ax_bar.set_ylim(0, 1.08)
+    ax_bar.set_xlabel("Session index")
+    ax_bar.set_ylabel("Detection probability")
+    ax_bar.set_title(f"Per-session probabilities  "
+                     f"(n={n}, detection rate={det_rate:.1%})")
+    det_patch   = mpatches.Patch(color=PLOT_STYLE["ok"],  label="Detected")
+    nodet_patch = mpatches.Patch(color=PLOT_STYLE["err"], label="Not detected")
+    leg = ax_bar.legend(handles=[det_patch, nodet_patch],
+                        facecolor=PLOT_STYLE["panel_alt"],
+                        edgecolor=PLOT_STYLE["spine"], fontsize=10)
+    _style_legend(leg)
+
+    # Detection rate gauge (semicircle)
+    theta_range = np.linspace(np.pi, 0, 300)
+    ax_gauge.set_xlim(-1.2, 1.2)
+    ax_gauge.set_ylim(-0.15, 1.25)
+    ax_gauge.plot(np.cos(theta_range), np.sin(theta_range),
+                  lw=20, color=PLOT_STYLE["panel_alt"], solid_capstyle="butt")
+    fill_theta = np.linspace(np.pi, np.pi * (1 - det_rate), 300)
+    gcol = PLOT_STYLE["ok"] if det_rate >= 0.7 else \
+           PLOT_STYLE["warn"] if det_rate >= 0.4 else PLOT_STYLE["err"]
+    ax_gauge.plot(np.cos(fill_theta), np.sin(fill_theta),
+                  lw=20, color=gcol, solid_capstyle="butt")
+    needle = np.pi * (1 - det_rate)
+    ax_gauge.annotate("",
+        xy=(0.78 * np.cos(needle), 0.78 * np.sin(needle)),
+        xytext=(0, 0),
+        arrowprops=dict(arrowstyle="-|>", color=PLOT_STYLE["text"], lw=2.0))
+    ax_gauge.text(0, -0.10, f"{det_rate:.1%}", ha="center",
+                  fontsize=20, fontweight="bold", color=gcol)
+    ax_gauge.text(0, 0.55, "Detection\nRate", ha="center",
+                  fontsize=11, color=PLOT_STYLE["text_soft"])
+    ax_gauge.axis("off")
+    ax_gauge.set_title("Overall rate", color=PLOT_STYLE["text"])
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure B — Detection breakdown
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_b_detection_breakdown(rows: List[Dict], cfg, title_prefix: str
+                                ) -> plt.Figure:
+    """
+    Detection rate grouped by n_drones, noise_profile, and drone_type.
+    Falls back gracefully if those fields aren't present in the result rows.
+    """
+    def _det_rate_groups(grouped):
+        keys, rates, counts = [], [], []
+        for k, grp in sorted(grouped.items()):
+            r = sum(1 for r in grp if r.get("detected")) / max(len(grp), 1)
+            keys.append(k); rates.append(r); counts.append(len(grp))
+        return keys, rates, counts
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig B: Detection Rate Breakdown",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    _apply_dark_style(fig, list(axes))
+
+    panel_specs = [
+        ("n_drones",      "Drone count",    PLOT_STYLE["accent"]),
+        ("noise_profile", "Noise profile",  PLOT_STYLE["purple"]),
+        ("drone_type",    "Drone type",     PLOT_STYLE["ok"]),
+    ]
+
+    for ax, (field, xlabel, col) in zip(axes, panel_specs):
+        # Extract field from session metadata if not directly in result rows.
+        # run_test_dataset_evaluation() does not forward metadata fields, so we
+        # attempt a best-effort lookup; panels with no data show a notice.
+        has_field = any(field in r for r in rows)
+        if not has_field:
+            ax.text(0.5, 0.5,
+                    f"'{field}' not in\nevaluation results\n"
+                    f"(add to save_csv columns)",
+                    ha="center", va="center",
+                    color=PLOT_STYLE["muted"], fontsize=10,
+                    transform=ax.transAxes)
+            ax.set_title(xlabel)
+            continue
+
+        grouped = _group_by(rows, field)
+        keys, rates, counts = _det_rate_groups(grouped)
+        xs = np.arange(len(keys))
+        bar_cols = [PLOT_STYLE["ok"] if r >= 0.7 else
+                    PLOT_STYLE["warn"] if r >= 0.4 else
+                    PLOT_STYLE["err"] for r in rates]
+        bars = ax.bar(xs, rates, color=bar_cols, alpha=0.82, width=0.55,
+                      edgecolor=PLOT_STYLE["spine"], linewidth=0.6)
+        ax.axhline(0.5, color=PLOT_STYLE["muted"], ls=":", lw=1.0)
+        for b, c in zip(bars, counts):
+            ax.text(b.get_x() + b.get_width() / 2,
+                    b.get_height() + 0.02,
+                    f"n={c}", ha="center", fontsize=9,
+                    color=PLOT_STYLE["text_soft"])
+        ax.set_xticks(xs)
+        ax.set_xticklabels(keys, rotation=20, ha="right", fontsize=10)
+        ax.set_ylim(0, 1.18)
+        ax.set_ylabel("Detection rate")
+        ax.set_title(f"by {xlabel}")
+        ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure C — Azimuth polar compass
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
+                          ) -> plt.Figure:
+    """
+    Two concentric rose plots: predicted azimuths (outer, blue) and true
+    azimuths (inner, orange).  Bars are coloured by angular error magnitude.
+    """
+    pred_az = np.array([r["az_pred_deg"] for r in lab_rows])
+    true_az = np.array([r["az_true_deg"] for r in lab_rows])
+    errors  = np.array([r["az_err_deg"]  for r in lab_rows])
+
+    fig = plt.figure(figsize=(8, 8), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig C: Azimuth Polar Compass",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    ax = fig.add_subplot(111, projection="polar")
+    ax.set_facecolor(PLOT_STYLE["panel"])
+    ax.tick_params(colors=PLOT_STYLE["text"])
+
+    bins = 36
+    edges = np.linspace(-np.pi, np.pi, bins + 1)
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    width = edges[1] - edges[0]
+
+    # True azimuths — light fill
+    true_rads = np.radians(90.0 - true_az)
+    t_counts, _ = np.histogram(true_rads, bins=edges)
+    ax.bar(centers, t_counts, width=width, alpha=0.35,
+           color=PLOT_STYLE["warn"], edgecolor=PLOT_STYLE["bg"], label="True")
+
+    # Predicted azimuths — coloured by mean error in that bin
+    pred_rads = np.radians(90.0 - pred_az)
+    p_counts, _ = np.histogram(pred_rads, bins=edges)
+    for i, (c, cnt) in enumerate(zip(centers, p_counts)):
+        if cnt == 0:
+            continue
+        mask = (pred_rads >= edges[i]) & (pred_rads < edges[i + 1])
+        mean_err = float(np.mean(errors[mask])) if mask.any() else 0.0
+        bcol = C_GOOD if mean_err < 30 else C_MOD if mean_err < 60 else C_POOR
+        ax.bar(c, cnt, width=width, alpha=0.75,
+               color=bcol, edgecolor=PLOT_STYLE["bg"])
+
+    ax.set_theta_zero_location("N")
+    ax.set_theta_direction(-1)
+    ax.set_title("Predicted (colour=error) vs True (orange)",
+                 color=PLOT_STYLE["text"], pad=14)
+    ax.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+
+    legend_handles = [
+        mpatches.Patch(color=PLOT_STYLE["warn"], alpha=0.45, label="True azimuth"),
+        mpatches.Patch(color=C_GOOD,  label="Predicted — good (<30°)"),
+        mpatches.Patch(color=C_MOD,   label="Predicted — moderate (30–60°)"),
+        mpatches.Patch(color=C_POOR,  label="Predicted — poor (>60°)"),
+    ]
+    leg = ax.legend(handles=legend_handles,
+                    loc="lower left", bbox_to_anchor=(-0.18, -0.14),
+                    facecolor=PLOT_STYLE["panel_alt"],
+                    edgecolor=PLOT_STYLE["spine"], fontsize=10)
+    _style_legend(leg)
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure D — Predicted vs true azimuth scatter
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_d_pred_vs_true(lab_rows: List[Dict], cfg, title_prefix: str
+                         ) -> plt.Figure:
+    """
+    Scatter of predicted vs true azimuth with ±45° and ±90° error bands.
+    Points are coloured by angular error magnitude and sized by distance.
+    """
+    pred_az  = np.array([r["az_pred_deg"] for r in lab_rows])
+    true_az  = np.array([r["az_true_deg"] for r in lab_rows])
+    errors   = np.array([r["az_err_deg"]  for r in lab_rows])
+    dists    = _finite([r.get("dist_pred_m", float("nan")) for r in lab_rows])
+    if len(dists) != len(lab_rows):
+        dists = np.ones(len(lab_rows)) * 8.0
+
+    fig, ax = plt.subplots(figsize=(8, 8), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig D: Predicted vs True Azimuth",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    _apply_dark_style(fig, [ax])
+
+    # Error band fills
+    t = np.linspace(-180, 180, 500)
+    ax.fill_between(t, t - 90, t + 90, alpha=0.06,
+                    color=PLOT_STYLE["err"], label="±90° band")
+    ax.fill_between(t, t - 45, t + 45, alpha=0.09,
+                    color=PLOT_STYLE["warn"], label="±45° band")
+    ax.fill_between(t, t - 15, t + 15, alpha=0.10,
+                    color=PLOT_STYLE["ok"], label="±15° band")
+
+    # Identity line
+    ax.plot([-185, 185], [-185, 185], color=PLOT_STYLE["grid"],
+            lw=1.2, ls="--", label="Perfect prediction", zorder=2)
+
+    # Scatter: size ∝ distance, colour ∝ error
+    pt_cols = [C_GOOD if e < 30 else C_MOD if e < 60 else C_POOR
+               for e in errors]
+    sz = np.clip(20 + dists * 3, 20, 120)
+    sc = ax.scatter(true_az, pred_az, c=pt_cols, s=sz,
+                    alpha=0.78, edgecolors="white",
+                    linewidths=0.4, zorder=5)
+
+    mae = float(np.mean(errors))
+    ax.text(0.03, 0.97,
+            f"MAE = {mae:.1f}°\nn = {len(lab_rows)}",
+            transform=ax.transAxes, va="top", fontsize=12,
+            color=PLOT_STYLE["text"],
+            bbox=dict(facecolor=PLOT_STYLE["panel_alt"],
+                      edgecolor=PLOT_STYLE["spine"],
+                      boxstyle="round,pad=0.4"))
+
+    ax.set_xlim(-185, 185)
+    ax.set_ylim(-185, 185)
+    ax.set_xticks(range(-180, 181, 45))
+    ax.set_yticks(range(-180, 181, 45))
+    ax.set_xlabel("True azimuth (°)")
+    ax.set_ylabel("Predicted azimuth (°)")
+    ax.set_aspect("equal")
+
+    legend_handles = [
+        mpatches.Patch(color=C_GOOD, label="Error < 30°"),
+        mpatches.Patch(color=C_MOD,  label="Error 30–60°"),
+        mpatches.Patch(color=C_POOR, label="Error > 60°"),
+        plt.Line2D([0], [0], color=PLOT_STYLE["grid"],
+                   ls="--", lw=1.2, label="Perfect prediction"),
+    ]
+    leg = ax.legend(handles=legend_handles,
+                    facecolor=PLOT_STYLE["panel_alt"],
+                    edgecolor=PLOT_STYLE["spine"], fontsize=10)
+    _style_legend(leg)
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure E — Azimuth error histogram
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_e_az_histogram(lab_rows: List[Dict], cfg, title_prefix: str
+                         ) -> plt.Figure:
+    """
+    Histogram of azimuth errors with mean / median / random-baseline markers
+    and a cumulative percentage overlay.
+    """
+    errors = np.array([r["az_err_deg"] for r in lab_rows])
+    bins   = np.arange(0, 182, 10)
+
+    fig, ax1 = plt.subplots(figsize=(10, 5), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig E: Azimuth Error Distribution",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    _apply_dark_style(fig, [ax1])
+
+    counts, edges, patches = ax1.hist(
+        errors, bins=bins, color=C_PURPLE,
+        edgecolor=PLOT_STYLE["bg"], linewidth=0.5, alpha=0.85, zorder=3)
+
+    # Colour bars by error magnitude
+    for patch, left in zip(patches, edges[:-1]):
+        patch.set_facecolor(
+            C_GOOD if left < 30 else C_MOD if left < 60 else C_POOR)
+        patch.set_alpha(0.80)
+
+    mean_e   = float(np.mean(errors))
+    median_e = float(np.median(errors))
+    pct_good = float(np.mean(errors < 30) * 100)
+    pct_mod  = float(np.mean(errors < 60) * 100)
+
+    ax1.axvline(mean_e,   color=C_TEST, lw=2.0, ls="--",
+                label=f"Mean {mean_e:.1f}°", zorder=5)
+    ax1.axvline(median_e, color=C_VAL,  lw=2.0, ls="-.",
+                label=f"Median {median_e:.1f}°", zorder=5)
+    ax1.axvline(90,       color=C_RANDOM, lw=1.2, ls=":",
+                label="Random baseline (90°)", zorder=5)
+
+    # Cumulative overlay on twin axis
+    ax2 = ax1.twinx()
+    sorted_e = np.sort(errors)
+    cum_pct  = np.arange(1, len(sorted_e) + 1) / len(sorted_e) * 100
+    ax2.plot(sorted_e, cum_pct, color=PLOT_STYLE["accent"],
+             lw=2.0, ls="-", label="Cumulative %")
+    ax2.axhline(50, color=PLOT_STYLE["grid"], lw=0.8, ls=":")
+    ax2.set_ylabel("Cumulative %", color=PLOT_STYLE["accent"])
+    ax2.tick_params(axis="y", colors=PLOT_STYLE["accent"])
+    ax2.set_ylim(0, 105)
+    for spine in ax2.spines.values():
+        spine.set_color(PLOT_STYLE["spine"])
+
+    ax1.set_xlabel("Azimuth error (°)")
+    ax1.set_ylabel("Number of sessions")
+    ax1.set_xlim(0, 180)
+
+    # Annotation box
+    info = (f"n = {len(errors)}\n"
+            f"<30° : {pct_good:.0f}%\n"
+            f"<60° : {pct_mod:.0f}%")
+    ax1.text(0.98, 0.96, info, transform=ax1.transAxes,
+             va="top", ha="right", fontsize=11,
+             color=PLOT_STYLE["text"],
+             bbox=dict(facecolor=PLOT_STYLE["panel_alt"],
+                       edgecolor=PLOT_STYLE["spine"],
+                       boxstyle="round,pad=0.4"))
+
+    leg = ax1.legend(facecolor=PLOT_STYLE["panel_alt"],
+                     edgecolor=PLOT_STYLE["spine"], fontsize=10)
+    _style_legend(leg)
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure F — Distance & height error analysis
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_f_dist_height(lab_rows: List[Dict], cfg, title_prefix: str
+                        ) -> plt.Figure:
+    """
+    3-panel: distance error violin, height error violin,
+    and distance error vs true distance scatter.
+    """
+    dist_errs = _finite([r.get("dist_err_m",  float("nan")) for r in lab_rows])
+    ht_errs   = _finite([r.get("ht_err_m",    float("nan")) for r in lab_rows])
+    dist_true = _finite([r.get("dist_true_m", float("nan")) for r in lab_rows])
+
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig F: Distance & Height Error Analysis",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    _apply_dark_style(fig, list(axes))
+
+    # Helper: violin + strip
+    def _violin_strip(ax, data, col, ylabel, title):
+        if len(data) < 4:
+            ax.text(0.5, 0.5, "Insufficient data", ha="center", va="center",
+                    color=PLOT_STYLE["muted"], transform=ax.transAxes)
+            ax.set_title(title)
+            return
+        parts = ax.violinplot([data], positions=[0], showmedians=True,
+                              showextrema=True)
+        for pc in parts["bodies"]:
+            pc.set_facecolor(col); pc.set_alpha(0.55)
+        for key in ("cmedians", "cmins", "cmaxes", "cbars"):
+            if key in parts:
+                parts[key].set_color(PLOT_STYLE["text"])
+        jitter = np.random.default_rng(0).uniform(-0.08, 0.08, len(data))
+        ax.scatter(jitter, data, color=col, s=18, alpha=0.55,
+                   edgecolors="white", linewidths=0.3, zorder=4)
+        mae = float(np.mean(data))
+        ax.text(0.97, 0.97, f"MAE = {mae:.2f}\nn = {len(data)}",
+                transform=ax.transAxes, ha="right", va="top", fontsize=11,
+                color=PLOT_STYLE["text"],
+                bbox=dict(facecolor=PLOT_STYLE["panel_alt"],
+                          edgecolor=PLOT_STYLE["spine"],
+                          boxstyle="round,pad=0.3"))
+        ax.set_xticks([]); ax.set_ylabel(ylabel); ax.set_title(title)
+
+    _violin_strip(axes[0], dist_errs, PLOT_STYLE["accent"],
+                  "Error (m)", "Distance MAE distribution")
+    _violin_strip(axes[1], ht_errs,   PLOT_STYLE["purple"],
+                  "Error (m)", "Height MAE distribution")
+
+    # Error vs true distance scatter
+    ax = axes[2]
+    if len(dist_errs) == len(dist_true) and len(dist_true) > 0:
+        ax.scatter(dist_true, dist_errs,
+                   color=PLOT_STYLE["accent"], s=30, alpha=0.65,
+                   edgecolors="white", linewidths=0.3, zorder=4)
+        # Trend line
+        if len(dist_true) >= 3:
+            try:
+                z = np.polyfit(dist_true, dist_errs, 1)
+                p = np.poly1d(z)
+                xs = np.linspace(dist_true.min(), dist_true.max(), 200)
+                ax.plot(xs, p(xs), color=PLOT_STYLE["warn"],
+                        lw=1.8, ls="--", label=f"Trend (slope={z[0]:.3f})")
+                leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"],
+                                edgecolor=PLOT_STYLE["spine"], fontsize=10)
+                _style_legend(leg)
+            except Exception:
+                pass
+        ax.set_xlabel("True distance (m)")
+        ax.set_ylabel("Distance error (m)")
+        ax.set_title("Distance error vs true distance")
+    else:
+        ax.text(0.5, 0.5, "Insufficient data", ha="center", va="center",
+                color=PLOT_STYLE["muted"], transform=ax.transAxes)
+        ax.set_title("Distance error vs true distance")
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure G — Per-session heatmap
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_g_session_heatmap(lab_rows: List[Dict], cfg, title_prefix: str,
+                            max_sessions: int = 60) -> plt.Figure:
+    """
+    Session × metric colour grid.  Useful as a thesis appendix figure.
+    Rows are sessions; columns are: detected, probability, az_err, dist_err, ht_err.
+    """
+    rows = lab_rows[:max_sessions]
+    n    = len(rows)
+
+    metrics = ["detected", "probability", "az_err_deg", "dist_err_m", "ht_err_m"]
+    labels  = ["Detected", "Prob", "Az err (°)", "Dist err (m)", "Ht err (m)"]
+    cmaps   = ["RdYlGn", "Blues", "RdYlGn_r", "RdYlGn_r", "RdYlGn_r"]
+    vmins   = [0, 0, 0, 0, 0]
+    vmaxes  = [1, 1, 180, 20, 15]
+
+    grid = np.zeros((n, len(metrics)))
+    for i, r in enumerate(rows):
+        grid[i, 0] = 1.0 if r.get("detected") else 0.0
+        grid[i, 1] = float(r.get("probability", 0.0))
+        grid[i, 2] = float(r.get("az_err_deg",  180.0))
+        grid[i, 3] = float(r.get("dist_err_m",  20.0))
+        grid[i, 4] = float(r.get("ht_err_m",    15.0))
+
+    fig_h = max(5, n * 0.22)
+    fig, axes = plt.subplots(1, len(metrics),
+                              figsize=(len(metrics) * 2.2, fig_h),
+                              facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig G: Per-session Metric Heatmap",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+
+    for col_idx, (ax, met, lbl, cmap, vmin, vmax) in enumerate(
+            zip(axes, metrics, labels, cmaps, vmins, vmaxes)):
+        ax.set_facecolor(PLOT_STYLE["panel"])
+        im = ax.imshow(grid[:, col_idx:col_idx+1],
+                       aspect="auto", cmap=cmap,
+                       vmin=vmin, vmax=vmax,
+                       interpolation="nearest")
+        cb = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.08)
+        _style_colorbar(cb)
+        ax.set_xticks([0])
+        ax.set_xticklabels([lbl], rotation=30, ha="right", fontsize=9,
+                            color=PLOT_STYLE["text"])
+        ax.set_yticks(range(n))
+        if col_idx == 0:
+            sid_labels = [r.get("session_id", str(i))[-16:]
+                          for i, r in enumerate(rows)]
+            ax.set_yticklabels(sid_labels, fontsize=6,
+                               color=PLOT_STYLE["text"])
+        else:
+            ax.set_yticklabels([])
+        for spine in ax.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Figure H — All-metrics summary + radar
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fig_h_summary(results: Dict, lab_rows: List[Dict],
+                   cfg, title_prefix: str) -> plt.Figure:
+    """
+    Left: MAE bar chart for az / dist / ht with ±1-std error bars.
+    Right: Spider/radar chart comparing detection rate + normalised MAEs.
+    """
+    az_errs   = _finite([r.get("az_err_deg",  float("nan")) for r in lab_rows])
+    dist_errs = _finite([r.get("dist_err_m",  float("nan")) for r in lab_rows])
+    ht_errs   = _finite([r.get("ht_err_m",    float("nan")) for r in lab_rows])
+    det_rate  = float(results.get("detection_rate", 0.0))
+
+    mae_az   = float(np.mean(az_errs))   if len(az_errs)   else float("nan")
+    mae_dist = float(np.mean(dist_errs)) if len(dist_errs) else float("nan")
+    mae_ht   = float(np.mean(ht_errs))   if len(ht_errs)   else float("nan")
+    std_az   = float(np.std(az_errs))    if len(az_errs)   else 0.0
+    std_dist = float(np.std(dist_errs))  if len(dist_errs) else 0.0
+    std_ht   = float(np.std(ht_errs))    if len(ht_errs)   else 0.0
+
+    fig = plt.figure(figsize=(14, 6), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"{title_prefix} — Fig H: All-Metrics Summary",
+                 fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
+    gs   = gridspec.GridSpec(1, 2, figure=fig, wspace=0.38)
+    ax_bar = fig.add_subplot(gs[0, 0])
+    ax_rad = fig.add_subplot(gs[0, 1], projection="polar")
+    _apply_dark_style(fig, [ax_bar])
+    ax_rad.set_facecolor(PLOT_STYLE["panel"])
+
+    # — Bar chart —
+    bar_labels = ["Azimuth MAE (°)", "Distance MAE (m)", "Height MAE (m)"]
+    bar_vals   = [mae_az,   mae_dist,  mae_ht]
+    bar_stds   = [std_az,   std_dist,  std_ht]
+    bar_cols   = [_mae_color(mae_az), PLOT_STYLE["accent"], PLOT_STYLE["purple"]]
+    xs = np.arange(3)
+    bar_objs = ax_bar.bar(xs, bar_vals, yerr=bar_stds, capsize=6,
+                           color=bar_cols, alpha=0.82, width=0.5,
+                           error_kw=dict(ecolor=PLOT_STYLE["text"],
+                                         elinewidth=1.5))
+    for b, v, s in zip(bar_objs, bar_vals, bar_stds):
+        if not math.isnan(v):
+            ax_bar.text(b.get_x() + b.get_width() / 2,
+                        v + s + max(v * 0.02, 0.5),
+                        f"{v:.2f}", ha="center", fontsize=11,
+                        color=PLOT_STYLE["text"])
+    ax_bar.set_xticks(xs)
+    ax_bar.set_xticklabels(bar_labels, rotation=15, ha="right", fontsize=10)
+    ax_bar.set_ylabel("Mean Absolute Error")
+    ax_bar.set_title(f"MAE summary  (n={len(az_errs)} labelled sessions)")
+
+    # — Radar chart —
+    # Axes: Detection rate, Az accuracy (inverted MAE), Dist accuracy, Ht accuracy
+    radar_labels = ["Detection\nrate", "Az accuracy\n(1−MAE/90)", 
+                    "Dist accuracy\n(1−MAE/20)", "Ht accuracy\n(1−MAE/15)"]
+    radar_vals = [
+        det_rate,
+        max(0.0, 1.0 - mae_az   / 90.0)  if not math.isnan(mae_az)   else 0.0,
+        max(0.0, 1.0 - mae_dist / 20.0)  if not math.isnan(mae_dist) else 0.0,
+        max(0.0, 1.0 - mae_ht   / 15.0)  if not math.isnan(mae_ht)   else 0.0,
+    ]
+    n_rad  = len(radar_labels)
+    angles = np.linspace(0, 2 * np.pi, n_rad, endpoint=False).tolist()
+    vals_c = radar_vals + [radar_vals[0]]
+    angs_c = angles     + [angles[0]]
+
+    ax_rad.set_theta_offset(np.pi / 2)
+    ax_rad.set_theta_direction(-1)
+    ax_rad.plot(angs_c, vals_c, color=PLOT_STYLE["accent"], lw=2.0)
+    ax_rad.fill(angles, radar_vals, color=PLOT_STYLE["accent"], alpha=0.22)
+    # Reference circle at 0.5
+    ref_angs = np.linspace(0, 2 * np.pi, 200)
+    ax_rad.plot(ref_angs, [0.5] * 200, color=C_RANDOM, lw=0.8, ls="--")
+
+    ax_rad.set_xticks(angles)
+    ax_rad.set_xticklabels(radar_labels, fontsize=9, color=PLOT_STYLE["text"])
+    ax_rad.set_yticks([0.25, 0.50, 0.75, 1.00])
+    ax_rad.set_yticklabels(["0.25", "0.50", "0.75", "1.00"],
+                            fontsize=8, color=PLOT_STYLE["text_soft"])
+    ax_rad.set_ylim(0, 1)
+    ax_rad.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+    ax_rad.tick_params(colors=PLOT_STYLE["text"])
+    ax_rad.set_title("Performance radar\n(higher = better)",
+                     color=PLOT_STYLE["text"], pad=14)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.93])
+    return fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Public entry-point
+# ─────────────────────────────────────────────────────────────────────────────
+
+def plot_test_evaluation_thesis(
+    results: Dict,
+    cfg=None,
+    save_dir: Optional[str] = None,
+    suite_name: str = "test",
+    show: bool = True,
+    dpi: int = 200,
+) -> Dict[str, Path]:
+    """
+    Generate all 8 figures from the dict returned by
+    run_test_dataset_evaluation().
+
+    Parameters
+    ──────────
+    results     : dict returned by run_test_dataset_evaluation()
+    cfg         : Config instance (uses global config if None)
+    save_dir    : directory to save PNGs (uses cfg.DRIVE_PLOTS if None)
+    suite_name  : label used in figure titles and saved file names
+    show        : call _show_inline() for each figure (useful in notebooks)
+    dpi         : output resolution
+
+    Returns
+    ───────
+    dict  {figure_label: Path}   e.g. {"fig_a": Path("/…/test_fig_a.png"), …}
+
+    Example
+    ───────
+    results = run_test_dataset_evaluation(test_ds, config,
+                  save_csv="results.csv")
+    figs = plot_test_evaluation_thesis(results, config,
+               save_dir="/content/thesis/", suite_name="single_drone")
+    """
+    from .config import config as _global_config
+    cfg = cfg or _global_config
+
+    out_dir = Path(save_dir) if save_dir else Path(cfg.DRIVE_PLOTS)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    title_prefix = suite_name.replace("_", " ").title()
+    all_rows = _session_rows(results)
+    lab_rows = _labelled_rows(all_rows)
+
+    n_total   = len(all_rows)
+    n_lab     = len(lab_rows)
+    n_det     = sum(1 for r in all_rows if r.get("detected"))
+
+    print(f"\n{'='*65}")
+    print(f"  Figure: {title_prefix}")
+    print(f"  Sessions: {n_total}  |  Labelled: {n_lab}  |  Detected: {n_det}")
+    print(f"  Output:   {out_dir}")
+    print(f"{'='*65}")
+
+    saved: Dict[str, Path] = {}
+
+    def _render(label: str, fig_fn, *args, **kwargs):
+        tag = f"  [{label}]"
+        try:
+            fig = fig_fn(*args, **kwargs)
+            fname = out_dir / f"{suite_name}_{label}.png"
+            fig.savefig(str(fname), dpi=dpi, bbox_inches="tight",
+                        facecolor=fig.get_facecolor())
+            print(f"{tag}  saved → {fname.name}")
+            saved[label] = fname
+            if show:
+                _show_inline(fig)
+            plt.close(fig)
+        except Exception as exc:
+            print(f"{tag}  ⚠️  skipped ({exc})")
+
+    _render("fig_a", _fig_a_detection_overview,
+            all_rows, cfg, title_prefix)
+
+    _render("fig_b", _fig_b_detection_breakdown,
+            all_rows, cfg, title_prefix)
+
+    if n_lab >= 3:
+        _render("fig_c", _fig_c_polar_compass,
+                lab_rows, cfg, title_prefix)
+        _render("fig_d", _fig_d_pred_vs_true,
+                lab_rows, cfg, title_prefix)
+        _render("fig_e", _fig_e_az_histogram,
+                lab_rows, cfg, title_prefix)
+        _render("fig_f", _fig_f_dist_height,
+                lab_rows, cfg, title_prefix)
+        _render("fig_g", _fig_g_session_heatmap,
+                lab_rows, cfg, title_prefix)
+        _render("fig_h", _fig_h_summary,
+                results, lab_rows, cfg, title_prefix)
+    else:
+        print(f"  ⚠️  Only {n_lab} labelled sessions — "
+              f"skipping figs C–H (need ≥ 3).")
+
+    print(f"\n  ✅  {len(saved)} figure(s) saved to {out_dir}\n")
+    return saved
+
+def create_comparison_plot(
+    simulated_positions: List[tuple[float, float]],
+    detected_drones: List[dict],
+    audio_files: List[str],
+    fundamentals: List[Optional[float]],
+    cfg: Optional[Config] = None,
+):
+    """
+    Create a comparison plot showing simulated vs detected positions.
+    This complements the existing visualization functions.
+    """
+    cfg = cfg or config
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    _apply_dark_style(fig, [ax])
+    
+    # Plot microphone array
+    mics = cfg.MIC_POSITIONS
+    ax.scatter(mics[:, 0], mics[:, 1], marker='^', s=200, 
+               c=PLOT_STYLE['warn'], zorder=10, label='Microphone Array')
+    
+    # Annotate microphones
+    for i, mic in enumerate(mics):
+        ax.annotate(f'Mic {i+1}', mic, xytext=(5, 5), textcoords='offset points',
+                   fontsize=10, color=PLOT_STYLE['text'])
+    
+    # Plot simulated positions
+    sim_x = [p[0] for p in simulated_positions]
+    sim_y = [p[1] for p in simulated_positions]
+    sim_scatter = ax.scatter(sim_x, sim_y, marker='o', s=300, 
+                            c=PLOT_STYLE['ok'], label='Simulated Positions',
+                            alpha=0.7, zorder=5, edgecolors='white', linewidths=2)
+    
+    # Plot detected positions
+    if detected_drones:
+        det_x = [d['xy_position'][0] for d in detected_drones]
+        det_y = [d['xy_position'][1] for d in detected_drones]
+        det_scatter = ax.scatter(det_x, det_y, marker='X', s=300, 
+                                c=PLOT_STYLE['accent'], label='Detected Positions',
+                                zorder=8, edgecolors='white', linewidths=2)
+        
+        # Draw lines between simulated and detected
+        for i, (sim_pos, det_pos) in enumerate(zip(simulated_positions, detected_drones)):
+            det_xy = det_pos['xy_position']
+            error = np.linalg.norm(np.array(det_xy) - np.array(sim_pos))
+            
+            # Draw arrow
+            ax.annotate('', xy=(det_xy[0], det_xy[1]), xytext=(sim_pos[0], sim_pos[1]),
+                       arrowprops=dict(arrowstyle='->', color=PLOT_STYLE['err'], 
+                                     lw=2, alpha=0.6))
+            
+            # Add error label at midpoint
+            mid_x = (sim_pos[0] + det_xy[0]) / 2
+            mid_y = (sim_pos[1] + det_xy[1]) / 2
+            ax.text(mid_x, mid_y, f'error={error:.1f}m', 
+                   fontsize=10, color=PLOT_STYLE['err'], 
+                   ha='center', va='center',
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor=PLOT_STYLE['bg'], alpha=0.8))
+    
+    # Add labels for drones
+    for i, (sim_pos, file_path, fund) in enumerate(zip(simulated_positions, audio_files, fundamentals)):
+        label = f"Drone {i+1}\n{Path(file_path).name[:20]}"
+        if fund:
+            label += f"\n{fund:.0f}Hz"
+        ax.annotate(label, sim_pos, xytext=(10, 10), textcoords='offset points',
+                   fontsize=9, color=PLOT_STYLE['text'],
+                   bbox=dict(boxstyle='round,pad=0.3', facecolor=PLOT_STYLE['panel_alt'], alpha=0.8))
+    
+    ax.set_xlabel('X (m)', fontsize=12)
+    ax.set_ylabel('Y (m)', fontsize=12)
+    ax.set_title('Multi-Drone Localization: Simulated vs Detected Positions', 
+                fontsize=14, fontweight='bold')
+    ax.legend(loc='upper right', fontsize=11)
+    ax.grid(True, alpha=0.3)
+    ax.set_aspect('equal')
+    
+    # Set axis limits with padding
+    all_x = list(mics[:, 0]) + sim_x + ([d['xy_position'][0] for d in detected_drones] if detected_drones else [])
+    all_y = list(mics[:, 1]) + sim_y + ([d['xy_position'][1] for d in detected_drones] if detected_drones else [])
+    if all_x and all_y:
+        padding = 2.0
+        ax.set_xlim(min(all_x) - padding, max(all_x) + padding)
+        ax.set_ylim(min(all_y) - padding, max(all_y) + padding)
+    
+    plt.tight_layout()
+    
+    # Save the figure
+    save_path = cfg.DRIVE_PLOTS / "multi_drone_comparison.png"
+    _save_plot(fig, save_path)
+    _show_inline(fig)
+    plt.close(fig)
+
+# Combined three channel analysis function plots
+# ═════════════════════════════════════════════════════════════════════════════
+# Figure 1 — Per-channel enhanced dashboard
+# ═════════════════════════════════════════════════════════════════════════════
+
+def plot_per_channel_enhanced(
+    per_file_results: list,
+    cfg=None,
+    save: bool = True,
+):
+    """
+    Per-channel analysis dashboard.
+
+    Layout (4 rows × 3 cols = 12 panels):
+      Row 0:  Detection timeline  ×3  (one per mic, shared y-axis)
+      Row 1:  Localisation (x,y)  ×3  (colour = confidence, same colour scale)
+      Row 2:  Cross-channel RMS comparison  |  Azimuth agreement  |  Track legend
+      Row 3:  Segment table spanning full width
+
+    Parameters
+    ──────────
+    per_file_results : list of dicts as produced by comprehensive_pipeline_test()
+                       Each dict must have keys: wav_path, mic_label, segments,
+                       confirmed (list of KalmanTrack objects).
+    cfg              : Config (uses global config if None)
+    save             : write PNG to cfg.DRIVE_PLOTS
+    """
+    from .config import config as _cfg
+    cfg = cfg or _cfg
+
+    n_ch = len(per_file_results)           # should be 3
+    if n_ch == 0:
+        return
+
+    # ── Collect shared quantities ─────────────────────────────────────────
+    # Flatten all segments from all channels for the table and cross-channel metrics
+    n_segs = max(len(r["segments"]) for r in per_file_results)
+    seg_data = []   # list of dicts {seg, t, ch0, ch1, ch2}  per segment index
+    for seg_i in range(n_segs):
+        row = {"seg": seg_i + 1, "t": None}
+        for ch_i, r in enumerate(per_file_results):
+            segs = r["segments"]
+            if seg_i < len(segs):
+                s = segs[seg_i]
+                row[f"prob_ch{ch_i}"]  = s.get("prob", float("nan"))
+                row[f"cnn_ch{ch_i}"]   = s.get("cnn_probability", float("nan"))
+                row[f"rms_ch{ch_i}"]   = s.get("rms_db", float("nan"))
+                row[f"az_ch{ch_i}"]    = (s["loc"]["azimuth_deg"]
+                                           if s.get("loc") else float("nan"))
+                if row["t"] is None:
+                    row["t"] = s.get("t_start", seg_i * cfg.TARGET_DURATION)
+            else:
+                for key in (f"prob_ch{ch_i}", f"cnn_ch{ch_i}",
+                             f"rms_ch{ch_i}", f"az_ch{ch_i}"):
+                    row[key] = float("nan")
+        seg_data.append(row)
+
+    # ── Global track-ID map:  re-number all confirmed tracks continuously ─
+    # so Track #6 / #9 / #12 from separate per-file trackers become #1, #2 …
+    global_tracks = []
+    for r in per_file_results:
+        global_tracks.extend(r.get("confirmed", []))
+    track_id_map = {t.track_id: i + 1 for i, t in enumerate(global_tracks)}
+
+    # ── Figure ────────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(22, 20), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(
+        "Per-Channel Analysis",
+        fontsize=18, color=PLOT_STYLE["accent"], fontweight="bold", y=0.995,
+    )
+
+    gs_outer = gridspec.GridSpec(
+        4, 1, figure=fig,
+        height_ratios=[3.0, 3.0, 2.5, 3.5],
+        hspace=0.52,
+    )
+
+    # Row 0 — Detection timelines
+    gs_row0 = gridspec.GridSpecFromSubplotSpec(1, n_ch, subplot_spec=gs_outer[0],
+                                               wspace=0.30)
+    # Row 1 — Localisation scatter
+    gs_row1 = gridspec.GridSpecFromSubplotSpec(1, n_ch, subplot_spec=gs_outer[1],
+                                               wspace=0.35)
+    # Row 2 — Cross-channel metrics
+    gs_row2 = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=gs_outer[2],
+                                               wspace=0.38)
+    # Row 3 — Segment table (full width, no axes frame)
+    ax_table = fig.add_subplot(gs_outer[3])
+
+    all_axes = []
+
+    # ── Row 0: Detection timelines ────────────────────────────────────────
+    det_axes = []
+    for ch_i, r in enumerate(per_file_results):
+        ax = fig.add_subplot(gs_row0[ch_i])
+        all_axes.append(ax)
+        det_axes.append(ax)
+        segs = r["segments"]
+        ts   = [s["t_start"] for s in segs]
+        prbs = [s["prob"]     for s in segs]
+        cnns = [s.get("cnn_probability", float("nan")) for s in segs]
+        cols = [PLOT_STYLE["ok"] if s["detected"] else PLOT_STYLE["err"] for s in segs]
+
+        ax.bar(ts, prbs, width=cfg.TARGET_DURATION * 0.78,
+               color=cols, alpha=0.52, label="Hybrid")
+        ax.plot(ts, cnns, "o-", color=MIC_COLORS[ch_i],
+                ms=4, lw=1.6, label="CNN", zorder=5)
+        ax.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["warn"],
+                   lw=1.4, ls="--", label=f"Thr={cfg.DETECTION_THRESHOLD:.2f}")
+        ax.set_ylim(0, 1.10)
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Probability" if ch_i == 0 else "")
+        mic_name = Path(r["wav_path"]).stem
+        ax.set_title(f"Mic {ch_i+1}  —  {mic_name[:28]}")
+        if ch_i == 0:
+            ax.legend(fontsize=8, facecolor=PLOT_STYLE["panel_alt"],
+                      edgecolor=PLOT_STYLE["spine"])
+
+    # Share y-axis across detection timelines
+    for ax in det_axes[1:]:
+        ax.sharey(det_axes[0])
+        ax.set_ylabel("")
+
+    # ── Row 1: Localisation scatter ───────────────────────────────────────
+    # Compute colour scale range across all channels together
+    all_probs_loc = []
+    for r in per_file_results:
+        all_probs_loc.extend([s["prob"] for s in r["segments"] if s.get("loc")])
+    vmin_loc = min(all_probs_loc) if all_probs_loc else 0.0
+    vmax_loc = max(all_probs_loc) if all_probs_loc else 1.0
+
+    loc_axes = []
+    sc_last = None
+    for ch_i, r in enumerate(per_file_results):
+        ax = fig.add_subplot(gs_row1[ch_i])
+        all_axes.append(ax)
+        loc_axes.append(ax)
+        segs_with_loc = [s for s in r["segments"] if s.get("loc")]
+
+        if segs_with_loc:
+            xs    = [float(np.asarray(s["loc"]["xy_position"])[0]) for s in segs_with_loc]
+            ys    = [float(np.asarray(s["loc"]["xy_position"])[1]) for s in segs_with_loc]
+            confs = [s["prob"] for s in segs_with_loc]
+            ts    = [s["t_start"] for s in segs_with_loc]
+            sc_last = ax.scatter(xs, ys, c=confs, cmap="plasma",
+                                 vmin=vmin_loc, vmax=vmax_loc,
+                                 s=55, zorder=4, edgecolors=PLOT_STYLE["bg"], lw=0.4)
+            for x, y, t in zip(xs, ys, ts):
+                ax.annotate(f"{t:.0f}s", (x, y),
+                            textcoords="offset points", xytext=(3, 3),
+                            fontsize=6, color=PLOT_STYLE["muted"])
+        else:
+            ax.text(0.5, 0.5, "No loc data", ha="center", va="center",
+                    transform=ax.transAxes, color=PLOT_STYLE["muted"], fontsize=10)
+
+        # Mic array
+        mics = np.asarray(cfg.MIC_POSITIONS, dtype=float)
+        ax.scatter(mics[:, 0], mics[:, 1], marker="^",
+                   color=PLOT_STYLE["warn"], s=80, zorder=6, label="Mics")
+        centre = np.asarray(cfg.ARRAY_CENTER, dtype=float)
+        ax.plot(centre[0], centre[1], "+", color=PLOT_STYLE["text"],
+                ms=9, mew=1.3, zorder=7)
+        ax.set_aspect("equal", adjustable="datalim")
+        ax.set_xlabel("X (m)")
+        ax.set_ylabel("Y (m)" if ch_i == 0 else "")
+        ax.set_title(f"Mic {ch_i+1}  Localisation (x, y)")
+        ax.legend(fontsize=8, facecolor=PLOT_STYLE["panel_alt"],
+                  edgecolor=PLOT_STYLE["spine"])
+
+    # Single shared colorbar for row 1
+    if sc_last is not None:
+        cbar_ax = fig.add_axes([0.92, 0.555, 0.012, 0.155])
+        cb = fig.colorbar(sc_last, cax=cbar_ax)
+        cb.set_label("Confidence", color=PLOT_STYLE["text"], fontsize=9)
+        cb.ax.yaxis.set_tick_params(color=PLOT_STYLE["text"], labelsize=8)
+        plt.setp(cb.ax.yaxis.get_ticklabels(), color=PLOT_STYLE["text"])
+        cb.outline.set_edgecolor(PLOT_STYLE["spine"])
+
+    # ── Row 2: Cross-channel metrics ──────────────────────────────────────
+
+    # — Panel A: Cross-channel RMS comparison —
+    ax_rms = fig.add_subplot(gs_row2[0])
+    all_axes.append(ax_rms)
+    ts_plot = [row["t"] for row in seg_data]
+    w = cfg.TARGET_DURATION * 0.24
+    offsets = [-w, 0, w]
+    for ch_i in range(n_ch):
+        rms_vals = [row.get(f"rms_ch{ch_i}", float("nan")) for row in seg_data]
+        rms_clean = [v if not math.isnan(v) else 0 for v in rms_vals]
+        ax_rms.bar([t + offsets[ch_i] for t in ts_plot], rms_clean,
+                   width=w * 0.92, color=MIC_COLORS[ch_i], alpha=0.72,
+                   label=f"Mic {ch_i+1}")
+    ax_rms.set_xlabel("Time (s)")
+    ax_rms.set_ylabel("RMS (dB)")
+    ax_rms.set_title("RMS per Segment — All Mics")
+    ax_rms.legend(fontsize=9, facecolor=PLOT_STYLE["panel_alt"],
+                  edgecolor=PLOT_STYLE["spine"])
+
+    # — Panel B: Azimuth agreement (std across channels per segment) —
+    ax_az = fig.add_subplot(gs_row2[1])
+    all_axes.append(ax_az)
+    az_stds, az_means = [], []
+    for row in seg_data:
+        az_vals = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
+        az_stds.append(float(np.std(az_vals))  if len(az_vals) >= 2 else float("nan"))
+        az_means.append(float(np.mean(az_vals)) if len(az_vals) >= 1 else float("nan"))
+
+    std_clean  = [v if not math.isnan(v) else 0 for v in az_stds]
+    mean_clean = [v if not math.isnan(v) else 0 for v in az_means]
+
+    bar_cols_az = [
+        PLOT_STYLE["ok"]   if (not math.isnan(v) and v < 10) else
+        PLOT_STYLE["warn"] if (not math.isnan(v) and v < 25) else
+        PLOT_STYLE["err"]
+        for v in az_stds
+    ]
+    ax_az.bar(ts_plot, std_clean, width=cfg.TARGET_DURATION * 0.72,
+              color=bar_cols_az, alpha=0.70, label="Az std (°)")
+    ax2_az = ax_az.twinx()
+    ax2_az.plot(ts_plot, mean_clean, "D--", color=PLOT_STYLE["purple"],
+                ms=5, lw=1.5, label="Mean az (°)")
+    ax2_az.set_ylabel("Mean azimuth (°)", color=PLOT_STYLE["purple"])
+    ax2_az.tick_params(axis="y", colors=PLOT_STYLE["purple"], labelsize=10)
+    for spine in ax2_az.spines.values():
+        spine.set_color(PLOT_STYLE["spine"])
+
+    # Legend combining both axes
+    h1, l1 = ax_az.get_legend_handles_labels()
+    h2, l2 = ax2_az.get_legend_handles_labels()
+    ax_az.legend(h1 + h2, l1 + l2, fontsize=9,
+                 facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
+    ax_az.set_xlabel("Time (s)")
+    ax_az.set_ylabel("Az std across mics (°)")
+    ax_az.set_title("Azimuth Agreement  (↓ std = ↑ consistency)")
+
+    # Colour legend chips
+    for label, col in [("< 10° (good)", PLOT_STYLE["ok"]),
+                        ("10–25° (moderate)", PLOT_STYLE["warn"]),
+                        ("> 25° (poor)", PLOT_STYLE["err"])]:
+        ax_az.bar([], [], color=col, alpha=0.70, label=label)
+
+    # — Panel C: Continuous track legend —
+    ax_trk = fig.add_subplot(gs_row2[2])
+    all_axes.append(ax_trk)
+    ax_trk.set_facecolor(PLOT_STYLE["panel"])
+    ax_trk.axis("off")
+    ax_trk.set_title("Confirmed Track Summary", fontsize=12,
+                     color=PLOT_STYLE["text"], fontweight="bold")
+
+    cmap_fn  = plt.get_cmap("plasma")
+    n_global = len(global_tracks)
+    y_pos = 0.95
+    ax_trk.text(0.05, y_pos, "Global#  Channel  Orig ID  Pts  Az range (°)",
+                transform=ax_trk.transAxes, fontsize=9,
+                color=PLOT_STYLE["text_soft"], fontstyle="italic")
+    y_pos -= 0.06
+
+    for t_i, (track, result) in enumerate(
+            [(t, r) for r in per_file_results for t in r.get("confirmed", [])]):
+        global_num = track_id_map.get(track.track_id, t_i + 1)
+        ch_idx = next(
+            (i for i, r in enumerate(per_file_results)
+             if any(tr.track_id == track.track_id for tr in r.get("confirmed", []))),
+            0,
+        )
+        pts = np.array(track.positions) if track.positions else np.zeros((0, 2))
+        col = cmap_fn(t_i / max(n_global - 1, 1))
+
+        # Azimuth range from positions (angle from origin)
+        if len(pts) >= 1:
+            angles = [math.degrees(math.atan2(p[1], p[0])) % 360 for p in pts]
+            az_str = f"{min(angles):.0f}–{max(angles):.0f}"
+        else:
+            az_str = "—"
+
+        patch = mpatches.Patch(color=col, alpha=0.85)
+        ax_trk.text(
+            0.05, y_pos,
+            f"  #{global_num:>2}      Mic {ch_idx+1}      "
+            f"#{track.track_id}     {len(pts)}pt   {az_str}",
+            transform=ax_trk.transAxes, fontsize=9.5,
+            color=PLOT_STYLE["text"],
+        )
+        ax_trk.add_patch(mpatches.FancyBboxPatch(
+            (0.01, y_pos - 0.01), 0.025, 0.045,
+            boxstyle="round,pad=0.002",
+            transform=ax_trk.transAxes,
+            facecolor=col, alpha=0.85, zorder=4,
+        ))
+        y_pos -= 0.085
+        if y_pos < 0.05:
+            break
+
+    if n_global == 0:
+        ax_trk.text(0.5, 0.5, "No confirmed tracks", ha="center", va="center",
+                    transform=ax_trk.transAxes, color=PLOT_STYLE["muted"], fontsize=11)
+
+    # ── Row 3: Segment table ───────────────────────────────────────────────
+    ax_table.axis("off")
+    ax_table.set_facecolor(PLOT_STYLE["bg"])
+    ax_table.set_title("Segment-level Summary  —  Confidence / RMS (dB) / Azimuth (°)  per Channel",
+                        fontsize=12, color=PLOT_STYLE["text"], fontweight="bold", pad=6)
+
+    # Build table data
+    col_headers = ["Seg", "Time (s)"]
+    for ch_i in range(n_ch):
+        col_headers += [f"M{ch_i+1} Conf", f"M{ch_i+1} CNN",
+                        f"M{ch_i+1} RMS", f"M{ch_i+1} Az°"]
+    col_headers += ["Az std°"]
+
+    table_rows = []
+    for row in seg_data:
+        tr = [str(row["seg"]), f"{row['t']:.1f}"]
+        for ch_i in range(n_ch):
+            prob = row.get(f"prob_ch{ch_i}", float("nan"))
+            cnn  = row.get(f"cnn_ch{ch_i}", float("nan"))
+            rms  = row.get(f"rms_ch{ch_i}", float("nan"))
+            az   = row.get(f"az_ch{ch_i}", float("nan"))
+            tr += [
+                f"{prob:.3f}" if not math.isnan(prob) else "—",
+                f"{cnn:.3f}"  if not math.isnan(cnn)  else "—",
+                f"{rms:.1f}"  if not math.isnan(rms)  else "—",
+                f"{az:.1f}"   if not math.isnan(az)   else "—",
+            ]
+        az_std = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
+        az_std_v = float(np.std(az_std)) if len(az_std) >= 2 else float("nan")
+        tr.append(f"{az_std_v:.1f}" if not math.isnan(az_std_v) else "—")
+        table_rows.append(tr)
+
+    tbl = ax_table.table(
+        cellText=table_rows,
+        colLabels=col_headers,
+        loc="center",
+        cellLoc="center",
+    )
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(8.5)
+    tbl.scale(1.0, 1.55)
+
+    # Style header row
+    for j in range(len(col_headers)):
+        tbl[(0, j)].set_facecolor(PLOT_STYLE["accent"])
+        tbl[(0, j)].get_text().set_color("white")
+        tbl[(0, j)].get_text().set_fontweight("bold")
+
+    # Alternate row shading + colour-code high Az std
+    for i, row in enumerate(seg_data):
+        bg = PLOT_STYLE["panel_alt"] if i % 2 == 0 else PLOT_STYLE["panel"]
+        for j in range(len(col_headers)):
+            cell = tbl[(i + 1, j)]
+            cell.set_facecolor(bg)
+            cell.get_text().set_color(PLOT_STYLE["text"])
+
+        # Highlight Az std column
+        az_col_idx = len(col_headers) - 1
+        az_std_v = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
+        az_std_val = float(np.std(az_std_v)) if len(az_std_v) >= 2 else float("nan")
+        if not math.isnan(az_std_val):
+            hi_col = (PLOT_STYLE["ok"]   if az_std_val < 10  else
+                      PLOT_STYLE["warn"] if az_std_val < 25  else
+                      PLOT_STYLE["err"])
+            tbl[(i + 1, az_col_idx)].set_facecolor(hi_col)
+            tbl[(i + 1, az_col_idx)].get_text().set_color("white")
+
+    # Apply axis style to non-table axes
+    _apply_style(fig, all_axes)
+
+    plt.tight_layout(rect=[0, 0, 0.915, 0.992])
+
+    if save:
+        _save(fig, cfg.DRIVE_PLOTS / "thesis_per_channel_enhanced.png")
+    try:
+        from IPython.display import display
+        display(fig)
+    except Exception:
+        pass
+    plt.close(fig)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# Figure 2 — Combined 3-channel analysis
+# ═════════════════════════════════════════════════════════════════════════════
+
+def plot_combined_3ch_analysis(
+    full_channels: list,
+    per_file_results: list,
+    single_result: dict,
+    cfg=None,
+    save: bool = True,
+):
+    """
+    Combined 3-channel analysis.
+
+    Layout  (2 rows × 3 cols  +  1 wide bottom row):
+      [0,0]  TDOA cross-correlation: Mic1 vs Mic2
+      [0,1]  TDOA cross-correlation: Mic1 vs Mic3
+      [0,2]  TDOA cross-correlation: Mic2 vs Mic3
+      [1,0]  Confidence-weighted azimuth rose (all detections)
+      [1,1]  Single fused localisation map  (all segment positions)
+      [1,2]  Fused detection timeline (mean prob across mics per segment)
+      [2, :] Shared Kalman trajectory (all-mic, re-numbered)
+
+    Parameters
+    ──────────
+    full_channels    : list of 3 full-length np.ndarray (from load_3ch_full)
+    per_file_results : same list passed to plot_per_channel_enhanced
+    single_result    : dict returned by run_pipeline (single-drone)
+    cfg              : Config
+    save             : write PNG to cfg.DRIVE_PLOTS
+    """
+    from .config import config as _cfg
+    cfg = cfg or _cfg
+
+    if len(full_channels) < 3 or len(per_file_results) < 3:
+        print("⚠  plot_combined_3ch_analysis requires exactly 3 channels.")
+        return
+
+    n_segs = max(len(r["segments"]) for r in per_file_results)
+
+    # ── Global confirmed tracks (re-numbered) ────────────────────────────
+    global_tracks = []
+    for r in per_file_results:
+        global_tracks.extend(r.get("confirmed", []))
+    track_id_map = {t.track_id: i + 1 for i, t in enumerate(global_tracks)}
+
+    # ── Figure ────────────────────────────────────────────────────────────
+    fig = plt.figure(figsize=(22, 18), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(
+        "Combined 3-Channel Analysis",
+        fontsize=18, color=PLOT_STYLE["accent"], fontweight="bold", y=0.995,
+    )
+
+    gs = gridspec.GridSpec(
+        3, 3, figure=fig,
+        height_ratios=[2.8, 3.0, 3.5],
+        hspace=0.48, wspace=0.35,
+    )
+
+    all_axes = []
+
+    # ── Row 0: TDOA cross-correlations ────────────────────────────────────
+    mic_pairs = [(0, 1), (0, 2), (1, 2)]
+    sr = cfg.SR
+
+    for col_i, (i, j) in enumerate(mic_pairs):
+        ax = fig.add_subplot(gs[0, col_i])
+        all_axes.append(ax)
+        lags_ms, cc = _cc_lags(full_channels[i], full_channels[j], sr,
+                                max_lag_ms=8.0)
+        peak_idx = int(np.argmax(cc))
+        peak_lag = float(lags_ms[peak_idx])
+        peak_val = float(cc[peak_idx])
+
+        ax.fill_between(lags_ms, cc, alpha=0.22,
+                        color=MIC_COLORS[i])
+        ax.plot(lags_ms, cc, lw=1.5, color=MIC_COLORS[i])
+        ax.axvline(peak_lag, color=PLOT_STYLE["warn"], lw=1.8, ls="--",
+                   label=f"Peak {peak_lag:+.2f} ms")
+        ax.axvline(0, color=PLOT_STYLE["grid"], lw=0.8, ls=":")
+        ax.axhline(0, color=PLOT_STYLE["grid"], lw=0.6)
+
+        # Convert lag → implied distance difference
+        c_sound = 343.0
+        dd_m = abs(peak_lag / 1000.0) * c_sound
+        ax.text(0.97, 0.95,
+                f"TDOA: {peak_lag:+.3f} ms\nΔd ≈ {dd_m:.2f} m",
+                transform=ax.transAxes, ha="right", va="top", fontsize=9,
+                color=PLOT_STYLE["text"],
+                bbox=dict(facecolor=PLOT_STYLE["panel_alt"],
+                          edgecolor=PLOT_STYLE["spine"],
+                          boxstyle="round,pad=0.3"))
+        ax.set_xlabel("Lag (ms)")
+        ax.set_ylabel("Normalised cross-correlation" if col_i == 0 else "")
+        ax.set_title(f"TDOA  Mic {i+1} ↔ Mic {j+1}")
+        ax.legend(fontsize=9, facecolor=PLOT_STYLE["panel_alt"],
+                  edgecolor=PLOT_STYLE["spine"])
+
+    # ── Row 1, col 0: Confidence-weighted azimuth rose ────────────────────
+    ax_pol = fig.add_subplot(gs[1, 0], projection="polar")
+    ax_pol.set_facecolor(PLOT_STYLE["panel"])
+    ax_pol.tick_params(colors=PLOT_STYLE["text"])
+
+    all_az, all_conf = [], []
+    for r in per_file_results:
+        for s in r["segments"]:
+            if s.get("loc") is not None:
+                all_az.append(float(s["loc"]["azimuth_deg"]))
+                all_conf.append(float(s.get("prob", 0.5)))
+
+    if all_az:
+        # Weight histogram by confidence
+        rads = np.radians([-a for a in all_az])   # N-up, clockwise
+        bins = 36
+        edges = np.linspace(-np.pi, np.pi, bins + 1)
+        centers = 0.5 * (edges[:-1] + edges[1:])
+        width   = edges[1] - edges[0]
+
+        # Confidence-weighted counts
+        w_counts = np.zeros(bins)
+        for r, c in zip(rads, all_conf):
+            idx = int((r + np.pi) / (2 * np.pi / bins))
+            idx = max(0, min(bins - 1, idx))
+            w_counts[idx] += c
+
+        max_w = w_counts.max() if w_counts.max() > 0 else 1.0
+        colors_pol = plt.cm.plasma(w_counts / max_w)
+
+        ax_pol.bar(centers, w_counts, width=width, alpha=0.85,
+                   color=colors_pol, edgecolor=PLOT_STYLE["bg"], lw=0.3)
+
+        # Dominant direction annotation
+        dom = int(np.argmax(w_counts))
+        dom_deg = float(np.degrees(-centers[dom])) % 360
+        ax_pol.annotate(
+            f"{dom_deg:.0f}°",
+            xy=(centers[dom], w_counts[dom]),
+            xytext=(centers[dom], w_counts[dom] * 1.28),
+            ha="center", va="center", fontsize=8,
+            color=PLOT_STYLE["accent"],
+        )
+    else:
+        theta = np.linspace(0, 2 * np.pi, 60)
+        ax_pol.plot(theta, np.ones_like(theta) * 0.05,
+                    color=PLOT_STYLE["muted"], lw=0.8, ls="--")
+        ax_pol.text(0, 0, "no data", ha="center", va="center",
+                    color=PLOT_STYLE["muted"], fontsize=9)
+
+    ax_pol.set_theta_zero_location("N")
+    ax_pol.set_theta_direction(-1)
+    ax_pol.set_title("Confidence-weighted\nAzimuth Rose  (all mics)",
+                     color=PLOT_STYLE["accent"], pad=12, fontsize=11)
+    ax_pol.grid(color=PLOT_STYLE["grid"], alpha=0.5)
+
+    # ── Row 1, col 1: Fused localisation map ─────────────────────────────
+    ax_map = fig.add_subplot(gs[1, 1])
+    all_axes.append(ax_map)
+
+    all_loc_xs, all_loc_ys, all_loc_confs = [], [], []
+    for ch_i, r in enumerate(per_file_results):
+        for s in r["segments"]:
+            if s.get("loc"):
+                xy = np.asarray(s["loc"]["xy_position"], dtype=float)
+                all_loc_xs.append(float(xy[0]))
+                all_loc_ys.append(float(xy[1]))
+                all_loc_confs.append(float(s.get("prob", 0.5)))
+
+    if all_loc_xs:
+        sc_map = ax_map.scatter(
+            all_loc_xs, all_loc_ys,
+            c=all_loc_confs, cmap="plasma", vmin=0, vmax=1,
+            s=50, zorder=4, alpha=0.80,
+            edgecolors=PLOT_STYLE["bg"], lw=0.35,
+        )
+        # Mean fused position (confidence-weighted centroid)
+        w_arr = np.array(all_loc_confs)
+        w_arr /= w_arr.sum() + 1e-10
+        cx = float(np.dot(w_arr, all_loc_xs))
+        cy = float(np.dot(w_arr, all_loc_ys))
+        ax_map.scatter(cx, cy, marker="*", s=280, color=PLOT_STYLE["warn"],
+                       zorder=8, edgecolors="white", lw=0.8,
+                       label=f"Fused centroid\n({cx:.1f}, {cy:.1f}) m")
+
+        # Colorbar
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        try:
+            div = make_axes_locatable(ax_map)
+            cax = div.append_axes("right", size="4%", pad=0.05)
+            cb  = fig.colorbar(sc_map, cax=cax)
+            cb.set_label("Confidence", color=PLOT_STYLE["text"], fontsize=8)
+            plt.setp(cb.ax.yaxis.get_ticklabels(), color=PLOT_STYLE["text"],
+                     fontsize=7)
+            cb.outline.set_edgecolor(PLOT_STYLE["spine"])
+        except Exception:
+            pass
+
+    # Single-drone pipeline result star
+    if single_result and single_result.get("drones"):
+        xy_sd = np.asarray(single_result["drones"][0]["xy_position"], dtype=float)
+        ax_map.scatter(float(xy_sd[0]), float(xy_sd[1]),
+                       marker="P", s=240, color=PLOT_STYLE["err"],
+                       zorder=9, edgecolors="white", lw=0.8,
+                       label=f"Pipeline az={single_result['drones'][0].get('azimuth_deg',0):.1f}°")
+
+    mics = np.asarray(cfg.MIC_POSITIONS, dtype=float)
+    ax_map.scatter(mics[:, 0], mics[:, 1], marker="^",
+                   color=PLOT_STYLE["warn"], s=90, zorder=10, label="Mics")
+    centre = np.asarray(cfg.ARRAY_CENTER, dtype=float)
+    ax_map.plot(centre[0], centre[1], "+", color=PLOT_STYLE["text"],
+                ms=10, mew=1.5, zorder=11)
+    ax_map.set_aspect("equal", adjustable="datalim")
+    ax_map.set_xlabel("X (m)")
+    ax_map.set_ylabel("Y (m)")
+    ax_map.set_title("Fused Localisation Map  (all mics + all segments)")
+    ax_map.legend(fontsize=8, facecolor=PLOT_STYLE["panel_alt"],
+                  edgecolor=PLOT_STYLE["spine"])
+
+    # ── Row 1, col 2: Fused detection timeline ────────────────────────────
+    ax_fused = fig.add_subplot(gs[1, 2])
+    all_axes.append(ax_fused)
+
+    # Average prob per segment across channels
+    ts_fused, mean_probs, std_probs = [], [], []
+    for seg_i in range(n_segs):
+        probs_seg = []
+        t_s = None
+        for r in per_file_results:
+            if seg_i < len(r["segments"]):
+                probs_seg.append(r["segments"][seg_i]["prob"])
+                if t_s is None:
+                    t_s = r["segments"][seg_i]["t_start"]
+        if t_s is not None and probs_seg:
+            ts_fused.append(t_s)
+            mean_probs.append(float(np.mean(probs_seg)))
+            std_probs.append(float(np.std(probs_seg)))
+
+    if ts_fused:
+        mean_arr = np.array(mean_probs)
+        std_arr  = np.array(std_probs)
+        cols_fused = [PLOT_STYLE["ok"] if p >= cfg.DETECTION_THRESHOLD
+                      else PLOT_STYLE["err"] for p in mean_probs]
+        ax_fused.bar(ts_fused, mean_probs, width=cfg.TARGET_DURATION * 0.75,
+                     color=cols_fused, alpha=0.55, label="Mean hybrid prob")
+        ax_fused.fill_between(ts_fused,
+                              mean_arr - std_arr,
+                              mean_arr + std_arr,
+                              alpha=0.18, color=PLOT_STYLE["accent"],
+                              label="±1 std across mics")
+        ax_fused.plot(ts_fused, mean_probs, "o-",
+                      color=PLOT_STYLE["accent"], ms=4, lw=1.6)
+        ax_fused.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["warn"],
+                         lw=1.5, ls="--",
+                         label=f"Thr={cfg.DETECTION_THRESHOLD:.2f}")
+        ax_fused.set_ylim(0, 1.10)
+
+    ax_fused.set_xlabel("Time (s)")
+    ax_fused.set_ylabel("Probability")
+    ax_fused.set_title("Fused Detection Timeline  (mean ± std, all mics)")
+    ax_fused.legend(fontsize=9, facecolor=PLOT_STYLE["panel_alt"],
+                    edgecolor=PLOT_STYLE["spine"])
+
+    # ── Row 2: Shared Kalman trajectory (all-mic, re-numbered) ───────────
+    ax_traj = fig.add_subplot(gs[2, :])
+    all_axes.append(ax_traj)
+
+    cmap_fn = plt.get_cmap("plasma")
+    n_global = len(global_tracks)
+    mics_np  = np.asarray(cfg.MIC_POSITIONS, dtype=float)
+    ax_traj.scatter(mics_np[:, 0], mics_np[:, 1], marker="^",
+                    s=220, c=PLOT_STYLE["warn"], zorder=10, label="Mic array")
+    for i, mic in enumerate(mics_np):
+        ax_traj.annotate(f"M{i+1}", mic, textcoords="offset points",
+                         xytext=(5, 4), fontsize=9, color=PLOT_STYLE["text"])
+
+    all_xs = list(mics_np[:, 0])
+    all_ys = list(mics_np[:, 1])
+
+    # Group tracks by original channel for origin labelling
+    ch_label_map = {}
+    for ch_i, r in enumerate(per_file_results):
+        for tr in r.get("confirmed", []):
+            ch_label_map[tr.track_id] = ch_i + 1
+
+    for t_i, track in enumerate(global_tracks):
+        pts = np.array(track.positions) if track.positions else np.zeros((0, 2))
+        if len(pts) == 0:
+            continue
+        gnum = track_id_map.get(track.track_id, t_i + 1)
+        col  = cmap_fn(t_i / max(n_global - 1, 1))
+        ch   = ch_label_map.get(track.track_id, "?")
+        lbl  = f"Track #{gnum}  (Mic {ch},  {len(pts)} pt{'s' if len(pts)>1 else ''})"
+
+        if len(pts) == 1:
+            ax_traj.scatter(*pts[0], s=180, c=[col], marker="D",
+                            zorder=8, edgecolors="white", lw=0.8, label=lbl)
+        else:
+            n_seg_pts = len(pts)
+            for k in range(n_seg_pts - 1):
+                seg_col = cmap_fn(k / max(n_seg_pts - 2, 1))
+                ax_traj.plot(pts[k:k+2, 0], pts[k:k+2, 1], "-",
+                             color=seg_col, lw=2.5, zorder=5)
+            ax_traj.scatter(*pts[0],  s=110, c=[cmap_fn(0.0)], marker=">", zorder=9)
+            ax_traj.scatter(*pts[-1], s=110, c=[cmap_fn(1.0)], marker="s",
+                            zorder=9, label=lbl)
+
+            # Velocity arrow at last point
+            if len(pts) >= 2:
+                dv = pts[-1] - pts[-2]
+                norm = np.linalg.norm(dv) + 1e-8
+                scale = 0.6
+                ax_traj.annotate(
+                    "", xy=pts[-1] + dv / norm * scale, xytext=pts[-1],
+                    arrowprops=dict(arrowstyle="-|>", color=col,
+                                    lw=1.6, mutation_scale=14),
+                    zorder=11,
+                )
+
+        # Uncertainty circle at last point
+        try:
+            cr = track.uncertainty_radius()
+            if 0 < cr < 25 and not math.isnan(cr):
+                ax_traj.add_patch(plt.Circle(pts[-1], cr,
+                                             color=col, alpha=0.10, fill=True))
+        except Exception:
+            pass
+
+        all_xs.extend(pts[:, 0])
+        all_ys.extend(pts[:, 1])
+
+    if all_xs and all_ys:
+        pad = max(1.5, (max(all_xs) - min(all_xs)) * 0.18)
+        ax_traj.set_xlim(min(all_xs) - pad, max(all_xs) + pad)
+        ax_traj.set_ylim(min(all_ys) - pad, max(all_ys) + pad)
+
+    ax_traj.set_aspect("equal")
+    ax_traj.set_xlabel("X (m)", fontsize=12)
+    ax_traj.set_ylabel("Y (m)", fontsize=12)
+    ax_traj.set_title(
+        f"Shared Kalman Trajectories  —  {n_global} confirmed track(s) across all mics  "
+        f"(start ▶  end ■  velocity →)",
+        fontsize=13,
+    )
+    ax_traj.legend(fontsize=9, facecolor=PLOT_STYLE["panel_alt"],
+                   edgecolor=PLOT_STYLE["spine"], loc="upper right")
+
+    # Apply style to all regular (non-polar) axes
+    _apply_style(fig, all_axes)
+
+    plt.tight_layout(rect=[0, 0, 1.0, 0.993])
+
+    if save:
+        _save(fig, cfg.DRIVE_PLOTS / "thesis_combined_3ch_analysis.png")
+    try:
+        from IPython.display import display
+        display(fig)
+    except Exception:
+        pass
+    plt.close(fig)

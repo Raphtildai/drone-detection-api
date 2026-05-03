@@ -1,6 +1,15 @@
 # Untrack venv folder
 venv/
 
+# Untrack processed audio files and json files
+processed/
+
+# Untrack mel cache files
+mel_cache/**/*.npy
+
+# Untrack drone_detection.egg-info
+drone_detection.egg-info/
+
 # Audio files
 *.wav
 *.mp3

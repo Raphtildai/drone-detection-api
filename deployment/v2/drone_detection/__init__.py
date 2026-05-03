@@ -183,6 +183,9 @@ from .mems_inference import (
     print_crosscheck,
 )
 
+# ── Multi-drone audio demo (for quick testing) ────────────────────────────────────────────
+from .multi_drone_audio_demo import main as multi_drone_audio_demo_main, multi_drone_demo_from_files
+
 # ── Me ─────────────────────────────────────────────────────────────
 __all__ = [
     # config
@@ -242,4 +245,6 @@ __all__ = [
     "build_thesis_figures",
     # mems inference
     "analyse_mems_file", "batch_analyse_mems", "analyse_mems_with_meta", "build_mems_report",
+    # multi-drone audio demo
+    "multi_drone_audio_demo_main", "multi_drone_demo_from_files",
 ]

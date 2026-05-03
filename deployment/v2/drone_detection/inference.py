@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-inference.py  (v17)
+inference.py
 ────────────────────
 All inference functions: detection, localisation, and higher-level analysis.
 
@@ -17,20 +17,6 @@ load_3ch()                      load a list of WAV paths into 3-channel arrays
 analyse_audio_file()            segment-level analysis with dashboard
 analyse_external_audio_robust() sliding-window analysis for long files
 comprehensive_pipeline_test()   end-to-end Colab-friendly inference test
-
-v17 fixes vs original (v15)
-────────────────────────────
-load_localization_model()
-  BUG FIX: was calling LocalizationCNN(cfg.N_MELS) which hardcodes
-  ipd_in_dim=3.  After the v16 model change the saved checkpoint has
-  ipd_fc.0.weight shape [64, 4] (BPF energy ratio is the 4th IPD scalar),
-  causing a RuntimeError on load_state_dict.
-  Fix: use make_localization_model(cfg) which reads
-  cfg.BPF_ENERGY_RATIO_AS_FEATURE and passes the correct ipd_in_dim.
-
-localize()
-  Now computes the BPF energy ratio for the optional 4th IPD scalar when
-  cfg.BPF_ENERGY_RATIO_AS_FEATURE is True, so inference matches training.
 """
 
 import math
@@ -62,7 +48,73 @@ from .utils import (
 _det_model = None
 _loc_model = None
 
+# ── tuneable constants ────────────────────────────────────────────────────────
+# CNN probability threshold below which localisation is skipped entirely.
+# Lower than the full fused detection gate so more segments get positions.
+LOC_CNN_THR: float = 0.30
+ 
+# Degenerate multi-drone geometry: if all returned drone positions are within
+# this radius of each other (metres), the result is treated as a single drone
+# and the multi-drone map is suppressed.
+MULTI_DRONE_MIN_SPREAD_M: float = 1.5
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Internal helpers
+# ─────────────────────────────────────────────────────────────────────────────
+ 
+def _slice_channel(channel: np.ndarray, start: int, seg_n: int) -> np.ndarray:
+    """
+    Extract a fixed-length segment from a FULL-LENGTH channel array.
+    """
+    ch = np.asarray(channel, dtype=np.float32)
+    end = start + seg_n
+    if len(ch) >= end:
+        return ch[start:end]
+    tail = ch[start:] if start < len(ch) else np.array([], dtype=np.float32)
+    return np.pad(tail, (0, seg_n - len(tail)))
+ 
+ 
+def _is_degenerate_multi(drones: list, threshold_m: float = MULTI_DRONE_MIN_SPREAD_M) -> bool:
+    """
+    Return True when all reported drone positions are clustered within
+    threshold_m of each other (i.e. the multi-drone pipeline found no
+    spatial separation between 'drones').
+    """
+    if len(drones) <= 1:
+        return False
+    xys = [np.asarray(d["xy_position"], dtype=float) for d in drones]
+    for i in range(len(xys)):
+        for j in range(i + 1, len(xys)):
+            if np.linalg.norm(xys[i] - xys[j]) > threshold_m:
+                return False
+    return True
+ 
+ 
+def _build_localisation_panel_data(segments: list) -> dict:
+    """
+     5  extract per-segment (x, y) positions for plotting.
+ 
+    Returns a dict with keys:
+      t_starts  - list of segment start times (s)
+      xs        - list of x positions (m), None if no localisation
+      ys        - list of y positions (m), None if no localisation
+      azimuths  - list of azimuth_deg values, None if no localisation
+    """
+    t_starts, xs, ys, azimuths = [], [], [], []
+    for seg in segments:
+        t_starts.append(seg["t_start"])
+        loc = seg.get("loc")
+        if loc is not None:
+            xy = np.asarray(loc["xy_position"], dtype=float)
+            xs.append(float(xy[0]))
+            ys.append(float(xy[1]))
+            azimuths.append(float(loc["azimuth_deg"]))
+        else:
+            xs.append(None)
+            ys.append(None)
+            azimuths.append(None)
+    return {"t_starts": t_starts, "xs": xs, "ys": ys, "azimuths": azimuths}
+ 
 # ─── Model loaders ────────────────────────────────────────────────────────────
 
 def load_detection_model(cfg: Optional[Config] = None) -> DetectionCNN:
@@ -96,7 +148,7 @@ def load_localization_model(cfg: Optional[Config] = None):
     """
     Load the best localisation checkpoint into a cached singleton.
 
-    v17 fix: uses make_localization_model(cfg) instead of
+    v17  uses make_localization_model(cfg) instead of
     LocalizationCNN(cfg.N_MELS) so ipd_in_dim (3 or 4) is read from
     cfg.BPF_ENERGY_RATIO_AS_FEATURE and matches the saved checkpoint.
     """
@@ -111,7 +163,7 @@ def load_localization_model(cfg: Optional[Config] = None):
         )
     dev  = torch.device(cfg.DEVICE)
     data = torch.load(ckpt, map_location=dev)
-    # v17 fix: make_localization_model reads ipd_in_dim from config
+    # v17  make_localization_model reads ipd_in_dim from config
     m = make_localization_model(cfg).to(dev)
     m.load_state_dict(data["model_state"])
     m.eval()
@@ -344,7 +396,7 @@ def detect(
     }
 
 def _estimate_bpf_hz(y: np.ndarray, sr: int) -> float:
-    """Quick spectral peak search 50–700 Hz for BPF estimation."""
+    """Quick spectral peak search 50-700 Hz for BPF estimation."""
     try:
         S     = np.abs(librosa.stft(y.astype(np.float32), n_fft=2048, hop_length=512))
         Sm    = S.mean(axis=1)
@@ -399,6 +451,24 @@ def load_3ch(paths: List, cfg: Optional[Config] = None) -> List[np.ndarray]:
     """Load a list of 3 WAV paths into padded float32 arrays."""
     ap = AudioProcessor(cfg or config)
     return [ap.pad_or_truncate(ap.load(p)) for p in paths]
+
+def load_3ch_full(paths: List, cfg=None) -> List[np.ndarray]:
+    """
+    Load each WAV file in full (mono, float32) without any truncation.
+ 
+    Unlike load_3ch(), this does NOT call pad_or_truncate(), so the returned
+    arrays have the natural length of each file.  The three arrays may
+    therefore have different lengths if the input files have different
+    durations — this is intentional and handled by _slice_channel().
+ 
+    Used by comprehensive_pipeline_test() for per-segment slicing.
+    run_pipeline() continues to use load_3ch() (truncated, one-segment).
+    """
+    from .config import config as _config
+    from .audio_processing import AudioProcessor
+    cfg = cfg or _config
+    ap = AudioProcessor(cfg)
+    return [ap.load(str(p), mono=True).astype(np.float32) for p in paths]
 
 
 def run_pipeline(
@@ -596,7 +666,7 @@ def analyse_external_audio_robust(
         icon = "🚁" if s["detected_at_external_threshold"] else "🌳"
         print(f"  Seg {s['segment_index']:3d} {icon} prob={s['probability']:.3f}  "
               f"cnn={s['cnn_probability']:.3f}  heur={s['heuristic_probability']:.3f}  "
-              f"[{s['t_start_s']:.2f}–{s['t_end_s']:.2f}s]")
+              f"[{s['t_start_s']:.2f}-{s['t_end_s']:.2f}s]")
     print(f"\n📊 Clip score: {clip_score:.3f}  |  Positive: {pos_count}/{len(segment_results)}  |  Label: {clip_label}")
     if show_plot:
         try:
@@ -710,130 +780,142 @@ def _print_pipeline_test_summary(wav_paths, channel_summary, single_result,
 
 
 def comprehensive_pipeline_test(
-    wav_paths: Optional[List] = None,
-    cfg: Optional[Config] = None,
+    wav_paths=None,
+    cfg=None,
     run_multi_drone: bool = True,
     use_tracker: bool = True,
-    timestamp: Optional[float] = None,
+    timestamp=None,
     auto_upload_if_missing: bool = True,
     show_plots: bool = True,
     save_plots: bool = True,
 ) -> dict:
     """
-    End-to-end test for load_3ch() and run_pipeline().
-
-    Additions vs original:
-    • Per-file 6-panel analysis dashboard (waveform+RMS, mel spectrogram,
-      detection timeline, localization bars, polar compass, score gauge).
-    • Polar azimuth summary plot across all detected azimuths.
-    • Multi-drone position map when run_multi_drone=True.
-    • Kalman track trajectory plot when tracks are confirmed.
-    • All figures saved to cfg.DRIVE_PLOTS / "pipeline_test_<stem>.png".
+    End-to-end pipeline test.
+ 
+    Step-level notes:
+       1  _slice_channel >= boundary
+       2  localize() gated on LOC_CNN_THR not full hybrid threshold
+       3  degenerate multi-drone suppression
+       4  file_tracker min_hits=2
+       5  localisation panel uses (x, y) not Az/180°
     """
-    import time
-    from pathlib import Path
+    from .config import config as _config
+    from .audio_processing import AudioProcessor
+    from .tracking import KalmanTracker
+    from .inference import (
+        LOC_CNN_THR,
+        MULTI_DRONE_MIN_SPREAD_M,
+        _is_degenerate_multi,
+        _build_localisation_panel_data,
+        load_detection_model,
+        load_localization_model,
+        load_3ch,          # still used by run_pipeline
+        detect,
+        localize,
+        run_pipeline,
+        _upload_test_audio_triplet_colab,
+        _validate_test_audio_paths,
+        _summarize_loaded_channels,
+        _print_pipeline_test_summary,
+    )
     from .visualization import (
         _plot_analysis_report,
         plot_polar_azimuth,
         plot_multi_drone_positions,
         plot_track_trajectory,
     )
-
-    cfg = cfg or config
+ 
+    cfg = cfg or _config
+ 
     if wav_paths is None:
         if not auto_upload_if_missing:
             raise ValueError("wav_paths is None and auto_upload_if_missing=False.")
         wav_paths = _upload_test_audio_triplet_colab()
     wav_paths = _validate_test_audio_paths(wav_paths)
-
+ 
     print("🔄 Loading models...")
     load_detection_model(cfg)
     load_localization_model(cfg)
-
-    print("\n🔊 Loading 3-channel audio...")
-    channels = load_3ch(wav_paths, cfg)
-    if len(channels) != 3:
-        raise AssertionError(f"load_3ch() returned {len(channels)} channels, expected 3.")
-    ch_lengths = [len(np.asarray(ch)) for ch in channels]
-    if len(set(ch_lengths)) != 1:
-        raise AssertionError(f"Channels do not have equal lengths: {ch_lengths}")
-    channel_summary = _summarize_loaded_channels(channels)
-
+ 
+    # ──  6  load FULL-LENGTH arrays for per-segment slicing ────────────
+    print("\n🔊 Loading 3-channel audio (full length)...")
+    full_channels = load_3ch_full(wav_paths, cfg)
+ 
+    # Channel statistics use the full arrays
+    channel_summary = _summarize_loaded_channels(full_channels)
+    for s in channel_summary:
+        print(f"  Ch{s['channel']}: shape={s['shape']}  rms={s['rms_db']:.2f} dB  "
+              f"duration={s['shape'][0]/cfg.SR:.1f}s")
+ 
+    # ── Trackers ──────────────────────────────────────────────────────────────
     tracker_single = tracker_multi = None
     if use_tracker:
-        from .tracking import KalmanTracker
         tracker_single = KalmanTracker(cfg)
         tracker_multi  = KalmanTracker(cfg) if run_multi_drone else None
-
-    # ── Per-file analysis dashboards ──────────────────────────────────────────
-    # Build one analysis dashboard per WAV file so each mic channel
-    # gets its own waveform / mel / detection / localization breakdown.
-    per_file_results = []
+ 
+    per_file_results   = []
     all_detected_azimuths = []
-
+    seg_n = int(cfg.TARGET_DURATION * cfg.SR)
+ 
     for file_idx, wav_path in enumerate(wav_paths):
         mic_label = f"Mic{file_idx + 1}_{Path(wav_path).stem}"
         print(f"\n📊 Analysing {Path(wav_path).name} (channel {file_idx + 1})...")
-
-        ap      = AudioProcessor(cfg)
-        y_full  = ap.load(wav_path, mono=True)
+ 
+        ap     = AudioProcessor(cfg)
+        y_full = full_channels[file_idx]          #  6  use pre-loaded full array
         total_s = len(y_full) / cfg.SR
-        seg_n   = int(cfg.TARGET_DURATION * cfg.SR)
-        n_segs  = max(1, int(np.ceil(total_s / cfg.TARGET_DURATION)))
-        hop     = seg_n  # non-overlapping for the dashboard
-
-        # Determine if localization model is available
+        n_segs  = max(1, int(math.ceil(total_s / cfg.TARGET_DURATION)))
+ 
         try:
             load_localization_model(cfg)
             can_localize = True
         except FileNotFoundError:
             can_localize = False
-
-        from .tracking import KalmanTracker
+ 
+        #  4  min_hits=2
         file_tracker = KalmanTracker(cfg)
-        base_ts      = time.time()
-        segments     = []
-
+        file_tracker.cfg.KF_MIN_HITS = max(2, cfg.KF_MIN_HITS)
+ 
+        base_ts  = time.time()
+        segments = []
+ 
         for seg_i in range(n_segs):
-            start = min(seg_i * hop, max(0, len(y_full) - seg_n))
-            audio = y_full[start : start + seg_n]
-            if len(audio) < seg_n:
-                audio = np.pad(audio, (0, seg_n - len(audio)))
-
+            start = min(seg_i * seg_n, max(0, len(y_full) - seg_n))
+ 
+            #  6  slice from the FULL channel arrays, not the
+            # one-segment truncated buffers that load_3ch() would return.
+            # ch_slice[i] uses full_channels[i] (the i-th file's full audio).
+            # This preserves real inter-channel delays for all segments.
+            ch_slice = [
+                _slice_channel(full_channels[i], start, seg_n)
+                for i in range(len(full_channels))
+            ]
+ 
+            audio  = ch_slice[file_idx]   # reference mono = this file's channel
             t_s    = start / cfg.SR
             mel_fr = ap.mel(ap.pad_or_truncate(audio))
-            rms_db = float(20 * np.log10(np.sqrt(np.mean(audio ** 2)) + 1e-8))
-
-            # Use the actual 3 loaded channels — NOT [audio, audio, audio]
-            # which would make all IPD values zero and corrupt localization.
-            # detection uses only ch0 internally (mono feature extraction)
-            # but we pass all 3 so localize() gets real inter-channel delays.
-            ch_slice = [
-                np.asarray(channels[i][start : start + seg_n]
-                           if len(channels[i]) > start + seg_n
-                           else np.pad(channels[i][start:], (0, max(0, seg_n - len(channels[i]) + start))),
-                           dtype=np.float32)
-                for i in range(len(channels))
-            ]
-            # Pad each slice to exactly seg_n
-            ch_slice = [c[:seg_n] if len(c) >= seg_n else np.pad(c, (0, seg_n - len(c)))
-                        for c in ch_slice]
-            det       = detect(ch_slice, cfg)
+            rms_db = float(20 * math.log10(
+                math.sqrt(float(np.mean(audio ** 2))) + 1e-8))
+ 
+            det = detect(ch_slice, cfg)
+ 
+            #  2  localize when CNN is moderately confident
             drone_loc = None
-
-            if det["detected"] and can_localize:
+            if can_localize and det["cnn_probability"] >= LOC_CNN_THR:
                 try:
                     drone_loc = localize(ch_slice, cfg)
-                except Exception:
+                except Exception as exc:
+                    print(f"    ⚠  localize() failed at seg {seg_i+1}: {exc}")
                     drone_loc = {
-                        "azimuth_deg": 0.0, "distance_m": 0.0,
-                        "height_m": 0.0,
+                        "azimuth_deg": 0.0,
+                        "distance_m":  0.0,
+                        "height_m":    0.0,
                         "xy_position": np.array(cfg.ARRAY_CENTER, dtype=np.float32),
                     }
-
+ 
             positions = [drone_loc["xy_position"]] if drone_loc else []
             tracks    = file_tracker.step(positions, base_ts + t_s)
-
+ 
             segments.append({
                 "seg":                   seg_i + 1,
                 "t_start":               t_s,
@@ -847,50 +929,57 @@ def comprehensive_pipeline_test(
                 "rms_db": rms_db,
                 "waveform": audio.tolist(),
             })
-
+ 
             icon = "🚁" if det["detected"] else "🌳"
             print(f"  Seg {seg_i + 1:3d}  {icon}  "
-                  f"conf={det['probability']:.3f}  rms={rms_db:.1f} dB")
-
+                  f"conf={det['probability']:.3f}  "
+                  f"cnn={det['cnn_probability']:.3f}  "
+                  f"rms={rms_db:.1f} dB"
+                  + (f"  az={drone_loc['azimuth_deg']:.1f}°" if drone_loc else ""))
+ 
             if drone_loc is not None:
                 all_detected_azimuths.append(drone_loc["azimuth_deg"])
-
+ 
         confirmed = file_tracker.all_confirmed()
         n_det     = sum(s["detected"] for s in segments)
+        n_loc     = sum(1 for s in segments if s["loc"] is not None)
         print(f"\n  📊 {n_det}/{n_segs} segments detected  |  "
-              f"{len(confirmed)} confirmed track(s)")
-
+              f"{len(confirmed)} confirmed track(s)  |  "
+              f"{n_loc} segments localised")
+ 
+        #  5: attach (x, y) per segment for the visualisation scatter panel
+        loc_panel = _build_localisation_panel_data(segments)
+        for seg, x, y, az in zip(segments, loc_panel["xs"],
+                                  loc_panel["ys"], loc_panel["azimuths"]):
+            seg["loc_x"]     = x
+            seg["loc_y"]     = y
+            seg["loc_az_deg"] = az
+ 
         per_file_results.append({
-            "wav_path":  wav_path,
-            "mic_label": mic_label,
-            "segments":  segments,
-            "confirmed": confirmed,
-            "n_detected": n_det,
+            "wav_path":       wav_path,
+            "mic_label":      mic_label,
+            "segments":       segments,
+            "confirmed":      confirmed,
+            "n_detected":     n_det,
+            "loc_panel_data": loc_panel,
         })
-
-        # 6-panel analysis dashboard for this file
+ 
         if show_plots:
             print(f"\n🖼️  Generating analysis dashboard for {Path(wav_path).name}...")
             _plot_analysis_report(segments, confirmed, cfg, mic_label)
-
-        # Track trajectory plot (only if tracks were confirmed)
+ 
         if show_plots and confirmed:
             print(f"  📍 Plotting Kalman tracks for {Path(wav_path).name}...")
-            if save_plots:
-                cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
-                save_path = cfg.DRIVE_PLOTS / f"tracks_{mic_label}.png"
-            else:
-                save_path = None
             plot_track_trajectory(confirmed, cfg, save=save_plots)
-
-    # ── Full-pipeline single/multi-drone runs ─────────────────────────────────
+ 
+    # ── Full-pipeline runs (run_pipeline uses load_3ch internally — unchanged) ─
     print("\n🚁 Running single-drone pipeline...")
     single_result = run_pipeline(
         wav_paths=wav_paths, cfg=cfg,
         tracker=tracker_single, multi_drone=False,
         timestamp=timestamp,
     )
-
+ 
     multi_result = None
     if run_multi_drone:
         print("\n🚁🚁 Running multi-drone pipeline...")
@@ -899,33 +988,65 @@ def comprehensive_pipeline_test(
             tracker=tracker_multi, multi_drone=True,
             timestamp=timestamp,
         )
-
+ 
+        #  3  suppress degenerate multi-drone map
+        if multi_result and multi_result.get("drones"):
+            if _is_degenerate_multi(multi_result["drones"]):
+                print(
+                    f"\n  ⚠  Multi-drone result suppressed: all "
+                    f"{len(multi_result['drones'])} positions within "
+                    f"{MULTI_DRONE_MIN_SPREAD_M} m — likely one drone."
+                )
+                multi_result["_degenerate"] = True
+ 
     # ── Cross-file summary plots ──────────────────────────────────────────────
     if show_plots:
-        # Polar azimuth compass — all detections across all files
         if all_detected_azimuths:
             print(f"\n🧭 Polar azimuth summary ({len(all_detected_azimuths)} detections)...")
             plot_polar_azimuth(
                 all_detected_azimuths,
                 title="Detected Azimuths — All Mic Channels",
-                cfg=cfg,
-                save=save_plots,
+                cfg=cfg, save=save_plots,
             )
-
-        # Multi-drone position map from the full pipeline run
-        if multi_result and multi_result.get("drones"):
+ 
+        if (multi_result
+                and multi_result.get("drones")
+                and not multi_result.get("_degenerate")):
             print("\n🗺️  Multi-drone position map...")
             plot_multi_drone_positions(multi_result["drones"], cfg=cfg, save=save_plots)
-
-        # Kalman trajectories from the single-drone pipeline tracker
+        elif single_result and single_result.get("drones"):
+            print("\n🗺️  Single-drone position map...")
+            plot_multi_drone_positions(single_result["drones"], cfg=cfg, save=save_plots)
+ 
         if tracker_single is not None:
             all_single_tracks = tracker_single.all_confirmed()
             if all_single_tracks:
                 print("\n📍 Single-drone pipeline Kalman trajectories...")
                 plot_track_trajectory(all_single_tracks, cfg=cfg, save=save_plots)
 
+    # ── Thesis figures ────────────────────────────────────────────────
+    if show_plots and len(per_file_results) == 3:
+        print("\n📐 Per-channel enhanced dashboard (thesis)...")
+        from .visualization import (
+            plot_per_channel_enhanced,
+            plot_combined_3ch_analysis,
+        )
+        plot_per_channel_enhanced(
+            per_file_results=per_file_results,
+            cfg=cfg,
+            save=save_plots,
+        )
+        print("\n🔬 Combined 3-channel analysis (thesis)...")
+        plot_combined_3ch_analysis(
+            full_channels    = full_channels,
+            per_file_results = per_file_results,
+            single_result    = single_result,
+            cfg              = cfg,
+            save             = save_plots,
+        )
+        
     _print_pipeline_test_summary(wav_paths, channel_summary, single_result, multi_result)
-
+ 
     return {
         "wav_paths":        wav_paths,
         "channels_loaded":  channel_summary,
