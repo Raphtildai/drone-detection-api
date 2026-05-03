@@ -312,7 +312,12 @@ def detect(
     cfg = cfg or config
     ap  = AudioProcessor(cfg)
 
-    y0  = ap.pad_or_truncate(np.asarray(channels[0], dtype=np.float32))
+    # Use the channel with the highest RMS so a quiet reference mic
+    # doesn't trigger the RMS floor veto when others are loud.
+    y0 = max(
+        (ap.pad_or_truncate(np.asarray(c, dtype=np.float32)) for c in channels),
+        key=lambda y: float(np.sqrt(np.mean(y ** 2)))
+    )
 
     rms_db = float(20 * math.log10(float(np.sqrt(np.mean(y0 ** 2))) + 1e-8))
 
@@ -883,15 +888,18 @@ def comprehensive_pipeline_test(
             start = min(seg_i * seg_n, max(0, len(y_full) - seg_n))
  
             #  6  slice from the FULL channel arrays, not the
-            # one-segment truncated buffers that load_3ch() would return.
-            # ch_slice[i] uses full_channels[i] (the i-th file's full audio).
-            # This preserves real inter-channel delays for all segments.
-            ch_slice = [
+            # Build ch_slice with the currently-analyzed channel first so
+            # detect() uses it for RMS/CNN (it always reads channels[0]).
+            raw_slices = [
                 _slice_channel(full_channels[i], start, seg_n)
                 for i in range(len(full_channels))
             ]
- 
-            audio  = ch_slice[file_idx]   # reference mono = this file's channel
+            # Rotate so this file's channel is at index 0
+            ch_slice = [raw_slices[file_idx]] + [
+                raw_slices[i] for i in range(len(raw_slices)) if i != file_idx
+            ]
+
+            audio  = ch_slice[0]   # reference mono = this file's channel (now always index 0)
             t_s    = start / cfg.SR
             mel_fr = ap.mel(ap.pad_or_truncate(audio))
             rms_db = float(20 * math.log10(

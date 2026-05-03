@@ -673,7 +673,7 @@ def plot_polar_azimuth(
     ax.title.set_color(PLOT_STYLE["text"])
 
     # Predicted azimuths — blue bars
-    rads = np.radians([90 - a for a in azimuth_degs])
+    rads = np.radians([-a for a in azimuth_degs])
     counts, edges = np.histogram(rads, bins=36, range=(-np.pi, np.pi))
     centers = 0.5 * (edges[:-1] + edges[1:])
     ax.bar(centers, counts, width=edges[1] - edges[0], alpha=0.7,
@@ -681,7 +681,7 @@ def plot_polar_azimuth(
 
     # True azimuths — orange markers (if provided)
     if true_azimuths:
-        true_rads = np.radians([90 - a for a in true_azimuths])
+        true_rads = np.radians([-a for a in true_azimuths])
         true_counts, _ = np.histogram(true_rads, bins=36, range=(-np.pi, np.pi))
         ax.bar(centers, true_counts, width=edges[1] - edges[0], alpha=0.45,
                color=PLOT_STYLE["warn"], edgecolor=PLOT_STYLE["bg"], label="True")
