@@ -1,0 +1,19 @@
+{
+  "azimuth_deg": null,
+  "distance_m": null,
+  "height_m": null,
+  "source": "dunakeszi",
+  "original_bearing_deg": null,
+  "segment_id": 36,
+  "session": "show_14",
+  "maneuver_type": "circle",
+  "flight_phase": "orbit",
+  "n_drones": 5,
+  "split": "test",
+  "array": "BK-6-E",
+  "speed_mps": 4.0,
+  "radius_m": 10.0,
+  "duration_s": 8.0,
+  "has_position": false,
+  "note": "no_position: figure-8 or survey \u2014 valid for detection, not localization"
+}

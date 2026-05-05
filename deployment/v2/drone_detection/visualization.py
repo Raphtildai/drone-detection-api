@@ -85,7 +85,7 @@ PLOT_STYLE = {
 MIC_COLORS = ["#1565c0", "#2e7d32", "#6a1b9a"]   # ch0, ch1, ch2
 PAIR_COLORS = {"01": "#e65100", "02": "#1565c0", "12": "#2e7d32"}
 
-# Thesis palette (unchanged — already print-safe colours)
+# Thesis palette (unchanged - already print-safe colours)
 C_GOOD   = "#1D9E75"
 C_MOD    = "#BA7517"
 C_POOR   = "#D85A30"
@@ -263,13 +263,13 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
         val_acc  = [float(r["val_acc"]) for r in rows]
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, tr_loss, "-o", color=PLOT_STYLE["accent"], ms=4, label="Train loss")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Focal loss"); ax.set_title("Detection — Loss")
+        ax.set_xlabel("Epoch"); ax.set_ylabel("Focal loss"); ax.set_title("Detection - Loss")
         leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
         _style_legend(leg)
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, tr_acc,  "-o", color=PLOT_STYLE["ok"],   ms=4, label="Train acc %")
         ax.plot(epochs, val_acc, "-s", color=PLOT_STYLE["warn"], ms=4, label="Val acc %")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("Accuracy (%)"); ax.set_title("Detection — Accuracy")
+        ax.set_xlabel("Epoch"); ax.set_ylabel("Accuracy (%)"); ax.set_title("Detection - Accuracy")
         leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
         _style_legend(leg)
 
@@ -285,14 +285,14 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, tr_loss,  "-o", color=PLOT_STYLE["accent"], ms=4, label="Train")
         ax.plot(epochs, val_loss, "-s", color=PLOT_STYLE["warn"],   ms=4, label="Val")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("MSE loss"); ax.set_title("Localization — Loss")
+        ax.set_xlabel("Epoch"); ax.set_ylabel("MSE loss"); ax.set_title("Localization - Loss")
         leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
         _style_legend(leg)
         ax = axes[ax_idx]; ax_idx += 1
         ax.plot(epochs, mae_az,   "-o", color=PLOT_STYLE["err"],    ms=4, label="MAE az (°)")
         ax.plot(epochs, mae_dist, "-s", color=PLOT_STYLE["purple"], ms=4, label="MAE dist (m)")
         ax.plot(epochs, mae_ht,   "-^", color=PLOT_STYLE["ok"],     ms=4, label="MAE ht (m)")
-        ax.set_xlabel("Epoch"); ax.set_ylabel("MAE"); ax.set_title("Localization — MAE")
+        ax.set_xlabel("Epoch"); ax.set_ylabel("MAE"); ax.set_title("Localization - MAE")
         leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
         _style_legend(leg)
 
@@ -300,6 +300,226 @@ def plot_training_logs(cfg: Optional[Config] = None, save: bool = True):
     if save:
         _save_plot(fig, cfg.DRIVE_LOGS / "training_curves.png")
     _show_inline(fig); plt.close(fig)
+
+def plot_detection_training_curves(cfg: Optional[Config] = None, save: bool = True, file_name: str = ""):
+    """
+    Plot separate training curves for detection model.
+    
+    Shows:
+        - Training loss (Focal Loss) over epochs
+        - Training and validation accuracy over epochs
+        - Optional: Learning rate schedule
+    """
+    cfg = cfg or config
+    det_csv = cfg.DRIVE_LOGS / "detection_log.csv"
+    
+    if not det_csv.exists():
+        print(f"❌ Detection log not found: {det_csv}")
+        return None
+    
+    # Read data
+    with open(det_csv, newline="") as f:
+        rows = list(csv.DictReader(f))
+    
+    epochs = np.array([int(r["epoch"]) for r in rows])
+    tr_loss = np.array([float(r["tr_loss"]) for r in rows])
+    tr_acc = np.array([float(r["tr_acc"]) for r in rows])
+    val_acc = np.array([float(r["val_acc"]) for r in rows])
+    
+    # Find best validation accuracy
+    best_epoch = np.argmax(val_acc)
+    best_val_acc = val_acc[best_epoch]
+    
+    # Create figure with two subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"Detection Model Training Curves - {file_name if file_name else 'Detection Task'}",
+                 fontsize=16, color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
+    
+    # Plot 1: Loss
+    ax1.plot(epochs, tr_loss, '-o', color=PLOT_STYLE["accent"], 
+             linewidth=2, markersize=5, label='Training Loss')
+    ax1.axvline(best_epoch, color=C_GOOD, linestyle='--', linewidth=1.5, 
+                alpha=0.7, label=f'Best epoch ({best_epoch})')
+    ax1.set_xlabel('Epoch', fontsize=12)
+    ax1.set_ylabel('Focal Loss', fontsize=12)
+    ax1.set_title('Training Loss', fontsize=13, fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(loc='upper right', fontsize=11)
+    
+    # Annotate final loss
+    ax1.annotate(f'Final: {tr_loss[-1]:.4f}',
+                 xy=(epochs[-1], tr_loss[-1]),
+                 xytext=(epochs[-1] + 0.5, tr_loss[-1]),
+                 fontsize=10, color=PLOT_STYLE["text"])
+    
+    # Plot 2: Accuracy
+    ax2.plot(epochs, tr_acc, '-o', color=PLOT_STYLE["ok"], 
+             linewidth=2, markersize=5, label='Training Accuracy')
+    ax2.plot(epochs, val_acc, '-s', color=PLOT_STYLE["warn"], 
+             linewidth=2, markersize=5, label='Validation Accuracy')
+    ax2.axvline(best_epoch, color=C_GOOD, linestyle='--', linewidth=1.5, 
+                alpha=0.7, label=f'Best epoch ({best_epoch})')
+    ax2.set_xlabel('Epoch', fontsize=12)
+    ax2.set_ylabel('Accuracy (%)', fontsize=12)
+    ax2.set_title('Training vs Validation Accuracy', fontsize=13, fontweight='bold')
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(loc='lower right', fontsize=11)
+    
+    # Add text box with metrics
+    metrics_text = (f"Best Validation: {best_val_acc:.2f}%\n"
+                    f"Final Validation: {val_acc[-1]:.2f}%\n"
+                    f"Final Training: {tr_acc[-1]:.2f}%")
+    ax2.text(0.02, 0.98, metrics_text, transform=ax2.transAxes,
+             verticalalignment='top', fontsize=10,
+             bbox=dict(boxstyle='round', facecolor=PLOT_STYLE["panel_alt"], alpha=0.8))
+    
+    # Apply style
+    for ax in [ax1, ax2]:
+        ax.set_facecolor(PLOT_STYLE["panel"])
+        ax.tick_params(colors=PLOT_STYLE["text"], labelcolor=PLOT_STYLE["text"])
+        for spine in ax.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+    
+    plt.tight_layout()
+    
+    if save:
+        save_path = cfg.DRIVE_PLOTS / f"detection_training_curves_{file_name}.png"
+        _save_plot(fig, save_path, dpi=200)
+    
+    _show_inline(fig)
+    plt.close(fig)
+    return fig
+
+
+def plot_localization_training_curves(cfg: Optional[Config] = None, save: bool = True, file_name: str = ""):
+    """
+    Plot separate training curves for localization model.
+    
+    Shows:
+        - Training and validation loss (MSE) over epochs
+        - MAE for azimuth, distance, and height over epochs
+        - Optional: Learning rate schedule
+    """
+    cfg = cfg or config
+    loc_csv = cfg.DRIVE_LOGS / "localization_log.csv"
+    
+    if not loc_csv.exists():
+        print(f"❌ Localization log not found: {loc_csv}")
+        return None
+    
+    # Read data
+    with open(loc_csv, newline="") as f:
+        rows = list(csv.DictReader(f))
+    
+    epochs = np.array([int(r["epoch"]) for r in rows])
+    tr_loss = np.array([float(r["tr_loss"]) for r in rows])
+    val_loss = np.array([float(r["val_loss"]) for r in rows])
+    
+    # Get MAE values and convert distance/height to real units
+    mae_az = np.array([float(r["mae_az"]) for r in rows])
+    mae_dist = np.array([float(r["mae_dist"]) * cfg.MAX_LOCALIZATION_DIST for r in rows])
+    mae_ht = np.array([float(r["mae_ht"]) * cfg.MAX_LOCALIZATION_DIST for r in rows])
+    
+    # Find best epoch based on validation loss
+    best_epoch = np.argmin(val_loss)
+    best_val_loss = val_loss[best_epoch]
+    
+    # Create figure with two subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), facecolor=PLOT_STYLE["bg"])
+    fig.suptitle(f"Localization Model Training Curves - {file_name if file_name else 'Localization Task'}",
+                 fontsize=16, color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
+    
+    # Plot 1: Loss curves
+    ax1.plot(epochs, tr_loss, '-o', color=PLOT_STYLE["accent"], 
+             linewidth=2, markersize=5, label='Training Loss')
+    ax1.plot(epochs, val_loss, '-s', color=PLOT_STYLE["warn"], 
+             linewidth=2, markersize=5, label='Validation Loss')
+    ax1.axvline(best_epoch, color=C_GOOD, linestyle='--', linewidth=1.5, 
+                alpha=0.7, label=f'Best epoch ({best_epoch})')
+    ax1.set_xlabel('Epoch', fontsize=12)
+    ax1.set_ylabel('MSE Loss', fontsize=12)
+    ax1.set_title('Training vs Validation Loss', fontsize=13, fontweight='bold')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(loc='upper right', fontsize=11)
+    
+    # Annotate best validation loss
+    ax1.annotate(f'Best val loss: {best_val_loss:.4f}',
+                 xy=(best_epoch, best_val_loss),
+                 xytext=(best_epoch + 1, best_val_loss),
+                 fontsize=10, color=C_GOOD,
+                 arrowprops=dict(arrowstyle='->', color=C_GOOD, lw=1))
+    
+    # Plot 2: MAE curves
+    ax2.plot(epochs, mae_az, '-o', color=PLOT_STYLE["err"], 
+             linewidth=2, markersize=5, label='MAE Azimuth (°)', alpha=0.9)
+    ax2.plot(epochs, mae_dist, '-s', color=PLOT_STYLE["purple"], 
+             linewidth=2, markersize=5, label='MAE Distance (m)', alpha=0.9)
+    ax2.plot(epochs, mae_ht, '-^', color=PLOT_STYLE["ok"], 
+             linewidth=2, markersize=5, label='MAE Height (m)', alpha=0.9)
+    ax2.axvline(best_epoch, color=C_GOOD, linestyle='--', linewidth=1.5, 
+                alpha=0.7, label=f'Best epoch ({best_epoch})')
+    ax2.set_xlabel('Epoch', fontsize=12)
+    ax2.set_ylabel('Mean Absolute Error', fontsize=12)
+    ax2.set_title('Localization Errors (MAE)', fontsize=13, fontweight='bold')
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(loc='upper right', fontsize=10)
+    
+    # Add horizontal reference lines for "good" performance
+    ax2.axhline(30, color=C_GOOD, linestyle=':', linewidth=1, alpha=0.5, 
+                label='Good azimuth (<30°)')
+    ax2.axhline(60, color=C_MOD, linestyle=':', linewidth=1, alpha=0.5, 
+                label='Moderate azimuth (<60°)')
+    
+    # Add text box with final metrics
+    metrics_text = (f"Final Metrics (epoch {epochs[-1]}):\n"
+                    f"├─ Azimuth MAE: {mae_az[-1]:.1f}°\n"
+                    f"├─ Distance MAE: {mae_dist[-1]:.1f} m\n"
+                    f"└─ Height MAE: {mae_ht[-1]:.1f} m\n\n"
+                    f"Best Validation:\n"
+                    f"├─ Epoch: {best_epoch}\n"
+                    f"├─ Azimuth MAE: {mae_az[best_epoch]:.1f}°\n"
+                    f"├─ Distance MAE: {mae_dist[best_epoch]:.1f} m\n"
+                    f"└─ Height MAE: {mae_ht[best_epoch]:.1f} m")
+    
+    ax2.text(0.98, 0.98, metrics_text, transform=ax2.transAxes,
+             verticalalignment='top', horizontalalignment='right',
+             fontsize=9, family='monospace',
+             bbox=dict(boxstyle='round', facecolor=PLOT_STYLE["panel_alt"], alpha=0.9))
+    
+    # Apply style
+    for ax in [ax1, ax2]:
+        ax.set_facecolor(PLOT_STYLE["panel"])
+        ax.tick_params(colors=PLOT_STYLE["text"], labelcolor=PLOT_STYLE["text"])
+        for spine in ax.spines.values():
+            spine.set_color(PLOT_STYLE["spine"])
+    
+    plt.tight_layout()
+    
+    if save:
+        save_path = cfg.DRIVE_PLOTS / f"localization_training_curves_{file_name}.png"
+        _save_plot(fig, save_path, dpi=200)
+    
+    _show_inline(fig)
+    plt.close(fig)
+    return fig
+
+
+def plot_training_curves_separate(cfg: Optional[Config] = None, save: bool = True, file_name: str = ""):
+    """
+    Generate both detection and localization training curves as separate figures.
+    This is a convenience function that calls the two separate plotting functions.
+    """
+    print("=" * 60)
+    print("Generating Detection Training Curves")
+    print("=" * 60)
+    plot_detection_training_curves(cfg, save, f"{file_name}_detection" if file_name else "detection")
+    
+    print("\n" + "=" * 60)
+    print("Generating Localization Training Curves")
+    print("=" * 60)
+    plot_localization_training_curves(cfg, save, f"{file_name}_localization" if file_name else "localization")
+    
+    print("\n✅ Both training curve figures generated successfully!")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -366,7 +586,7 @@ def _panel3_localisation(ax, segments, cfg, PLOT_STYLE):
             plt.setp(cbar.ax.yaxis.get_ticklabels(), color=PLOT_STYLE["text"])
             cbar.outline.set_edgecolor(PLOT_STYLE["spine"])
         except Exception:
-            pass  # colorbar is cosmetic — never crash the dashboard
+            pass  # colorbar is cosmetic - never crash the dashboard
  
         ax.set_aspect("equal", adjustable="datalim")
         ax.legend(facecolor=PLOT_STYLE["panel_alt"],
@@ -401,7 +621,7 @@ def _panel3_localisation(ax, segments, cfg, PLOT_STYLE):
                         facecolor=PLOT_STYLE["panel_alt"],
                         edgecolor=PLOT_STYLE["spine"],
                         loc="upper right", fontsize=8)
-        from visualization import _style_legend   # noqa — adjust import path
+        from visualization import _style_legend   # noqa - adjust import path
         _style_legend(leg)
  
         ax.set_xlabel("Time (s)")
@@ -467,7 +687,7 @@ def _panel4_polar_compass(fig, gs, axes, segments, cfg, PLOT_STYLE):
  
     return ax_pol
 
-def _plot_analysis_report(segments, confirmed, cfg, title: str):
+def _plot_analysis_report(segments, confirmed, cfg, title: str, file_name: str = ""):
     """
     Six-panel light-themed analysis dashboard  (v18 patch).
  
@@ -488,7 +708,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
  
     # ── figure & axes ─────────────────────────────────────────────────────────
     fig = plt.figure(figsize=(20, 10), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=17,
+    fig.suptitle(f"Drone Analysis - {title}", fontsize=17,
                  color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
     gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
     axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]
@@ -591,7 +811,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
  
     # ── save ──────────────────────────────────────────────────────────────────
     cfg.DRIVE_PLOTS.mkdir(parents=True, exist_ok=True)
-    save_path = cfg.DRIVE_PLOTS / f"analysis_{Path(title).stem}.png"
+    save_path = cfg.DRIVE_PLOTS / f"analysis_{Path(title).stem}_{file_name}.png"
     plt.savefig(str(save_path), dpi=200, bbox_inches="tight")
     print(f"💾 Dashboard saved: {save_path}")
     _show_inline(fig)
@@ -599,7 +819,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
 
 
 def _plot_external_detection_scores(
-    segment_results, threshold: float, cfg: Config, title: str
+    segment_results, threshold: float, cfg: Config, title: str, file_name: str = ""
 ):
     """Light-themed segment probability chart for external audio analysis."""
     if not segment_results:
@@ -620,7 +840,7 @@ def _plot_external_detection_scores(
                label=f"Ext thr={threshold:.2f}")
     ax.axhline(cfg.DETECTION_THRESHOLD, color=PLOT_STYLE["err"], ls=":", lw=1.5,
                label=f"Main thr={cfg.DETECTION_THRESHOLD:.2f}")
-    ax.set_title(f"Robust External Detection — {title}", color=PLOT_STYLE["text"])
+    ax.set_title(f"Robust External Detection - {title}", color=PLOT_STYLE["text"])
     ax.set_xlabel("Time (s)"); ax.set_ylabel("Probability"); ax.set_ylim(0, 1.05)
     leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
     _style_legend(leg)
@@ -664,6 +884,7 @@ def plot_polar_azimuth(
     cfg:    Optional[Config] = None,
     save:   bool = True,
     true_azimuths: Optional[List[float]] = None,
+    file_name: str = "",
 ):
     cfg = cfg or config
     fig = plt.figure(figsize=(6, 6), facecolor=PLOT_STYLE["bg"])
@@ -672,14 +893,14 @@ def plot_polar_azimuth(
     ax.tick_params(colors=PLOT_STYLE["text"])
     ax.title.set_color(PLOT_STYLE["text"])
 
-    # Predicted azimuths — blue bars
+    # Predicted azimuths - blue bars
     rads = np.radians([-a for a in azimuth_degs])
     counts, edges = np.histogram(rads, bins=36, range=(-np.pi, np.pi))
     centers = 0.5 * (edges[:-1] + edges[1:])
     ax.bar(centers, counts, width=edges[1] - edges[0], alpha=0.7,
            color=PLOT_STYLE["accent"], edgecolor=PLOT_STYLE["bg"], label="Predicted")
 
-    # True azimuths — orange markers (if provided)
+    # True azimuths - orange markers (if provided)
     if true_azimuths:
         true_rads = np.radians([-a for a in true_azimuths])
         true_counts, _ = np.histogram(true_rads, bins=36, range=(-np.pi, np.pi))
@@ -692,7 +913,7 @@ def plot_polar_azimuth(
     ax.set_title(title, pad=12); ax.grid(color=PLOT_STYLE["grid"], alpha=0.5)
     plt.tight_layout()
     if save:
-        _save_plot(fig, cfg.DRIVE_PLOTS / "polar_azimuth.png")
+        _save_plot(fig, cfg.DRIVE_PLOTS / f"polar_azimuth_{file_name}.png")
     _show_inline(fig); plt.close(fig)
 
 
@@ -700,6 +921,7 @@ def plot_multi_drone_positions(
     drones: List[dict],
     cfg:   Optional[Config] = None,
     save:  bool = True,
+    file_name: str = "",
 ):
     cfg = cfg or config
     fig, ax = plt.subplots(figsize=(7, 7))
@@ -716,17 +938,17 @@ def plot_multi_drone_positions(
         if cr > 0 and not math.isnan(cr):
             ax.add_patch(plt.Circle(xy, cr, color=col, alpha=0.15, fill=True))
     ax.set_xlabel("X (m)"); ax.set_ylabel("Y (m)")
-    ax.set_title(f"Multi-Drone Positions ({len(drones)} detected)")
+    ax.set_title(f"Multi-Drone Positions ({len(drones)} detected) - {file_name}")
     leg = ax.legend(facecolor=PLOT_STYLE["panel_alt"], edgecolor=PLOT_STYLE["spine"])
     _style_legend(leg)
     ax.set_aspect("equal")
     plt.tight_layout()
     if save:
-        _save_plot(fig, cfg.DRIVE_PLOTS / "multi_drone_positions.png")
+        _save_plot(fig, cfg.DRIVE_PLOTS / f"multi_drone_positions_{file_name}.png")
     _show_inline(fig); plt.close(fig)
 
 
-def plot_track_trajectory(tracks, cfg: Optional[Config] = None, save: bool = True):
+def plot_track_trajectory(tracks, cfg: Optional[Config] = None, save: bool = True, file_name: str = ""):
     """Top-down track paths with plasma colormap. Works for 1-point tracks."""
     cfg = cfg or config
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -767,7 +989,7 @@ def plot_track_trajectory(tracks, cfg: Optional[Config] = None, save: bool = Tru
     ax.set_aspect("equal")
     plt.tight_layout()
     if save:
-        _save_plot(fig, cfg.DRIVE_PLOTS / "track_trajectory.png")
+        _save_plot(fig, cfg.DRIVE_PLOTS / f"track_trajectory_{file_name}.png")
     _show_inline(fig); plt.close(fig)
 
 
@@ -828,7 +1050,7 @@ def load_thesis_report(json_path: str) -> dict:
 
 
 def plot_azimuth_mae_per_position(save_path: Optional[Path] = None):
-    """Figure 1 — horizontal bar chart of azimuth MAE per measurement position."""
+    """Figure 1 - horizontal bar chart of azimuth MAE per measurement position."""
     items  = sorted(_PER_POSITION.items())
     labels = [k.replace("(", "").replace(")", "").replace(", ", "/") for k, _ in items]
     vals   = [v["az"] for _, v in items]
@@ -861,7 +1083,7 @@ def plot_azimuth_mae_per_position(save_path: Optional[Path] = None):
 
 
 def plot_val_test_comparison(save_path: Optional[Path] = None):
-    """Figure 2 — grouped bar chart comparing val vs test on all three metrics."""
+    """Figure 2 - grouped bar chart comparing val vs test on all three metrics."""
     metrics   = ["Azimuth MAE (°)", "Distance MAE (m)", "Height MAE (m)"]
     val_vals  = [_SUMMARY["val"]["az_mae"],  _SUMMARY["val"]["di_mae"],  _SUMMARY["val"]["ht_mae"]]
     test_vals = [_SUMMARY["test"]["az_mae"], _SUMMARY["test"]["di_mae"], _SUMMARY["test"]["ht_mae"]]
@@ -873,7 +1095,7 @@ def plot_val_test_comparison(save_path: Optional[Path] = None):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.3,
                 f"{bar.get_height():.1f}", ha="center", va="bottom", fontsize=11)
     ax.set_xticks(x); ax.set_xticklabels(metrics)
-    ax.set_ylabel("Error"); ax.set_title("Val vs test — all metrics"); ax.legend()
+    ax.set_ylabel("Error"); ax.set_title("Val vs test - all metrics"); ax.legend()
     ax.set_ylim(0, max(val_vals + test_vals) * 1.25)
     plt.tight_layout()
     if save_path:
@@ -882,7 +1104,7 @@ def plot_val_test_comparison(save_path: Optional[Path] = None):
 
 
 def plot_error_histogram(save_path: Optional[Path] = None):
-    """Figure 3 — azimuth error histogram for test positions."""
+    """Figure 3 - azimuth error histogram for test positions."""
     test_errs = [v["az"] for v in _PER_POSITION.values() if v["split"] == "test"]
     bins = np.arange(0, 181, 15)
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -891,7 +1113,7 @@ def plot_error_histogram(save_path: Optional[Path] = None):
     ax.axvline(np.median(test_errs), color=C_VAL,  lw=1.5, ls="-.", label=f"Median {np.median(test_errs):.1f}°")
     ax.axvline(90, color=C_RANDOM, lw=1.2, ls=":", label="Random baseline (90°)")
     ax.set_xlabel("Azimuth MAE (degrees)"); ax.set_ylabel("Number of positions")
-    ax.set_title("Azimuth error distribution — test set"); ax.set_xlim(0, 180)
+    ax.set_title("Azimuth error distribution - test set"); ax.set_xlim(0, 180)
     ax.legend(fontsize=11); plt.tight_layout()
     if save_path:
         fig.savefig(str(save_path), dpi=200); print(f"Saved: {save_path}")
@@ -899,7 +1121,7 @@ def plot_error_histogram(save_path: Optional[Path] = None):
 
 
 def plot_predicted_vs_true(save_path: Optional[Path] = None):
-    """Figure 4 — scatter of predicted vs true azimuth for all positions."""
+    """Figure 4 - scatter of predicted vs true azimuth for all positions."""
     rng = np.random.default_rng(42)
     true_az, pred_az, split_colors = [], [], []
     for key, v in _PER_POSITION.items():
@@ -928,7 +1150,7 @@ def plot_predicted_vs_true(save_path: Optional[Path] = None):
 
 
 def plot_azimuth_distance_heatmap(save_path: Optional[Path] = None):
-    """Figure 5 — azimuth × distance mean MAE heatmap."""
+    """Figure 5 - azimuth × distance mean MAE heatmap."""
     azimuths = [0, 45, 90, 135, 180, 225, 270, 315]
     distances = [10, 20]
     grid = np.zeros((len(distances), len(azimuths)))
@@ -943,7 +1165,7 @@ def plot_azimuth_distance_heatmap(save_path: Optional[Path] = None):
     ax.set_xticks(range(len(azimuths))); ax.set_xticklabels([f"{a}°" for a in azimuths])
     ax.set_yticks(range(len(distances))); ax.set_yticklabels([f"{d} m" for d in distances])
     ax.set_xlabel("Azimuth sector"); ax.set_ylabel("Distance")
-    ax.set_title("Mean azimuth MAE — azimuth × distance (°)")
+    ax.set_title("Mean azimuth MAE - azimuth × distance (°)")
     for row in range(len(distances)):
         for col in range(len(azimuths)):
             val = grid[row, col]
@@ -956,7 +1178,7 @@ def plot_azimuth_distance_heatmap(save_path: Optional[Path] = None):
 
 
 def plot_training_curves(cfg: Optional[Config] = None, save_path: Optional[Path] = None):
-    """Figure 6 — loss and MAE training curves from localization_log.csv."""
+    """Figure 6 - loss and MAE training curves from localization_log.csv."""
     cfg = cfg or config
     log_path = cfg.DRIVE_LOGS / "localization_log.csv"
     if not log_path.exists():
@@ -987,7 +1209,7 @@ def plot_training_curves(cfg: Optional[Config] = None, save_path: Optional[Path]
 
 
 def plot_polar_mae(save_path: Optional[Path] = None):
-    """Figure 7 — polar compass showing mean azimuth MAE by direction."""
+    """Figure 7 - polar compass showing mean azimuth MAE by direction."""
     az_groups = defaultdict(list)
     for key, v in _PER_POSITION.items():
         az_val = int(key.strip("()").split(",")[0].strip())
@@ -1048,7 +1270,7 @@ def plot_all_thesis_figures(cfg: Optional[Config] = None):
 # Multi-drone suite dashboards
 # ══════════════════════════════════════════════════════════════════════════════
 
-def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
+def plot_suite_results_from_data(results, cfg: Optional[Config] = None, file_name: str = ""):
     """
     4-panel light dashboard from a list of ScenarioResult objects.
     Works without re-running the suite.
@@ -1060,7 +1282,7 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     names = [r.scenario_name.replace("_", "\n") for r in results]
 
     fig = plt.figure(figsize=(22, 14), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle("Multi-Drone Test Suite — Results Dashboard",
+    fig.suptitle("Multi-Drone Test Suite - Results Dashboard",
                  color=PLOT_STYLE["accent"], fontsize=17, fontweight="bold", y=0.98)
     gs  = gridspec.GridSpec(2, 2, figure=fig, hspace=0.42, wspace=0.32)
     ax_det   = fig.add_subplot(gs[0, 0])
@@ -1123,11 +1345,11 @@ def plot_suite_results_from_data(results, cfg: Optional[Config] = None):
     ax_track.legend(facecolor=PLOT_STYLE["panel"], fontsize=10)
 
     plt.tight_layout(rect=[0, 0.02, 1, 0.97])
-    _save_plot(fig, cfg.DRIVE_PLOTS / "multidrone_suite_dashboard.png")
+    _save_plot(fig, cfg.DRIVE_PLOTS / f"multidrone_suite_dashboard_{file_name}.png")
     _show_inline(fig); plt.close(fig)
 
 
-def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios=None):
+def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios=None, file_name: str = ""):
     """Standalone top-down map: true positions vs TDOA predictions."""
     cfg = cfg or config
     fig, ax = plt.subplots(figsize=(9, 9))
@@ -1148,7 +1370,7 @@ def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios
     ax.set_title("True vs predicted drone positions (all scenarios)")
     ax.set_aspect("equal"); ax.legend(facecolor=PLOT_STYLE["panel"], fontsize=10)
     plt.tight_layout()
-    _save_plot(fig, cfg.DRIVE_PLOTS / "multidrone_position_map.png")
+    _save_plot(fig, cfg.DRIVE_PLOTS / f"multidrone_position_map_{file_name}.png")
     _show_inline(fig); plt.close(fig)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1157,14 +1379,14 @@ def plot_position_map_from_data(results, cfg: Optional[Config] = None, scenarios
 """
 Figure catalogue
 ────────────────
-Fig A  Detection overview      — gauge + bar-chart of per-session probabilities
-Fig B  Detection breakdown      — detection-rate vs n_drones, noise_profile, drone_type
-Fig C  Azimuth polar compass    — predicted vs true rings, coloured by error magnitude
-Fig D  Predicted vs true az     — scatter with ±45° / ±90° error bands, identity line
-Fig E  Azimuth error histogram  — distribution with mean/median/random-baseline markers
-Fig F  Distance & height errors — paired violin + strip charts, error-vs-distance scatter
-Fig G  Per-session heatmap      — session × metric colour grid (suitable for appendix)
-Fig H  All-metrics summary      — MAE bar chart with uncertainty, radar chart overlay
+Fig A  Detection overview      - gauge + bar-chart of per-session probabilities
+Fig B  Detection breakdown      - detection-rate vs n_drones, noise_profile, drone_type
+Fig C  Azimuth polar compass    - predicted vs true rings, coloured by error magnitude
+Fig D  Predicted vs true az     - scatter with ±45° / ±90° error bands, identity line
+Fig E  Azimuth error histogram  - distribution with mean/median/random-baseline markers
+Fig F  Distance & height errors - paired violin + strip charts, error-vs-distance scatter
+Fig G  Per-session heatmap      - session × metric colour grid (suitable for appendix)
+Fig H  All-metrics summary      - MAE bar chart with uncertainty, radar chart overlay
 """
 # ─────────────────────────────────────────────────────────────────────────────
 # Internal helpers
@@ -1203,7 +1425,7 @@ def _angular_error(pred_deg: float, true_deg: float) -> float:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure A — Detection overview
+# Figure A - Detection overview
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_a_detection_overview(rows: List[Dict], cfg, title_prefix: str
@@ -1218,7 +1440,7 @@ def _fig_a_detection_overview(rows: List[Dict], cfg, title_prefix: str
     det_rate = sum(dets) / max(n, 1)
 
     fig = plt.figure(figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig A: Detection Overview",
+    fig.suptitle(f"{title_prefix} - Fig A: Detection Overview",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     gs = gridspec.GridSpec(1, 4, figure=fig, wspace=0.38)
     ax_bar  = fig.add_subplot(gs[0, :3])
@@ -1279,7 +1501,7 @@ def _fig_a_detection_overview(rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure B — Detection breakdown
+# Figure B - Detection breakdown
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_b_detection_breakdown(rows: List[Dict], cfg, title_prefix: str
@@ -1296,7 +1518,7 @@ def _fig_b_detection_breakdown(rows: List[Dict], cfg, title_prefix: str
         return keys, rates, counts
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig B: Detection Rate Breakdown",
+    fig.suptitle(f"{title_prefix} - Fig B: Detection Rate Breakdown",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     _apply_dark_style(fig, list(axes))
 
@@ -1347,7 +1569,7 @@ def _fig_b_detection_breakdown(rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure C — Azimuth polar compass
+# Figure C - Azimuth polar compass
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
@@ -1361,7 +1583,7 @@ def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
     errors  = np.array([r["az_err_deg"]  for r in lab_rows])
 
     fig = plt.figure(figsize=(8, 8), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig C: Azimuth Polar Compass",
+    fig.suptitle(f"{title_prefix} - Fig C: Azimuth Polar Compass",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     ax = fig.add_subplot(111, projection="polar")
     ax.set_facecolor(PLOT_STYLE["panel"])
@@ -1372,13 +1594,13 @@ def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
     centers = 0.5 * (edges[:-1] + edges[1:])
     width = edges[1] - edges[0]
 
-    # True azimuths — light fill
+    # True azimuths - light fill
     true_rads = np.radians(90.0 - true_az)
     t_counts, _ = np.histogram(true_rads, bins=edges)
     ax.bar(centers, t_counts, width=width, alpha=0.35,
            color=PLOT_STYLE["warn"], edgecolor=PLOT_STYLE["bg"], label="True")
 
-    # Predicted azimuths — coloured by mean error in that bin
+    # Predicted azimuths - coloured by mean error in that bin
     pred_rads = np.radians(90.0 - pred_az)
     p_counts, _ = np.histogram(pred_rads, bins=edges)
     for i, (c, cnt) in enumerate(zip(centers, p_counts)):
@@ -1398,9 +1620,9 @@ def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
 
     legend_handles = [
         mpatches.Patch(color=PLOT_STYLE["warn"], alpha=0.45, label="True azimuth"),
-        mpatches.Patch(color=C_GOOD,  label="Predicted — good (<30°)"),
-        mpatches.Patch(color=C_MOD,   label="Predicted — moderate (30–60°)"),
-        mpatches.Patch(color=C_POOR,  label="Predicted — poor (>60°)"),
+        mpatches.Patch(color=C_GOOD,  label="Predicted - good (<30°)"),
+        mpatches.Patch(color=C_MOD,   label="Predicted - moderate (30–60°)"),
+        mpatches.Patch(color=C_POOR,  label="Predicted - poor (>60°)"),
     ]
     leg = ax.legend(handles=legend_handles,
                     loc="lower left", bbox_to_anchor=(-0.18, -0.14),
@@ -1412,7 +1634,7 @@ def _fig_c_polar_compass(lab_rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure D — Predicted vs true azimuth scatter
+# Figure D - Predicted vs true azimuth scatter
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_d_pred_vs_true(lab_rows: List[Dict], cfg, title_prefix: str
@@ -1429,7 +1651,7 @@ def _fig_d_pred_vs_true(lab_rows: List[Dict], cfg, title_prefix: str
         dists = np.ones(len(lab_rows)) * 8.0
 
     fig, ax = plt.subplots(figsize=(8, 8), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig D: Predicted vs True Azimuth",
+    fig.suptitle(f"{title_prefix} - Fig D: Predicted vs True Azimuth",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     _apply_dark_style(fig, [ax])
 
@@ -1487,7 +1709,7 @@ def _fig_d_pred_vs_true(lab_rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure E — Azimuth error histogram
+# Figure E - Azimuth error histogram
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_e_az_histogram(lab_rows: List[Dict], cfg, title_prefix: str
@@ -1500,7 +1722,7 @@ def _fig_e_az_histogram(lab_rows: List[Dict], cfg, title_prefix: str
     bins   = np.arange(0, 182, 10)
 
     fig, ax1 = plt.subplots(figsize=(10, 5), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig E: Azimuth Error Distribution",
+    fig.suptitle(f"{title_prefix} - Fig E: Azimuth Error Distribution",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     _apply_dark_style(fig, [ax1])
 
@@ -1562,7 +1784,7 @@ def _fig_e_az_histogram(lab_rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure F — Distance & height error analysis
+# Figure F - Distance & height error analysis
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_f_dist_height(lab_rows: List[Dict], cfg, title_prefix: str
@@ -1576,7 +1798,7 @@ def _fig_f_dist_height(lab_rows: List[Dict], cfg, title_prefix: str
     dist_true = _finite([r.get("dist_true_m", float("nan")) for r in lab_rows])
 
     fig, axes = plt.subplots(1, 3, figsize=(16, 5), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig F: Distance & Height Error Analysis",
+    fig.suptitle(f"{title_prefix} - Fig F: Distance & Height Error Analysis",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     _apply_dark_style(fig, list(axes))
 
@@ -1643,7 +1865,7 @@ def _fig_f_dist_height(lab_rows: List[Dict], cfg, title_prefix: str
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure G — Per-session heatmap
+# Figure G - Per-session heatmap
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_g_session_heatmap(lab_rows: List[Dict], cfg, title_prefix: str,
@@ -1673,7 +1895,7 @@ def _fig_g_session_heatmap(lab_rows: List[Dict], cfg, title_prefix: str,
     fig, axes = plt.subplots(1, len(metrics),
                               figsize=(len(metrics) * 2.2, fig_h),
                               facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig G: Per-session Metric Heatmap",
+    fig.suptitle(f"{title_prefix} - Fig G: Per-session Metric Heatmap",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
 
     for col_idx, (ax, met, lbl, cmap, vmin, vmax) in enumerate(
@@ -1704,7 +1926,7 @@ def _fig_g_session_heatmap(lab_rows: List[Dict], cfg, title_prefix: str,
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Figure H — All-metrics summary + radar
+# Figure H - All-metrics summary + radar
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _fig_h_summary(results: Dict, lab_rows: List[Dict],
@@ -1726,7 +1948,7 @@ def _fig_h_summary(results: Dict, lab_rows: List[Dict],
     std_ht   = float(np.std(ht_errs))    if len(ht_errs)   else 0.0
 
     fig = plt.figure(figsize=(14, 6), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"{title_prefix} — Fig H: All-Metrics Summary",
+    fig.suptitle(f"{title_prefix} - Fig H: All-Metrics Summary",
                  fontsize=15, color=PLOT_STYLE["accent"], fontweight="bold")
     gs   = gridspec.GridSpec(1, 2, figure=fig, wspace=0.38)
     ax_bar = fig.add_subplot(gs[0, 0])
@@ -1734,7 +1956,7 @@ def _fig_h_summary(results: Dict, lab_rows: List[Dict],
     _apply_dark_style(fig, [ax_bar])
     ax_rad.set_facecolor(PLOT_STYLE["panel"])
 
-    # — Bar chart —
+    # - Bar chart -
     bar_labels = ["Azimuth MAE (°)", "Distance MAE (m)", "Height MAE (m)"]
     bar_vals   = [mae_az,   mae_dist,  mae_ht]
     bar_stds   = [std_az,   std_dist,  std_ht]
@@ -1755,7 +1977,7 @@ def _fig_h_summary(results: Dict, lab_rows: List[Dict],
     ax_bar.set_ylabel("Mean Absolute Error")
     ax_bar.set_title(f"MAE summary  (n={len(az_errs)} labelled sessions)")
 
-    # — Radar chart —
+    # - Radar chart -
     # Axes: Detection rate, Az accuracy (inverted MAE), Dist accuracy, Ht accuracy
     radar_labels = ["Detection\nrate", "Az accuracy\n(1−MAE/90)", 
                     "Dist accuracy\n(1−MAE/20)", "Ht accuracy\n(1−MAE/15)"]
@@ -1886,7 +2108,7 @@ def plot_test_evaluation_thesis(
         _render("fig_h", _fig_h_summary,
                 results, lab_rows, cfg, title_prefix)
     else:
-        print(f"  ⚠️  Only {n_lab} labelled sessions — "
+        print(f"  ⚠️  Only {n_lab} labelled sessions - "
               f"skipping figs C–H (need ≥ 3).")
 
     print(f"\n  ✅  {len(saved)} figure(s) saved to {out_dir}\n")
@@ -1986,13 +2208,105 @@ def create_comparison_plot(
 
 # Combined three channel analysis function plots
 # ═════════════════════════════════════════════════════════════════════════════
-# Figure 1 — Per-channel enhanced dashboard
+# Figure 1 - Per-channel enhanced dashboard
 # ═════════════════════════════════════════════════════════════════════════════
+def _plot_segment_table(seg_data: list, n_ch: int, cfg, save: bool = True, file_name: str = ""):
+    """
+    Standalone segment-level summary table, saved separately so it doesn't
+    crowd the per-channel analysis dashboard when there are many segments.
+    """
+    # Build headers and rows
+    col_headers = ["Seg", "Time (s)"]
+    for ch_i in range(n_ch):
+        col_headers += [f"M{ch_i+1} Conf", f"M{ch_i+1} CNN",
+                        f"M{ch_i+1} RMS", f"M{ch_i+1} Az°"]
+    col_headers += ["Az std°"]
+
+    table_rows = []
+    for row in seg_data:
+        tr = [str(row["seg"]), f"{row['t']:.1f}"]
+        for ch_i in range(n_ch):
+            prob = row.get(f"prob_ch{ch_i}", float("nan"))
+            cnn  = row.get(f"cnn_ch{ch_i}", float("nan"))
+            rms  = row.get(f"rms_ch{ch_i}", float("nan"))
+            az   = row.get(f"az_ch{ch_i}",  float("nan"))
+            tr += [
+                f"{prob:.3f}" if not math.isnan(prob) else "-",
+                f"{cnn:.3f}"  if not math.isnan(cnn)  else "-",
+                f"{rms:.1f}"  if not math.isnan(rms)  else "-",
+                f"{az:.1f}"   if not math.isnan(az)   else "-",
+            ]
+        az_std_v = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
+        az_std_val = float(np.std(az_std_v)) if len(az_std_v) >= 2 else float("nan")
+        tr.append(f"{az_std_val:.1f}" if not math.isnan(az_std_val) else "-")
+        table_rows.append(tr)
+
+    n_segs = len(table_rows)
+    n_cols = len(col_headers)
+
+    # Scale figure height with number of segments (min 4, ~0.28 per row)
+    fig_h = max(4.0, 1.2 + n_segs * 0.28)
+    fig, ax = plt.subplots(figsize=(min(n_cols * 1.35, 26), fig_h),
+                           facecolor=PLOT_STYLE["bg"])
+    ax.axis("off")
+    ax.set_facecolor(PLOT_STYLE["bg"])
+    fig.suptitle(
+        f"Segment-level Summary  -  Confidence / RMS (dB) / Azimuth (°)  per Channel - {file_name}",
+        fontsize=13, color=PLOT_STYLE["text"], fontweight="bold", y=0.98,
+    )
+
+    tbl = ax.table(
+        cellText=table_rows,
+        colLabels=col_headers,
+        loc="center",
+        cellLoc="center",
+    )
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(8.5)
+    # Row height scales down slightly when there are many segments
+    row_h = max(0.45, min(1.55, 18.0 / max(n_segs, 1)))
+    tbl.scale(1.0, row_h)
+
+    # Style header
+    for j in range(n_cols):
+        tbl[(0, j)].set_facecolor(PLOT_STYLE["accent"])
+        tbl[(0, j)].get_text().set_color("white")
+        tbl[(0, j)].get_text().set_fontweight("bold")
+
+    # Alternate row shading + colour-code Az std column
+    az_col_idx = n_cols - 1
+    for i, row in enumerate(seg_data):
+        bg = PLOT_STYLE["panel_alt"] if i % 2 == 0 else PLOT_STYLE["panel"]
+        for j in range(n_cols):
+            cell = tbl[(i + 1, j)]
+            cell.set_facecolor(bg)
+            cell.get_text().set_color(PLOT_STYLE["text"])
+
+        az_std_v = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
+        az_std_val = float(np.std(az_std_v)) if len(az_std_v) >= 2 else float("nan")
+        if not math.isnan(az_std_val):
+            hi_col = (PLOT_STYLE["ok"]   if az_std_val < 10  else
+                      PLOT_STYLE["warn"] if az_std_val < 25  else
+                      PLOT_STYLE["err"])
+            tbl[(i + 1, az_col_idx)].set_facecolor(hi_col)
+            tbl[(i + 1, az_col_idx)].get_text().set_color("white")
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+    if save:
+        _save(fig, cfg.DRIVE_PLOTS / f"thesis_segment_table_{file_name}.png")
+    try:
+        from IPython.display import display
+        display(fig)
+    except Exception:
+        pass
+    plt.close(fig)
 
 def plot_per_channel_enhanced(
     per_file_results: list,
     cfg=None,
     save: bool = True,
+    file_name: str = "Per-Channel Analysis Dashboard",
 ):
     """
     Per-channel analysis dashboard.
@@ -2051,27 +2365,25 @@ def plot_per_channel_enhanced(
     # ── Figure ────────────────────────────────────────────────────────────
     fig = plt.figure(figsize=(22, 20), facecolor=PLOT_STYLE["bg"])
     fig.suptitle(
-        "Per-Channel Analysis",
+        f"Per-Channel Analysis Dashboard - {file_name}",
         fontsize=18, color=PLOT_STYLE["accent"], fontweight="bold", y=0.995,
     )
 
     gs_outer = gridspec.GridSpec(
-        4, 1, figure=fig,
-        height_ratios=[3.0, 3.0, 2.5, 3.5],
+        3, 1, figure=fig,
+        height_ratios=[3.0, 3.0, 2.5],
         hspace=0.52,
     )
 
-    # Row 0 — Detection timelines
+    # Row 0 - Detection timelines
     gs_row0 = gridspec.GridSpecFromSubplotSpec(1, n_ch, subplot_spec=gs_outer[0],
                                                wspace=0.30)
-    # Row 1 — Localisation scatter
+    # Row 1 - Localisation scatter
     gs_row1 = gridspec.GridSpecFromSubplotSpec(1, n_ch, subplot_spec=gs_outer[1],
                                                wspace=0.35)
-    # Row 2 — Cross-channel metrics
+    # Row 2 - Cross-channel metrics
     gs_row2 = gridspec.GridSpecFromSubplotSpec(1, 3, subplot_spec=gs_outer[2],
                                                wspace=0.38)
-    # Row 3 — Segment table (full width, no axes frame)
-    ax_table = fig.add_subplot(gs_outer[3])
 
     all_axes = []
 
@@ -2097,7 +2409,7 @@ def plot_per_channel_enhanced(
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Probability" if ch_i == 0 else "")
         mic_name = Path(r["wav_path"]).stem
-        ax.set_title(f"Mic {ch_i+1}  —  {mic_name[:28]}")
+        ax.set_title(f"Mic {ch_i+1}  -  {mic_name[:28]}")
         if ch_i == 0:
             ax.legend(fontsize=8, facecolor=PLOT_STYLE["panel_alt"],
                       edgecolor=PLOT_STYLE["spine"])
@@ -2164,7 +2476,7 @@ def plot_per_channel_enhanced(
 
     # ── Row 2: Cross-channel metrics ──────────────────────────────────────
 
-    # — Panel A: Cross-channel RMS comparison —
+    # - Panel A: Cross-channel RMS comparison -
     ax_rms = fig.add_subplot(gs_row2[0])
     all_axes.append(ax_rms)
     ts_plot = [row["t"] for row in seg_data]
@@ -2178,11 +2490,11 @@ def plot_per_channel_enhanced(
                    label=f"Mic {ch_i+1}")
     ax_rms.set_xlabel("Time (s)")
     ax_rms.set_ylabel("RMS (dB)")
-    ax_rms.set_title("RMS per Segment — All Mics")
+    ax_rms.set_title("RMS per Segment - All Mics")
     ax_rms.legend(fontsize=9, facecolor=PLOT_STYLE["panel_alt"],
                   edgecolor=PLOT_STYLE["spine"])
 
-    # — Panel B: Azimuth agreement (std across channels per segment) —
+    # - Panel B: Azimuth agreement (std across channels per segment) -
     ax_az = fig.add_subplot(gs_row2[1])
     all_axes.append(ax_az)
     az_stds, az_means = [], []
@@ -2225,7 +2537,7 @@ def plot_per_channel_enhanced(
                         ("> 25° (poor)", PLOT_STYLE["err"])]:
         ax_az.bar([], [], color=col, alpha=0.70, label=label)
 
-    # — Panel C: Continuous track legend —
+    # - Panel C: Continuous track legend -
     ax_trk = fig.add_subplot(gs_row2[2])
     all_axes.append(ax_trk)
     ax_trk.set_facecolor(PLOT_STYLE["panel"])
@@ -2257,7 +2569,7 @@ def plot_per_channel_enhanced(
             angles = [math.degrees(math.atan2(p[1], p[0])) % 360 for p in pts]
             az_str = f"{min(angles):.0f}–{max(angles):.0f}"
         else:
-            az_str = "—"
+            az_str = "-"
 
         patch = mpatches.Patch(color=col, alpha=0.85)
         ax_trk.text(
@@ -2281,80 +2593,14 @@ def plot_per_channel_enhanced(
         ax_trk.text(0.5, 0.5, "No confirmed tracks", ha="center", va="center",
                     transform=ax_trk.transAxes, color=PLOT_STYLE["muted"], fontsize=11)
 
-    # ── Row 3: Segment table ───────────────────────────────────────────────
-    ax_table.axis("off")
-    ax_table.set_facecolor(PLOT_STYLE["bg"])
-    ax_table.set_title("Segment-level Summary  —  Confidence / RMS (dB) / Azimuth (°)  per Channel",
-                        fontsize=12, color=PLOT_STYLE["text"], fontweight="bold", pad=6)
-
-    # Build table data
-    col_headers = ["Seg", "Time (s)"]
-    for ch_i in range(n_ch):
-        col_headers += [f"M{ch_i+1} Conf", f"M{ch_i+1} CNN",
-                        f"M{ch_i+1} RMS", f"M{ch_i+1} Az°"]
-    col_headers += ["Az std°"]
-
-    table_rows = []
-    for row in seg_data:
-        tr = [str(row["seg"]), f"{row['t']:.1f}"]
-        for ch_i in range(n_ch):
-            prob = row.get(f"prob_ch{ch_i}", float("nan"))
-            cnn  = row.get(f"cnn_ch{ch_i}", float("nan"))
-            rms  = row.get(f"rms_ch{ch_i}", float("nan"))
-            az   = row.get(f"az_ch{ch_i}", float("nan"))
-            tr += [
-                f"{prob:.3f}" if not math.isnan(prob) else "—",
-                f"{cnn:.3f}"  if not math.isnan(cnn)  else "—",
-                f"{rms:.1f}"  if not math.isnan(rms)  else "—",
-                f"{az:.1f}"   if not math.isnan(az)   else "—",
-            ]
-        az_std = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
-        az_std_v = float(np.std(az_std)) if len(az_std) >= 2 else float("nan")
-        tr.append(f"{az_std_v:.1f}" if not math.isnan(az_std_v) else "—")
-        table_rows.append(tr)
-
-    tbl = ax_table.table(
-        cellText=table_rows,
-        colLabels=col_headers,
-        loc="center",
-        cellLoc="center",
-    )
-    tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8.5)
-    tbl.scale(1.0, 1.55)
-
-    # Style header row
-    for j in range(len(col_headers)):
-        tbl[(0, j)].set_facecolor(PLOT_STYLE["accent"])
-        tbl[(0, j)].get_text().set_color("white")
-        tbl[(0, j)].get_text().set_fontweight("bold")
-
-    # Alternate row shading + colour-code high Az std
-    for i, row in enumerate(seg_data):
-        bg = PLOT_STYLE["panel_alt"] if i % 2 == 0 else PLOT_STYLE["panel"]
-        for j in range(len(col_headers)):
-            cell = tbl[(i + 1, j)]
-            cell.set_facecolor(bg)
-            cell.get_text().set_color(PLOT_STYLE["text"])
-
-        # Highlight Az std column
-        az_col_idx = len(col_headers) - 1
-        az_std_v = _finite([row.get(f"az_ch{c}") for c in range(n_ch)])
-        az_std_val = float(np.std(az_std_v)) if len(az_std_v) >= 2 else float("nan")
-        if not math.isnan(az_std_val):
-            hi_col = (PLOT_STYLE["ok"]   if az_std_val < 10  else
-                      PLOT_STYLE["warn"] if az_std_val < 25  else
-                      PLOT_STYLE["err"])
-            tbl[(i + 1, az_col_idx)].set_facecolor(hi_col)
-            tbl[(i + 1, az_col_idx)].get_text().set_color("white")
-
-    # Apply axis style to non-table axes
+    # Apply axis style to non-table axes (table row removed from this figure)
     _apply_style(fig, all_axes)
 
     plt.tight_layout(rect=[0, 0, 0.915, 0.992])
 
     if save:
-        _save(fig, cfg.DRIVE_PLOTS / "thesis_per_channel_enhanced.png")
+        # save with the file name of the processed audio file name for easier reference
+        _save(fig, cfg.DRIVE_PLOTS / f"thesis_per_channel_enhanced_{file_name}.png")
     try:
         from IPython.display import display
         display(fig)
@@ -2362,9 +2608,12 @@ def plot_per_channel_enhanced(
         pass
     plt.close(fig)
 
+    # ── Separate segment table figure ─────────────────────────────────────
+    _plot_segment_table(seg_data, n_ch, cfg, save=save, file_name=file_name)
+
 
 # ═════════════════════════════════════════════════════════════════════════════
-# Figure 2 — Combined 3-channel analysis
+# Figure 2 - Combined 3-channel analysis
 # ═════════════════════════════════════════════════════════════════════════════
 
 def plot_combined_3ch_analysis(
@@ -2373,6 +2622,7 @@ def plot_combined_3ch_analysis(
     single_result: dict,
     cfg=None,
     save: bool = True,
+    file_name: str = "",
 ):
     """
     Combined 3-channel analysis.
@@ -2412,7 +2662,7 @@ def plot_combined_3ch_analysis(
     # ── Figure ────────────────────────────────────────────────────────────
     fig = plt.figure(figsize=(22, 18), facecolor=PLOT_STYLE["bg"])
     fig.suptitle(
-        "Combined 3-Channel Analysis",
+        f"Combined 3-Channel Analysis - {file_name}",
         fontsize=18, color=PLOT_STYLE["accent"], fontweight="bold", y=0.995,
     )
 
@@ -2701,7 +2951,7 @@ def plot_combined_3ch_analysis(
     ax_traj.set_xlabel("X (m)", fontsize=12)
     ax_traj.set_ylabel("Y (m)", fontsize=12)
     ax_traj.set_title(
-        f"Shared Kalman Trajectories  —  {n_global} confirmed track(s) across all mics  "
+        f"Shared Kalman Trajectories  -  {n_global} confirmed track(s) across all mics  "
         f"(start ▶  end ■  velocity →)",
         fontsize=13,
     )
@@ -2714,7 +2964,7 @@ def plot_combined_3ch_analysis(
     plt.tight_layout(rect=[0, 0, 1.0, 0.993])
 
     if save:
-        _save(fig, cfg.DRIVE_PLOTS / "thesis_combined_3ch_analysis.png")
+        _save(fig, cfg.DRIVE_PLOTS / f"thesis_combined_3ch_analysis_{file_name}.png")
     try:
         from IPython.display import display
         display(fig)

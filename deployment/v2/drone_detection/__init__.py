@@ -85,6 +85,9 @@ from .multidrone import localize_multi_drone
 from .visualization import (
     PLOT_STYLE,
     plot_training_logs,
+    plot_training_curves_separate,
+    plot_detection_training_curves,
+    plot_localization_training_curves,
     plot_confusion_matrix_styled,
     plot_polar_azimuth,
     plot_multi_drone_positions,
@@ -186,6 +189,8 @@ from .mems_inference import (
 # ── Multi-drone audio demo (for quick testing) ────────────────────────────────────────────
 from .multi_drone_audio_demo import main as multi_drone_audio_demo_main, multi_drone_demo_from_files
 
+from .dunakeszi_segment_analysis_inference import run_segment_analysis
+
 # ── Me ─────────────────────────────────────────────────────────────
 __all__ = [
     # config
@@ -214,7 +219,8 @@ __all__ = [
     # multi-drone
     "localize_multi_drone",
     # visualization
-    "PLOT_STYLE", "plot_training_logs", "plot_confusion_matrix_styled",
+    "PLOT_STYLE", "plot_training_logs", "plot_training_curves_separate",
+    "plot_detection_training_curves", "plot_localization_training_curves", "plot_confusion_matrix_styled",
     "plot_polar_azimuth", "plot_multi_drone_positions",
     "plot_track_trajectory", "plot_kalman_trajectories",
     "plot_all_thesis_figures", "plot_azimuth_mae_per_position",
@@ -247,4 +253,6 @@ __all__ = [
     "analyse_mems_file", "batch_analyse_mems", "analyse_mems_with_meta", "build_mems_report",
     # multi-drone audio demo
     "multi_drone_audio_demo_main", "multi_drone_demo_from_files",
+    # drone segment analysis
+    "run_segment_analysis",
 ]

@@ -837,6 +837,9 @@ def comprehensive_pipeline_test(
             raise ValueError("wav_paths is None and auto_upload_if_missing=False.")
         wav_paths = _upload_test_audio_triplet_colab()
     wav_paths = _validate_test_audio_paths(wav_paths)
+    # pass the file name for saving with the file specific name
+    run_name = Path(wav_paths[0]).stem[:10]  # use first 10 chars of first file's stem as run name
+    file_name = f"{run_name}"
  
     print("🔄 Loading models...")
     load_detection_model(cfg)
@@ -974,11 +977,11 @@ def comprehensive_pipeline_test(
  
         if show_plots:
             print(f"\n🖼️  Generating analysis dashboard for {Path(wav_path).name}...")
-            _plot_analysis_report(segments, confirmed, cfg, mic_label)
+            _plot_analysis_report(segments, confirmed, cfg, mic_label, file_name=file_name)
  
         if show_plots and confirmed:
             print(f"  📍 Plotting Kalman tracks for {Path(wav_path).name}...")
-            plot_track_trajectory(confirmed, cfg, save=save_plots)
+            plot_track_trajectory(confirmed, cfg, save=save_plots, file_name=file_name)
  
     # ── Full-pipeline runs (run_pipeline uses load_3ch internally — unchanged) ─
     print("\n🚁 Running single-drone pipeline...")
@@ -1014,23 +1017,23 @@ def comprehensive_pipeline_test(
             plot_polar_azimuth(
                 all_detected_azimuths,
                 title="Detected Azimuths — All Mic Channels",
-                cfg=cfg, save=save_plots,
+                cfg=cfg, save=save_plots, file_name=file_name
             )
  
         if (multi_result
                 and multi_result.get("drones")
                 and not multi_result.get("_degenerate")):
             print("\n🗺️  Multi-drone position map...")
-            plot_multi_drone_positions(multi_result["drones"], cfg=cfg, save=save_plots)
+            plot_multi_drone_positions(multi_result["drones"], cfg=cfg, save=save_plots, file_name=file_name)
         elif single_result and single_result.get("drones"):
             print("\n🗺️  Single-drone position map...")
-            plot_multi_drone_positions(single_result["drones"], cfg=cfg, save=save_plots)
+            plot_multi_drone_positions(single_result["drones"], cfg=cfg, save=save_plots, file_name=file_name)
  
         if tracker_single is not None:
             all_single_tracks = tracker_single.all_confirmed()
             if all_single_tracks:
                 print("\n📍 Single-drone pipeline Kalman trajectories...")
-                plot_track_trajectory(all_single_tracks, cfg=cfg, save=save_plots)
+                plot_track_trajectory(all_single_tracks, cfg=cfg, save=save_plots, file_name=file_name)
 
     # ── Thesis figures ────────────────────────────────────────────────
     if show_plots and len(per_file_results) == 3:
@@ -1039,10 +1042,12 @@ def comprehensive_pipeline_test(
             plot_per_channel_enhanced,
             plot_combined_3ch_analysis,
         )
+        
         plot_per_channel_enhanced(
             per_file_results=per_file_results,
             cfg=cfg,
             save=save_plots,
+            file_name = file_name,
         )
         print("\n🔬 Combined 3-channel analysis (thesis)...")
         plot_combined_3ch_analysis(
@@ -1051,6 +1056,7 @@ def comprehensive_pipeline_test(
             single_result    = single_result,
             cfg              = cfg,
             save             = save_plots,
+            file_name        = file_name,   
         )
         
     _print_pipeline_test_summary(wav_paths, channel_summary, single_result, multi_result)

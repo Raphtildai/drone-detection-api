@@ -254,7 +254,7 @@ def _plot_analysis_report(segments, confirmed, cfg, title: str):
     """
     import itertools
     fig = plt.figure(figsize=(20, 10), facecolor=PLOT_STYLE["bg"])
-    fig.suptitle(f"🚁 Drone Analysis v15 — {title}", fontsize=14,
+    fig.suptitle(f"🚁 Drone Analysis — {title}", fontsize=14,
                  color=PLOT_STYLE["accent"], fontweight="bold", y=0.98)
     gs   = gridspec.GridSpec(2, 3, figure=fig, hspace=0.45, wspace=0.35)
     axes = [fig.add_subplot(gs[r, c]) for r in range(2) for c in range(3)]

@@ -1,0 +1,7 @@
+session_id,azimuth_deg,distance_m,height_m,original_bearing_deg,has_position,session,maneuver_type,n_drones,split,radius_m,speed_mps,duration_s,wav_ch0,wav_ch1,wav_ch2
+seg_019_circle_train,,,,,False,show_8,circle,1,train,30.0,4.0,94.0,seg_019_circle_train_ch0.wav,seg_019_circle_train_ch1.wav,seg_019_circle_train_ch2.wav
+seg_020_circle_train,,,,,False,show_8,circle,1,train,60.0,4.0,188.0,seg_020_circle_train_ch0.wav,seg_020_circle_train_ch1.wav,seg_020_circle_train_ch2.wav
+seg_021_figure8_train,,,,,False,show_8,figure8,1,train,,4.0,63.0,seg_021_figure8_train_ch0.wav,seg_021_figure8_train_ch1.wav,seg_021_figure8_train_ch2.wav
+seg_036_circle_test,,,,,False,show_14,circle,5,test,10.0,4.0,8.0,seg_036_circle_test_ch0.wav,seg_036_circle_test_ch1.wav,seg_036_circle_test_ch2.wav
+seg_037_circle_test,,,,,False,show_14,circle,5,test,30.0,4.0,47.0,seg_037_circle_test_ch0.wav,seg_037_circle_test_ch1.wav,seg_037_circle_test_ch2.wav
+seg_038_circle_test,,,,,False,show_14,circle,5,test,60.0,4.0,188.0,seg_038_circle_test_ch0.wav,seg_038_circle_test_ch1.wav,seg_038_circle_test_ch2.wav
