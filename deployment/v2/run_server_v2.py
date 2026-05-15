@@ -152,6 +152,27 @@ def _setup_logging(debug: bool) -> Path:
             logging.FileHandler(log_file),
         ],
     )
+    # ── Silence verbose third-party loggers ───────────────────────────────────
+    # numba floods the console with bytecode dumps during JIT compilation on
+    # first inference; urllib3 logs every HTTP byte range request from remotezip.
+    # These are suppressed to WARNING regardless of the app debug flag so the
+    # live log stays readable.
+    _SILENCE = [
+        "numba",
+        "numba.core",
+        "numba.core.byteflow",
+        "numba.core.interpreter",
+        "numba.core.ssa",
+        "numba.core.typeinfer",
+        "numba.core.compiler",
+        "urllib3",
+        "urllib3.connectionpool",
+        "matplotlib",
+        "matplotlib.font_manager",
+        "matplotlib.pyplot",
+    ]
+    for name in _SILENCE:
+        logging.getLogger(name).setLevel(logging.WARNING)
     return log_file
 
 

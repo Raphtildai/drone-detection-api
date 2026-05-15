@@ -134,6 +134,21 @@ class Config:
         self.UAVIRBASE_FULL        = True    # use local copy, skip remote download
         self.UAVIRBASE_N_SESSIONS  = 2000
 
+        # ── Dunakeszi outdoor dataset (192 kHz polywav, 14-channel) ───────
+        # Hosted ZIP URL to enable repository streaming.
+        # The ZIP should contain the dunakeszi_pipeline_ready layout:
+        #   <stem>_ch0.wav / _ch1.wav / _ch2.wav / _label.json
+        # or the raw polywav layout with a GPX/ subfolder.
+        # Leave as None to fall back to synthetic data automatically.
+        self.DUNAKESZI_ZIP_URL  = None   # e.g. "https://your-server.com/dunakeszi.zip"
+        self.DUNAKESZI_LOCAL_PATH = "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B"
+        self.DUNAKESZI_ORIG_SR  = 192_000
+        # Polywav channel groups: array name → 0-indexed channel list
+        self.DUNAKESZI_ARRAY_CHANNELS = {
+            "BK-6-E": [8, 9, 10],   # East array  (Brüel mics)
+            "BK-6-W": [2, 3, 4],    # West array  (Brüel mics)
+        }
+
         self.DRONEDS_ZIP_URL = (
             "https://github.com/saraalemadi/DroneAudioDataset/"
             "archive/refs/heads/master.zip"

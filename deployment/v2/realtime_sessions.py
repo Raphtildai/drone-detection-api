@@ -4,28 +4,30 @@ realtime_sessions.py — Real-time detection session management (v2)
 ==================================================================
 Uses the drone_detection package (v15) exclusively.
 
-Two session types that share the IDENTICAL detection pipeline:
+Three session types that share the IDENTICAL detection pipeline:
 
   SimulatedRealtimeSession
     - Generates synthetic drone audio via synthesise_drone()
-      (same function used in training — fractional-delay propagation,
-      source-level noise so GCC-PHAT works correctly)
     - Flies drones on configurable patterns (circle, figure8, linear,
       random, multi)
-    - Uses detect() → localize() → PathTracker, same thresholds and
-      guards as live deployment
+    - Uses detect() → localize() → PathTracker
 
   RealRealtimeSession
     - Wraps RealTimeDroneDetectorV2 (PyAudio mic capture)
-    - Runs detect() + localize() on each audio segment
     - Falls back gracefully if PyAudio is unavailable
 
-Both emit the same SocketIO events so the frontend is mode-agnostic.
+  RepositoryRealtimeSession           ← NEW
+    - Streams real segments from the online dataset repository
+      via repository_loader.stream_repository_segments()
+    - Runs the IDENTICAL detect() → localize() pipeline on each
+      segment so outputs are directly comparable to simulation
+    - Falls back to synthetic data if the repository is unreachable
+    - Emits: same SocketIO event shape as the other two modes
 
-SocketIO events emitted
------------------------
+SocketIO events emitted (all three modes)
+-----------------------------------------
   realtime_frame   {frame, timestamp, detections, tracks, mode,
-                    sim_positions (sim only)}
+                    sim_positions (sim/repo only), repo_label (repo only)}
   realtime_stats   {total_frames, detected_frames, detection_rate,
                     n_active_tracks, avg_confidence, session_duration}
   realtime_status  {running, mode, error}
@@ -180,17 +182,6 @@ class SimulatedRealtimeSession:
     """
     Simulates real-time drone detection using the identical pipeline
     as live deployment.
-
-    Parameters
-    ----------
-    config      : drone_detection Config object
-    socketio    : Flask-SocketIO instance
-    n_drones    : 1–3 simulated drones
-    patterns    : list of pattern names per drone
-    tick_rate   : detections per second (default 1.0)
-    threshold   : detection threshold (default 0.70)
-    noise_level : audio noise level — must be ≥ 0.05 for GCC-PHAT to work
-    spread      : max distance from array centre in metres (default 1.5)
     """
 
     def __init__(self, config, socketio, n_drones: int = 1,
@@ -203,7 +194,6 @@ class SimulatedRealtimeSession:
         self.patterns    = (patterns or ["circle"] * self.n_drones)[: self.n_drones]
         self.tick_rate   = tick_rate
         self.threshold   = threshold
-        # Enforce minimum noise level so GCC-PHAT has broadband content
         self.noise_level = max(noise_level, 0.05)
         self.spread      = min(spread, 2.5)
 
@@ -216,6 +206,7 @@ class SimulatedRealtimeSession:
         self.detected_frames: int        = 0
         self.confidences:     List[float] = []
         self.start_time:      Optional[float] = None
+
         self._rw_states:      List[dict] = [{} for _ in range(self.n_drones)]
 
     def start(self) -> bool:
@@ -257,8 +248,6 @@ class SimulatedRealtimeSession:
             "mode": "simulated",
         }
 
-    # ── Main loop ──────────────────────────────────────────────────────────
-
     def _loop(self) -> None:
         try:
             from drone_detection import synthesise_drone, AudioProcessor, detect, localize
@@ -284,7 +273,6 @@ class SimulatedRealtimeSession:
             self.total_frames += 1
             t_sim += tick_secs
 
-            # ── Compute true positions ──────────────────────────────────
             true_positions: List[List[float]] = []
             for di in range(self.n_drones):
                 pat = self.patterns[di % len(self.patterns)]
@@ -313,7 +301,6 @@ class SimulatedRealtimeSession:
                            pos[1] / dist * self.spread]
                 true_positions.append(pos)
 
-            # ── Synthesise → detect → localize ──────────────────────────
             frame_detections: List[dict] = []
             tmp_paths:        List[str]  = []
 
@@ -366,7 +353,6 @@ class SimulatedRealtimeSession:
                 if frame_detections:
                     self.detected_frames += 1
 
-                # ── Build track summaries ────────────────────────────────
                 tracks_out = []
                 for t in [tr for tr in tracker.tracks if tr.active]:
                     tracks_out.append({
@@ -554,3 +540,307 @@ class RealRealtimeSession:
             "session_duration": round(dur, 1),
             "mode": "real",
         }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# REPOSITORY SESSION  ← NEW
+# ══════════════════════════════════════════════════════════════════════════════
+
+class RepositoryRealtimeSession:
+    """
+    Streams real drone-audio segments from the online repository and runs
+    the IDENTICAL detect() → localize() pipeline on each one, emitting the
+    same SocketIO events as the other two session types.
+
+    This lets the live dashboard visualise inference on real recorded data
+    without pre-downloading the whole archive.  The repository_loader module
+    handles the remote-ZIP → full-download → synthetic fallback chain
+    automatically.
+
+    Parameters
+    ----------
+    config          : drone_detection Config object
+    socketio        : Flask-SocketIO instance
+    url             : Remote ZIP URL (None → cfg.UAVIRBASE_ZIP_URL)
+    dataset_type    : 'uavirbase' | 'dunakeszi'
+    array           : Dunakeszi array name
+    max_dist        : MAX_LOCALIZATION_DIST for label normalisation
+    tick_rate       : Frames streamed per second (throttle; default 1.0)
+    threshold       : Detection confidence threshold (default 0.70)
+    allow_download  : Allow full ZIP download fallback
+    allow_synthetic_fallback : Yield synthetic data when repo unreachable
+    n_synthetic     : Synthetic segment count used as fallback
+    required_split  : Only stream this split ('train'|'val'|'test'|None)
+    cache_zip       : Path to cache the ZIP locally
+    """
+
+    def __init__(
+        self,
+        config,
+        socketio,
+        url: Optional[str] = None,
+        dataset_type: str = "uavirbase",
+        array: str = "BK-6-E",
+        max_dist: float = 100.0,
+        tick_rate: float = 1.0,
+        threshold: float = 0.70,
+        allow_download: bool = True,
+        allow_synthetic_fallback: bool = True,
+        n_synthetic: int = 200,
+        required_split: Optional[str] = None,
+        cache_zip: Optional[str] = None,
+    ) -> None:
+        self.config       = config
+        self.socketio     = socketio
+        self.url          = url
+        self.dataset_type = dataset_type
+        self.array        = array
+        self.max_dist     = max_dist
+        self.tick_rate    = max(tick_rate, 0.05)
+        self.threshold    = threshold
+        self.allow_download = allow_download
+        self.allow_synthetic_fallback = allow_synthetic_fallback
+        self.n_synthetic  = n_synthetic
+        self.required_split = required_split
+        self.cache_zip    = cache_zip
+
+        self._thread: Optional[threading.Thread] = None
+        self._stop   = threading.Event()
+        self.running: bool = False
+        self._mode:   str  = "repository"
+
+        self.total_frames:    int         = 0
+        self.detected_frames: int         = 0
+        self.confidences:     List[float] = []
+        self.start_time:      Optional[float] = None
+
+        # Ground-truth error tracking (when label has position info)
+        self.errors_m:        List[float] = []
+
+        DroneTrack._id_counter = 0
+        self._tracker = PathTracker(config)
+
+    # ── Lifecycle ──────────────────────────────────────────────────────────────
+
+    def start(self) -> bool:
+        if self.running:
+            return False
+        self._stop.clear()
+        self.running    = True
+        self.start_time = time.time()
+        DroneTrack._id_counter = 0
+        self._thread = threading.Thread(
+            target=self._loop, daemon=True, name="repo-realtime"
+        )
+        self._thread.start()
+        log.info(
+            "Repository session started: type=%s url=%s tick=%.1f",
+            self.dataset_type, self.url or "default", self.tick_rate,
+        )
+        return True
+
+    def stop(self) -> None:
+        self._stop.set()
+        self.running = False
+        if self._thread:
+            self._thread.join(timeout=10.0)
+        log.info("Repository session stopped")
+        self.socketio.emit("realtime_status", {
+            "running": False, "mode": "repository",
+            "error": None, "final_stats": self.get_stats(),
+        })
+
+    def get_stats(self) -> dict:
+        dur = time.time() - self.start_time if self.start_time else 0.0
+        return {
+            "total_frames":    self.total_frames,
+            "detected_frames": self.detected_frames,
+            "detection_rate":  round(
+                self.detected_frames / max(self.total_frames, 1) * 100, 1
+            ),
+            "avg_confidence":  round(
+                float(np.mean(self.confidences)) if self.confidences else 0.0, 3
+            ),
+            "avg_error_m":     round(
+                float(np.mean(self.errors_m)) if self.errors_m else 0.0, 3
+            ),
+            "session_duration": round(dur, 1),
+            "n_segments_streamed": self.total_frames,
+            "mode": "repository",
+            "dataset_type": self.dataset_type,
+        }
+
+    # ── Main loop ──────────────────────────────────────────────────────────────
+
+    def _loop(self) -> None:
+        # Import pipeline functions
+        try:
+            from drone_detection import AudioProcessor, detect, localize
+            from drone_detection.repository_loader import stream_repository_segments
+        except ImportError as exc:
+            err = f"Import failed: {exc}"
+            log.error(err)
+            self.socketio.emit("realtime_status",
+                               {"running": False, "mode": "repository", "error": err})
+            self.running = False
+            return
+
+        ap        = AudioProcessor(self.config)
+        tick_secs = 1.0 / self.tick_rate
+
+        # Notify frontend: loading started
+        self.socketio.emit("realtime_status", {
+            "running": True, "mode": "repository", "error": None,
+            "loading": True, "dataset_type": self.dataset_type,
+        })
+
+        try:
+            segment_gen = stream_repository_segments(
+                cfg                      = self.config,
+                url                      = self.url,
+                dataset_type             = self.dataset_type,
+                array                    = self.array,
+                max_dist                 = self.max_dist,
+                required_split           = self.required_split,
+                allow_download           = self.allow_download,
+                allow_synthetic_fallback = self.allow_synthetic_fallback,
+                n_synthetic              = self.n_synthetic,
+                cache_zip                = self.cache_zip,
+            )
+        except Exception as exc:
+            err = f"stream_repository_segments init failed: {exc}"
+            log.error(err)
+            self.socketio.emit("realtime_status",
+                               {"running": False, "mode": "repository", "error": err})
+            self.running = False
+            return
+
+        self.socketio.emit("realtime_status", {
+            "running": True, "mode": "repository", "error": None, "loading": False,
+        })
+
+        for channels, label in segment_gen:
+            if self._stop.is_set():
+                break
+
+            tick_start = time.time()
+            self.total_frames += 1
+
+            try:
+                # Ensure correct length
+                channels = [ap.pad_or_truncate(c) for c in channels]
+
+                # Run the identical pipeline
+                det  = detect(channels, self.config)
+                prob = float(det["probability"])
+                self.confidences.append(prob)
+
+                frame_detections: List[dict] = []
+                gt_pos_out: Optional[List[float]] = None
+
+                # Ground-truth position (if available in label)
+                if label.get("has_position") and label.get("azimuth_deg") is not None:
+                    az  = float(label["azimuth_deg"])
+                    d   = float(label["distance_m"] or 0)
+                    cx, cy = float(self.config.ARRAY_CENTER[0]), float(self.config.ARRAY_CENTER[1])
+                    gt_x = cx + d * math.cos(math.radians(az))
+                    gt_y = cy + d * math.sin(math.radians(az))
+                    gt_pos_out = [round(gt_x, 4), round(gt_y, 4)]
+
+                if prob >= self.threshold:
+                    self.detected_frames += 1
+                    loc     = localize(channels, self.config)
+                    est_pos = np.array(loc["xy_position"])
+                    self._tracker.update([est_pos], timestamp=tick_start)
+
+                    error_m = None
+                    if gt_pos_out:
+                        gt_arr  = np.array(gt_pos_out)
+                        error_m = float(np.linalg.norm(est_pos - gt_arr))
+                        self.errors_m.append(error_m)
+
+                    frame_detections.append({
+                        "drone_idx":  0,
+                        "position":   [round(float(v), 4) for v in est_pos],
+                        "true_pos":   gt_pos_out,
+                        "confidence": round(prob, 4),
+                        "reliable":   True,
+                        "cap_hit":    False,
+                        "cr":         round(float(loc.get("confidence_radius") or 0), 4),
+                        "error_m":    round(error_m, 4) if error_m is not None else None,
+                        # Repository-specific extras
+                        "azimuth_deg_est":  round(float(loc.get("azimuth_deg", 0)), 2),
+                        "azimuth_deg_true": round(float(label.get("azimuth_deg") or 0), 2),
+                        "distance_m_est":   round(float(loc.get("distance_m", 0)), 2),
+                        "distance_m_true":  round(float(label.get("distance_m") or 0), 2),
+                    })
+
+                # Build track summaries
+                tracks_out = []
+                for t in [tr for tr in self._tracker.tracks if tr.active]:
+                    tracks_out.append({
+                        "id":        t.track_id,
+                        "hits":      t.hits,
+                        "positions": [
+                            [round(float(v), 4) for v in p]
+                            for p in t.positions[-30:]
+                        ],
+                        "speed":     round(float(t.speed()), 4),
+                        "confirmed": t.confirmed,
+                    })
+
+                # Emit frame (compatible shape; gt_pos goes in sim_positions)
+                self.socketio.emit("realtime_frame", {
+                    "frame":         self.total_frames,
+                    "timestamp":     round(time.time(), 3),
+                    "mode":          "repository",
+                    "detections":    frame_detections,
+                    "tracks":        tracks_out,
+                    "sim_positions": [gt_pos_out] if gt_pos_out else [],
+                    "threshold":     self.threshold,
+                    "n_drones_sim":  1,
+                    # Repository-specific metadata shown in the UI info strip
+                    "repo_label": {
+                        "segment_id":    label.get("segment_id"),
+                        "maneuver_type": label.get("maneuver_type"),
+                        "split":         label.get("split"),
+                        "source":        label.get("source"),
+                        "dataset_type":  label.get("dataset_type", self.dataset_type),
+                        "azimuth_deg":   round(float(label.get("azimuth_deg") or 0), 1),
+                        "distance_m":    round(float(label.get("distance_m") or 0), 1),
+                        "height_m":      round(float(label.get("height_m") or 0), 1),
+                        "has_position":  bool(label.get("has_position")),
+                        # Dunakeszi-specific
+                        "session":       label.get("session"),
+                        "array":         label.get("array"),
+                        "n_drones":      label.get("n_drones"),
+                        "speed_mps":     label.get("speed_mps"),
+                        "radius_m":      label.get("radius_m"),
+                        "duration_s":    label.get("duration_s"),
+                        "clip_start_s":  label.get("clip_start_s"),
+                        "flight_phase":  label.get("flight_phase"),
+                        "trajectory":    label.get("trajectory"),
+                    },
+                })
+
+                if self.total_frames % 10 == 0:
+                    self.socketio.emit("realtime_stats", self.get_stats())
+
+            except Exception as exc:
+                log.exception("Repo frame %d error: %s", self.total_frames, exc)
+
+            # Throttle to tick_rate
+            elapsed = time.time() - tick_start
+            wait    = tick_secs - elapsed
+            if wait > 0 and not self._stop.wait(wait):
+                pass  # timeout = normal; event set = stop requested
+
+        # Generator exhausted or stopped
+        self.running = False
+        self.socketio.emit("realtime_status", {
+            "running":     False,
+            "mode":        "repository",
+            "error":       None,
+            "final_stats": self.get_stats(),
+        })
+        log.info("Repository session finished: %d segments processed", self.total_frames)

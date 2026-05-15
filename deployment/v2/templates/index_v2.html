@@ -20,8 +20,27 @@
       --text:    #e2e8f0;
       --muted:   #64748b;
       --radius:  10px;
+      --radar-bg:#07090f;
+      --radar-fg:rgba(0,212,255,.18);
+      --repo-accent:#34d399;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; font-size: 13px; min-height: 100vh; }
+    :root.light {
+      --bg:      #f0f4f8;
+      --surface: #ffffff;
+      --surface2:#e8edf3;
+      --border:  #cbd5e1;
+      --accent:  #0284c7;
+      --accent2: #7c3aed;
+      --green:   #16a34a;
+      --red:     #dc2626;
+      --orange:  #d97706;
+      --text:    #1e293b;
+      --muted:   #64748b;
+      --radar-bg:#e8edf3;
+      --radar-fg:rgba(2,132,199,.18);
+      --repo-accent:#059669;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; font-size: 13px; min-height: 100vh; transition: background .2s, color .2s; }
 
     header { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; gap: 16px; }
     .logo { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 2px; }
@@ -169,6 +188,7 @@
     .mode-btn.active { background: var(--surface); color: var(--text); }
     .mode-btn.active.sim { color: #a78bfa; }
     .mode-btn.active.real { color: #fca5a5; }
+    .mode-btn.active.repo { color: #34d399; }
 
     .rt-log { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; height: 220px; overflow-y: auto; padding: 8px; }
     .rt-log-item { border-bottom: 1px solid rgba(30,42,58,.5); padding: 6px 8px; font-size: 11px; }
@@ -179,6 +199,18 @@
     .rt-log-item .rl-error { color: var(--red); }
     .rt-log-item .rl-pos { color: var(--accent); }
     .rt-log-item .rl-true { color: var(--muted); }
+
+    /* Repository mode extras */
+    .repo-label { background: rgba(52,211,153,.15); border: 1px solid rgba(52,211,153,.35); border-radius: 7px; padding: 8px 12px; font-size: 10px; color: #34d399; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 10px; line-height: 1.9; }
+    .repo-label span { white-space: nowrap; }
+    .repo-label .rl-key { color: #6ee7b7; font-weight: 700; }
+    .repo-stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .repo-error-chart { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+    .repo-error-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 10px; }
+    .repo-error-label { width: 70px; color: var(--muted); text-align: right; }
+    .repo-error-bg { flex: 1; height: 14px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .repo-error-fill { height: 100%; border-radius: 3px; transition: width .5s; }
+    .repo-error-val { width: 48px; color: var(--accent); }
 
     .rt-track-list { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto; }
     .rt-track-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(30,42,58,.4); font-size: 11px; }
@@ -203,6 +235,8 @@
     <div class="dot" id="wsDot"></div>
     <span id="wsLabel">Connecting…</span>
   </div>
+  <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"
+    style="margin-left:12px;background:none;border:1px solid var(--border);border-radius:20px;padding:4px 10px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌙</button>
 </header>
 
 <div class="layout">
@@ -221,6 +255,7 @@
     <div class="sidebar-section">
       <h3>Live Operations</h3>
       <button class="nav-btn realtime-btn" onclick="switchPanel('realtime',this)"><span class="icon">🔴</span> Real-Time</button>
+      <button class="nav-btn realtime-btn" onclick="switchPanel('repository',this)" id="nav-btn-repo"><span class="icon">🗄️</span> Repository</button>
     </div>
     <div class="sidebar-section">
       <h3>System</h3>
@@ -473,6 +508,153 @@
       </div>
     </div>
 
+    <!-- ── REPOSITORY ── -->
+    <div id="panel-repository" class="hidden">
+
+      <!-- Stats bar (5 cols for repo-specific extra stats) -->
+      <div class="rt-stats-bar repo-stats-bar" id="repo-stats-bar">
+        <div class="rt-stat"><div class="rs-label">Segments</div><div class="rs-val" id="repo-rs-frames" style="color:var(--accent)">0</div></div>
+        <div class="rt-stat"><div class="rs-label">Detected</div><div class="rs-val" id="repo-rs-detected" style="color:var(--green)">0</div></div>
+        <div class="rt-stat"><div class="rs-label">Det. Rate</div><div class="rs-val" id="repo-rs-rate" style="color:var(--orange)">0%</div></div>
+        <div class="rt-stat"><div class="rs-label">Avg Error</div><div class="rs-val" id="repo-rs-err" style="color:var(--accent2)">—</div></div>
+        <div class="rt-stat"><div class="rs-label">Tracks</div><div class="rs-val" id="repo-rs-tracks" style="color:var(--accent2)">0</div></div>
+      </div>
+
+      <div class="rt-layout">
+
+        <!-- LEFT: Radar + log -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <!-- Radar -->
+          <div class="rt-radar-wrap">
+            <canvas id="repo-radar" width="600" height="460"></canvas>
+            <div class="rt-radar-overlay">
+              <span>SEG <span class="frame-num" id="repo-frame-disp">—</span></span>
+              <span id="repo-mode-badge" class="sim-label" style="background:rgba(52,211,153,.2);color:#34d399;border:1px solid #34d399">REPO</span>
+            </div>
+          </div>
+
+          <!-- Ground-truth vs estimate comparison -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">GROUND-TRUTH vs ESTIMATE</h2>
+            <div id="repo-gt-panel" style="color:var(--muted);font-size:11px;text-align:center;padding:14px 0">Waiting for labelled segment…</div>
+          </div>
+
+          <!-- Detection log -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">SEGMENT LOG</h2>
+            <div class="rt-log" id="repo-log">
+              <div style="color:var(--muted);font-size:11px;text-align:center;padding-top:20px">No segments yet…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Controls + metadata + tracks -->
+        <div class="rt-side">
+
+          <!-- Controls card -->
+          <div class="rt-controls">
+            <h3>Repository Config</h3>
+
+            <!-- Dataset type toggle -->
+            <div class="mode-toggle" style="margin-bottom:10px">
+              <button class="mode-btn active repo" id="repo-btn-uav" onclick="setRepoDataset('uavirbase')">📡 UaVirBASE</button>
+              <button class="mode-btn" id="repo-btn-dunk" onclick="setRepoDataset('dunakeszi')">🌳 Dunakeszi</button>
+            </div>
+
+            <div class="form-grid" style="gap:8px">
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Remote ZIP URL</label>
+                <input type="text" id="repo-url" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:11px;width:100%;outline:none" placeholder="Leave blank → use config default">
+              </div>
+              <div class="form-group">
+                <label>Array</label>
+                <select id="repo-array" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:12px">
+                  <option value="BK-6-E">BK-6-E (East)</option>
+                  <option value="BK-6-W">BK-6-W (West)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Split</label>
+                <select id="repo-split" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:12px">
+                  <option value="">All splits</option>
+                  <option value="train">Train</option>
+                  <option value="val">Val</option>
+                  <option value="test">Test</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tick rate (Hz) <span class="range-val" id="repo-tick-val">1.0</span></label>
+                <input type="range" id="repo-tick" min="0.1" max="3" step="0.1" value="1.0"
+                  oninput="document.getElementById('repo-tick-val').textContent=parseFloat(this.value).toFixed(1)">
+              </div>
+              <div class="form-group">
+                <label>Threshold <span class="range-val" id="repo-thresh-val">0.70</span></label>
+                <input type="range" id="repo-thresh" min="0.1" max="0.99" step="0.01" value="0.70"
+                  oninput="document.getElementById('repo-thresh-val').textContent=parseFloat(this.value).toFixed(2)">
+              </div>
+              <div class="form-group">
+                <label>Max dist (m)</label>
+                <input type="number" id="repo-maxdist" value="100" min="10" max="500" step="10"
+                  style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:12px">
+              </div>
+            </div>
+
+            <!-- Dunakeszi recording info strip (hidden for UaVirBASE) -->
+            <div id="dunk-info-strip" class="hidden" style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18);border-radius:7px;padding:8px 11px;font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.9">
+              <div style="color:var(--repo-accent);font-weight:700;margin-bottom:3px">📁 DUNAKESZI RECORDING</div>
+              <div><span style="color:var(--muted)">Session: </span><span id="dunk-session" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">Array: </span><span id="dunk-array" style="color:var(--text)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Drones: </span><span id="dunk-ndrones" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">Clip start in seg: </span><span id="dunk-clipstart" style="color:var(--accent)">—</span><span style="color:var(--muted)">s&nbsp;&nbsp;dur: </span><span id="dunk-dur" style="color:var(--accent)">—</span><span style="color:var(--muted)">s</span></div>
+              <div><span style="color:var(--muted)">Phase: </span><span id="dunk-phase" style="color:var(--orange)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Speed: </span><span id="dunk-speed" style="color:var(--text)">—</span></div>
+            </div>
+
+            <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:9px 11px;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7">
+              🗄️ <strong style="color:#34d399">Repository mode</strong> streams real recorded drone audio
+              directly from the online dataset ZIP via HTTP range-requests (<code>remotezip</code>) —
+              <strong style="color:#34d399">no files are downloaded or stored on the server</strong>.
+              Ground-truth positions are overlaid when the segment has a label.
+              If the repository is unreachable, synthetic data is generated automatically using
+              the real BPF drone profiles so the dashboard stays live.
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" id="repo-start-btn" onclick="startRepository()" style="flex:1;background:rgba(52,211,153,.9);color:#000">▶ Start</button>
+              <button class="btn btn-danger hidden" id="repo-stop-btn" onclick="stopRepository()" style="flex:1">■ Stop</button>
+            </div>
+            <div style="margin-top:8px;font-size:10px;color:var(--muted);text-align:center">
+              Session: <span id="repo-duration">0</span>s &nbsp;|&nbsp; Avg conf: <span id="repo-avg-conf">—</span>
+            </div>
+            <div id="repo-source-badge" style="margin-top:6px;font-size:10px;text-align:center;display:none">
+              <span id="repo-source-inner" style="padding:3px 10px;border-radius:12px;font-weight:700"></span>
+            </div>
+          </div>
+
+          <!-- Active tracks -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">ACTIVE TRACKS <span id="repo-track-count" style="color:var(--muted);font-size:11px;font-weight:400">(0)</span></h2>
+            <div class="rt-track-list" id="repo-track-list">
+              <div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No confirmed tracks yet</div>
+            </div>
+          </div>
+
+          <!-- Last segment metadata -->
+          <div class="card" style="padding:14px" id="repo-last-seg-card">
+            <h2 style="margin-bottom:10px">LAST SEGMENT</h2>
+            <div id="repo-last-seg" style="color:var(--muted);font-size:11px">Waiting…</div>
+          </div>
+
+          <!-- Error histogram (rolling last 50 segments) -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:8px">LOCALISATION ERROR DIST.</h2>
+            <div class="repo-error-chart" id="repo-err-hist">
+              <div style="color:var(--muted);font-size:11px;text-align:center">No errors yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── STATUS ── -->
     <div id="panel-status" class="hidden">
       <div class="card"><h2>⚙️ SYSTEM STATUS</h2><button class="btn btn-ghost" onclick="fetchStatus()">Refresh</button><div id="result-status" style="margin-top:14px"></div></div>
@@ -485,13 +667,13 @@
 <span class="key">POST</span> <span class="val">/api/v2/detect-multi</span>              Multi-drone detection
 <span class="key">POST</span> <span class="val">/api/v2/noise-test</span>                SNR sweep
 <span class="key">POST</span> <span class="val">/api/v2/path-simulate</span>             Path tracking
-<span class="key">POST</span> <span class="val">/api/v2/realtime/start</span>            Start RT session
+<span class="key">POST</span> <span class="val">/api/v2/realtime/start</span>            Start RT session (mode: simulated|real|repository)
 <span class="key">POST</span> <span class="val">/api/v2/realtime/stop</span>             Stop RT session
 <span class="key">GET </span> <span class="val">/api/v2/realtime/status</span>           Session status
 <span class="key">GET </span> <span class="val">/api/v2/realtime/audio-devices</span>    List mic devices
-<span class="key">WS  </span> <span class="val">realtime_frame</span>  {frame,detections,tracks,sim_positions}
-<span class="key">WS  </span> <span class="val">realtime_stats</span>  {total_frames,detected_frames,detection_rate}
-<span class="key">WS  </span> <span class="val">realtime_status</span> {running,mode,error}</div>
+<span class="key">WS  </span> <span class="val">realtime_frame</span>  {frame,detections,tracks,sim_positions,repo_label,mode}
+<span class="key">WS  </span> <span class="val">realtime_stats</span>  {total_frames,detected_frames,detection_rate,avg_error_m}
+<span class="key">WS  </span> <span class="val">realtime_status</span> {running,mode,error,loading,final_stats}</div>
       </div>
     </div>
 
@@ -550,13 +732,14 @@ function addLiveEvent(data, type='detected') {
 // ══════════════════════════════════════════════════════════════════════════════
 // PANEL SWITCHING
 // ══════════════════════════════════════════════════════════════════════════════
-const PANELS = ['single','threemic','multi','noise','path','realtime','status'];
+const PANELS = ['single','threemic','multi','noise','path','realtime','repository','status'];
 function switchPanel(id, btn) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.add('hidden'));
   document.getElementById('panel-'+id).classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (id === 'realtime') { startRadarIdle(); loadAudioDevices(); }
+  if (id === 'repository') { startRepoRadarIdle(); }
 }
 
 // File dropzones
@@ -607,7 +790,7 @@ function drawPositionMap(canvas, positions, opts={}) {
   let mnX=Math.min(...xs)-0.5,mxX=Math.max(...xs)+0.5,mnY=Math.min(...ys)-0.5,mxY=Math.max(...ys)+0.5;
   const pad=28,scale=Math.min((W-2*pad)/(mxX-mnX||1),(H-2*pad)/(mxY-mnY||1));
   const toC=(x,y)=>[pad+(x-mnX)*scale,H-pad-(y-mnY)*scale];
-  ctx.fillStyle='#07090f'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-bg').trim()||'#07090f'; ctx.fillRect(0,0,W,H);
   ctx.strokeStyle='rgba(30,42,58,.8)'; ctx.lineWidth=0.5;
   for(let gx=Math.floor(mnX/0.5)*0.5;gx<=mxX;gx+=0.5){const[cx]=toC(gx,mnY);ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();}
   for(let gy=Math.floor(mnY/0.5)*0.5;gy<=mxY;gy+=0.5){const[,cy]=toC(mnX,gy);ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();}
@@ -662,7 +845,7 @@ function drawRadar() {
   const W=canvas.width, H=canvas.height;
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#07090f'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-bg').trim()||'#07090f'; ctx.fillRect(0,0,W,H);
 
   // Map params — fixed view ±3m from mic centre
   const VIEW = 3.2; // metres each side
@@ -806,6 +989,7 @@ function hexToRgbaStr(hex, alpha) {
 
 // ── Incoming realtime events ──────────────────────────────────────────────────
 function onRtFrame(data) {
+  if (data.mode === 'repository') return;   // handled by onRepoFrame
   if (!rtState.running) return;
   rtState.frame = data.frame;
   rtState.totalFrames = data.frame;
@@ -864,6 +1048,7 @@ function onRtStats(stats) {
 }
 
 function onRtStatus(data) {
+  if (data.mode === 'repository') return;   // handled by onRepoStatus
   if (!data.running && rtState.running) {
     // Session ended externally
     rtState.running = false;
@@ -1178,6 +1363,550 @@ async function runPath() {
 async function fetchStatus() {
   try{const[rs,rv]=await Promise.all([fetch(`${BASE}/api/v2/status`).then(r=>r.json()),fetch(`${BASE}/api/v2/version`).then(r=>r.json())]);renderStatus({...rs,...rv});}
   catch(e){document.getElementById('result-status').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REPOSITORY MODE
+// ══════════════════════════════════════════════════════════════════════════════
+
+let repoState = {
+  running: false,
+  frame: 0,
+  sweepAngle: 0,
+  idleAnim: null,
+  tracks: {},
+  lastDetections: [],
+  gtPositions: [],      // ground-truth positions from label
+  errors: [],           // rolling localisation errors (metres)
+  totalFrames: 0,
+  detectedFrames: 0,
+  sessionStart: null,
+  durationTimer: null,
+  dataset: 'uavirbase',
+  maxDist: 5,           // updated from max_dist form field — drives radar scale
+  trajectory: null,     // current segment GPX trajectory waypoints
+};
+
+// ── Dataset toggle ────────────────────────────────────────────────────────────
+function setRepoDataset(ds) {
+  repoState.dataset = ds;
+  document.getElementById('repo-btn-uav').className  = 'mode-btn' + (ds==='uavirbase' ?' active repo':'');
+  document.getElementById('repo-btn-dunk').className = 'mode-btn' + (ds==='dunakeszi'?' active repo':'');
+  document.getElementById('repo-array').disabled = ds !== 'dunakeszi';
+  document.getElementById('dunk-info-strip').classList.toggle('hidden', ds !== 'dunakeszi');
+  // Dunakeszi needs an explicit URL — show placeholder hint
+  const urlInput = document.getElementById('repo-url');
+  if(ds === 'dunakeszi'){
+    if(!urlInput.value) urlInput.placeholder = 'Required: paste Dunakeszi hosted ZIP URL here';
+    urlInput.style.borderColor = 'rgba(245,158,11,.6)';
+  } else {
+    urlInput.placeholder = 'Leave blank → use config default (UaVirBASE Zenodo)';
+    urlInput.style.borderColor = '';
+  }
+}
+
+// ── Idle radar ────────────────────────────────────────────────────────────────
+function startRepoRadarIdle() {
+  if (repoState.idleAnim) return;
+  repoState.idleAnim = requestAnimationFrame(repoRadarIdleTick);
+}
+function repoRadarIdleTick() {
+  const panel = document.getElementById('panel-repository');
+  if (panel && !panel.classList.contains('hidden')) {
+    drawRepoRadar();
+    repoState.sweepAngle = (repoState.sweepAngle + 0.015) % (2*Math.PI);
+    repoState.idleAnim = requestAnimationFrame(repoRadarIdleTick);
+  } else {
+    repoState.idleAnim = null;
+  }
+}
+
+// ── Radar draw ────────────────────────────────────────────────────────────────
+function drawRepoRadar() {
+  const canvas = document.getElementById('repo-radar');
+  if (!canvas) return;
+  const W=canvas.width, H=canvas.height;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-bg').trim()||'#07090f'; ctx.fillRect(0,0,W,H);
+
+  // Dynamic view: auto-scale to fit all known positions (tracks, GT, detections)
+  let VIEW = repoState.maxDist > 5 ? repoState.maxDist * 0.55 : 3.2;
+  // collect all real positions to compute tight view
+  const _allPts = [];
+  Object.values(repoState.tracks).forEach(t=>(t.positions||[]).forEach(p=>_allPts.push(p)));
+  repoState.gtPositions.forEach(p=>{ if(p) _allPts.push(p); });
+  repoState.lastDetections.forEach(d=>{ if(d.position) _allPts.push(d.position); });
+  if(_allPts.length>0){
+    const _dists=_allPts.map(p=>Math.sqrt((p[0]-MIC_CTR[0])**2+(p[1]-MIC_CTR[1])**2));
+    VIEW=Math.max(Math.max(..._dists)*1.25, 1.5);
+  }
+
+  const cx=W/2, cy=H/2;
+  const scale = Math.min(W,H)*0.5/VIEW;
+  const toC=(x,y)=>[cx+(x-MIC_CTR[0])*scale, cy-(y-MIC_CTR[1])*scale];
+  const repoC = getComputedStyle(document.documentElement).getPropertyValue('--repo-accent').trim()||'#34d399';
+
+  // Adaptive grid rings
+  const _ringStep = VIEW<5?0.5:VIEW<15?2:VIEW<50?10:25;
+  const _rings=[];
+  for(let r=_ringStep;r<=VIEW*1.1;r+=_ringStep) _rings.push(r);
+  _rings.forEach(r=>{
+    ctx.beginPath(); ctx.arc(cx,cy,r*scale,0,2*Math.PI);
+    const alpha=r<VIEW?0.15:0.06;
+    ctx.strokeStyle=`rgba(52,211,153,${alpha})`; ctx.lineWidth=r===_rings[_rings.length-2]?1.5:0.7; ctx.stroke();
+    ctx.fillStyle='rgba(52,211,153,.22)';ctx.font='9px monospace';ctx.fillText(`${r%1===0?r:r.toFixed(1)}m`,cx+r*scale+3,cy-3);
+  });
+  ctx.strokeStyle='rgba(52,211,153,.08)'; ctx.lineWidth=0.5;
+  ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();
+
+  ctx.beginPath(); ctx.arc(cx,cy,Math.min(_rings[Math.floor(_rings.length*0.6)],VIEW)*scale,0,2*Math.PI);
+  ctx.fillStyle='rgba(52,211,153,.03)'; ctx.fill();
+  ctx.strokeStyle='rgba(52,211,153,.2)'; ctx.lineWidth=1; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Sweep
+  if (repoState.running) {
+    ctx.save(); ctx.translate(cx,cy); ctx.rotate(repoState.sweepAngle);
+    const sg=ctx.createLinearGradient(0,0,Math.min(W,H)*0.5,0);
+    sg.addColorStop(0,'rgba(52,211,153,.35)'); sg.addColorStop(0.7,'rgba(52,211,153,.08)'); sg.addColorStop(1,'rgba(52,211,153,0)');
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,Math.min(W,H)*0.5,-0.35,0); ctx.fillStyle=sg; ctx.fill();
+    ctx.restore();
+  } else {
+    ctx.beginPath(); ctx.arc(cx,cy,3,0,2*Math.PI); ctx.fillStyle='rgba(52,211,153,.4)'; ctx.fill();
+  }
+
+  // GPX trajectory path (Dunakeszi) — draw the full flight path from trajectory waypoints
+  if(repoState.trajectory && repoState.trajectory.waypoints){
+    // Normalise waypoints: accept [[x,y]] or [{x_m,y_m}] formats
+    const rawWpts = repoState.trajectory.waypoints;
+    const wpts = rawWpts.map(w=>Array.isArray(w)?w:[w.x_m??w.x??0, w.y_m??w.y??0]);
+    if(wpts.length>1){
+      ctx.beginPath();
+      const[wx0,wy0]=toC(wpts[0][0],wpts[0][1]); ctx.moveTo(wx0,wy0);
+      wpts.forEach(w=>{ const[wx,wy]=toC(w[0],w[1]); ctx.lineTo(wx,wy); });
+      ctx.strokeStyle='rgba(52,211,153,.45)'; ctx.lineWidth=1.5; ctx.setLineDash([4,3]); ctx.stroke(); ctx.setLineDash([]);
+      // start dot
+      const[sx,sy]=toC(wpts[0][0],wpts[0][1]);
+      ctx.beginPath(); ctx.arc(sx,sy,4,0,2*Math.PI); ctx.fillStyle='rgba(52,211,153,.6)'; ctx.fill();
+      ctx.fillStyle='rgba(52,211,153,.7)'; ctx.font='8px monospace'; ctx.fillText('START',sx+6,sy-3);
+    }
+  }
+
+  // Ground-truth ghost positions
+  repoState.gtPositions.forEach((pos,i)=>{
+    if(!pos) return;
+    const[px,py]=toC(pos[0],pos[1]);
+    // Outer pulse ring
+    const pA2=0.2+0.15*Math.sin(Date.now()/600);
+    ctx.beginPath(); ctx.arc(px,py,18,0,2*Math.PI);
+    ctx.strokeStyle=`rgba(52,211,153,${pA2})`; ctx.lineWidth=1; ctx.stroke();
+    ctx.beginPath(); ctx.arc(px,py,10,0,2*Math.PI);
+    ctx.strokeStyle='rgba(52,211,153,.55)'; ctx.lineWidth=1.5; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(52,211,153,.12)'; ctx.fill();
+    ctx.fillStyle='rgba(52,211,153,.85)'; ctx.font='bold 9px monospace';
+    ctx.fillText(`GT${i+1}`,px+11,py-4);
+  });
+
+  // Tracks
+  Object.values(repoState.tracks).forEach(track=>{
+    const pts=track.positions;
+    if(!pts||pts.length===0) return;
+    const col=track.color;
+    if(pts.length>1){
+      ctx.beginPath();
+      const[x0,y0]=toC(pts[0][0],pts[0][1]); ctx.moveTo(x0,y0);
+      pts.forEach(p=>{ const[px2,py2]=toC(p[0],p[1]); ctx.lineTo(px2,py2); });
+      ctx.strokeStyle=col+'bb'; ctx.lineWidth=2; ctx.stroke();
+    }
+    const last=pts[pts.length-1];
+    const[lx,ly]=toC(last[0],last[1]);
+    if(track.confirmed){
+      const pA=0.3+0.2*Math.sin(Date.now()/400);
+      ctx.beginPath(); ctx.arc(lx,ly,14,0,2*Math.PI);
+      ctx.strokeStyle=hexToRgbaStr(col,pA); ctx.lineWidth=2; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(lx,ly,6,0,2*Math.PI); ctx.fillStyle=col; ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 9px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(track.id,lx,ly);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle=col; ctx.font='9px monospace';
+    ctx.fillText(`(${last[0].toFixed(2)},${last[1].toFixed(2)})`,lx+10,ly-4);
+    if(track.speed>0){ctx.fillStyle='rgba(255,255,255,.4)';ctx.fillText(`${track.speed.toFixed(2)}m/s`,lx+10,ly+6);}
+  });
+
+  // Latest detection flash
+  repoState.lastDetections.forEach(det=>{
+    if(!det.position) return;
+    const[dx,dy]=toC(det.position[0],det.position[1]);
+    const age=Date.now()-det._ts;
+    if(age<1500){
+      const alpha=1-age/1500;
+      ctx.beginPath(); ctx.arc(dx,dy,3+age/200,0,2*Math.PI);
+      ctx.fillStyle=det.reliable?`rgba(34,197,94,${alpha})`:`rgba(245,158,11,${alpha})`; ctx.fill();
+    }
+  });
+
+  // Microphones
+  MICS.forEach((mic,i)=>{
+    const[mx,my]=toC(mic[0],mic[1]);
+    ctx.beginPath();ctx.moveTo(mx,my-9);ctx.lineTo(mx+7,my+4);ctx.lineTo(mx-7,my+4);ctx.closePath();
+    ctx.fillStyle='#2c3e50';ctx.strokeStyle='#34d399';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();
+    ctx.fillStyle='#34d399';ctx.font='bold 9px monospace';ctx.fillText(`M${i+1}`,mx+9,my+3);
+  });
+
+  if(!repoState.running){
+    ctx.fillStyle='rgba(10,14,26,.6)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(52,211,153,.3)';ctx.font='bold 16px monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('▶ START REPOSITORY STREAM',W/2,H/2);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  }
+}
+
+// ── Incoming SocketIO events for repository mode ───────────────────────────────
+socket.on('realtime_frame', onRepoFrame);
+socket.on('realtime_stats', onRepoStats);
+socket.on('realtime_status', onRepoStatus);
+
+function onRepoFrame(data) {
+  if (data.mode !== 'repository') return;     // only handle repo frames
+  if (!repoState.running) return;
+
+  repoState.frame = data.frame;
+  repoState.totalFrames = data.frame;
+
+  // Ground-truth positions
+  repoState.gtPositions = (data.sim_positions||[]).filter(Boolean);
+
+  // GPX trajectory from dunakeszi label (convert waypoints if present)
+  const traj = data.repo_label?.trajectory;
+  if(traj && traj.waypoints && traj.waypoints.length>0){
+    repoState.trajectory = traj;
+  } else {
+    repoState.trajectory = null;
+  }
+
+  // Update tracks
+  (data.tracks||[]).forEach(t=>{
+    if(!repoState.tracks[t.id]) repoState.tracks[t.id]={...t,color:TRACK_COLORS[(t.id-1)%TRACK_COLORS.length]};
+    else Object.assign(repoState.tracks[t.id],t);
+    repoState.tracks[t.id].color = TRACK_COLORS[(t.id-1)%TRACK_COLORS.length];
+  });
+
+  const dets = data.detections||[];
+  if(dets.length>0){
+    repoState.detectedFrames++;
+    dets.forEach(det=>{
+      det._ts = Date.now();
+      repoState.lastDetections.unshift(det);
+      if(det.error_m != null) repoState.errors.push(det.error_m);
+    });
+    repoState.lastDetections = repoState.lastDetections.slice(0,20);
+    repoState.errors = repoState.errors.slice(-50);
+    updateRepoLog(data, dets);
+    updateRepoLastSeg(dets[0], data.repo_label);
+    updateRepoGtPanel(dets[0], data.repo_label);
+    updateRepoErrHist();
+    // Set data source badge from label on first frame
+    if(data.repo_label?.source) _setRepoSourceBadge(data.repo_label.source);
+    // Update Dunakeszi info strip
+    if(data.repo_label?.dataset_type === 'dunakeszi' || repoState.dataset === 'dunakeszi'){
+      _updateDunkStrip(data.repo_label);
+    }
+    dets.forEach(det=>{
+      if(det.position) addLiveEvent({
+        timestamp: data.timestamp,
+        confidence: det.confidence,
+        position: det.position,
+        source: 'repository'
+      }, 'realtime');
+    });
+  } else if(data.repo_label) {
+    // No detection but we still update log with non-detection entry
+    updateRepoLogMiss(data);
+  }
+
+  const confirmed = Object.values(repoState.tracks).filter(t=>t.confirmed).length;
+  document.getElementById('repo-rs-tracks').textContent = confirmed;
+  document.getElementById('repo-rs-frames').textContent = data.frame;
+  document.getElementById('repo-rs-detected').textContent = repoState.detectedFrames;
+  const rate = data.frame>0 ? Math.round(repoState.detectedFrames/data.frame*100) : 0;
+  const rEl = document.getElementById('repo-rs-rate');
+  rEl.textContent = rate+'%';
+  rEl.style.color = rate>=70?'var(--green)':rate>=40?'var(--orange)':'var(--red)';
+  document.getElementById('repo-frame-disp').textContent = data.frame;
+  updateRepoTrackList();
+}
+
+function onRepoStats(stats) {
+  if(stats.mode !== 'repository') return;
+  document.getElementById('repo-avg-conf').textContent = stats.avg_confidence?.toFixed(3)||'—';
+  document.getElementById('repo-duration').textContent = stats.session_duration?.toFixed(0)||'0';
+  if(stats.avg_error_m != null && stats.avg_error_m > 0) {
+    document.getElementById('repo-rs-err').textContent = stats.avg_error_m.toFixed(3)+'m';
+  }
+}
+
+function onRepoStatus(data) {
+  if(data.mode !== 'repository') return;
+  if (!data.running && repoState.running) {
+    repoState.running = false;
+    setRepoUiStopped();
+  }
+  if(data.loading) {
+    addRepoLog('<span style="color:var(--orange)">⏳ Connecting to repository via remotezip…</span>');
+    _setRepoSourceBadge('connecting');
+  }
+  if(data.error) {
+    addRepoLog(`<span style="color:var(--red)">❌ ${data.error}</span>`);
+  }
+  if(data.final_stats) {
+    const s = data.final_stats;
+    addRepoLog(`<span style="color:var(--muted)">■ Session ended — ${s.n_segments_streamed} segs, det=${s.detection_rate}%, avg_err=${s.avg_error_m?.toFixed(3)||'—'}m</span>`);
+    _setRepoSourceBadge('stopped');
+  }
+}
+
+function _setRepoSourceBadge(source) {
+  const wrap = document.getElementById('repo-source-badge');
+  const inner = document.getElementById('repo-source-inner');
+  if(!wrap || !inner) return;
+  wrap.style.display = 'block';
+  if(source === 'real' || source?.includes('remote')) {
+    inner.textContent = '🟢 Live repository data (remotezip)';
+    inner.style.cssText = 'background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.4);padding:3px 10px;border-radius:12px;font-weight:700';
+  } else if(source === 'synthetic') {
+    inner.textContent = '🟡 Synthetic fallback (repo unreachable)';
+    inner.style.cssText = 'background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.4);padding:3px 10px;border-radius:12px;font-weight:700';
+  } else if(source === 'connecting') {
+    inner.textContent = '⏳ Connecting…';
+    inner.style.cssText = 'background:rgba(100,116,139,.15);color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:12px;font-weight:700';
+  } else if(source === 'stopped') {
+    inner.textContent = '■ Stopped';
+    inner.style.cssText = 'background:rgba(100,116,139,.1);color:var(--muted);border:1px solid var(--border);padding:3px 10px;border-radius:12px;font-weight:700';
+  }
+}
+
+function updateRepoLog(data, dets) {
+  const t = new Date(data.timestamp*1000).toLocaleTimeString();
+  dets.forEach(det=>{
+    const pos = det.position?`<span class="rl-pos">(${det.position[0].toFixed(3)},${det.position[1].toFixed(3)})</span>`:'—';
+    const errStr = det.error_m!=null?` <span style="color:${det.error_m<0.5?'var(--green)':det.error_m<1.5?'var(--orange)':'var(--red)'}">err=${det.error_m.toFixed(3)}m</span>`:'';
+    const az_est = det.azimuth_deg_est!=null?det.azimuth_deg_est.toFixed(1):'?';
+    const az_true = det.azimuth_deg_true!=null?`<span class="rl-true"> (true ${det.azimuth_deg_true.toFixed(1)}°)</span>`:'';
+    const rel = det.reliable?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--orange)">~</span>';
+    addRepoLog(`<span class="rl-time">${t}</span> 🚁 f${data.frame} ${rel} conf=${det.confidence.toFixed(3)} az=${az_est}°${az_true} pos=${pos}${errStr}`);
+  });
+}
+function updateRepoLogMiss(data) {
+  const t = new Date(data.timestamp*1000).toLocaleTimeString();
+  const lbl = data.repo_label;
+  const src = lbl?.source||'';
+  addRepoLog(`<span class="rl-time">${t}</span> <span class="rl-missed">— f${data.frame} no detection${lbl?.segment_id?' ['+lbl.segment_id+']':''} (${src})</span>`);
+}
+function addRepoLog(html) {
+  const log = document.getElementById('repo-log');
+  if(log.children.length===1 && log.children[0].style.textAlign==='center') log.innerHTML='';
+  const el=document.createElement('div'); el.className='rt-log-item'; el.innerHTML=html;
+  log.insertBefore(el, log.firstChild);
+  while(log.children.length>80) log.removeChild(log.lastChild);
+}
+
+function updateRepoGtPanel(det, label) {
+  const el = document.getElementById('repo-gt-panel');
+  if(!el) return;
+  if(!label || !label.has_position) {
+    el.innerHTML = `<div style="color:var(--muted);font-size:11px;text-align:center">Segment has no ground-truth label</div>`;
+    return;
+  }
+  const errColor = det?.error_m!=null ? (det.error_m<0.5?'var(--green)':det.error_m<1.5?'var(--orange)':'var(--red)') : 'var(--muted)';
+  el.innerHTML = `
+    <div class="repo-label">
+      <span><span class="rl-key">SEG</span> ${label.segment_id||'—'}</span>
+      <span><span class="rl-key">SPLIT</span> ${label.split||'—'}</span>
+      <span><span class="rl-key">SRC</span> ${label.source||'—'}</span>
+      ${label.maneuver_type?`<span><span class="rl-key">MANEUVER</span> ${label.maneuver_type}</span>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+      <div class="stat-box accent">
+        <div class="stat-label">Az (true)</div>
+        <div class="stat-val" style="font-size:14px">${label.azimuth_deg?.toFixed(1)||'—'}<span class="stat-unit">°</span></div>
+        ${det?.azimuth_deg_est!=null?`<div style="font-size:10px;color:var(--muted)">est: ${det.azimuth_deg_est.toFixed(1)}°</div>`:''}
+      </div>
+      <div class="stat-box accent">
+        <div class="stat-label">Dist (true)</div>
+        <div class="stat-val" style="font-size:14px">${label.distance_m?.toFixed(1)||'—'}<span class="stat-unit">m</span></div>
+        ${det?.distance_m_est!=null?`<div style="font-size:10px;color:var(--muted)">est: ${det.distance_m_est.toFixed(1)}m</div>`:''}
+      </div>
+      <div class="stat-box ${det?.error_m!=null?(det.error_m<0.5?'green':det.error_m<1.5?'orange':'red'):''}">
+        <div class="stat-label">Position error</div>
+        <div class="stat-val" style="font-size:14px;color:${errColor}">${det?.error_m!=null?det.error_m.toFixed(3):'—'}<span class="stat-unit">m</span></div>
+      </div>
+    </div>`;
+}
+
+function updateRepoErrHist() {
+  const el = document.getElementById('repo-err-hist');
+  if(!el || repoState.errors.length===0) return;
+  const bins = [0.25, 0.5, 1.0, 2.0, 5.0, Infinity];
+  const labels = ['<0.25m','0.25–0.5','0.5–1.0','1–2m','2–5m','>5m'];
+  const counts = bins.map(()=>0);
+  repoState.errors.forEach(e=>{ const idx=bins.findIndex(b=>e<b); if(idx>=0) counts[idx]++; });
+  const maxCount = Math.max(...counts,1);
+  const colors = ['#22c55e','#86efac','#f59e0b','#fb923c','#ef4444','#991b1b'];
+  el.innerHTML = counts.map((c,i)=>`
+    <div class="repo-error-bar-row">
+      <div class="repo-error-label">${labels[i]}</div>
+      <div class="repo-error-bg"><div class="repo-error-fill" style="width:${Math.round(c/maxCount*100)}%;background:${colors[i]}"></div></div>
+      <div class="repo-error-val">${c}</div>
+    </div>`).join('');
+}
+
+function updateRepoTrackList() {
+  const list = document.getElementById('repo-track-list');
+  const tracks = Object.values(repoState.tracks).sort((a,b)=>b.hits-a.hits);
+  if(tracks.length===0){
+    list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks yet</div>';
+    document.getElementById('repo-track-count').textContent='(0)';
+    return;
+  }
+  const confirmed=tracks.filter(t=>t.confirmed);
+  document.getElementById('repo-track-count').textContent=`(${confirmed.length} confirmed)`;
+  list.innerHTML=tracks.map(t=>{
+    const last=t.positions&&t.positions.length?t.positions[t.positions.length-1]:null;
+    const posStr=last?`(${last[0].toFixed(2)},${last[1].toFixed(2)})m`:'—';
+    return `<div class="rt-track-item">
+      <div class="rt-track-dot" style="background:${t.color}"></div>
+      <div style="flex:1">
+        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'}</div>
+        <div style="color:var(--muted);font-size:10px">${posStr} &nbsp; ${t.speed.toFixed(2)}m/s &nbsp; hits:${t.hits}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateRepoLastSeg(det, label) {
+  const el=document.getElementById('repo-last-seg');
+  if(!el||!det) return;
+  const pos=det.position?`(${det.position[0].toFixed(4)}, ${det.position[1].toFixed(4)}) m`:'—';
+  const errColor=det.error_m!=null?(det.error_m<0.5?'var(--green)':det.error_m<1.5?'var(--orange)':'var(--red)'):'var(--muted)';
+  el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div class="stat-box ${det.confidence>=0.7?'green':det.confidence>=0.5?'orange':'red'}">
+        <div class="stat-label">Confidence</div>
+        <div class="stat-val">${(det.confidence*100).toFixed(1)}<span class="stat-unit">%</span></div>
+      </div>
+      <div class="stat-box ${det.reliable?'green':'orange'}">
+        <div class="stat-label">Reliable</div>
+        <div class="stat-val" style="font-size:13px">${det.reliable?'✓ Yes':'⚠ Low'}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;line-height:1.8">
+      <div style="color:var(--accent)">Est: ${pos}</div>
+      ${det.error_m!=null?`<div style="color:${errColor}">Error: ${det.error_m.toFixed(4)} m</div>`:''}
+      ${det.cr?`<div style="color:var(--muted)">Confidence radius: ±${det.cr.toFixed(4)} m</div>`:''}
+      ${label?.segment_id?`<div style="color:var(--muted)">Segment: ${label.segment_id}</div>`:''}
+      ${label?.maneuver_type?`<div style="color:var(--muted)">Maneuver: ${label.maneuver_type}</div>`:''}
+    </div>`;
+}
+
+// ── Session control ────────────────────────────────────────────────────────────
+async function startRepository() {
+  const fd = new FormData();
+  fd.append('mode',         'repository');
+  fd.append('session_id',   'default');
+  fd.append('dataset_type', repoState.dataset);
+  fd.append('tick_rate',    document.getElementById('repo-tick').value);
+  fd.append('threshold',    document.getElementById('repo-thresh').value);
+  fd.append('max_dist',     document.getElementById('repo-maxdist').value);
+  fd.append('allow_synthetic_fallback', 'true');   // always allow; server never downloads
+  repoState.maxDist = parseFloat(document.getElementById('repo-maxdist').value) || 5;
+  const url = document.getElementById('repo-url').value.trim();
+  if(url) fd.append('url', url);
+  const split = document.getElementById('repo-split').value;
+  if(split) fd.append('required_split', split);
+  if(repoState.dataset==='dunakeszi') fd.append('array', document.getElementById('repo-array').value);
+
+  const startBtn = document.getElementById('repo-start-btn');
+  startBtn.disabled=true;
+  startBtn.innerHTML='<span class="spinner"></span> Connecting…';
+
+  try {
+    const r = await fetch(`${BASE}/api/v2/realtime/start`, {method:'POST', body:fd});
+    const d = await r.json();
+    if(d.error){ alert(`Failed: ${d.error}`); return; }
+
+    repoState.running=true; repoState.frame=0; repoState.tracks={}; repoState.lastDetections=[];
+    repoState.gtPositions=[]; repoState.errors=[]; repoState.totalFrames=0; repoState.detectedFrames=0;
+    repoState.sessionStart=Date.now();
+
+    startBtn.classList.add('hidden');
+    document.getElementById('repo-stop-btn').classList.remove('hidden');
+    document.getElementById('repo-stop-btn').disabled=false;
+
+    repoState.durationTimer=setInterval(()=>{
+      const dur=Math.round((Date.now()-repoState.sessionStart)/1000);
+      const el=document.getElementById('repo-duration'); if(el) el.textContent=dur;
+    },1000);
+
+    addRepoLog(`<span style="color:var(--green)">▶ Repository session started — dataset: ${repoState.dataset}</span>`);
+    _setRepoSourceBadge('connecting');
+  } catch(e) {
+    alert(`Error: ${e.message}`);
+    startBtn.disabled=false;
+    startBtn.innerHTML='▶ Start';
+  }
+}
+
+async function stopRepository() {
+  document.getElementById('repo-stop-btn').disabled=true;
+  try {
+    const fd=new FormData(); fd.append('session_id','default');
+    const r=await fetch(`${BASE}/api/v2/realtime/stop`,{method:'POST',body:fd});
+    const d=await r.json();
+    repoState.running=false;
+    setRepoUiStopped();
+    if(d.stats) addRepoLog(`<span style="color:var(--muted)">■ Stopped — frames:${d.stats.total_frames} det:${d.stats.detected_frames} rate:${d.stats.detection_rate}% dur:${d.stats.session_duration}s avg_err:${d.stats.avg_error_m?.toFixed(3)||'—'}m</span>`);
+  } catch(e) { repoState.running=false; setRepoUiStopped(); }
+}
+
+function setRepoUiStopped() {
+  document.getElementById('repo-stop-btn').classList.add('hidden');
+  const sb=document.getElementById('repo-start-btn');
+  sb.classList.remove('hidden'); sb.disabled=false; sb.innerHTML='▶ Start';
+  if(repoState.durationTimer){ clearInterval(repoState.durationTimer); repoState.durationTimer=null; }
+}
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  document.getElementById('theme-toggle').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('drone-theme', isLight ? 'light' : 'dark');
+}
+(function(){
+  if(localStorage.getItem('drone-theme')==='light'){
+    document.documentElement.classList.add('light');
+    // button text set after DOM loads
+    window.addEventListener('DOMContentLoaded',()=>{
+      const btn=document.getElementById('theme-toggle');
+      if(btn) btn.textContent='🌙';
+    });
+  }
+})();
+
+// ── Dunakeszi strip updater ────────────────────────────────────────────────────
+function _updateDunkStrip(lbl) {
+  if(!lbl) return;
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val||'—'; };
+  set('dunk-session',  lbl.session || lbl.segment_id);
+  set('dunk-array',    lbl.array);
+  set('dunk-ndrones',  lbl.n_drones!=null ? lbl.n_drones : '—');
+  set('dunk-clipstart',lbl.clip_start_s!=null ? lbl.clip_start_s.toFixed(2) : '—');
+  set('dunk-dur',      lbl.duration_s!=null ? lbl.duration_s.toFixed(1) : '—');
+  set('dunk-phase',    lbl.flight_phase || lbl.maneuver_type);
+  set('dunk-speed',    lbl.speed_mps!=null ? lbl.speed_mps.toFixed(1)+' m/s' : (lbl.radius_m!=null ? '⊙ '+lbl.radius_m.toFixed(0)+'m orbit':'—'));
+  document.getElementById('dunk-info-strip')?.classList.remove('hidden');
 }
 
 window.addEventListener('load',()=>{ setTimeout(fetchStatus,600); startRadarIdle(); });

@@ -581,7 +581,7 @@ def realtime_start():
 
     threshold = float(request.form.get("threshold", cfg.DETECTION_THRESHOLD))
 
-    from realtime_sessions import SimulatedRealtimeSession, RealRealtimeSession
+    from realtime_sessions import SimulatedRealtimeSession, RealRealtimeSession, RepositoryRealtimeSession
 
     if mode == "simulated":
         n_drones    = int(  request.form.get("n_drones",    1))
@@ -614,8 +614,30 @@ def realtime_start():
             segment_dur=segment_dur,
             device_indices=dev_indices,
         )
+
+    elif mode == "repository":
+        dataset_type  = request.form.get("dataset_type", "uavirbase")
+        array         = request.form.get("array",         "BK-6-E")
+        url           = request.form.get("url",           None) or None
+        required_split= request.form.get("required_split",None) or None
+        tick_rate     = float(request.form.get("tick_rate",    1.0))
+        max_dist      = float(request.form.get("max_dist",    100.0))
+        allow_fallback= request.form.get("allow_synthetic_fallback", "true").lower() == "true"
+
+        session = RepositoryRealtimeSession(
+            cfg, socketio,
+            url                      = url,
+            dataset_type             = dataset_type,
+            array                    = array,
+            max_dist                 = max_dist,
+            tick_rate                = tick_rate,
+            threshold                = threshold,
+            allow_download           = False,   # NEVER download on live server (datasets are 4 GB+)
+            allow_synthetic_fallback = allow_fallback,
+            required_split           = required_split,
+        )
     else:
-        return jsonify({"error": f"Unknown mode: {mode}"}), 400
+        return jsonify({"error": f"Unknown mode: {mode}. Use 'simulated', 'real', or 'repository'"}), 400
 
     session._mode = mode
     _register_session(session_id, session)
