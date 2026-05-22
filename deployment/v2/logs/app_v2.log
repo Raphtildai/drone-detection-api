@@ -2901,3 +2901,114 @@ AssertionError: write() before start_response
 14:10:37 [drone_v2.realtime_session] INFO Repository session stopped
 14:10:37 [drone_v2] INFO realtime/stop: session=default
 14:10:37 [werkzeug] INFO 127.0.0.1 - - [15/May/2026 14:10:37] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+20:42:01 [werkzeug] INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.119.45:5001
+20:42:01 [werkzeug] INFO [33mPress CTRL+C to quit[0m
+20:42:01 [werkzeug] INFO  * Restarting with stat
+20:42:01 [werkzeug] WARNING  * Debugger is active!
+20:42:01 [werkzeug] INFO  * Debugger PIN: 771-860-396
+20:42:12 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:12] "GET / HTTP/1.1" 200 -
+20:42:12 [drone_v2] INFO WebSocket client connected
+20:42:13 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:13] "GET /api/v2/version HTTP/1.1" 200 -
+20:42:41 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:41] "GET / HTTP/1.1" 200 -
+20:42:41 [drone_v2] INFO WebSocket client disconnected
+20:42:41 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:41] "GET / HTTP/1.1" 200 -
+20:42:41 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:41] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+20:42:48 [drone_v2] INFO WebSocket client connected
+20:42:48 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+20:42:48 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:48] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+20:42:48 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:42:48] "GET /api/v2/version HTTP/1.1" 200 -
+20:43:22 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:43:22] "GET /api/v2/status HTTP/1.1" 200 -
+20:43:22 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:43:22] "GET /api/v2/status HTTP/1.1" 200 -
+20:43:22 [drone_v2.realtime_session] INFO Repository session started: type=dunakeszi url=default tick=1.0
+20:43:22 [drone_v2] INFO realtime/start: mode=repository session=default
+20:43:22 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:43:22] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+20:43:22 [drone_v2.repository_loader] INFO Using extracted Dunakeszi directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+20:43:22 [drone_v2.repository_loader] WARNING Failed to use extracted directory: cannot access local variable 'ap' where it is not associated with a value
+20:43:22 [drone_v2.repository_loader] INFO Attempting RemoteZip streaming from None
+20:43:22 [drone_v2.repository_loader] INFO Opening remote ZIP: None
+20:43:22 [drone_v2.repository_loader] WARNING RemoteZip streaming failed: Invalid URL 'None': No scheme supplied. Perhaps you meant https://None? — falling back to synthetic
+20:43:22 [drone_v2.repository_loader] WARNING Repository unreachable — streaming 200 synthetic segments. Results will not reflect real recordings.
+20:43:22 [drone_v2.repository_loader] WARNING Repository unreachable — falling back to 200 synthetic segments
+20:43:24 [drone_v2.repository_loader] INFO Synthetic fallback: generated 200 segments
+20:43:51 [drone_v2.realtime_session] INFO Repository session finished: 10 segments processed
+20:43:51 [drone_v2.realtime_session] INFO Repository session stopped
+20:43:51 [drone_v2] INFO realtime/stop: session=default
+20:43:51 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 20:43:51] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+21:20:42 [werkzeug] INFO  * Detected change in '/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/drone_detection/repository_loader.py', reloading
+21:20:46 [werkzeug] INFO  * Restarting with stat
+21:20:46 [werkzeug] WARNING  * Debugger is active!
+21:20:46 [werkzeug] INFO  * Debugger PIN: 771-860-396
+21:20:47 [drone_v2] INFO WebSocket client connected
+21:20:53 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:20:53] "GET / HTTP/1.1" 200 -
+21:20:53 [drone_v2] INFO WebSocket client disconnected
+21:20:53 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:20:53] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+21:20:53 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+21:20:53 [drone_v2] INFO WebSocket client connected
+21:20:55 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:20:55] "GET /api/v2/version HTTP/1.1" 200 -
+21:21:00 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:21:00] "GET /api/v2/status HTTP/1.1" 200 -
+21:21:12 [drone_v2.realtime_session] INFO Repository session started: type=dunakeszi url=default tick=1.0
+21:21:12 [drone_v2] INFO realtime/start: mode=repository session=default
+21:21:12 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:21:12] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+21:21:12 [drone_v2.repository_loader] INFO Using extracted Dunakeszi directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:21:12 [drone_v2.repository_loader] INFO Dunakeszi local index: 9 triplet sessions found under /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:21:12 [drone_v2.repository_loader] INFO Streaming 9 sessions from extracted directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:21:25 [drone_v2.realtime_session] INFO Repository session finished: 9 segments processed
+21:21:25 [drone_v2.realtime_session] INFO Repository session stopped
+21:21:25 [drone_v2] INFO realtime/stop: session=default
+21:21:25 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:21:25] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+21:21:58 [drone_v2.realtime_session] INFO Repository session started: type=dunakeszi url=default tick=1.0
+21:21:58 [drone_v2] INFO realtime/start: mode=repository session=default
+21:21:58 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:21:58] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+21:21:58 [drone_v2.repository_loader] INFO Using extracted Dunakeszi directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:21:58 [drone_v2.repository_loader] INFO Dunakeszi local index: 9 triplet sessions found under /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:21:58 [drone_v2.repository_loader] INFO Streaming 9 sessions from extracted directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+21:24:14 [drone_v2.realtime_session] INFO Repository session finished: 121 segments processed
+21:24:14 [drone_v2.realtime_session] INFO Repository session stopped
+21:24:14 [drone_v2] INFO realtime/stop: session=default
+21:24:14 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:14] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+21:24:22 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:22] "GET / HTTP/1.1" 200 -
+21:24:22 [drone_v2] INFO WebSocket client disconnected
+21:24:22 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:22] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+21:24:22 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+21:24:22 [drone_v2] INFO WebSocket client connected
+21:24:23 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:23] "GET /api/v2/status HTTP/1.1" 200 -
+21:24:23 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:23] "GET /api/v2/version HTTP/1.1" 200 -
+21:24:28 [drone_v2.repository_loader] INFO Attempting RemoteZip streaming from https://zenodo.org/records/15391924/files/Microphone_array.zip?download=1
+21:24:28 [drone_v2.realtime_session] INFO Repository session started: type=uavirbase url=default tick=1.0
+21:24:28 [drone_v2] INFO realtime/start: mode=repository session=default
+21:24:28 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:24:28] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+21:24:28 [drone_v2.repository_loader] INFO Opening remote ZIP: https://zenodo.org/records/15391924/files/Microphone_array.zip?download=1
+21:24:54 [drone_v2.repository_loader] INFO Remote ZIP: 132 paired sessions found (split=None)
+21:24:54 [drone_v2.repository_loader] INFO Streaming 132 sessions from remote ZIP (looping)
+21:26:11 [drone_v2.repository_loader] INFO RemoteZip streaming: first segment OK — live stream active
+21:30:33 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:30:33] "GET /api/v2/realtime/audio-devices HTTP/1.1" 200 -

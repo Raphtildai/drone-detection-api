@@ -395,8 +395,75 @@ def _index_local_sessions(
     dataset_type: str,
     required_split: Optional[str],
 ) -> List[Dict]:
-    """Walk the extracted directory and build a list of session dicts."""
-    sessions = []
+    """
+    Walk the extracted directory and build a list of session dicts.
+
+    Supports two layouts:
+
+    1. UaVirBASE layout  (one sub-folder per session):
+          <session_id>/output.wav  +  <session_id>/label.json
+
+    2. Dunakeszi pipeline-ready layout  (flat directory, triplets):
+          <stem>_ch0.wav  +  <stem>_ch1.wav  +  <stem>_ch2.wav  +  <stem>_label.json
+       All three channel files are stored; _ch0 is selected as the primary audio
+       path (the loader picks all three explicitly by mic_indices in the caller).
+       A session record is emitted for each unique <stem>.
+    """
+    sessions: List[Dict] = []
+
+    # ── Layout 2: Dunakeszi flat triplets ─────────────────────────────────────
+    if dataset_type == "dunakeszi":
+        # Collect all _label.json files directly under root (or one level deep)
+        label_files = sorted(root.rglob("*_label.json"))
+        for label_file in label_files:
+            stem = label_file.name[: -len("_label.json")]   # e.g. "seg_0001"
+            d    = label_file.parent
+
+            # Require at least _ch0.wav to exist
+            ch0 = d / f"{stem}_ch0.wav"
+            if not ch0.exists():
+                continue
+
+            label_meta = _parse_label_bytes(label_file.read_bytes())
+            if label_meta is None:
+                continue
+
+            split = None
+            for part in d.parts:
+                if part in ("train", "val", "test", "validation"):
+                    split = "val" if part == "validation" else part
+                    break
+
+            if required_split is not None and split != required_split and split is not None:
+                continue
+
+            sessions.append({
+                "session_id": stem,
+                # Store the directory + stem so _load_channels_from_disk_dunakeszi
+                # can load all three channels by index.  We encode this as the
+                # ch0 path; the loader detects _ch0/_ch1/_ch2 via the stem.
+                "audio_path":    str(ch0),
+                "audio_dir":     str(d),
+                "audio_stem":    stem,
+                "label_meta":    label_meta,
+                "split":         split,
+                "is_dunakeszi":  True,
+            })
+
+        if sessions:
+            log.info(
+                "Dunakeszi local index: %d triplet sessions found under %s",
+                len(sessions), root,
+            )
+            return sessions
+
+        # Fall through to generic layout scan if no triplets found
+        log.warning(
+            "No *_label.json + *_ch0.wav triplets found under %s — "
+            "trying generic layout scan", root,
+        )
+
+    # ── Layout 1: generic output.wav + label.json sub-folder layout ───────────
     for session_dir in sorted(root.rglob("*")):
         if not session_dir.is_dir():
             continue
@@ -433,9 +500,42 @@ def _load_channels_from_disk(
     mic_indices: List[int],
     cfg,
     ap,
+    session: Optional[Dict] = None,
 ) -> Optional[List[np.ndarray]]:
-    """Load a multi-channel file from disk, select channels, pad/truncate."""
+    """
+    Load a multi-channel file from disk, select channels, pad/truncate.
+
+    For Dunakeszi pipeline-ready sessions (is_dunakeszi=True), the segment
+    has already been extracted into three mono files:
+        <stem>_ch0.wav, <stem>_ch1.wav, <stem>_ch2.wav
+    These are loaded directly (no channel-index slicing needed).
+
+    For UaVirBASE / generic sessions the original multi-channel WAV is sliced
+    by mic_indices as before.
+    """
     try:
+        # ── Dunakeszi triplet: load three pre-extracted mono files ─────────
+        if session and session.get("is_dunakeszi"):
+            d    = Path(session["audio_dir"])
+            stem = session["audio_stem"]
+            out  = []
+            for ch_idx in range(3):
+                ch_path = d / f"{stem}_ch{ch_idx}.wav"
+                if not ch_path.exists():
+                    break
+                data, sr = sf.read(str(ch_path), dtype="float32", always_2d=False)
+                # Resample if needed
+                if sr != cfg.SR:
+                    import librosa
+                    data = librosa.resample(data, orig_sr=sr, target_sr=cfg.SR)
+                out.append(ap.pad_or_truncate(data))
+            if len(out) == 0:
+                return None
+            while len(out) < 3:
+                out.append(out[-1].copy())
+            return out[:3]
+
+        # ── Generic / UaVirBASE: slice mic channels from polywav ───────────
         channels = ap.load_channels(audio_path, channel_indices=mic_indices)
         if not channels:
             return None
@@ -443,6 +543,7 @@ def _load_channels_from_disk(
         while len(out) < 3:
             out.append(out[-1].copy())
         return out[:3]
+
     except Exception as exc:
         log.debug("_load_channels_from_disk failed (%s): %s", audio_path, exc)
         return None
@@ -535,27 +636,35 @@ def _stream_from_local_extracted_dir(
 ) -> Generator[Tuple[List[np.ndarray], dict], None, None]:
     """
     Stream sessions from a pre-extracted directory structure.
+
+    Handles both layouts automatically:
+    - UaVirBASE: sub-folder per session with output.wav + label.json
+    - Dunakeszi: flat directory with <stem>_ch0/1/2.wav + <stem>_label.json
     """
     root = Path(root_path)
     if not root.exists() or not root.is_dir():
         raise FileNotFoundError(f"Directory not found: {root_path}")
-    
+
     sessions = _index_local_sessions(root, dataset_type, required_split)
     if not sessions:
         raise RuntimeError(f"No valid sessions found in {root_path}")
-    
-    log.info("Streaming %d sessions from extracted directory: %s", len(sessions), root_path)
-    
+
+    log.info(
+        "Streaming %d sessions from extracted directory: %s",
+        len(sessions), root_path,
+    )
+
     while True:
         random.shuffle(sessions)
         for sess in sessions:
             channels = _load_channels_from_disk(
-                sess["audio_path"], mic_indices, cfg, ap
+                sess["audio_path"], mic_indices, cfg, ap, session=sess
             )
             if channels is None:
                 continue
-            
+
             label_meta = sess["label_meta"]
+            extra      = label_meta.get("extra", {}) or {}
             label = {
                 "segment_id":    sess["session_id"],
                 "split":         sess["split"],
@@ -566,6 +675,16 @@ def _stream_from_local_extracted_dir(
                 "height_m":      label_meta["height_m"],
                 "has_position":  label_meta["has_position"],
                 "maneuver_type": label_meta["maneuver_type"],
+                # Dunakeszi-specific extras (None for UaVirBASE)
+                "session":       extra.get("session"),
+                "array":         extra.get("array"),
+                "n_drones":      extra.get("n_drones"),
+                "speed_mps":     extra.get("speed_mps"),
+                "radius_m":      extra.get("radius_m"),
+                "duration_s":    extra.get("duration_s"),
+                "clip_start_s":  extra.get("clip_start_s_in_seg"),
+                "flight_phase":  extra.get("flight_phase"),
+                "trajectory":    extra.get("trajectory"),
             }
             yield channels, label
 
@@ -631,20 +750,49 @@ def stream_repository_segments(
             "Using RemoteZip streaming only."
         )
 
-    # Check for local ZIP file first (for Dunakeszi)
+    # ── Resolve mic_indices, ap, and native_sr FIRST ──────────────────────────
+    # These must be defined before any early-return branch (extracted dir, etc.)
+    # that calls _stream_from_local_extracted_dir() or _load_channels_from_disk().
+    if dataset_type not in ("uavirbase", "dunakeszi"):
+        log.warning("Unknown dataset_type=%r — treating as 'uavirbase'", dataset_type)
+        dataset_type = "uavirbase"
+
+    if dataset_type == "dunakeszi":
+        _ARRAY_CH  = getattr(cfg, "DUNAKESZI_ARRAY_CHANNELS",
+                             {"BK-6-E": [8, 9, 10], "BK-6-W": [2, 3, 4]})
+        mic_indices = list(_ARRAY_CH.get(array, [8, 9, 10]))
+    else:
+        mic_indices = list(getattr(cfg, "UAVIRBASE_MIC_INDICES", [0, 1, 3]))
+
+    native_sr = _native_sr_for(dataset_type, cfg)
+
+    # Lazy-import to avoid circular imports at module load time
+    from .audio_processing import AudioProcessor
+    ap = AudioProcessor(cfg)
+
+    # ── Strategy 0: local pre-extracted directory (Dunakeszi pipeline-ready) ──
     local_zip_path = None
     if dataset_type == "dunakeszi":
         local_zip_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
-        # Check for extracted directory (without .zip extension)
-        extracted_path = local_zip_path.replace('.zip', '') if local_zip_path else None
-        if local_zip_path and os.path.isfile(local_zip_path):
-            log.info(f"Using local Dunakeszi ZIP file: {local_zip_path}")
-            # Use local ZIP via RemoteZip (which supports file:// URLs)
-            if not url:
-                url = f"file://{os.path.abspath(local_zip_path)}"
+
+        # DUNAKESZI_LOCAL_PATH may point directly to the extracted directory
+        # (not a .zip file), so we handle both cases:
+        #   a) it IS a directory → use it directly
+        #   b) it IS a .zip file → derive extracted_path by stripping .zip
+        extracted_path = None
+        if local_zip_path:
+            if os.path.isdir(local_zip_path):
+                extracted_path = local_zip_path          # (a) already extracted
+            elif os.path.isfile(local_zip_path):
+                extracted_path = local_zip_path.replace(".zip", "")  # (b) zip
+                if not os.path.isdir(extracted_path):
+                    extracted_path = None  # extracted dir doesn't exist yet
+                # Queue the local ZIP for RemoteZip fallback
+                if not url:
+                    url = f"file://{os.path.abspath(local_zip_path)}"
 
         if extracted_path and os.path.isdir(extracted_path):
-            log.info(f"Using extracted Dunakeszi directory: {extracted_path}")
+            log.info("Using extracted Dunakeszi directory: %s", extracted_path)
             try:
                 gen = _stream_from_local_extracted_dir(
                     extracted_path, cfg, ap, dataset_type, mic_indices, required_split
@@ -654,7 +802,7 @@ def stream_repository_segments(
                 yield from gen
                 return
             except Exception as exc:
-                log.warning(f"Failed to use extracted directory: {exc}")
+                log.warning("Failed to use extracted directory: %s", exc)
 
     # Resolve the URL — use dataset-specific config key
     if url is None:
@@ -677,19 +825,8 @@ def stream_repository_segments(
         raise RuntimeError(
             f"No repository URL or local file configured for dataset_type={dataset_type!r} "
             "and allow_synthetic_fallback=False. "
-            "Set cfg.DUNAKESKI_ZIP_URL, cfg.DUNAKESZI_LOCAL_PATH, or pass url= explicitly."
+            "Set cfg.DUNAKESZI_ZIP_URL, cfg.DUNAKESZI_LOCAL_PATH, or pass url= explicitly."
         )
-
-    # Resolve mic indices and dataset native SR
-    mic_indices = list(getattr(cfg, "UAVIRBASE_MIC_INDICES", [0, 1, 3]))
-    if dataset_type not in ("uavirbase", "dunakeszi"):
-        log.warning("Unknown dataset_type=%r — treating as 'uavirbase'", dataset_type)
-        dataset_type = "uavirbase"
-    native_sr = _native_sr_for(dataset_type, cfg)
-
-    # Lazy-import to avoid circular imports at module load time
-    from .audio_processing import AudioProcessor
-    ap = AudioProcessor(cfg)
 
     # ── Strategy 1: RemoteZip streaming (supports local file:// URLs) ──────────
     try:
@@ -729,3 +866,133 @@ def stream_repository_segments(
         "allow_synthetic_fallback=False. "
         "Check network connectivity and the repository URL."
     )
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Public API — segment browser (for dashboard "select files from repository")
+# ══════════════════════════════════════════════════════════════════════════════
+
+def list_repository_segments(
+    cfg,
+    dataset_type: str = "dunakeszi",
+    array: str = "BK-6-E",
+    required_split: Optional[str] = None,
+) -> List[Dict]:
+    """
+    Return a list of available segment dicts from the local dataset directory.
+
+    Each dict contains:
+        segment_id, split, has_position, azimuth_deg, distance_m, height_m,
+        maneuver_type, source, dataset_type
+        + Dunakeszi extras: session, array, n_drones, flight_phase, ...
+
+    This is used by the dashboard to populate a segment-selection dropdown
+    so the user can replay a specific recording rather than a random shuffle.
+
+    Returns an empty list if no local dataset is configured / found.
+    """
+    if dataset_type == "dunakeszi":
+        local_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
+    else:
+        local_path = str(getattr(cfg, "UAVIRBASE_RAW", ""))
+
+    if not local_path or not os.path.isdir(local_path):
+        log.info(
+            "list_repository_segments: no local directory for dataset_type=%r",
+            dataset_type,
+        )
+        return []
+
+    root = Path(local_path)
+    sessions = _index_local_sessions(root, dataset_type, required_split)
+
+    result = []
+    for sess in sessions:
+        lm    = sess["label_meta"]
+        extra = lm.get("extra", {}) or {}
+        result.append({
+            "segment_id":    sess["session_id"],
+            "split":         sess["split"],
+            "dataset_type":  dataset_type,
+            "source":        "real",
+            "has_position":  lm["has_position"],
+            "azimuth_deg":   lm["azimuth_deg"],
+            "distance_m":    lm["distance_m"],
+            "height_m":      lm["height_m"],
+            "maneuver_type": lm["maneuver_type"],
+            # Dunakeszi extras
+            "session":       extra.get("session"),
+            "array":         extra.get("array"),
+            "n_drones":      extra.get("n_drones"),
+            "flight_phase":  extra.get("flight_phase"),
+            "speed_mps":     extra.get("speed_mps"),
+        })
+
+    log.info(
+        "list_repository_segments: %d segments available for dataset_type=%r",
+        len(result), dataset_type,
+    )
+    return result
+
+
+def stream_single_segment(
+    segment_id: str,
+    cfg,
+    dataset_type: str = "dunakeszi",
+    array: str = "BK-6-E",
+) -> Optional[Tuple[List[np.ndarray], dict]]:
+    """
+    Load and return a single segment by segment_id.
+
+    Used by the dashboard when the user selects a specific segment from the
+    browser rather than letting the system pick randomly.
+
+    Returns (channels, label) or None if the segment is not found.
+    """
+    if dataset_type == "dunakeszi":
+        local_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
+        _ARRAY_CH  = getattr(cfg, "DUNAKESZI_ARRAY_CHANNELS",
+                             {"BK-6-E": [8, 9, 10], "BK-6-W": [2, 3, 4]})
+        mic_indices = list(_ARRAY_CH.get(array, [8, 9, 10]))
+    else:
+        local_path  = str(getattr(cfg, "UAVIRBASE_RAW", ""))
+        mic_indices = list(getattr(cfg, "UAVIRBASE_MIC_INDICES", [0, 1, 3]))
+
+    if not local_path or not os.path.isdir(local_path):
+        log.warning("stream_single_segment: no local directory for dataset_type=%r", dataset_type)
+        return None
+
+    root     = Path(local_path)
+    sessions = _index_local_sessions(root, dataset_type, required_split=None)
+    sess     = next((s for s in sessions if s["session_id"] == segment_id), None)
+    if sess is None:
+        log.warning("stream_single_segment: segment_id=%r not found", segment_id)
+        return None
+
+    from .audio_processing import AudioProcessor
+    ap = AudioProcessor(cfg)
+
+    channels = _load_channels_from_disk(
+        sess["audio_path"], mic_indices, cfg, ap, session=sess
+    )
+    if channels is None:
+        return None
+
+    lm    = sess["label_meta"]
+    extra = lm.get("extra", {}) or {}
+    label = {
+        "segment_id":    sess["session_id"],
+        "split":         sess["split"],
+        "source":        "real",
+        "dataset_type":  dataset_type,
+        "azimuth_deg":   lm["azimuth_deg"],
+        "distance_m":    lm["distance_m"],
+        "height_m":      lm["height_m"],
+        "has_position":  lm["has_position"],
+        "maneuver_type": lm["maneuver_type"],
+        "session":       extra.get("session"),
+        "array":         extra.get("array"),
+        "n_drones":      extra.get("n_drones"),
+        "flight_phase":  extra.get("flight_phase"),
+        "trajectory":    extra.get("trajectory"),
+    }
+    return channels, label
