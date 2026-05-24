@@ -227,6 +227,49 @@ class Config:
         self.MAX_DRONES         = 3
         self.TDOA_DEDUP_MS      = 0.029e-3
 
+        # ── Nextcloud share configuration (Dunakeszi remote audio) ────────────────────
+        #
+        # Set NEXTCLOUD_BASE_URL and NEXTCLOUD_SHARE_TOKEN to enable:
+        #   • WebDAV PROPFIND file listing (polywav / MEMS / GPX)
+        #   • HTTP range-request streaming of specific byte windows
+        #   • No full downloads — only the ~3 MB window for each 3-second segment
+        #
+        # Leave as None to fall back to local pipeline-ready files only.
+        #
+        # Example:
+        #   self.NEXTCLOUD_BASE_URL    = "https://cloud.youruniversity.hu"
+        #   self.NEXTCLOUD_SHARE_TOKEN = "AbCdEfGhIjKlMnOp"
+        
+        self.NEXTCLOUD_BASE_URL    = os.environ.get("NEXTCLOUD_BASE_URL", None)
+        self.NEXTCLOUD_SHARE_TOKEN = os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
+        
+        # Sub-paths inside the share (relative to the share root)
+        self.NEXTCLOUD_POLYWAV_PATH = "/Dunakeszi_2025_10_25/Dunakeszi_BRUEL_VIDEO/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053"   # directory containing the 17× 4 GB polywav files
+        self.NEXTCLOUD_MEMS_PATH    = "/Dunakeszi_2025_10_25/Dunakeszi_MEMS/Audio"      # directory containing the 12 MEMS audio files
+        self.NEXTCLOUD_GPX_PATH     = "/Dunakeszi_2025_10_25/Dunakeszi_DRON-ADATOK/DRON-GPX"  # directory tree with per-show GPX logs
+        
+        # ── Dunakeszi audio format details (used by dunakeszi_nextcloud.py) ───────────
+        #
+        # POLYWAV:  192 kHz, 14 ch, float32, 4 GB each → already defined above as DUNAKESZI_ORIG_SR
+        # MEMS:     format verified by dunakeszi_ground_truth_fixed.verify_mems_format()
+        #           defaults here match the 133.1 MB / (4ch × 3B × 48kHz) = 242 s estimate
+        
+        self.MEMS_SR       = 48_000   # best-guess sample rate; verify from WAV header
+        self.MEMS_CHANNELS = 4        # 4-channel MEMS array
+        self.MEMS_BITS     = 24       # 24-bit signed integer PCM
+        
+        # ── TDOA channel subsets (Scorpio channel numbers, 1-indexed) ─────────────────
+        #
+        # The BK-6 arrays have 6 capsules each; only 3 are used for TDOA per array.
+        # Scorpio channels: BK-6-W = ch3,4,5 (W-E, W-H, W-B); BK-6-E = ch9,10,11 (E-E, E-H, E-B)
+        # 0-indexed in the polywav: BK-6-W → [2,3,4],  BK-6-E → [8,9,10]  (already in DUNAKESZI_ARRAY_CHANNELS)
+        
+        # ── Ground-truth measurement origin GPS (for XY conversion in nextcloud module) ──
+        # Midpoint of BK-6-E (47.6086296, 19.1470983) and BK-6-W (47.6086368, 19.1468423)
+        self.DUNAKESZI_ORIGIN_LAT = 47.6086332
+        self.DUNAKESZI_ORIGIN_LON = 19.1469703
+
+
         # ── Custom builder dataset ────────────────────────────────────────
         self._init_custom_dataset_defaults()
 

@@ -819,16 +819,16 @@ def stream_repository_segments(
     from .audio_processing import AudioProcessor
     ap = AudioProcessor(cfg)
 
-    # ── Strategy 0: local pre-extracted directory (Dunakeszi pipeline-ready) ──
+    # ── Resolve local path info (used by Strategy 2 fallback below) ─────────────
     local_zip_path = None
+    extracted_path = None
     if dataset_type == "dunakeszi":
         local_zip_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
 
         # DUNAKESZI_LOCAL_PATH may point directly to the extracted directory
         # (not a .zip file), so we handle both cases:
-        #   a) it IS a directory → use it directly
+        #   a) it IS a directory → use it directly as extracted_path
         #   b) it IS a .zip file → derive extracted_path by stripping .zip
-        extracted_path = None
         if local_zip_path:
             if os.path.isdir(local_zip_path):
                 extracted_path = local_zip_path          # (a) already extracted
@@ -840,21 +840,67 @@ def stream_repository_segments(
                 if not url:
                     url = f"file://{os.path.abspath(local_zip_path)}"
 
-        if extracted_path and os.path.isdir(extracted_path):
-            log.info("Using extracted Dunakeszi directory: %s", extracted_path)
+    # ── Check whether Nextcloud is configured ────────────────────────────────
+    _nc_configured = bool(
+        dataset_type == "dunakeszi"
+        and getattr(cfg, "NEXTCLOUD_BASE_URL", None)
+        and getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", None)
+    )
+
+    # ── Strategy 0: Nextcloud HTTP range-request streaming ───────────────────
+    # Tried FIRST when Nextcloud credentials are present, so that the live
+    # polywav files are used instead of the local pipeline-ready directory.
+    if _nc_configured:
+        log.info(
+            "Nextcloud configured — attempting Nextcloud range-request stream "
+            "(local dir will be used as fallback only)"
+        )
+        try:
+            from .dunakeszi_nextcloud import iter_nextcloud_segments
+        except ImportError:
             try:
-                gen = _stream_from_local_extracted_dir(
-                    extracted_path, cfg, ap, dataset_type, mic_indices, required_split,
-                    segment_id=segment_id, loop=loop,
+                from dunakeszi_nextcloud import iter_nextcloud_segments
+            except ImportError:
+                log.warning(
+                    "dunakeszi_nextcloud not importable — skipping Nextcloud strategy"
                 )
+                iter_nextcloud_segments = None  # type: ignore
+
+        if iter_nextcloud_segments is not None:
+            try:
+                gen   = iter_nextcloud_segments(cfg, ap, required_split=required_split,
+                                                segment_id=segment_id, loop=loop)
                 first = next(gen)
+                log.info("Nextcloud streaming: first segment OK — live stream active")
                 yield first
                 yield from gen
                 return
+            except StopIteration:
+                log.warning("Nextcloud generator yielded nothing — falling back")
             except Exception as exc:
-                log.warning("Failed to use extracted directory: %s", exc)
+                log.warning("Nextcloud streaming failed: %s — trying next strategy", exc)
 
-    # Resolve the URL — use dataset-specific config key
+    # ── Strategy 1: local pre-extracted directory (Dunakeszi pipeline-ready) ──
+    # Used when Nextcloud is not configured OR after Nextcloud fails.
+    if extracted_path and os.path.isdir(extracted_path):
+        log.info(
+            "Using local extracted Dunakeszi directory%s: %s",
+            " (Nextcloud fallback)" if _nc_configured else "",
+            extracted_path,
+        )
+        try:
+            gen = _stream_from_local_extracted_dir(
+                extracted_path, cfg, ap, dataset_type, mic_indices, required_split,
+                segment_id=segment_id, loop=loop,
+            )
+            first = next(gen)
+            yield first
+            yield from gen
+            return
+        except Exception as exc:
+            log.warning("Failed to use extracted directory: %s", exc)
+
+    # ── Resolve the URL for RemoteZip (Strategy 2) ───────────────────────────
     if url is None:
         if dataset_type == "dunakeszi":
             url = getattr(cfg, "DUNAKESZI_ZIP_URL", None)
@@ -869,7 +915,10 @@ def stream_repository_segments(
 
     if url is None and local_zip_path is None:
         if allow_synthetic_fallback:
-            log.warning("No repository URL or local file for dataset_type=%r — using synthetic fallback", dataset_type)
+            log.warning(
+                "No repository URL or local file for dataset_type=%r — "
+                "using synthetic fallback", dataset_type
+            )
             yield from _stream_synthetic(cfg, n_synthetic, max_dist)
             return
         raise RuntimeError(
@@ -878,33 +927,33 @@ def stream_repository_segments(
             "Set cfg.DUNAKESZI_ZIP_URL, cfg.DUNAKESZI_LOCAL_PATH, or pass url= explicitly."
         )
 
-    # ── Strategy 1: RemoteZip streaming (supports local file:// URLs) ──────────
-    try:
-        log.info("Attempting RemoteZip streaming from %s", url)
-        gen = _stream_via_remotezip(
-            url            = url,
-            cfg            = cfg,
-            ap             = ap,
-            dataset_type   = dataset_type,
-            mic_indices    = mic_indices,
-            native_sr      = native_sr,
-            required_split = required_split,
-        )
-        first = next(gen)
-        log.info("RemoteZip streaming: first segment OK — live stream active")
-        yield first
-        yield from gen
-        return
+    # ── Strategy 2: RemoteZip streaming (supports local file:// URLs) ────────
+    if url is not None:
+        try:
+            log.info("Attempting RemoteZip streaming from %s", url)
+            gen = _stream_via_remotezip(
+                url            = url,
+                cfg            = cfg,
+                ap             = ap,
+                dataset_type   = dataset_type,
+                mic_indices    = mic_indices,
+                native_sr      = native_sr,
+                required_split = required_split,
+            )
+            first = next(gen)
+            log.info("RemoteZip streaming: first segment OK — live stream active")
+            yield first
+            yield from gen
+            return
+        except StopIteration:
+            log.warning("RemoteZip generator yielded nothing — falling back to synthetic")
+        except Exception as exc:
+            log.warning("RemoteZip streaming failed: %s — falling back to synthetic", exc)
 
-    except StopIteration:
-        log.warning("RemoteZip generator yielded nothing — falling back to synthetic")
-    except Exception as exc:
-        log.warning("RemoteZip streaming failed: %s — falling back to synthetic", exc)
-
-    # ── Strategy 2: Synthetic fallback (no network, no disk) ──────────────────
+    # ── Strategy 3: Synthetic fallback (no network, no disk) ─────────────────
     if allow_synthetic_fallback:
         log.warning(
-            "Repository unreachable — streaming %d synthetic segments. "
+            "All real-data strategies failed — streaming %d synthetic segments. "
             "Results will not reflect real recordings.",
             n_synthetic,
         )
@@ -912,9 +961,9 @@ def stream_repository_segments(
         return
 
     raise RuntimeError(
-        f"RemoteZip streaming failed for URL={url!r} and "
-        "allow_synthetic_fallback=False. "
-        "Check network connectivity and the repository URL."
+        f"All streaming strategies failed for dataset_type={dataset_type!r} "
+        f"(Nextcloud configured={_nc_configured}, url={url!r}, "
+        f"local={extracted_path!r}) and allow_synthetic_fallback=False."
     )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1046,3 +1095,311 @@ def stream_single_segment(
         "trajectory":    extra.get("trajectory"),
     }
     return channels, label
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 1. Rich segment browser
+# ══════════════════════════════════════════════════════════════════════════════
+ 
+def list_dunakeszi_segments_rich(
+    cfg,
+    split_filter:   Optional[str] = None,
+    session_filter: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Return the full segment-browser payload for the Dunakeszi dataset.
+ 
+    Used by GET /api/v2/repository/segments.
+ 
+    Response shape (matches index_v2.html loadSegmentBrowser expectations):
+    {
+        "segments": [
+            {
+                "id":              int,
+                "session":         str,    e.g. "show_8"
+                "show_number":     int,
+                "wall_clock":      str,    e.g. "14:41"
+                "split":           str,    "train" | "val" | "test"
+                "local_start_hms": str,    "14:41:00"
+                "local_end_hms":   str,
+                "duration_s":      float,
+                "maneuver_type":   str,
+                "flight_phase":    str,
+                "description":     str,
+                "n_drones":        int,
+                "drones":          list[str],
+                "altitude_m":      float | None,
+                "speed_mps":       float | None,
+                "radius_m":        float | None,
+                "azimuth_deg":     float | None,   bearing from North at onset
+                "distance_m":      float | None,   XY distance at onset
+                "local_available": bool,    pipeline-ready triplet on disk
+                "bk_available":    bool,    BK-6 polywav stream possible
+                "mems_available":  bool,    MEMS file covers this segment
+                "quality_flags":   list[str],
+                "session_description": str,
+            },
+            …
+        ],
+        "sessions": [
+            {
+                "session_id":  str,
+                "show_number": int,
+                "wall_clock":  str,
+                "description": str,
+                "n_drones":    int,
+            },
+            …
+        ],
+        "total":  int,
+        "source": str,   "ground_truth" | "local_index" | "empty"
+    }
+    """
+    try:
+        from .dunakeszi_nextcloud import build_segment_browser_response
+    except ImportError:
+        try:
+            from dunakeszi_nextcloud import build_segment_browser_response
+        except ImportError:
+            log.warning("dunakeszi_nextcloud not importable — using local index fallback")
+            return _list_from_local_only(cfg, split_filter, session_filter)
+ 
+    return build_segment_browser_response(cfg, split_filter, session_filter)
+ 
+ 
+def _list_from_local_only(
+    cfg,
+    split_filter:   Optional[str],
+    session_filter: Optional[str],
+) -> Dict[str, Any]:
+    """
+    Fallback: scan DUNAKESZI_LOCAL_PATH for *_label.json files and return a
+    minimal browser payload.  Works without dunakeszi_nextcloud installed.
+    """
+    import json, re
+ 
+    local_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
+    if not local_path or not os.path.isdir(local_path):
+        return {"segments": [], "sessions": [], "total": 0, "source": "empty"}
+ 
+    root = Path(local_path)
+    sessions_seen: Dict[str, dict] = {}
+    segments_out:  List[dict]      = []
+ 
+    for lf in sorted(root.rglob("*_label.json")):
+        try:
+            raw = json.loads(lf.read_text())
+        except Exception:
+            continue
+ 
+        stem = lf.name[: -len("_label.json")]
+        if not (lf.parent / f"{stem}_ch0.wav").exists():
+            continue
+ 
+        split   = raw.get("split")
+        session = raw.get("session") or "unknown"
+        if split_filter   and split   != split_filter:   continue
+        if session_filter and session != session_filter: continue
+ 
+        m      = re.search(r"seg_(\d+)", stem)
+        seg_id = int(m.group(1)) if m else None
+        sessions_seen.setdefault(session, {"session_id": session, "description": session})
+ 
+        segments_out.append({
+            "id":             seg_id,
+            "session":        session,
+            "split":          split,
+            "local_start_hms": None,
+            "maneuver_type":  raw.get("maneuver_type"),
+            "description":    raw.get("note") or stem,
+            "n_drones":       raw.get("n_drones", 1),
+            "altitude_m":     raw.get("height_m"),
+            "azimuth_deg":    raw.get("original_bearing_deg"),
+            "distance_m":     raw.get("distance_m"),
+            "quality_flags":  [],
+            "local_available": True,
+            "bk_available":   True,
+            "mems_available": False,
+        })
+ 
+    return {
+        "segments": segments_out,
+        "sessions": list(sessions_seen.values()),
+        "total":    len(segments_out),
+        "source":   "local_index",
+    }
+ 
+ 
+# ══════════════════════════════════════════════════════════════════════════════
+# 2. Stream a single segment by ground-truth ID
+# ══════════════════════════════════════════════════════════════════════════════
+ 
+def stream_segment_by_gt_id(
+    segment_id: int,
+    cfg,
+    array: str = "BK-6-E",
+    ap=None,
+) -> Optional[Tuple[List[np.ndarray], dict]]:
+    """
+    Load a Dunakeszi maneuver segment by its ground-truth integer ID.
+ 
+    Fallback chain:
+        1. Local pipeline-ready file (dunakeszi_pipeline_ready_B)
+        2. Nextcloud HTTP range-request (requires NEXTCLOUD_* config)
+        3. Returns None → caller uses synthetic fallback
+ 
+    Parameters
+    ----------
+    segment_id : int  — ground-truth MANEUVER_SEGMENTS id
+    cfg        : Config instance
+    array      : "BK-6-E" | "BK-6-W"
+    ap         : AudioProcessor instance (created if None)
+ 
+    Returns
+    -------
+    (channels, label) or None
+    """
+    if ap is None:
+        from .audio_processing import AudioProcessor
+        ap = AudioProcessor(cfg)
+ 
+    # ── Strategy 1: local pipeline-ready triplet ──────────────────────────────
+    result = _stream_from_local_by_gt_id(segment_id, cfg, array, ap)
+    if result is not None:
+        log.info("segment_id=%d: served from local pipeline-ready files", segment_id)
+        return result
+ 
+    # ── Strategy 2: Nextcloud range-request ───────────────────────────────────
+    nc_configured = bool(
+        getattr(cfg, "NEXTCLOUD_BASE_URL", None)
+        and getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", None)
+    )
+    if nc_configured:
+        try:
+            from .dunakeszi_nextcloud import stream_segment_from_nextcloud
+        except ImportError:
+            try:
+                from dunakeszi_nextcloud import stream_segment_from_nextcloud
+            except ImportError:
+                log.warning("dunakeszi_nextcloud not importable — skipping range-read strategy")
+                return None
+ 
+        result = stream_segment_from_nextcloud(cfg, segment_id, array=array, ap=ap)
+        if result is not None:
+            log.info("segment_id=%d: served from Nextcloud range-read", segment_id)
+            return result
+ 
+    log.warning("segment_id=%d: not found in local files or Nextcloud", segment_id)
+    return None
+ 
+ 
+def _stream_from_local_by_gt_id(
+    segment_id: int,
+    cfg,
+    array: str,
+    ap,
+) -> Optional[Tuple[List[np.ndarray], dict]]:
+    """
+    Look for a pipeline-ready triplet whose stem starts with 'seg_NNNN' where
+    NNNN matches the zero-padded segment_id.  Loads and returns it.
+    """
+    import json
+    import soundfile as sf
+ 
+    local_path = getattr(cfg, "DUNAKESZI_LOCAL_PATH", None)
+    if not local_path or not os.path.isdir(local_path):
+        return None
+ 
+    root = Path(local_path)
+    prefix = f"seg_{segment_id:04d}"
+ 
+    # Find a label file whose stem starts with the prefix
+    candidates = sorted(root.rglob(f"{prefix}*_label.json"))
+    if not candidates:
+        # Also try without leading zeros (older naming)
+        candidates = sorted(root.rglob(f"seg_{segment_id}_*_label.json"))
+    if not candidates:
+        return None
+ 
+    lf   = candidates[0]
+    stem = lf.name[: -len("_label.json")]
+ 
+    out_channels = []
+    for ch_idx in range(3):
+        ch_path = lf.parent / f"{stem}_ch{ch_idx}.wav"
+        if not ch_path.exists():
+            break
+        try:
+            data, sr = sf.read(str(ch_path), dtype="float32", always_2d=False)
+            if sr != cfg.SR:
+                import librosa
+                data = librosa.resample(data, orig_sr=sr, target_sr=cfg.SR)
+            out_channels.append(ap.pad_or_truncate(data))
+        except Exception as exc:
+            log.debug("_stream_from_local_by_gt_id ch%d failed: %s", ch_idx, exc)
+            break
+ 
+    if not out_channels:
+        return None
+    while len(out_channels) < 3:
+        out_channels.append(out_channels[-1].copy())
+ 
+    try:
+        raw = json.loads(lf.read_text())
+    except Exception:
+        raw = {}
+ 
+    label = {
+        "segment_id":    segment_id,
+        "split":         raw.get("split"),
+        "source":        "real",
+        "dataset_type":  "dunakeszi",
+        "array":         raw.get("array", array),
+        "azimuth_deg":   raw.get("azimuth_deg"),
+        "distance_m":    raw.get("distance_m"),
+        "height_m":      raw.get("height_m"),
+        "has_position":  raw.get("has_position", False),
+        "maneuver_type": raw.get("maneuver_type"),
+        "flight_phase":  raw.get("flight_phase"),
+        "n_drones":      raw.get("n_drones", 1),
+        "speed_mps":     raw.get("speed_mps"),
+        "radius_m":      raw.get("radius_m"),
+        "duration_s":    raw.get("duration_s"),
+        "session":       raw.get("session"),
+        "audio_file":    f"{stem}_ch0.wav",
+    }
+    return out_channels[:3], label
+ 
+ 
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. File browser tables (polywav / MEMS)
+# ══════════════════════════════════════════════════════════════════════════════
+ 
+def get_dunakeszi_file_browser(cfg, file_type: str = "polywav") -> Dict[str, Any]:
+    """
+    Return metadata table for the Dunakeszi file browser panel.
+ 
+    file_type: "polywav" | "mems"
+ 
+    Returns a dict with:
+        files   : list of file metadata dicts
+        total   : int
+        type    : str
+    """
+    try:
+        from .dunakeszi_nextcloud import polywav_file_info, mems_file_info
+    except ImportError:
+        try:
+            from dunakeszi_nextcloud import polywav_file_info, mems_file_info
+        except ImportError:
+            return {"files": [], "total": 0, "type": file_type, "error": "dunakeszi_nextcloud not installed"}
+ 
+    if file_type == "mems":
+        files = mems_file_info(cfg)
+    else:
+        files = polywav_file_info(cfg)
+ 
+    return {
+        "files": files,
+        "total": len(files),
+        "type":  file_type,
+    }

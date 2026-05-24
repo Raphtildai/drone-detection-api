@@ -38,6 +38,14 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
+from drone_detection.repository_loader import (
+    list_dunakeszi_segments_rich,
+    stream_segment_by_gt_id,
+    get_dunakeszi_file_browser,
+)
+
+# NOTE: _get_config() is defined below; _repo_cfg is initialised after it.
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [drone_v2] %(levelname)s %(message)s",
@@ -63,6 +71,11 @@ def _get_config():
     cfg.DRIVE_ROOT   = _THIS_DIR
     cfg.DRIVE_LOGS   = _THIS_DIR / "logs"
     return cfg
+
+
+# Singleton config used by the repository endpoints.  Built once after
+# _get_config() is defined so DRIVE_MODELS points at deployment/v2/models/.
+_repo_cfg = _get_config()
 
 
 def get_model():
@@ -703,6 +716,79 @@ def list_audio_devices():
         return jsonify({"devices": [], "error": "PyAudio not installed"})
     except Exception as exc:
         return jsonify({"devices": [], "error": str(exc)})
+    
+@app.route("/api/v2/repository/segments", methods=["GET"])
+def repo_segments():
+    split   = request.args.get("split")   or None
+    session = request.args.get("session") or None
+    return jsonify(list_dunakeszi_segments_rich(_repo_cfg, split, session))
+
+
+@app.route("/api/v2/repository/start-segment", methods=["POST"])
+def repo_start_segment():
+    """
+    Start a repository realtime session for a specific ground-truth segment.
+
+    The segment is loaded via stream_segment_by_gt_id (local → Nextcloud),
+    then replayed through the existing RepositoryRealtimeSession machinery
+    as a one-shot generator (loop=False).
+    """
+    seg_id     = int(  request.form.get("segment_id", 0))
+    array      = request.form.get("array",      "BK-6-E")
+    session_id = request.form.get("session_id", "default")
+    tick_rate  = float(request.form.get("tick_rate",  1.0))
+    threshold  = float(request.form.get("threshold",  0.70))
+
+    # Stop any existing session under this id
+    existing = _get_session(session_id)
+    if existing and existing.running:
+        existing.stop()
+        _remove_session(session_id)
+
+    # Load the segment (local pipeline-ready → Nextcloud range-read)
+    result = stream_segment_by_gt_id(seg_id, _repo_cfg, array=array)
+    if result is None:
+        return jsonify({"error": f"Segment {seg_id} not available (not found locally or on Nextcloud)"}), 404
+
+    channels, label = result
+
+    # Wrap the single segment in a one-shot generator and hand it to
+    # RepositoryRealtimeSession via its segment_generator parameter.
+    def _one_shot():
+        yield channels, label
+
+    from realtime_sessions import RepositoryRealtimeSession
+
+    session = RepositoryRealtimeSession(
+        _repo_cfg, socketio,
+        segment_generator        = _one_shot(),
+        dataset_type             = "dunakeszi",
+        array                    = array,
+        tick_rate                = tick_rate,
+        threshold                = threshold,
+        allow_download           = False,
+        allow_synthetic_fallback = False,
+        loop                     = False,
+    )
+    session._mode = "repository"
+    _register_session(session_id, session)
+
+    if not session.start():
+        _remove_session(session_id)
+        return jsonify({"error": "Session failed to start — check server logs"}), 500
+
+    log.info("repo_start_segment: seg=%d session=%s", seg_id, session_id)
+    socketio.emit("realtime_status", {
+        "running": True, "mode": "repository",
+        "error": None, "session_id": session_id,
+    })
+    return jsonify({"ok": True, "segment_id": seg_id, "label": label, "session_id": session_id})
+
+
+@app.route("/api/v2/repository/files/<file_type>", methods=["GET"])
+def repo_files(file_type):
+    return jsonify(get_dunakeszi_file_browser(_repo_cfg, file_type))
+
 
 
 # ── Frontend ───────────────────────────────────────────────────────────────────
