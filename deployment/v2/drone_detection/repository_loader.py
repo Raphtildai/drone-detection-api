@@ -633,6 +633,8 @@ def _stream_from_local_extracted_dir(
     dataset_type: str,
     mic_indices: List[int],
     required_split: Optional[str],
+    segment_id: Optional[int] = None,
+    loop: bool = True,
 ) -> Generator[Tuple[List[np.ndarray], dict], None, None]:
     """
     Stream sessions from a pre-extracted directory structure.
@@ -640,6 +642,12 @@ def _stream_from_local_extracted_dir(
     Handles both layouts automatically:
     - UaVirBASE: sub-folder per session with output.wav + label.json
     - Dunakeszi: flat directory with <stem>_ch0/1/2.wav + <stem>_label.json
+
+    Parameters
+    ----------
+    segment_id : if set, only yield the session matching this integer id
+    loop       : if True (default), loop indefinitely; if False, yield each
+                 session once then return (generator exhausted)
     """
     root = Path(root_path)
     if not root.exists() or not root.is_dir():
@@ -649,13 +657,45 @@ def _stream_from_local_extracted_dir(
     if not sessions:
         raise RuntimeError(f"No valid sessions found in {root_path}")
 
+    # Filter to a single segment when segment_id is specified
+    if segment_id is not None:
+        def _match(sess):
+            name = sess["session_id"]
+            # Try numeric suffix match
+            import re as _re
+            m = _re.search(r"(\d+)$", name)
+            return int(m.group(1)) == segment_id if m else False
+        sessions = [s for s in sessions if _match(s)]
+        if not sessions:
+            all_ids = sorted(set(
+                int(m.group(1))
+                for s in _index_local_sessions(root, dataset_type, None)
+                for m in [__import__("re").search(r"(\d+)$", s["session_id"])]
+                if m
+            ))
+            raise RuntimeError(
+                f"Segment id={segment_id} not found in {root_path}. "
+                f"Available ids: {all_ids}"
+            )
+        log.info("Single-segment mode: playing segment id=%d (%d match(es))",
+                 segment_id, len(sessions))
+        # Always play once for a specific segment selection
+        loop = False
+
     log.info(
-        "Streaming %d sessions from extracted directory: %s",
-        len(sessions), root_path,
+        "Streaming %d sessions from extracted directory: %s (loop=%s)",
+        len(sessions), root_path, loop,
     )
 
+    first_pass = True
     while True:
-        random.shuffle(sessions)
+        if not first_pass:
+            if not loop:
+                log.info("Segment playback complete (loop=False) — generator exhausted")
+                return
+            random.shuffle(sessions)
+        first_pass = False
+
         for sess in sessions:
             channels = _load_channels_from_disk(
                 sess["audio_path"], mic_indices, cfg, ap, session=sess
@@ -685,8 +725,15 @@ def _stream_from_local_extracted_dir(
                 "clip_start_s":  extra.get("clip_start_s_in_seg"),
                 "flight_phase":  extra.get("flight_phase"),
                 "trajectory":    extra.get("trajectory"),
+                "audio_file":    Path(sess["audio_path"]).name,
             }
             yield channels, label
+
+        if not loop:
+            log.info("All %d sessions played once (loop=False) — generator exhausted",
+                     len(sessions))
+            return
+
 
 def stream_repository_segments(
     cfg,
@@ -699,6 +746,8 @@ def stream_repository_segments(
     allow_synthetic_fallback: bool           = True,
     n_synthetic:              int            = 200,
     cache_zip:                Optional[str]  = None,   # accepted but IGNORED — see storage policy
+    segment_id:               Optional[int]  = None,   # play only this GT segment id
+    loop:                     bool           = True,    # False → stop after one full pass
 ) -> Generator[Tuple[List[np.ndarray], dict], None, None]:
     """
     Yield (channels, label) tuples streamed directly from an online repository.
@@ -795,7 +844,8 @@ def stream_repository_segments(
             log.info("Using extracted Dunakeszi directory: %s", extracted_path)
             try:
                 gen = _stream_from_local_extracted_dir(
-                    extracted_path, cfg, ap, dataset_type, mic_indices, required_split
+                    extracted_path, cfg, ap, dataset_type, mic_indices, required_split,
+                    segment_id=segment_id, loop=loop,
                 )
                 first = next(gen)
                 yield first

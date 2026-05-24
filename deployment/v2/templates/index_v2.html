@@ -603,10 +603,12 @@
             <!-- Dunakeszi recording info strip (hidden for UaVirBASE) -->
             <div id="dunk-info-strip" class="hidden" style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18);border-radius:7px;padding:8px 11px;font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.9">
               <div style="color:var(--repo-accent);font-weight:700;margin-bottom:3px">📁 DUNAKESZI RECORDING</div>
-              <div><span style="color:var(--muted)">Session: </span><span id="dunk-session" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">Show: </span><span id="dunk-show" style="color:var(--accent)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Session: </span><span id="dunk-session" style="color:var(--text)">—</span></div>
               <div><span style="color:var(--muted)">Array: </span><span id="dunk-array" style="color:var(--text)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Drones: </span><span id="dunk-ndrones" style="color:var(--text)">—</span></div>
-              <div><span style="color:var(--muted)">Clip start in seg: </span><span id="dunk-clipstart" style="color:var(--accent)">—</span><span style="color:var(--muted)">s&nbsp;&nbsp;dur: </span><span id="dunk-dur" style="color:var(--accent)">—</span><span style="color:var(--muted)">s</span></div>
-              <div><span style="color:var(--muted)">Phase: </span><span id="dunk-phase" style="color:var(--orange)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Speed: </span><span id="dunk-speed" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">Time: </span><span id="dunk-time" style="color:var(--orange)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">→ </span><span id="dunk-time-end" style="color:var(--muted)">—</span></div>
+              <div><span style="color:var(--muted)">Description: </span><span id="dunk-desc" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">Phase: </span><span id="dunk-phase" style="color:var(--orange)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">Speed: </span><span id="dunk-speed" style="color:var(--text)">—</span>&nbsp;&nbsp;<span style="color:var(--muted)">r=</span><span id="dunk-radius" style="color:var(--text)">—</span></div>
+              <div><span style="color:var(--muted)">File: </span><span id="dunk-file" style="color:var(--muted);font-size:9px;word-break:break-all">—</span></div>
             </div>
 
             <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:7px;padding:9px 11px;font-size:10px;color:var(--muted);margin-top:10px;line-height:1.7">
@@ -616,6 +618,31 @@
               Ground-truth positions are overlaid when the segment has a label.
               If the repository is unreachable, synthetic data is generated automatically using
               the real BPF drone profiles so the dashboard stays live.
+            </div>
+
+            <!-- Dunakeszi segment browser (hidden for UaVirBASE) -->
+            <div id="repo-segment-browser" style="display:none;margin-top:12px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <span style="font-size:11px;font-weight:700;color:var(--text)">📋 Segment Browser</span>
+                <select id="seg-filter-split" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:3px 7px;font-size:10px;font-family:inherit">
+                  <option value="">All splits</option>
+                  <option value="train">Train</option>
+                  <option value="val">Val</option>
+                  <option value="test">Test</option>
+                </select>
+                <select id="seg-filter-session" style="background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:3px 7px;font-size:10px;font-family:inherit">
+                  <option value="">All shows</option>
+                </select>
+                <button onclick="loadSegmentBrowser()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer">↻</button>
+              </div>
+              <div id="seg-browser-content" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;background:var(--bg)">
+                <div style="color:var(--muted);font-size:11px;text-align:center;padding:20px">Click ↻ to load segments</div>
+              </div>
+              <div id="seg-selected-info" style="margin-top:6px;font-size:10px;color:var(--muted);text-align:center;display:none">
+                Selected: <strong id="seg-selected-label" style="color:#34d399">—</strong>
+                <button id="seg-play-btn" onclick="playSelectedSegment()" style="margin-left:8px;background:rgba(52,211,153,.9);color:#000;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer">▶ Play this segment</button>
+                <button onclick="clearSegmentSelection()" style="margin-left:4px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer">✕ Clear</button>
+              </div>
             </div>
 
             <div style="display:flex;gap:8px;margin-top:12px">
@@ -775,8 +802,47 @@ function detectionBanner(detected, prob, sub) {
 // ══════════════════════════════════════════════════════════════════════════════
 // CANVAS MAP (shared)
 // ══════════════════════════════════════════════════════════════════════════════
-const MICS = [[0,0],[0.2,0],[0.1,0.173]];
-const MIC_CTR = [MICS.reduce((s,m)=>s+m[0],0)/3, MICS.reduce((s,m)=>s+m[1],0)/3];
+// ── Microphone array geometry (updated from /api/v2/status and array_geometry_changed) ──
+// Defaults match UaVirBASE: ch1(N)=[0,1.72], ch2(E)=[1.72,0], ch4(W)=[-1.72,0]
+let MICS = [[0, 1.72], [1.72, 0], [-1.72, 0]];
+let MIC_CTR = [0, 0];   // recomputed after every update
+
+function _recomputeMicCtr() {
+  MIC_CTR = [
+    MICS.reduce((s,m)=>s+m[0],0)/MICS.length,
+    MICS.reduce((s,m)=>s+m[1],0)/MICS.length,
+  ];
+}
+_recomputeMicCtr();
+
+// Geometry presets so the frontend can switch without waiting for a socket event
+const _GEO_PRESETS = {
+  // UaVirBASE: 8-mic ring r=1.72m, we use ch1(N), ch2(E), ch4(W)
+  uavirbase: [[0, 1.72], [1.72, 0], [-1.72, 0]],
+  // Dunakeszi GP2: equilateral triangle, 2.5 m baseline, centred at origin
+  gp2: (()=>{
+    const L=2.5, h=L*Math.sqrt(3)/2;
+    return [[0, h*2/3], [-L/2, -h/3], [L/2, -h/3]];
+  })(),
+  // Dunakeszi GP1: equilateral triangle, 2.165 m baseline
+  gp1: (()=>{
+    const L=2.165, h=L*Math.sqrt(3)/2;
+    return [[0, h*2/3], [-L/2, -h/3], [L/2, -h/3]];
+  })(),
+};
+
+function setMicGeometry(geomName, positionsOverride) {
+  const pos = positionsOverride || _GEO_PRESETS[geomName];
+  if (!pos) return;
+  MICS = pos;
+  _recomputeMicCtr();
+  console.log(`🎙️ Mic geometry → ${geomName}: ${JSON.stringify(MICS.map(m=>m.map(v=>+v.toFixed(3))))}`);
+}
+
+// Listen for geometry changes broadcast by the server when a repo session starts
+socket.on('array_geometry_changed', data => {
+  if (data.mic_positions) setMicGeometry(data.geometry, data.mic_positions);
+});
 
 function drawPositionMap(canvas, positions, opts={}) {
   const {truePos=null,tracks=[],showZone=true,title=''} = opts;
@@ -1143,6 +1209,7 @@ function setRtMode(mode) {
 }
 
 async function startRealtime() {
+  console.log('[rt] startRealtime() called, mode=', _rtMode);
   const fd = new FormData();
   fd.append('mode', _rtMode);
   fd.append('session_id', 'default');
@@ -1156,7 +1223,7 @@ async function startRealtime() {
     fd.append('threshold',   document.getElementById('rt-thresh').value);
   } else {
     const sel = document.getElementById('rt-device-sel');
-    const devIdx = sel.value;
+    const devIdx = sel?.value || '';
     if(devIdx) fd.append('device_indices', devIdx);
     fd.append('segment_dur', document.getElementById('rt-segdur').value);
     fd.append('threshold',   document.getElementById('rt-thresh-real').value);
@@ -1191,7 +1258,8 @@ async function startRealtime() {
 
     addRtLog(`<span style="color:var(--green)">▶ Session started — mode: ${_rtMode}</span>`);
   } catch(e) {
-    alert(`Error: ${e.message}`);
+    console.error('[rt] startRealtime error:', e);
+    addRtLog(`<span class="rl-error">❌ Start error: ${e.message}</span>`);
     document.getElementById('rt-start-btn').disabled=false;
     document.getElementById('rt-start-btn').innerHTML='▶ Start';
   }
@@ -1361,7 +1429,17 @@ async function runPath() {
   try{const r=await fetch(`${BASE}/api/v2/path-simulate`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-path-card').classList.remove('hidden');renderPathResult(d);}catch(e){document.getElementById('result-path-card').classList.remove('hidden');document.getElementById('result-path-viz').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}finally{setBusy('btn-path',false);}
 }
 async function fetchStatus() {
-  try{const[rs,rv]=await Promise.all([fetch(`${BASE}/api/v2/status`).then(r=>r.json()),fetch(`${BASE}/api/v2/version`).then(r=>r.json())]);renderStatus({...rs,...rv});}
+  try{
+    const[rs,rv]=await Promise.all([
+      fetch(`${BASE}/api/v2/status`).then(r=>r.json()),
+      fetch(`${BASE}/api/v2/version`).then(r=>r.json())
+    ]);
+    // Apply the current mic geometry from the server
+    if(rs.mic_positions && rs.mic_positions.length >= 3) {
+      setMicGeometry(rs.array_name || 'uavirbase', rs.mic_positions);
+    }
+    renderStatus({...rs,...rv});
+  }
   catch(e){document.getElementById('result-status').innerHTML=`<div style="color:var(--red)">❌ ${e.message}</div>`;}
 }
 
@@ -1394,15 +1472,21 @@ function setRepoDataset(ds) {
   document.getElementById('repo-btn-dunk').className = 'mode-btn' + (ds==='dunakeszi'?' active repo':'');
   document.getElementById('repo-array').disabled = ds !== 'dunakeszi';
   document.getElementById('dunk-info-strip').classList.toggle('hidden', ds !== 'dunakeszi');
-  // Dunakeszi needs an explicit URL — show placeholder hint
-  const urlInput = document.getElementById('repo-url');
-  if(ds === 'dunakeszi'){
-    if(!urlInput.value) urlInput.placeholder = 'Required: paste Dunakeszi hosted ZIP URL here';
-    urlInput.style.borderColor = 'rgba(245,158,11,.6)';
-  } else {
-    urlInput.placeholder = 'Leave blank → use config default (UaVirBASE Zenodo)';
-    urlInput.style.borderColor = '';
+
+  // Switch mic geometry immediately so the radar is correct before session starts
+  setMicGeometry(ds === 'dunakeszi' ? 'gp2' : 'uavirbase');
+
+  // Adjust default max_dist per dataset
+  const mdEl = document.getElementById('repo-maxdist');
+  if(mdEl && !mdEl._userEdited) {
+    mdEl.value = ds === 'dunakeszi' ? 100 : 25;
+    repoState.maxDist = parseFloat(mdEl.value);
   }
+
+  // Load segment browser for Dunakeszi
+  const browserEl = document.getElementById('repo-segment-browser');
+  if(browserEl) browserEl.style.display = ds === 'dunakeszi' ? '' : 'none';
+  if(ds === 'dunakeszi') loadSegmentBrowser();
 }
 
 // ── Idle radar ────────────────────────────────────────────────────────────────
@@ -1813,6 +1897,7 @@ function updateRepoLastSeg(det, label) {
 
 // ── Session control ────────────────────────────────────────────────────────────
 async function startRepository() {
+  console.log('[repo] startRepository() called, dataset=', repoState.dataset);
   const fd = new FormData();
   fd.append('mode',         'repository');
   fd.append('session_id',   'default');
@@ -1822,6 +1907,8 @@ async function startRepository() {
   fd.append('max_dist',     document.getElementById('repo-maxdist').value);
   fd.append('allow_synthetic_fallback', 'true');   // always allow; server never downloads
   repoState.maxDist = parseFloat(document.getElementById('repo-maxdist').value) || 5;
+  // Switch mic geometry immediately so radar is correct before first frame arrives
+  setMicGeometry(repoState.dataset === 'dunakeszi' ? 'gp2' : 'uavirbase');
   const url = document.getElementById('repo-url').value.trim();
   if(url) fd.append('url', url);
   const split = document.getElementById('repo-split').value;
@@ -1853,7 +1940,8 @@ async function startRepository() {
     addRepoLog(`<span style="color:var(--green)">▶ Repository session started — dataset: ${repoState.dataset}</span>`);
     _setRepoSourceBadge('connecting');
   } catch(e) {
-    alert(`Error: ${e.message}`);
+    console.error('[repo] startRepository error:', e);
+    addRepoLog(`<span style="color:var(--red)">❌ Start error: ${e.message}</span>`);
     startBtn.disabled=false;
     startBtn.innerHTML='▶ Start';
   }
@@ -1898,16 +1986,217 @@ function toggleTheme() {
 // ── Dunakeszi strip updater ────────────────────────────────────────────────────
 function _updateDunkStrip(lbl) {
   if(!lbl) return;
-  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val||'—'; };
+  const set=(id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=(val!=null&&val!=='')?val:'—'; };
+  // Show / session identity
+  set('dunk-show',     lbl.show_number!=null ? `Show ${lbl.show_number} — ${lbl.wall_clock||''}` : null);
   set('dunk-session',  lbl.session || lbl.segment_id);
-  set('dunk-array',    lbl.array);
-  set('dunk-ndrones',  lbl.n_drones!=null ? lbl.n_drones : '—');
-  set('dunk-clipstart',lbl.clip_start_s!=null ? lbl.clip_start_s.toFixed(2) : '—');
-  set('dunk-dur',      lbl.duration_s!=null ? lbl.duration_s.toFixed(1) : '—');
-  set('dunk-phase',    lbl.flight_phase || lbl.maneuver_type);
-  set('dunk-speed',    lbl.speed_mps!=null ? lbl.speed_mps.toFixed(1)+' m/s' : (lbl.radius_m!=null ? '⊙ '+lbl.radius_m.toFixed(0)+'m orbit':'—'));
+  // Array and drone count
+  set('dunk-array',    lbl.array || null);
+  set('dunk-ndrones',  lbl.n_drones!=null ? `${lbl.n_drones} (${lbl.drones||'?'})` : null);
+  // Timing
+  set('dunk-time',     lbl.local_start_hms || null);
+  set('dunk-time-end', lbl.local_end_hms || null);
+  // Description
+  set('dunk-desc',     lbl.description || lbl.session_description || null);
+  // Flight details
+  set('dunk-phase',    lbl.flight_phase || lbl.maneuver_type || null);
+  set('dunk-speed',    lbl.speed_mps!=null ? `${lbl.speed_mps.toFixed(1)} m/s` : null);
+  set('dunk-radius',   lbl.radius_m!=null  ? `${lbl.radius_m.toFixed(0)} m` : null);
+  // Audio file
+  set('dunk-file',     lbl.audio_file || null);
   document.getElementById('dunk-info-strip')?.classList.remove('hidden');
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SEGMENT BROWSER (Dunakeszi ground-truth index)
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _segBrowserData = null;
+let _selectedSegmentId = null;
+
+async function loadSegmentBrowser() {
+  const splitF   = document.getElementById('seg-filter-split')?.value || '';
+  const sessionF = document.getElementById('seg-filter-session')?.value || '';
+  const content  = document.getElementById('seg-browser-content');
+  if(!content) return;
+  content.innerHTML = '<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px">Loading…</div>';
+
+  try {
+    let url = `${BASE}/api/v2/repository/segments`;
+    const params = [];
+    if(splitF)   params.push(`split=${splitF}`);
+    if(sessionF) params.push(`session=${sessionF}`);
+    if(params.length) url += '?' + params.join('&');
+
+    const data = await fetch(url).then(r=>r.json());
+    if(data.error){ content.innerHTML=`<div style="color:var(--red);padding:10px;font-size:11px">❌ ${data.error}</div>`; return; }
+
+    _segBrowserData = data;
+
+    // Populate session filter dropdown
+    const sessEl = document.getElementById('seg-filter-session');
+    if(sessEl && data.sessions) {
+      const cur = sessEl.value;
+      sessEl.innerHTML = '<option value="">All shows</option>' +
+        data.sessions.map(s=>`<option value="${s.session_id}">${s.session_id.replace('_',' ')} (Show ${s.show_number}) — ${s.description||''}</option>`).join('');
+      if(cur) sessEl.value = cur;
+    }
+
+    const segs = data.segments || [];
+    if(!segs.length){ content.innerHTML='<div style="color:var(--muted);padding:14px;font-size:11px;text-align:center">No segments match filter</div>'; return; }
+
+    const splitColors = {train:'var(--accent2)',val:'var(--orange)',test:'var(--green)',unknown:'var(--muted)'};
+    content.innerHTML = segs.map(s => {
+      const sc = splitColors[s.split]||'var(--muted)';
+      const local = s.local_available ? '💾' : '🌐';
+      const az = s.azimuth_deg!=null ? `az=${s.azimuth_deg.toFixed(0)}°` : '';
+      const dist = s.distance_m!=null ? ` d=${s.distance_m.toFixed(0)}m` : '';
+      const flags = (s.quality_flags||[]).length ? ` ⚠️` : '';
+      const isSelected = s.id === _selectedSegmentId;
+      return `<div class="seg-row${isSelected?' seg-selected':''}" data-segid="${s.id}" onclick="selectSegment(${s.id})"
+        style="padding:7px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:10px;${isSelected?'background:rgba(52,211,153,.12)':''}"
+        title="${s.description||''}">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="color:${sc};font-weight:700;min-width:28px">#${s.id}</span>
+          <span style="color:var(--muted);min-width:52px">${s.local_start_hms||'—'}</span>
+          <span style="color:var(--text);flex:1">${s.description||s.maneuver_type||'—'}</span>
+          <span style="color:var(--muted)">${s.n_drones||1}🚁</span>
+          <span style="color:${sc};min-width:32px;text-align:right">${s.split||'?'}</span>
+          <span title="${s.local_available?'Available locally':'Remote only'}">${local}</span>
+        </div>
+        <div style="color:var(--muted);margin-top:2px;padding-left:34px">${az}${dist} alt=${s.altitude_m||'?'}m${s.speed_mps?` v=${s.speed_mps}m/s`:''} ${s.session||''}${flags}</div>
+      </div>`;
+    }).join('');
+
+    // Attach event listeners after render
+    document.querySelectorAll('.seg-row').forEach(row => {
+      row.addEventListener('mouseenter', function(){if(!this.classList.contains('seg-selected')) this.style.background='rgba(255,255,255,.04)';});
+      row.addEventListener('mouseleave', function(){if(!this.classList.contains('seg-selected')) this.style.background='';});
+    });
+
+    // Restore selection highlight
+    if(_selectedSegmentId !== null) _highlightSelectedSeg();
+
+  } catch(e) {
+    content.innerHTML=`<div style="color:var(--red);padding:10px;font-size:11px">❌ ${e.message}</div>`;
+  }
+}
+
+function selectSegment(id) {
+  _selectedSegmentId = id;
+  _highlightSelectedSeg();
+
+  // Show selected info strip
+  const seg = (_segBrowserData?.segments || []).find(s => s.id === id);
+  const infoEl = document.getElementById('seg-selected-info');
+  const labelEl = document.getElementById('seg-selected-label');
+  if(infoEl) infoEl.style.display = '';
+  if(labelEl && seg) {
+    labelEl.textContent = `#${id} — ${seg.description || seg.maneuver_type || '?'} (${seg.local_start_hms||'?'})`;
+  }
+}
+
+function _highlightSelectedSeg() {
+  document.querySelectorAll('.seg-row').forEach(row => {
+    const isSelected = parseInt(row.dataset.segid) === _selectedSegmentId;
+    row.style.background = isSelected ? 'rgba(52,211,153,.12)' : '';
+    row.classList.toggle('seg-selected', isSelected);
+  });
+}
+
+function clearSegmentSelection() {
+  _selectedSegmentId = null;
+  _highlightSelectedSeg();
+  const infoEl = document.getElementById('seg-selected-info');
+  if(infoEl) infoEl.style.display = 'none';
+}
+
+async function playSelectedSegment() {
+  if(_selectedSegmentId === null) { alert('Select a segment first'); return; }
+  const array = document.getElementById('repo-array')?.value || 'BK-6-E';
+  const tick  = document.getElementById('repo-tick')?.value || '1.0';
+  const thresh= document.getElementById('repo-thresh')?.value || '0.70';
+
+  const fd = new FormData();
+  fd.append('segment_id', _selectedSegmentId);
+  fd.append('array',      array);
+  fd.append('tick_rate',  tick);
+  fd.append('threshold',  thresh);
+  fd.append('session_id', 'default');
+
+  // Stop any running session first
+  if(repoState.running) await stopRepository();
+
+  const btn = document.getElementById('seg-play-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Starting…'; }
+
+  try {
+    const r = await fetch(`${BASE}/api/v2/repository/start-segment`, {method:'POST', body:fd});
+    const d = await r.json();
+    if(d.error){ alert(`Failed: ${d.error}`); return; }
+
+    repoState.running=true; repoState.frame=0; repoState.tracks={}; repoState.lastDetections=[];
+    repoState.gtPositions=[]; repoState.errors=[]; repoState.totalFrames=0; repoState.detectedFrames=0;
+    repoState.sessionStart=Date.now();
+    repoState.maxDist = parseFloat(document.getElementById('repo-maxdist')?.value) || 100;
+    // Set GP2 geometry immediately for Dunakeszi
+    setMicGeometry('gp2');
+
+    document.getElementById('repo-start-btn')?.classList.add('hidden');
+    const stopBtn = document.getElementById('repo-stop-btn');
+    if(stopBtn){ stopBtn.classList.remove('hidden'); stopBtn.disabled=false; }
+
+    repoState.durationTimer = setInterval(()=>{
+      const dur=Math.round((Date.now()-repoState.sessionStart)/1000);
+      const el=document.getElementById('repo-duration'); if(el) el.textContent=dur;
+    },1000);
+
+    addRepoLog(`<span style="color:var(--green)">▶ Playing segment #${_selectedSegmentId} — will stop when complete</span>`);
+    _setRepoSourceBadge('connecting');
+  } catch(e) {
+    alert(`Error: ${e.message}`);
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='▶ Play this segment'; }
+  }
+}
+
+// Handle auto-stop when the generator is exhausted on the server
+// The server sends running=false in realtime_status when the for loop finishes
+function onRepoStatus(data) {
+  if(data.mode !== 'repository') return;
+  if (!data.running && repoState.running) {
+    repoState.running = false;
+    setRepoUiStopped();
+    if(data.final_stats) {
+      const s = data.final_stats;
+      const exhausted = s.n_segments_streamed > 0 && !repoState.running;
+      addRepoLog(
+        exhausted
+          ? `<span style="color:#34d399">✅ Playback complete — ${s.n_segments_streamed} seg(s), det=${s.detection_rate}%, avg_err=${s.avg_error_m?.toFixed(3)||'—'}m</span>`
+          : `<span style="color:var(--muted)">■ Stopped — ${s.n_segments_streamed} seg(s), det=${s.detection_rate}%, avg_err=${s.avg_error_m?.toFixed(3)||'—'}m</span>`
+      );
+    }
+    // Re-enable segment play button
+    const btn = document.getElementById('seg-play-btn');
+    if(btn){ btn.disabled=false; btn.textContent='▶ Play this segment'; }
+  }
+  if(data.loading) {
+    addRepoLog('<span style="color:var(--orange)">⏳ Connecting to repository via remotezip…</span>');
+    _setRepoSourceBadge('connecting');
+  }
+  if(data.error) {
+    addRepoLog(`<span style="color:var(--red)">❌ ${data.error}</span>`);
+  }
+}
+
+// Wire filter change events for segment browser
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('seg-filter-split')?.addEventListener('change', loadSegmentBrowser);
+  document.getElementById('seg-filter-session')?.addEventListener('change', loadSegmentBrowser);
+  document.getElementById('repo-maxdist')?.addEventListener('input', function(){
+    this._userEdited=true; repoState.maxDist=parseFloat(this.value)||25;
+  });
+});
 
 window.addEventListener('load',()=>{ setTimeout(fetchStatus,600); startRadarIdle(); });
 </script>

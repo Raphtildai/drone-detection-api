@@ -709,7 +709,12 @@ def list_audio_devices():
 
 @app.route("/")
 def index():
-    return render_template("index_v2.html")
+    from flask import make_response
+    resp = make_response(render_template("index_v2.html"))
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"]        = "no-cache"
+    resp.headers["Expires"]       = "0"
+    return resp
 
 
 @app.route("/static/<path:filename>")

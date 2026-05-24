@@ -3012,3 +3012,252 @@ AssertionError: write() before start_response
 21:24:54 [drone_v2.repository_loader] INFO Streaming 132 sessions from remote ZIP (looping)
 21:26:11 [drone_v2.repository_loader] INFO RemoteZip streaming: first segment OK — live stream active
 21:30:33 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:30:33] "GET /api/v2/realtime/audio-devices HTTP/1.1" 200 -
+21:55:36 [drone_v2.realtime_session] INFO Repository session stopped
+21:55:36 [drone_v2] INFO realtime/stop: session=default
+21:55:36 [werkzeug] INFO 127.0.0.1 - - [22/May/2026 21:55:36] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+01:36:55 [werkzeug] INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.119.45:5001
+01:36:55 [werkzeug] INFO [33mPress CTRL+C to quit[0m
+01:36:55 [werkzeug] INFO  * Restarting with stat
+01:36:56 [werkzeug] WARNING  * Debugger is active!
+01:36:56 [werkzeug] INFO  * Debugger PIN: 126-188-319
+01:36:57 [drone_v2] INFO WebSocket client connected
+01:37:11 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:11] "GET / HTTP/1.1" 200 -
+01:37:30 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:30] "GET / HTTP/1.1" 200 -
+01:37:48 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:48] "GET / HTTP/1.1" 200 -
+01:37:49 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:49] "GET / HTTP/1.1" 200 -
+01:37:49 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:49] "GET / HTTP/1.1" 200 -
+01:37:49 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:37:49] "GET / HTTP/1.1" 200 -
+01:39:33 [werkzeug] INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.119.45:5001
+01:39:33 [werkzeug] INFO [33mPress CTRL+C to quit[0m
+01:39:33 [werkzeug] INFO  * Restarting with stat
+01:39:33 [werkzeug] WARNING  * Debugger is active!
+01:39:33 [werkzeug] INFO  * Debugger PIN: 126-188-319
+01:39:35 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:39:35] "GET / HTTP/1.1" 200 -
+01:39:39 [drone_v2] INFO WebSocket client connected
+01:39:39 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:39:39] "GET / HTTP/1.1" 200 -
+01:40:00 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:40:00] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+01:44:36 [werkzeug] INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.119.45:5001
+01:44:36 [werkzeug] INFO [33mPress CTRL+C to quit[0m
+01:44:36 [werkzeug] INFO  * Restarting with stat
+01:44:37 [werkzeug] WARNING  * Debugger is active!
+01:44:37 [werkzeug] INFO  * Debugger PIN: 126-188-319
+01:44:42 [drone_v2] INFO WebSocket client connected
+01:44:44 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:44:44] "GET / HTTP/1.1" 200 -
+01:44:44 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:44:44] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+01:44:44 [drone_v2] INFO WebSocket client connected
+01:44:45 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:44:45] "GET /api/v2/version HTTP/1.1" 200 -
+01:44:51 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:44:51] "GET /api/v2/status HTTP/1.1" 200 -
+01:58:51 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:58:51] "GET / HTTP/1.1" 200 -
+01:58:51 [drone_v2] INFO WebSocket client disconnected
+01:58:51 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:58:51] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+01:58:51 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+01:58:52 [drone_v2] INFO WebSocket client connected
+01:58:53 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:58:53] "GET /api/v2/version HTTP/1.1" 200 -
+01:58:53 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 01:58:53] "GET /api/v2/status HTTP/1.1" 200 -
+02:06:51 [werkzeug] INFO  * Detected change in '/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/app_v2.py', reloading
+02:06:53 [werkzeug] INFO  * Restarting with stat
+02:06:53 [werkzeug] WARNING  * Debugger is active!
+02:06:53 [werkzeug] INFO  * Debugger PIN: 126-188-319
+02:06:55 [drone_v2] INFO WebSocket client connected
+02:06:55 [drone_v2] INFO WebSocket client connected
+02:07:02 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:07:02] "GET / HTTP/1.1" 200 -
+02:07:02 [drone_v2] INFO WebSocket client disconnected
+02:07:02 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:07:02] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+02:07:02 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+02:07:02 [drone_v2] INFO WebSocket client connected
+02:07:03 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:07:03] "GET /api/v2/version HTTP/1.1" 200 -
+02:07:08 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:07:08] "GET /api/v2/status HTTP/1.1" 200 -
+02:18:36 [werkzeug] INFO  * Detected change in '/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/app_v2.py', reloading
+02:18:40 [werkzeug] INFO  * Restarting with stat
+02:18:41 [werkzeug] WARNING  * Debugger is active!
+02:18:41 [werkzeug] INFO  * Debugger PIN: 126-188-319
+02:18:42 [drone_v2] INFO WebSocket client connected
+02:18:42 [drone_v2] INFO WebSocket client connected
+02:18:57 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:18:57] "GET / HTTP/1.1" 200 -
+02:18:57 [drone_v2] INFO WebSocket client disconnected
+02:18:57 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:18:57] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+02:18:57 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+02:18:58 [drone_v2] INFO WebSocket client connected
+02:18:59 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:18:59] "GET /api/v2/version HTTP/1.1" 200 -
+02:18:59 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:18:59] "GET / HTTP/1.1" 200 -
+02:18:59 [drone_v2] INFO WebSocket client disconnected
+02:18:59 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:18:59] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+02:18:59 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+02:18:59 [drone_v2] INFO WebSocket client connected
+02:19:00 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:19:00] "GET /api/v2/version HTTP/1.1" 200 -
+02:19:03 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:19:03] "GET /api/v2/status HTTP/1.1" 200 -
+02:19:03 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:19:03] "GET /api/v2/status HTTP/1.1" 200 -
+02:54:25 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:54:25] "GET /api/v2/realtime/audio-devices HTTP/1.1" 200 -
+02:54:28 [drone_v2.realtime_session] INFO Simulated session started: 1 drone(s), patterns=['circle'], tick=1.0 Hz, noise=0.05
+02:54:28 [drone_v2] INFO realtime/start: mode=simulated session=default
+02:54:28 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:54:28] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+02:54:49 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:54:49] "GET /api/v2/realtime/audio-devices HTTP/1.1" 200 -
+02:55:04 [drone_v2.realtime_session] INFO Simulated session stopped
+02:55:04 [drone_v2] INFO realtime/stop: session=default
+02:55:04 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 02:55:04] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+03:07:07 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 03:07:07] "GET / HTTP/1.1" 200 -
+03:07:07 [drone_v2] INFO WebSocket client disconnected
+03:07:07 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 03:07:07] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+03:07:07 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+03:07:07 [drone_v2] INFO WebSocket client connected
+03:07:08 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 03:07:08] "GET /api/v2/status HTTP/1.1" 200 -
+03:07:08 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 03:07:08] "GET /api/v2/version HTTP/1.1" 200 -
+04:10:00 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 04:10:00] "GET /api/v2/status HTTP/1.1" 200 -
+04:10:00 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 04:10:00] "GET /api/v2/version HTTP/1.1" 200 -
+04:10:02 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 04:10:02] "GET /api/v2/status HTTP/1.1" 200 -
+04:10:02 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 04:10:02] "GET /api/v2/version HTTP/1.1" 200 -
+04:10:02 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 04:10:02] "POST /api/v2/path-simulate HTTP/1.1" 200 -
+19:43:11 [werkzeug] INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.119.45:5001
+19:43:11 [werkzeug] INFO [33mPress CTRL+C to quit[0m
+19:43:11 [werkzeug] INFO  * Restarting with stat
+19:43:12 [werkzeug] WARNING  * Debugger is active!
+19:43:12 [werkzeug] INFO  * Debugger PIN: 126-188-319
+19:43:14 [drone_v2] INFO WebSocket client connected
+19:43:19 [drone_v2] INFO WebSocket client connected
+19:43:20 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:20] "GET / HTTP/1.1" 200 -
+19:43:20 [drone_v2] INFO WebSocket client disconnected
+19:43:20 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:20] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+19:43:20 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+19:43:20 [drone_v2] INFO WebSocket client connected
+19:43:21 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:21] "GET /api/v2/version HTTP/1.1" 200 -
+19:43:24 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:24] "GET /api/v2/version HTTP/1.1" 200 -
+19:43:26 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:26] "GET /api/v2/status HTTP/1.1" 200 -
+19:43:26 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:43:26] "GET /api/v2/status HTTP/1.1" 200 -
+19:45:34 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:45:34] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+19:48:58 [werkzeug] INFO  * Detected change in '/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/app_v2.py', reloading
+19:49:01 [werkzeug] INFO  * Restarting with stat
+19:49:01 [werkzeug] WARNING  * Debugger is active!
+19:49:01 [werkzeug] INFO  * Debugger PIN: 126-188-319
+19:49:02 [drone_v2] INFO WebSocket client connected
+19:49:03 [drone_v2] INFO WebSocket client connected
+19:49:06 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:06] "GET / HTTP/1.1" 200 -
+19:49:06 [drone_v2] INFO WebSocket client disconnected
+19:49:06 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:06] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+19:49:06 [drone_v2] INFO WebSocket client connected
+19:49:07 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:07] "GET /api/v2/version HTTP/1.1" 200 -
+19:49:09 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:09] "GET /api/v2/version HTTP/1.1" 200 -
+19:49:12 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:12] "GET /api/v2/status HTTP/1.1" 200 -
+19:49:12 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:12] "GET /api/v2/status HTTP/1.1" 200 -
+19:49:13 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:13] "GET /api/v2/status HTTP/1.1" 200 -
+19:49:13 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:13] "GET /api/v2/version HTTP/1.1" 200 -
+19:49:58 [drone_v2.realtime_session] INFO Repository session started: type=uavirbase url=default tick=1.0
+19:49:58 [drone_v2] INFO realtime/start: mode=repository session=default
+19:49:58 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:49:58] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+19:49:58 [drone_v2.realtime_session] INFO Array geometry set to 'uavirbase' for dataset_type='uavirbase'
+19:49:58 [drone_v2.realtime_session] ERROR stream_repository_segments init failed: 'RepositoryRealtimeSession' object has no attribute 'segment_id'
+19:50:52 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:50:52] "[33mGET /api/v2/repository/segments HTTP/1.1[0m" 404 -
+19:51:07 [drone_v2.realtime_session] INFO Repository session started: type=dunakeszi url=default tick=1.0
+19:51:07 [drone_v2.realtime_session] INFO Array geometry set to 'gp2' for dataset_type='dunakeszi'
+19:51:07 [drone_v2] INFO realtime/start: mode=repository session=default
+19:51:07 [drone_v2.realtime_session] ERROR stream_repository_segments init failed: 'RepositoryRealtimeSession' object has no attribute 'segment_id'
+19:51:07 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:51:07] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+19:53:39 [werkzeug] INFO  * Detected change in '/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/realtime_sessions.py', reloading
+19:53:42 [werkzeug] INFO  * Restarting with stat
+19:53:43 [werkzeug] WARNING  * Debugger is active!
+19:53:43 [werkzeug] INFO  * Debugger PIN: 126-188-319
+19:53:44 [drone_v2] INFO WebSocket client connected
+19:53:44 [drone_v2] INFO WebSocket client connected
+19:53:48 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:48] "GET / HTTP/1.1" 200 -
+19:53:48 [drone_v2] INFO WebSocket client disconnected
+19:53:48 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:48] "[35m[1mGET /socket.io/?EIO=4&transport=websocket HTTP/1.1[0m" 500 -
+19:53:48 [werkzeug] ERROR Error on request:
+Traceback (most recent call last):
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 336, in execute
+    write(b"")
+  File "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/venv/lib/python3.12/site-packages/werkzeug/serving.py", line 261, in write
+    assert status_set is not None, "write() before start_response"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: write() before start_response
+19:53:48 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:48] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
+19:53:48 [drone_v2] INFO WebSocket client connected
+19:53:49 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:49] "GET /api/v2/version HTTP/1.1" 200 -
+19:53:54 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:54] "GET /api/v2/status HTTP/1.1" 200 -
+19:53:54 [drone_v2.realtime_session] INFO Repository session started: type=uavirbase url=default tick=1.0
+19:53:54 [drone_v2] INFO realtime/start: mode=repository session=default
+19:53:54 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:53:54] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+19:53:54 [drone_v2.realtime_session] INFO Array geometry set to 'uavirbase' for dataset_type='uavirbase'
+19:53:54 [drone_v2.repository_loader] INFO Attempting RemoteZip streaming from https://zenodo.org/records/15391924/files/Microphone_array.zip?download=1
+19:53:54 [drone_v2.repository_loader] INFO Opening remote ZIP: https://zenodo.org/records/15391924/files/Microphone_array.zip?download=1
+19:54:00 [drone_v2.repository_loader] INFO Remote ZIP: 132 paired sessions found (split=None)
+19:54:00 [drone_v2.repository_loader] INFO Streaming 132 sessions from remote ZIP (looping)
+19:54:24 [drone_v2.repository_loader] INFO RemoteZip streaming: first segment OK — live stream active
+19:56:13 [drone_v2.realtime_session] INFO Repository session finished: 9 segments processed
+19:56:13 [drone_v2.realtime_session] INFO Repository session stopped
+19:56:13 [drone_v2] INFO realtime/stop: session=default
+19:56:13 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:56:13] "POST /api/v2/realtime/stop HTTP/1.1" 200 -
+19:56:16 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:56:16] "[33mGET /api/v2/repository/segments HTTP/1.1[0m" 404 -
+19:56:41 [drone_v2.realtime_session] INFO Repository session started: type=dunakeszi url=default tick=1.0
+19:56:41 [drone_v2] INFO realtime/start: mode=repository session=default
+19:56:41 [werkzeug] INFO 127.0.0.1 - - [24/May/2026 19:56:41] "POST /api/v2/realtime/start HTTP/1.1" 200 -
+19:56:41 [drone_v2.realtime_session] INFO Array geometry set to 'gp2' for dataset_type='dunakeszi'
+19:56:41 [drone_v2.repository_loader] INFO Using extracted Dunakeszi directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+19:56:41 [drone_v2.repository_loader] INFO Dunakeszi local index: 9 triplet sessions found under /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B
+19:56:41 [drone_v2.repository_loader] INFO Streaming 9 sessions from extracted directory: /home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B (loop=True)

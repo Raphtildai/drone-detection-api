@@ -589,6 +589,7 @@ class RepositoryRealtimeSession:
         n_synthetic: int = 200,
         required_split: Optional[str] = None,
         cache_zip: Optional[str] = None,
+        segment_id: Optional[int] = None,
     ) -> None:
         self.config       = config
         self.socketio     = socketio
@@ -603,6 +604,7 @@ class RepositoryRealtimeSession:
         self.n_synthetic  = n_synthetic
         self.required_split = required_split
         self.cache_zip    = cache_zip
+        self.segment_id   = segment_id
 
         self._thread: Optional[threading.Thread] = None
         self._stop   = threading.Event()
@@ -688,7 +690,30 @@ class RepositoryRealtimeSession:
         ap        = AudioProcessor(self.config)
         tick_secs = 1.0 / self.tick_rate
 
-        # Notify frontend: loading started
+        # ── Switch config to the correct physical mic array ────────────────────
+        # This updates cfg.MIC_POSITIONS and cfg.ARRAY_CENTER in place so that
+        # detect(), localize(), and all radar drawings use the right geometry.
+        #   UaVirBASE  → 1.72 m radius circle  (N/E/W channels at 0°/90°/270°)
+        #   Dunakeszi  → GP2 equilateral 2.5 m baseline Brüel triangle
+        _DATASET_GEOMETRY = {
+            "uavirbase": "uavirbase",
+            "dunakeszi": "gp2",          # BK-6-E/W are both GP2 arrays
+        }
+        geom = _DATASET_GEOMETRY.get(self.dataset_type, "uavirbase")
+        try:
+            self.config.set_array_geometry(geom)
+            log.info("Array geometry set to '%s' for dataset_type='%s'",
+                     geom, self.dataset_type)
+        except Exception as exc:
+            log.warning("Could not set array geometry '%s': %s", geom, exc)
+
+        # Emit updated mic positions to frontend so the radar rescales immediately
+        self.socketio.emit("array_geometry_changed", {
+            "geometry":      geom,
+            "dataset_type":  self.dataset_type,
+            "mic_positions": self.config.MIC_POSITIONS.tolist(),
+            "array_center":  self.config.ARRAY_CENTER.tolist(),
+        })
         self.socketio.emit("realtime_status", {
             "running": True, "mode": "repository", "error": None,
             "loading": True, "dataset_type": self.dataset_type,
@@ -706,6 +731,10 @@ class RepositoryRealtimeSession:
                 allow_synthetic_fallback = self.allow_synthetic_fallback,
                 n_synthetic              = self.n_synthetic,
                 cache_zip                = self.cache_zip,
+                segment_id               = self.segment_id,
+                # Loop indefinitely only when browsing all segments;
+                # play once when a specific segment is selected.
+                loop                     = (self.segment_id is None),
             )
         except Exception as exc:
             err = f"stream_repository_segments init failed: {exc}"
@@ -801,25 +830,40 @@ class RepositoryRealtimeSession:
                     "n_drones_sim":  1,
                     # Repository-specific metadata shown in the UI info strip
                     "repo_label": {
-                        "segment_id":    label.get("segment_id"),
-                        "maneuver_type": label.get("maneuver_type"),
-                        "split":         label.get("split"),
-                        "source":        label.get("source"),
-                        "dataset_type":  label.get("dataset_type", self.dataset_type),
-                        "azimuth_deg":   round(float(label.get("azimuth_deg") or 0), 1),
-                        "distance_m":    round(float(label.get("distance_m") or 0), 1),
-                        "height_m":      round(float(label.get("height_m") or 0), 1),
-                        "has_position":  bool(label.get("has_position")),
-                        # Dunakeszi-specific
-                        "session":       label.get("session"),
-                        "array":         label.get("array"),
-                        "n_drones":      label.get("n_drones"),
-                        "speed_mps":     label.get("speed_mps"),
-                        "radius_m":      label.get("radius_m"),
-                        "duration_s":    label.get("duration_s"),
-                        "clip_start_s":  label.get("clip_start_s"),
-                        "flight_phase":  label.get("flight_phase"),
-                        "trajectory":    label.get("trajectory"),
+                        "segment_id":      label.get("segment_id"),
+                        "gt_segment_id":   label.get("gt_segment_id"),
+                        "maneuver_type":   label.get("maneuver_type"),
+                        "flight_phase":    label.get("flight_phase"),
+                        "description":     label.get("description"),
+                        "split":           label.get("split"),
+                        "source":          label.get("source"),
+                        "dataset_type":    label.get("dataset_type", self.dataset_type),
+                        "azimuth_deg":     round(float(label.get("azimuth_deg") or 0), 1),
+                        "distance_m":      round(float(label.get("distance_m") or 0), 1),
+                        "height_m":        round(float(label.get("height_m") or 0), 1),
+                        "has_position":    bool(label.get("has_position")),
+                        # Dunakeszi-specific — all GT-enriched fields
+                        "session":         label.get("session"),
+                        "show_number":     label.get("show_number"),
+                        "wall_clock":      label.get("wall_clock"),
+                        "session_description": label.get("session_description"),
+                        "array":           label.get("array", self.array),
+                        "n_drones":        label.get("n_drones"),
+                        "drones":          label.get("drones"),
+                        "speed_mps":       label.get("speed_mps"),
+                        "radius_m":        label.get("radius_m"),
+                        "duration_s":      label.get("duration_s"),
+                        "quality_flags":   label.get("quality_flags", []),
+                        "mems_available":  label.get("mems_available"),
+                        "local_start_hms": label.get("local_start_hms"),
+                        "local_end_hms":   label.get("local_end_hms"),
+                        "utc_start_hms":   label.get("utc_start_hms"),
+                        "onset_from_rec_s":label.get("onset_from_rec_s"),
+                        "within_session_s":label.get("within_session_s"),
+                        "gpx_folder":      label.get("gpx_folder"),
+                        "clip_start_s":    label.get("clip_start_s"),
+                        "trajectory":      label.get("trajectory"),
+                        "audio_file":      label.get("audio_file"),
                     },
                 })
 
