@@ -235,10 +235,68 @@ def _index_remote_sessions(
 
     The split is inferred from path components (train/val/test) when the
     remote ZIP was created with split sub-folders; otherwise it is None.
+
+    For Dunakeszi ZIPs that contain the pipeline-ready triplet layout
+    (<stem>_ch0.wav / _ch1.wav / _ch2.wav / <stem>_label.json), each triplet
+    is returned as a separate session with is_dunakeszi=True so that
+    _load_multichannel_bytes can handle it correctly.
     """
     all_names = rz.namelist()
     norm = [n.replace("\\", "/") for n in all_names]
 
+    # ── Dunakeszi pipeline-ready layout: flat triplets ────────────────────────
+    if dataset_type == "dunakeszi":
+        label_paths = [p for p in norm if p.endswith("_label.json")]
+        sessions: List[Dict] = []
+        for lp in label_paths:
+            stem_path = lp[: -len("_label.json")]   # e.g. "dunakeszi/seg_0001"
+            stem      = stem_path.split("/")[-1]     # e.g. "seg_0001"
+            ch0_path  = f"{stem_path}_ch0.wav"
+            if ch0_path not in norm:
+                continue   # no matching audio → skip
+
+            # Infer split from path components
+            split = None
+            for part in stem_path.split("/"):
+                if part in ("train", "val", "test", "validation"):
+                    split = "val" if part == "validation" else part
+                    break
+
+            if required_split is not None and split != required_split and split is not None:
+                continue
+
+            sessions.append({
+                "session_id":   stem,
+                "audio_path":   ch0_path,   # loader will derive ch1/ch2 by stem
+                "audio_stem":   stem,
+                "audio_prefix": stem_path,  # full path prefix inside the ZIP
+                "label_path":   lp,
+                "split":        split,
+                "is_dunakeszi": True,
+            })
+
+        if sessions:
+            log.info(
+                "Remote ZIP (dunakeszi): %d pipeline-ready triplets found (split=%s)",
+                len(sessions), required_split,
+            )
+            return sessions
+
+        # No triplets found — the ZIP may be the raw polywav layout.
+        # We cannot stream 4 GB polywavs via RemoteZip efficiently; log clearly
+        # and return empty so the caller falls through to synthetic.
+        raw_wavs = [p for p in norm if p.lower().endswith(".wav")]
+        log.warning(
+            "Remote ZIP (dunakeszi): no pipeline-ready triplets found. "
+            "The ZIP contains %d .wav file(s). "
+            "Expected '<stem>_label.json' + '<stem>_ch0.wav' pairs. "
+            "Raw polywav streaming is not supported via RemoteZip — "
+            "use Nextcloud range-request streaming (Strategy 0) instead.",
+            len(raw_wavs),
+        )
+        return []
+
+    # ── UaVirBASE / generic layout: output.wav + label.json in sub-folders ────
     # Group entries by their parent directory
     session_map: Dict[str, Dict] = {}
     for path_str in norm:
@@ -326,12 +384,41 @@ def _stream_via_remotezip(
                     if label_meta is None:
                         continue  # ambient / unreadable
 
-                    audio_bytes = rz.read(sess["audio_path"])
-                    channels    = _load_multichannel_bytes(
-                        audio_bytes, native_sr, mic_indices, cfg, ap
-                    )
-                    if channels is None:
-                        continue
+                    # ── Dunakeszi pipeline-ready triplet ──────────────────────
+                    if sess.get("is_dunakeszi"):
+                        prefix = sess["audio_prefix"]   # e.g. "dir/seg_0001"
+                        out_chs: List[np.ndarray] = []
+                        for ch_idx in range(3):
+                            ch_path = f"{prefix}_ch{ch_idx}.wav"
+                            try:
+                                ch_bytes = rz.read(ch_path)
+                            except Exception:
+                                break
+                            # Each file is mono; load and resample
+                            import io as _io
+                            import soundfile as _sf
+                            data, sr = _sf.read(_io.BytesIO(ch_bytes), dtype="float32",
+                                                always_2d=False)
+                            if sr != cfg.SR:
+                                import librosa as _lr
+                                data = _lr.resample(data, orig_sr=sr, target_sr=cfg.SR)
+                            from .audio_processing import AudioProcessor as _AP
+                            ap_local = _AP(cfg)
+                            out_chs.append(ap_local.pad_or_truncate(data))
+                        if len(out_chs) == 0:
+                            continue
+                        while len(out_chs) < 3:
+                            out_chs.append(out_chs[-1].copy())
+                        channels = out_chs[:3]
+
+                    # ── UaVirBASE / generic single-file session ───────────────
+                    else:
+                        audio_bytes = rz.read(sess["audio_path"])
+                        channels    = _load_multichannel_bytes(
+                            audio_bytes, native_sr, mic_indices, cfg, ap
+                        )
+                        if channels is None:
+                            continue
 
                     extra = label_meta.get("extra", {}) or {}
                     # Dunakeszi-specific rich metadata from make_label_json()
@@ -880,6 +967,51 @@ def stream_repository_segments(
             except Exception as exc:
                 log.warning("Nextcloud streaming failed: %s — trying next strategy", exc)
 
+    # ── Strategy 0b: local polywav directory ─────────────────────────────────
+    # Used when DUNAKESZI_LOCAL_POLYWAV_DIR is set (raw polywav files downloaded
+    # locally).  Applies identical segment metadata + byte-seek logic as the
+    # Nextcloud strategy but reads from disk — no credentials or network needed.
+    _local_polywav_dir = getattr(cfg, "DUNAKESZI_LOCAL_POLYWAV_DIR", None)
+    if dataset_type == "dunakeszi" and _local_polywav_dir and os.path.isdir(_local_polywav_dir):
+        log.info(
+            "Local polywav directory configured — streaming from disk: %s",
+            _local_polywav_dir,
+        )
+        try:
+            from .dunakeszi_nextcloud import iter_local_polywav_segments
+        except ImportError:
+            try:
+                from dunakeszi_nextcloud import iter_local_polywav_segments
+            except ImportError:
+                log.warning(
+                    "dunakeszi_nextcloud not importable — skipping local polywav strategy"
+                )
+                iter_local_polywav_segments = None  # type: ignore
+
+        if iter_local_polywav_segments is not None:
+            try:
+                gen = iter_local_polywav_segments(
+                    cfg, ap,
+                    local_polywav_dir = _local_polywav_dir,
+                    required_split    = required_split,
+                    segment_id        = segment_id,
+                    loop              = loop,
+                    array             = array,
+                )
+                first = next(gen)
+                log.info(
+                    "Local polywav streaming: first segment OK — live stream active"
+                )
+                yield first
+                yield from gen
+                return
+            except StopIteration:
+                log.warning("Local polywav generator yielded nothing — falling back")
+            except Exception as exc:
+                log.warning(
+                    "Local polywav streaming failed: %s — trying next strategy", exc
+                )
+
     # ── Strategy 1: local pre-extracted directory (Dunakeszi pipeline-ready) ──
     # Used when Nextcloud is not configured OR after Nextcloud fails.
     if extracted_path and os.path.isdir(extracted_path):
@@ -1273,6 +1405,15 @@ def stream_segment_by_gt_id(
         getattr(cfg, "NEXTCLOUD_BASE_URL", None)
         and getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", None)
     )
+    if not nc_configured:
+        log.warning(
+            "segment_id=%d: Nextcloud not configured "
+            "(NEXTCLOUD_BASE_URL=%r, NEXTCLOUD_SHARE_TOKEN=%s) — "
+            "set env vars or pass nextcloud_url/nextcloud_token in the POST body",
+            segment_id,
+            getattr(cfg, "NEXTCLOUD_BASE_URL", None),
+            "***" if getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", None) else None,
+        )
     if nc_configured:
         try:
             from .dunakeszi_nextcloud import stream_segment_from_nextcloud

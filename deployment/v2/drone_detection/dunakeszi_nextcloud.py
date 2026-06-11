@@ -79,8 +79,172 @@ BK6W_CHANNELS = [2, 3, 4]     # West array: W-E, W-H, W-B
 # WebDAV namespace
 _DAV_NS = "DAV:"
 
-# WAV header size in bytes (standard 44-byte PCM header)
+# WAV header size in bytes (standard 44-byte PCM header).
+# NOTE: this constant is kept for reference only.  Multi-channel / non-PCM
+# WAV files produced by the polywav recorder carry an extended fmt chunk
+# and often a "fact" chunk, pushing the data offset to 60–80+ bytes.
+# Always use _get_wav_data_offset() instead of this literal.
 _WAV_HEADER_BYTES = 44
+
+# Polywav-specific fallback data offset.
+#
+# The Dunakeszi polywav files are 14-channel IEEE float32 WAV files recorded
+# by the BRUEL multi-channel system.  Their header layout is:
+#
+#   RIFF chunk header         :  12 bytes
+#   fmt  chunk header+payload :  48 bytes  (8-byte hdr + 40-byte extended WAVEFORMATEX)
+#   fact chunk header+payload :  12 bytes  (optional but always present on float WAV)
+#   data chunk header         :   8 bytes
+#   ──────────────────────────────────────
+#   PCM payload starts at     :  80 bytes
+#
+# This value is used as the fallback when the remote server cannot serve the
+# first 256 bytes via an HTTP 206 range response (e.g. when it returns 200 OK
+# for small ranges but honours Range for large data reads).
+_POLYWAV_DATA_OFFSET = 80
+
+# Cache: url → byte offset of the "data" chunk payload start
+_WAV_DATA_OFFSET_CACHE: Dict[str, int] = {}
+
+# BRUEL/Norsonic polywav recorders write float32 max (0x7F7FFFFF ≈ 3.4e38) as a
+# sentinel value for channels with no connected microphone or clipped/invalid
+# samples.  numpy.isfinite() returns True for FLT_MAX, so a plain isfinite()
+# check silently passes these sentinels through — causing inf RMS, overflow
+# in mel-spectrogram computation, and zero detections.
+# Any |sample| > _SENTINEL_THRESHOLD is treated as invalid and zeroed.
+_SENTINEL_THRESHOLD = np.float32(1e10)
+
+
+def _sanitize_audio(arr: np.ndarray, label: str) -> Tuple[np.ndarray, int]:
+    """
+    Replace NaN, Inf, and BRUEL FLT_MAX sentinel values (|x| > 1e10) with 0.
+
+    Returns (sanitized_array, n_bad_samples).
+    Operates in-place on a copy; never modifies the input.
+    """
+    bad_mask = ~np.isfinite(arr) | (np.abs(arr) > _SENTINEL_THRESHOLD)
+    n_bad    = int(np.sum(bad_mask))
+    if n_bad:
+        arr = arr.copy()
+        arr[bad_mask] = 0.0
+    return arr, n_bad
+
+
+def _get_wav_data_offset(url: str, auth: Tuple[str, str]) -> int:
+    """
+    Return the byte offset at which the PCM payload starts in a remote WAV file.
+
+    Strategy
+    --------
+    1. Try HTTP 206 range request for bytes 0–511 (fast, no full download).
+    2. If the server returns 200 (ignores Range) or any non-206, fall back to a
+       streaming GET that reads only the first 512 bytes from the response body
+       and immediately closes the connection — so we never download the full file.
+    3. If both attempts fail, use _POLYWAV_DATA_OFFSET (80 bytes) which is the
+       correct layout for BRUEL 14-channel IEEE float32 WAV files.
+
+    The result is cached so each remote file is probed only once per process.
+    """
+    if url in _WAV_DATA_OFFSET_CACHE:
+        return _WAV_DATA_OFFSET_CACHE[url]
+
+    header_bytes: Optional[bytes] = None
+
+    # ── Attempt 1: proper range request (206) ─────────────────────────────────
+    try:
+        header_bytes = _fetch_byte_range(url, auth, 0, 512, timeout=15)
+    except RangeRequestError as exc:
+        log.debug(
+            "_get_wav_data_offset: range probe returned non-206 for %s (%s) "
+            "— trying streaming fallback",
+            url, exc,
+        )
+    except Exception as exc:
+        log.debug("_get_wav_data_offset: range probe error for %s: %s", url, exc)
+
+    # ── Attempt 2: streaming GET — read first 512 bytes, close immediately ────
+    if header_bytes is None:
+        try:
+            req  = _requests()
+            resp = req.get(url, auth=auth, timeout=20, stream=True)
+            if resp.status_code in (200, 206):
+                header_bytes = b""
+                for chunk in resp.iter_content(chunk_size=512):
+                    header_bytes += chunk
+                    if len(header_bytes) >= 512:
+                        break
+                header_bytes = header_bytes[:512]
+            resp.close()
+        except Exception as exc:
+            log.debug("_get_wav_data_offset: streaming probe error for %s: %s", url, exc)
+
+    if header_bytes is None:
+        log.warning(
+            "_get_wav_data_offset: all probe attempts failed for %s — "
+            "using polywav-specific fallback offset %d bytes",
+            url, _POLYWAV_DATA_OFFSET,
+        )
+        _WAV_DATA_OFFSET_CACHE[url] = _POLYWAV_DATA_OFFSET
+        return _POLYWAV_DATA_OFFSET
+
+    offset = _parse_wav_data_offset(header_bytes)
+
+    # If parsing still fell back to 44 (e.g. the streaming probe returned HTML
+    # because the URL requires a session cookie), override with the known polywav
+    # layout rather than using the wrong value.
+    if offset == _WAV_HEADER_BYTES:
+        log.warning(
+            "_get_wav_data_offset: header parse returned fallback 44 for %s "
+            "— overriding with polywav-specific offset %d bytes",
+            url, _POLYWAV_DATA_OFFSET,
+        )
+        offset = _POLYWAV_DATA_OFFSET
+
+    log.debug("WAV data offset for %s: %d bytes", url, offset)
+    _WAV_DATA_OFFSET_CACHE[url] = offset
+    return offset
+
+
+def _parse_wav_data_offset(header: bytes) -> int:
+    """
+    Walk RIFF/WAVE chunks and return the byte offset of the 'data' chunk body.
+
+    Chunk layout (all little-endian):
+      0: "RIFF"  4: file_size(u32)  8: "WAVE"
+      12+: repeated  [chunk_id(4) chunk_size(u32) chunk_data(chunk_size)]
+    Returns the absolute offset of the first byte of PCM payload.
+    Falls back to 44 if parsing fails.
+    """
+    import struct
+    try:
+        if len(header) < 12 or header[:4] != b"RIFF" or header[8:12] != b"WAVE":
+            log.debug("_parse_wav_data_offset: not a RIFF/WAVE file, using 44")
+            return _WAV_HEADER_BYTES
+
+        pos = 12  # start of first sub-chunk
+        while pos + 8 <= len(header):
+            chunk_id   = header[pos: pos + 4]
+            chunk_size = struct.unpack_from("<I", header, pos + 4)[0]
+            if chunk_id == b"data":
+                return pos + 8  # body starts right after the 8-byte chunk header
+            pos += 8 + chunk_size
+            # Chunks must be word-aligned
+            if chunk_size % 2:
+                pos += 1
+
+        # "data" chunk not found in the 256-byte probe window.
+        # This is unusual but possible for very large fmt chunks;
+        # fall back to 44 and log a warning.
+        log.warning(
+            "_parse_wav_data_offset: 'data' chunk not found in first %d bytes; "
+            "using fallback offset 44 — audio may be misaligned",
+            len(header),
+        )
+        return _WAV_HEADER_BYTES
+
+    except Exception as exc:
+        log.debug("_parse_wav_data_offset error: %s", exc)
+        return _WAV_HEADER_BYTES
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -121,10 +285,108 @@ def _auth(cfg) -> Tuple[str, str]:
 
 
 def _file_url(cfg, remote_path: str) -> str:
-    """Build full URL for a file inside the share."""
+    """
+    Build full URL for a file inside the share for WebDAV operations
+    (PROPFIND, MKCOL, etc.).  Uses /public.php/webdav/<path>.
+    """
     base = _share_dav_url(cfg)
-    path = remote_path.lstrip("/")
-    return f"{base}/{path}"
+    rpath = remote_path.lstrip("/")
+    return f"{base}/{rpath}"
+
+
+# Cache: base_url → working download URL template ("dav" | "legacy")
+_NC_DOWNLOAD_STYLE_CACHE: Dict[str, str] = {}
+
+
+def _file_download_url(cfg, remote_path: str) -> str:
+    """
+    Build the direct-download URL for a file on a Nextcloud public share.
+
+    This is DISTINCT from the WebDAV URL used for PROPFIND.  Range requests
+    for binary data must go to the download endpoint, otherwise Nextcloud
+    may return an HTML redirect/login page instead of raw bytes.
+
+    Two URL patterns are tried (and the working one is cached per host):
+
+      Modern  (NC 25+):  /public.php/dav/files/<token>/<path>
+      Legacy  (NC <25):  /public.php/webdav/<path>   (same as WebDAV)
+
+    The modern URL does not require the share token in Basic Auth — the token
+    is embedded in the path — but we send it anyway for compatibility.
+    """
+    base  = getattr(cfg, "NEXTCLOUD_BASE_URL", "").rstrip("/")
+    token = getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", "")
+    rpath = remote_path.lstrip("/")
+
+    cached = _NC_DOWNLOAD_STYLE_CACHE.get(base)
+    if cached == "share_dl":
+        # /index.php/s/<token>/download?path=<dir>&files=<filename>
+        # Split rpath into directory and filename for the query params.
+        parts    = rpath.rsplit("/", 1)
+        dl_dir   = "/" + parts[0] if len(parts) > 1 else "/"
+        dl_file  = parts[-1]
+        return f"{base}/index.php/s/{token}/download?path={dl_dir}&files={dl_file}"
+    if cached == "dav":
+        return f"{base}/public.php/dav/files/{token}/{rpath}"
+    if cached == "legacy":
+        return f"{base}/public.php/webdav/{rpath}"
+
+    # ── Auto-probe: find the first URL style that returns HTTP 206 ────────────
+    #
+    # We MUST see 206 Partial Content — a 200 OK means the server ignored the
+    # Range header and returned the full file, which would corrupt audio decoding.
+    #
+    # Priority order:
+    #   1. /index.php/s/<token>/download  — public-share download endpoint; this
+    #      is the only endpoint guaranteed to honour Range on all NC versions.
+    #   2. /public.php/dav/files/<token>/ — modern DAV (NC 25+), often range-capable.
+    #   3. /public.php/webdav/            — legacy WebDAV fallback (rarely range-ok).
+
+    req  = _requests()
+    auth = _auth(cfg)
+
+    parts   = rpath.rsplit("/", 1)
+    dl_dir  = "/" + parts[0] if len(parts) > 1 else "/"
+    dl_file = parts[-1]
+
+    candidates = [
+        ("share_dl", f"{base}/index.php/s/{token}/download?path={dl_dir}&files={dl_file}"),
+        ("dav",      f"{base}/public.php/dav/files/{token}/{rpath}"),
+        ("legacy",   f"{base}/public.php/webdav/{rpath}"),
+    ]
+
+    for style, probe_url in candidates:
+        try:
+            resp = req.head(
+                probe_url, auth=auth, timeout=10,
+                headers={"Range": "bytes=0-3"}, allow_redirects=True,
+            )
+            if resp.status_code == 206:
+                log.info(
+                    "Nextcloud download URL style: %s (%s) — %s",
+                    style, probe_url.split("?")[0], base,
+                )
+                _NC_DOWNLOAD_STYLE_CACHE[base] = style
+                # Return the correct URL for the actual rpath
+                if style == "share_dl":
+                    return probe_url   # already built for this rpath
+                if style == "dav":
+                    return f"{base}/public.php/dav/files/{token}/{rpath}"
+                return f"{base}/public.php/webdav/{rpath}"
+        except Exception:
+            continue
+
+    # No style returned 206.  Log a clear warning and fall back to share_dl
+    # anyway — it is the most likely to work even if HEAD is blocked.
+    log.warning(
+        "_file_download_url: no URL style returned HTTP 206 for %s — "
+        "falling back to share_dl (index.php/s/<token>/download).  "
+        "If range requests keep failing, verify that your Nextcloud allows "
+        "Range requests on public shares (check nginx/Apache proxy config).",
+        base,
+    )
+    _NC_DOWNLOAD_STYLE_CACHE[base] = "share_dl"
+    return f"{base}/index.php/s/{token}/download?path={dl_dir}&files={dl_file}"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -273,15 +535,27 @@ def _fetch_byte_range(
     Fetch [byte_start, byte_end) from a remote URL via HTTP Range request.
 
     Returns raw bytes.  Raises RangeRequestError on failure.
+
+    IMPORTANT: we require HTTP 206 Partial Content.  HTTP 200 means the server
+    ignored our Range header and returned the full file; accepting 200 here would
+    cause read_polywav_window to decode the WAV header (bytes 0-N of the full
+    file) as PCM audio instead of the requested PCM window — producing millions
+    of NaN/Inf values.
     """
     req = _requests()
     headers = {"Range": f"bytes={byte_start}-{byte_end - 1}"}
     try:
         resp = req.get(url, auth=auth, headers=headers, timeout=timeout)
-        if resp.status_code not in (200, 206):
+        if resp.status_code == 200:
+            raise RangeRequestError(
+                f"Server returned HTTP 200 (full file) instead of 206 Partial "
+                f"Content for {url} — the server does not honour Range requests "
+                f"on this endpoint.  byte_start={byte_start}"
+            )
+        if resp.status_code != 206:
             raise RangeRequestError(
                 f"Range request failed: HTTP {resp.status_code} for {url} "
-                f"(range {byte_start}-{byte_end})"
+                f"(range {byte_start}-{byte_end - 1})"
             )
         return resp.content
     except RangeRequestError:
@@ -317,14 +591,21 @@ def read_polywav_window(
         channel_indices = list(range(POLYWAV_CHANNELS))
 
     auth = _auth(cfg)
-    url  = _file_url(cfg, remote_path)
+    # Use the direct download URL (not the WebDAV PROPFIND URL) so that
+    # Nextcloud serves raw bytes for range requests instead of redirecting
+    # to a login/share page.
+    url  = _file_download_url(cfg, remote_path)
 
-    # PolyWav is raw PCM float32 preceded by a WAV header
-    # Byte layout: header | frame0_ch0…ch13 | frame1_ch0…ch13 | …
+    # PolyWav is raw PCM float32 preceded by a WAV header.
+    # Multi-channel / non-PCM WAV files carry an extended fmt chunk (and often
+    # a "fact" chunk), so the actual data offset is NOT always 44 bytes.
+    # We probe the real offset once per file and cache it.
+    data_offset = _get_wav_data_offset(url, auth)
+
     frame_start  = int(start_s    * POLYWAV_SR)
     n_frames     = int(duration_s * POLYWAV_SR)
 
-    byte_start = _WAV_HEADER_BYTES + frame_start * POLYWAV_BYTES_PER_FRAME
+    byte_start = data_offset + frame_start * POLYWAV_BYTES_PER_FRAME
     byte_end   = byte_start + n_frames * POLYWAV_BYTES_PER_FRAME
 
     log.debug(
@@ -334,12 +615,441 @@ def read_polywav_window(
 
     raw = _fetch_byte_range(url, auth, byte_start, byte_end)
 
+    # Sanity-check: the byte count must be a multiple of the frame size.
+    # If the server returned fewer bytes than expected (e.g. near file end),
+    # trim to the last complete frame.
+    expected_bytes = n_frames * POLYWAV_BYTES_PER_FRAME
+    actual_bytes   = len(raw)
+    if actual_bytes < expected_bytes:
+        log.debug(
+            "read_polywav_window: server returned %d bytes, expected %d — "
+            "trimming to %d complete frames",
+            actual_bytes, expected_bytes, actual_bytes // POLYWAV_BYTES_PER_FRAME,
+        )
+    usable = (actual_bytes // POLYWAV_BYTES_PER_FRAME) * POLYWAV_BYTES_PER_FRAME
+    if usable == 0:
+        raise RangeRequestError(
+            f"read_polywav_window: no complete frames in server response "
+            f"({actual_bytes} bytes, frame_size={POLYWAV_BYTES_PER_FRAME})"
+        )
+
     # Interpret as float32, shape (n_frames, POLYWAV_CHANNELS)
-    arr = np.frombuffer(raw, dtype=np.float32).reshape(-1, POLYWAV_CHANNELS)
+    arr = np.frombuffer(raw[:usable], dtype=np.float32).reshape(-1, POLYWAV_CHANNELS)
+
+    # Sanitize: replace NaN, Inf, AND BRUEL FLT_MAX sentinel values (|x|>1e10)
+    # with zeros.  FLT_MAX (0x7F7FFFFF ≈ 3.4e38) is written by the BRUEL recorder
+    # for clipped/unconnected channels — np.isfinite() returns True for it, so a
+    # plain isfinite() check lets it through and causes inf RMS / zero detections.
+    arr, n_bad = _sanitize_audio(arr, remote_path)
+    if n_bad:
+        n_tot = arr.size
+        pct   = 100.0 * n_bad / n_tot
+        log.warning(
+            "read_polywav_window: %d / %d invalid sample(s) (%.1f%%) at "
+            "t=%.2f s (NaN/Inf/sentinel) — replacing with zeros "
+            "(data_offset=%d, file=%s)",
+            n_bad, n_tot, pct, start_s, data_offset, remote_path,
+        )
+        if pct > 5.0:
+            log.warning(
+                "read_polywav_window: invalid rate %.1f%% > 5%% — "
+                "data offset %d may be wrong.  Invalidating cache for %s.",
+                pct, data_offset, url,
+            )
+            _WAV_DATA_OFFSET_CACHE.pop(url, None)
 
     # Select requested channels
     selected = arr[:, channel_indices].T   # shape (n_ch, n_frames)
     return selected.copy(), POLYWAV_SR
+
+
+def read_polywav_window_local(
+    local_path: str,
+    start_s: float,
+    duration_s: float,
+    channel_indices: Optional[List[int]] = None,
+) -> Tuple[np.ndarray, int]:
+    """
+    Read a time window from a LOCAL 192 kHz / 14-channel polywav file.
+
+    Identical semantics to read_polywav_window() but reads from disk via
+    numpy mmap — no HTTP, no auth, no range-request machinery.
+
+    Parameters
+    ----------
+    local_path      : Absolute path to the .wav file on disk
+    start_s         : Start offset in seconds within the file
+    duration_s      : Window length in seconds
+    channel_indices : 0-indexed channels to extract (default: all 14)
+
+    Returns
+    -------
+    audio       : np.ndarray  shape (n_channels, n_samples)  float32
+    sample_rate : int         always POLYWAV_SR (192 000)
+    """
+    import struct
+
+    if channel_indices is None:
+        channel_indices = list(range(POLYWAV_CHANNELS))
+
+    path = Path(local_path)
+    if not path.exists():
+        raise FileNotFoundError(f"read_polywav_window_local: file not found: {local_path}")
+
+    # ── Determine PCM data offset from the WAV header ─────────────────────────
+    cache_key = str(path)
+    if cache_key in _WAV_DATA_OFFSET_CACHE:
+        data_offset = _WAV_DATA_OFFSET_CACHE[cache_key]
+    else:
+        try:
+            with open(path, "rb") as fh:
+                header_bytes = fh.read(512)
+            data_offset = _parse_wav_data_offset(header_bytes)
+            if data_offset == _WAV_HEADER_BYTES:
+                # Fallback 44 means parse failed (not a standard RIFF or too
+                # short); use the known BRUEL polywav layout instead.
+                log.warning(
+                    "read_polywav_window_local: header parse returned 44 for %s "
+                    "— overriding with polywav-specific offset %d bytes",
+                    local_path, _POLYWAV_DATA_OFFSET,
+                )
+                data_offset = _POLYWAV_DATA_OFFSET
+        except Exception as exc:
+            log.warning(
+                "read_polywav_window_local: header probe failed for %s (%s) "
+                "— using polywav-specific offset %d bytes",
+                local_path, exc, _POLYWAV_DATA_OFFSET,
+            )
+            data_offset = _POLYWAV_DATA_OFFSET
+        _WAV_DATA_OFFSET_CACHE[cache_key] = data_offset
+        log.debug("Local WAV data offset for %s: %d bytes", local_path, data_offset)
+
+    frame_start = int(start_s    * POLYWAV_SR)
+    n_frames    = int(duration_s * POLYWAV_SR)
+    byte_start  = data_offset + frame_start * POLYWAV_BYTES_PER_FRAME
+    byte_end    = byte_start + n_frames * POLYWAV_BYTES_PER_FRAME
+
+    log.debug(
+        "Local-reading polywav: %s  t=[%.2f, %.2f)s  bytes=[%d, %d)",
+        path.name, start_s, start_s + duration_s, byte_start, byte_end,
+    )
+
+    # ── Read the byte window directly from disk ───────────────────────────────
+    file_size = path.stat().st_size
+    if byte_start >= file_size:
+        raise RangeRequestError(
+            f"read_polywav_window_local: byte_start={byte_start} is beyond "
+            f"file size {file_size} for {local_path}"
+        )
+    actual_end = min(byte_end, file_size)
+
+    with open(path, "rb") as fh:
+        fh.seek(byte_start)
+        raw = fh.read(actual_end - byte_start)
+
+    actual_bytes = len(raw)
+    usable = (actual_bytes // POLYWAV_BYTES_PER_FRAME) * POLYWAV_BYTES_PER_FRAME
+    if usable == 0:
+        raise RangeRequestError(
+            f"read_polywav_window_local: no complete frames read "
+            f"({actual_bytes} bytes, frame_size={POLYWAV_BYTES_PER_FRAME}) "
+            f"from {local_path}"
+        )
+
+    arr = np.frombuffer(raw[:usable], dtype=np.float32).reshape(-1, POLYWAV_CHANNELS)
+
+    # Sanitize: replace NaN, Inf, AND BRUEL FLT_MAX sentinel values (|x|>1e10)
+    arr, n_bad = _sanitize_audio(arr, local_path)
+    if n_bad:
+        n_tot = arr.size
+        pct   = 100.0 * n_bad / n_tot
+        log.warning(
+            "read_polywav_window_local: %d / %d invalid sample(s) (%.1f%%) "
+            "at t=%.2f (NaN/Inf/sentinel) — replacing with zeros "
+            "(data_offset=%d, file=%s)",
+            n_bad, n_tot, pct, start_s, data_offset, local_path,
+        )
+        if pct > 5.0:
+            log.warning(
+                "read_polywav_window_local: invalid rate %.1f%% > 5%% — "
+                "data_offset=%d is likely wrong.  Invalidating cache for %s.",
+                pct, data_offset, cache_key,
+            )
+            _WAV_DATA_OFFSET_CACHE.pop(cache_key, None)
+
+    selected = arr[:, channel_indices].T   # shape (n_ch, n_frames)
+    return selected.copy(), POLYWAV_SR
+
+
+def stream_segment_from_local_polywav(
+    cfg,
+    segment_id: int,
+    local_polywav_dir: str,
+    array: str = "BK-6-E",
+    ap=None,
+) -> Optional[Tuple[List[np.ndarray], dict]]:
+    """
+    Stream a single maneuver segment from LOCAL polywav files on disk, using
+    the same ground-truth metadata and channel logic as the Nextcloud version.
+
+    This is the drop-in offline replacement for stream_segment_from_nextcloud():
+    it reads bytes directly from a local directory containing the raw polywav
+    files (e.g. downloaded copies of the BRUEL 192 kHz recordings).
+
+    Parameters
+    ----------
+    cfg               : Config with DUNAKESZI_LOCAL_POLYWAV_PATH or passed directly
+    segment_id        : Ground-truth MANEUVER_SEGMENTS id
+    local_polywav_dir : Directory containing the polywav .wav files
+                        (e.g. /data/Dunakeszi_BRUEL_VIDEO/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053)
+    array             : "BK-6-E" | "BK-6-W"
+    ap                : AudioProcessor instance (created if None)
+
+    Returns
+    -------
+    (channels, label) or None
+    """
+    try:
+        from . import dunakeszi_ground_truth_fixed as gt
+    except ImportError:
+        try:
+            import dunakeszi_ground_truth_fixed as gt
+        except ImportError:
+            log.error("dunakeszi_ground_truth_fixed not importable")
+            return None
+
+    seg = next((s for s in gt.MANEUVER_SEGMENTS if s["id"] == segment_id), None)
+    if seg is None:
+        log.warning("stream_segment_from_local_polywav: segment_id=%d not found", segment_id)
+        return None
+
+    sessions_by_id = {s["session_id"]: s for s in gt._enrich_sessions(gt.SESSIONS)}
+    enriched = gt._enrich_segments([seg], sessions_by_id)[0]
+
+    onset_s    = enriched["onset_from_rec_s"]
+    duration_s = float(enriched.get("duration_s") or 3.0)
+
+    if onset_s < 0:
+        log.warning(
+            "stream_segment_from_local_polywav: segment %d has negative onset "
+            "%.2f — skipping", segment_id, onset_s,
+        )
+        return None
+    if onset_s < 1.0:
+        log.warning(
+            "stream_segment_from_local_polywav: segment %d onset %.2f is within "
+            "the first second — skipping to avoid WAV header region",
+            segment_id, onset_s,
+        )
+        return None
+
+    read_dur_s = min(duration_s, 30.0)
+    chunk_dur  = gt.PW_CHUNK_DUR_S
+    chunk_idx  = int(onset_s // chunk_dur)
+    offset_in_chunk = onset_s - chunk_idx * chunk_dur
+
+    chunk_remaining = chunk_dur - offset_in_chunk
+    if read_dur_s > chunk_remaining:
+        read_dur_s = max(chunk_remaining, 0.5)
+
+    if chunk_idx < 0 or chunk_idx >= len(gt.POLYWAV_FILES):
+        log.warning(
+            "stream_segment_from_local_polywav: segment %d onset %.1fs maps "
+            "to chunk %d — out of range", segment_id, onset_s, chunk_idx,
+        )
+        return None
+
+    pw_filename = gt.POLYWAV_FILES[chunk_idx]
+    local_file  = str(Path(local_polywav_dir) / pw_filename)
+
+    if not Path(local_file).exists():
+        log.warning(
+            "stream_segment_from_local_polywav: file not found: %s", local_file,
+        )
+        return None
+
+    ch_map = getattr(cfg, "DUNAKESZI_ARRAY_CHANNELS",
+                     {"BK-6-E": BK6E_CHANNELS, "BK-6-W": BK6W_CHANNELS})
+    channel_indices = ch_map.get(array, BK6E_CHANNELS)
+
+    try:
+        log.info(
+            "Local-streaming segment %d from %s  onset=%.1fs  dur=%.1fs  ch=%s",
+            segment_id, pw_filename, offset_in_chunk, read_dur_s, channel_indices,
+        )
+        audio_raw, native_sr = read_polywav_window_local(
+            local_file, offset_in_chunk, read_dur_s, channel_indices,
+        )
+    except Exception as exc:
+        log.warning(
+            "stream_segment_from_local_polywav: read failed for segment %d: %s",
+            segment_id, exc,
+        )
+        return None
+
+    if ap is None:
+        from .audio_processing import AudioProcessor
+        ap = AudioProcessor(cfg)
+
+    out_channels = []
+    for ch_row in audio_raw:
+        if native_sr != cfg.SR:
+            import librosa
+            ch_row = librosa.resample(ch_row, orig_sr=native_sr, target_sr=cfg.SR)
+            ch_row, n_bad = _sanitize_audio(ch_row, f"seg{segment_id}")
+            if n_bad:
+                log.warning(
+                    "stream_segment_from_local_polywav: %d invalid sample(s) "
+                    "after resampling segment %d — replaced with zeros",
+                    n_bad, segment_id,
+                )
+        out_channels.append(ap.pad_or_truncate(ch_row))
+
+    while len(out_channels) < 3:
+        out_channels.append(out_channels[-1].copy())
+    out_channels = out_channels[:3]
+
+    from math import atan2, degrees, hypot
+    sc = enriched.get("start_coord")
+    if sc and sc[0] is not None:
+        bearing     = round(degrees(atan2(sc[0], sc[1])), 1)
+        dist        = round(hypot(sc[0], sc[1]), 1)
+        ht          = round(float(sc[2]) if len(sc) > 2 else enriched.get("altitude_m", 0), 1)
+        pipeline_az = (90.0 - bearing + 180.0) % 360.0 - 180.0
+    else:
+        pipeline_az = None
+        dist        = None
+        ht          = enriched.get("altitude_m")
+
+    label = {
+        "segment_id":      segment_id,
+        "session":         enriched.get("session"),
+        "split":           enriched.get("split"),
+        "source":          "real",
+        "dataset_type":    "dunakeszi",
+        "array":           array,
+        "maneuver_type":   enriched.get("maneuver_type"),
+        "flight_phase":    enriched.get("flight_phase"),
+        "description":     enriched.get("description"),
+        "n_drones":        enriched.get("n_drones", 1),
+        "drones":          enriched.get("drones", []),
+        "azimuth_deg":     pipeline_az,
+        "distance_m":      dist,
+        "height_m":        ht,
+        "has_position":    pipeline_az is not None and dist is not None,
+        "speed_mps":       enriched.get("speed_mps"),
+        "radius_m":        enriched.get("radius_m"),
+        "duration_s":      read_dur_s,
+        "local_start_hms": enriched.get("local_start_hms"),
+        "show_number":     sessions_by_id.get(enriched.get("session", ""), {}).get("show_number"),
+        "audio_file":      pw_filename,
+        "polywav_chunk":   chunk_idx,
+        "polywav_offset_s": offset_in_chunk,
+    }
+    return out_channels, label
+
+
+def iter_local_polywav_segments(
+    cfg,
+    ap,
+    local_polywav_dir: str,
+    required_split: Optional[str] = None,
+    segment_id: Optional[int] = None,
+    loop: bool = True,
+    array: str = "BK-6-E",
+) -> Generator[Tuple[List[np.ndarray], dict], None, None]:
+    """
+    Yield (channels, label) by reading segments from LOCAL polywav files.
+
+    Exact drop-in replacement for iter_nextcloud_segments() — same ground-truth
+    metadata, same channel extraction, same resampling — but reads from disk
+    instead of Nextcloud HTTP range requests.
+
+    Parameters
+    ----------
+    cfg               : Config instance
+    ap                : AudioProcessor instance
+    local_polywav_dir : Directory containing POLYWAV_FILES (e.g. the
+                        192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053 folder)
+    required_split    : "train" | "val" | "test" | None
+    segment_id        : If set, yield only this segment once (loop forced False)
+    loop              : If True, cycle through segments indefinitely
+    array             : "BK-6-E" | "BK-6-W"
+    """
+    try:
+        from . import dunakeszi_ground_truth_fixed as gt
+    except ImportError:
+        try:
+            import dunakeszi_ground_truth_fixed as gt
+        except ImportError:
+            raise RuntimeError(
+                "dunakeszi_ground_truth_fixed not importable — cannot iterate "
+                "local polywav segments without the ground-truth metadata module."
+            )
+
+    sessions_by_id = {s["session_id"]: s for s in gt._enrich_sessions(gt.SESSIONS)}
+    all_segs       = gt._enrich_segments(gt.MANEUVER_SEGMENTS, sessions_by_id)
+
+    if required_split is not None:
+        all_segs = [s for s in all_segs if s.get("split") == required_split]
+    if segment_id is not None:
+        all_segs = [s for s in all_segs if s["id"] == segment_id]
+        loop     = False
+
+    if not all_segs:
+        raise RuntimeError(
+            f"iter_local_polywav_segments: no segments match "
+            f"split={required_split!r}, segment_id={segment_id!r}"
+        )
+
+    # Filter to segments whose polywav file actually exists on disk
+    polywav_dir = Path(local_polywav_dir)
+    available_segs = []
+    for seg in all_segs:
+        chunk_idx  = int(seg["onset_from_rec_s"] // gt.PW_CHUNK_DUR_S)
+        if 0 <= chunk_idx < len(gt.POLYWAV_FILES):
+            fpath = polywav_dir / gt.POLYWAV_FILES[chunk_idx]
+            if fpath.exists():
+                available_segs.append(seg)
+
+    if not available_segs:
+        raise RuntimeError(
+            f"iter_local_polywav_segments: no polywav files found in "
+            f"{local_polywav_dir} for the requested segments "
+            f"(split={required_split!r}).  "
+            f"Expected files like: {gt.POLYWAV_FILES[0] if gt.POLYWAV_FILES else '?'}"
+        )
+
+    log.info(
+        "iter_local_polywav_segments: %d/%d segment(s) have local polywav files "
+        "(loop=%s, split=%r, array=%s, dir=%s)",
+        len(available_segs), len(all_segs), loop, required_split, array, local_polywav_dir,
+    )
+
+    import random as _random
+
+    first_pass = True
+    while True:
+        if not first_pass:
+            if not loop:
+                return
+            _random.shuffle(available_segs)
+        first_pass = False
+
+        for seg in available_segs:
+            result = stream_segment_from_local_polywav(
+                cfg, seg["id"], local_polywav_dir, array=array, ap=ap,
+            )
+            if result is None:
+                log.debug(
+                    "iter_local_polywav_segments: segment %d returned None — skipping",
+                    seg["id"],
+                )
+                continue
+            yield result
+
+        if not loop:
+            return
 
 
 def read_mems_window(
@@ -370,28 +1080,34 @@ def read_mems_window(
     bytes_per_frame  = n_channels * bytes_per_sample
 
     auth = _auth(cfg)
-    url  = _file_url(cfg, remote_path)
+    url  = _file_download_url(cfg, remote_path)
+
+    # Probe the actual WAV data-chunk offset (MEMS files are 4-ch 24-bit WAV,
+    # which carry an 18-byte fmt chunk + 12-byte fact chunk → data at ~58 bytes,
+    # not the 44-byte PCM standard assumed by _WAV_HEADER_BYTES).
+    data_offset = _get_wav_data_offset(url, auth)
 
     frame_start = int(start_s    * sr)
     n_frames    = int(duration_s * sr)
-    byte_start  = _WAV_HEADER_BYTES + frame_start * bytes_per_frame
+    byte_start  = data_offset + frame_start * bytes_per_frame
     byte_end    = byte_start + n_frames * bytes_per_frame
 
     log.debug("Range-reading MEMS: %s  t=[%.2f, %.2f)s", remote_path, start_s, start_s + duration_s)
     raw = _fetch_byte_range(url, auth, byte_start, byte_end)
 
-    # 24-bit signed integer: unpack 3 bytes per sample
+    # 24-bit signed integer: unpack 3 bytes per sample (interleaved channels)
     if bits == 24:
-        n_samples = len(raw) // bytes_per_frame * n_channels
-        arr = np.zeros(n_samples, dtype=np.int32)
-        for i in range(n_samples):
-            b = raw[i * 3: i * 3 + 3]
-            if len(b) < 3:
-                break
-            val = int.from_bytes(b, "little", signed=True)
-            arr[i] = val
-        arr_2d = arr.reshape(-1, n_channels).T   # (n_ch, n_frames)
-        audio  = arr_2d.astype(np.float32) / (2 ** 23)  # normalise to [-1, 1]
+        n_frames_actual = len(raw) // bytes_per_frame
+        arr = np.zeros((n_frames_actual, n_channels), dtype=np.int32)
+        for f in range(n_frames_actual):
+            frame_base = f * bytes_per_frame
+            for ch in range(n_channels):
+                sample_base = frame_base + ch * 3
+                b = raw[sample_base: sample_base + 3]
+                if len(b) < 3:
+                    break
+                arr[f, ch] = int.from_bytes(b, "little", signed=True)
+        audio = arr.T.astype(np.float32) / (2 ** 23)  # (n_ch, n_frames), [-1, 1]
     elif bits == 16:
         arr = np.frombuffer(raw, dtype=np.int16).reshape(-1, n_channels).T
         audio = arr.astype(np.float32) / 32768.0
@@ -457,7 +1173,7 @@ def fetch_gpx(cfg, remote_path: str) -> List[Dict[str, float]]:
     """
     req = _requests()
     auth = _auth(cfg)
-    url  = _file_url(cfg, remote_path)
+    url  = _file_download_url(cfg, remote_path)
     try:
         resp = req.get(url, auth=auth, timeout=30)
         resp.raise_for_status()
@@ -730,17 +1446,61 @@ def stream_segment_from_nextcloud(
     sessions_by_id = {s["session_id"]: s for s in gt._enrich_sessions(gt.SESSIONS)}
     enriched = gt._enrich_segments([seg], sessions_by_id)[0]
 
-    # Determine which polywav file and byte offset to read
-    onset_s    = enriched["onset_from_rec_s"]  # seconds from rec start (show_1 trigger)
+    # Determine which polywav file and byte offset to read.
+    #
+    # onset_from_rec_s  = seconds elapsed since the polywav recording started
+    #                     (the global "rec start" reference, show_1 trigger).
+    #                     This IS the correct timeline for chunk selection.
+    #
+    # within_session_offset_s = onset_from_rec_s minus the session (show) start
+    #                           inside the polywav — only useful for cross-checks.
+    #
+    # The polywav chunks are contiguous from t=0 of the recording, so
+    # onset_from_rec_s maps directly onto (chunk_idx, offset_in_chunk).
+    # This is correct as long as gt.RECORDING_REF_LOCAL_S and PW_CHUNK_DUR_S
+    # are calibrated to the polywav clock (verified in dunakeszi_ground_truth_fixed).
+    onset_s    = enriched["onset_from_rec_s"]  # seconds from polywav t=0
     duration_s = float(enriched.get("duration_s") or 3.0)
+
+    # Sanity-check: warn if onset is suspiciously early (likely a calibration issue)
+    if onset_s < 0:
+        log.warning(
+            "Segment %d has negative onset_from_rec_s=%.2f — "
+            "ground-truth timing may be miscalibrated; skipping",
+            segment_id, onset_s,
+        )
+        return None
+
+    # onset=0.0 means the range request would start at the WAV header itself
+    # (before the first audio frame), producing garbage float32 values.
+    # Any real drone event must start at least 1 second into the recording.
+    if onset_s < 1.0:
+        log.warning(
+            "Segment %d onset_from_rec_s=%.2f is within the first second — "
+            "this points to a ground-truth calibration issue (the drone was not "
+            "yet airborne at t=0). Skipping to avoid reading WAV header as audio.",
+            segment_id, onset_s,
+        )
+        return None
 
     # Cap to 30 s for streaming
     read_dur_s = min(duration_s, 30.0)
 
-    # Which polywav chunk?
+    # Which polywav chunk covers this onset?
     chunk_dur = gt.PW_CHUNK_DUR_S   # ~399.46 s
     chunk_idx = int(onset_s // chunk_dur)
     offset_in_chunk = onset_s - chunk_idx * chunk_dur
+
+    # Guard: offset_in_chunk + duration must not spill past the chunk boundary.
+    # If it does, cap the read to the chunk end (the pipeline pads to TARGET_DURATION).
+    chunk_remaining = chunk_dur - offset_in_chunk
+    if read_dur_s > chunk_remaining:
+        log.debug(
+            "Segment %d read window (%.1f s) would cross chunk boundary at %.1f s — "
+            "capping to %.1f s",
+            segment_id, read_dur_s, chunk_remaining, chunk_remaining,
+        )
+        read_dur_s = max(chunk_remaining, 0.5)  # keep at least 0.5 s
 
     if chunk_idx < 0 or chunk_idx >= len(gt.POLYWAV_FILES):
         log.warning("Segment %d onset %.1fs maps to chunk %d — out of range", segment_id, onset_s, chunk_idx)
@@ -779,6 +1539,14 @@ def stream_segment_from_nextcloud(
         if native_sr != cfg.SR:
             import librosa
             ch_row = librosa.resample(ch_row, orig_sr=native_sr, target_sr=cfg.SR)
+            # Clamp sentinels and NaN/Inf that can survive or be introduced by resampling
+            ch_row, n_bad = _sanitize_audio(ch_row, f"seg{segment_id}")
+            if n_bad:
+                log.warning(
+                    "stream_segment_from_nextcloud: %d invalid sample(s) "
+                    "after resampling segment %d ch — replaced with zeros",
+                    n_bad, segment_id,
+                )
         out_channels.append(ap.pad_or_truncate(ch_row))
 
     while len(out_channels) < 3:
@@ -970,10 +1738,13 @@ def polywav_file_info(cfg) -> List[Dict[str, Any]]:
             if s["onset_from_rec_s"] < chunk_end
             and s["onset_from_rec_s"] + s["duration_s"] > chunk_start
         ]
+        # Build the unique set of sessions (shows) that appear in this chunk.
+        # Use a dict keyed by seg id for O(1) lookup to avoid the default-index bug.
+        segs_by_id = {s["id"]: s for s in all_segs}
         shows = sorted({
-            all_segs[next((i for i, s in enumerate(all_segs) if s["id"] == sid), 0)]["session"]
+            segs_by_id[sid]["session"]
             for sid in covered
-            if any(s["id"] == sid for s in all_segs)
+            if sid in segs_by_id
         })
 
         ri = remote_names.get(fname)

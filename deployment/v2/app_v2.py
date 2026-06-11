@@ -721,6 +721,8 @@ def list_audio_devices():
 def repo_segments():
     split   = request.args.get("split")   or None
     session = request.args.get("session") or None
+    # Refresh Nextcloud credentials from env in case they were set after startup
+    _repo_cfg.reload_nextcloud_env()
     return jsonify(list_dunakeszi_segments_rich(_repo_cfg, split, session))
 
 
@@ -732,12 +734,30 @@ def repo_start_segment():
     The segment is loaded via stream_segment_by_gt_id (local → Nextcloud),
     then replayed through the existing RepositoryRealtimeSession machinery
     as a one-shot generator (loop=False).
+
+    Optional POST fields
+    --------------------
+    nextcloud_url   : override NEXTCLOUD_BASE_URL  (useful when env vars are not
+                      exported before server start)
+    nextcloud_token : override NEXTCLOUD_SHARE_TOKEN
     """
     seg_id     = int(  request.form.get("segment_id", 0))
-    array      = request.form.get("array",      "BK-6-E")
-    session_id = request.form.get("session_id", "default")
+    array      = request.form.get("array",           "BK-6-E")
+    session_id = request.form.get("session_id",      "default")
     tick_rate  = float(request.form.get("tick_rate",  1.0))
     threshold  = float(request.form.get("threshold",  0.70))
+
+    # ── Refresh Nextcloud credentials ─────────────────────────────────────────
+    # _repo_cfg is built at import time (before env vars may be exported).
+    # Calling reload_nextcloud_env() here picks up any credentials that have
+    # been exported since then, or accepts them as explicit POST overrides.
+    nc_url   = request.form.get("nextcloud_url")   or None
+    nc_token = request.form.get("nextcloud_token") or None
+    nc_ready = _repo_cfg.reload_nextcloud_env(base_url=nc_url, share_token=nc_token)
+    log.info(
+        "repo_start_segment: seg=%d nc_ready=%s base_url=%r",
+        seg_id, nc_ready, _repo_cfg.NEXTCLOUD_BASE_URL,
+    )
 
     # Stop any existing session under this id
     existing = _get_session(session_id)
@@ -787,6 +807,7 @@ def repo_start_segment():
 
 @app.route("/api/v2/repository/files/<file_type>", methods=["GET"])
 def repo_files(file_type):
+    _repo_cfg.reload_nextcloud_env()
     return jsonify(get_dunakeszi_file_browser(_repo_cfg, file_type))
 
 

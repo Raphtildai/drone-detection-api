@@ -14,6 +14,7 @@ Includes:
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import torch
@@ -142,6 +143,14 @@ class Config:
         # Leave as None to fall back to synthetic data automatically.
         self.DUNAKESZI_ZIP_URL  = None   # e.g. "https://your-server.com/dunakeszi.zip"
         self.DUNAKESZI_LOCAL_PATH = "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B"
+        # Directory containing locally downloaded raw polywav files
+        # (e.g. 251020VITEMOROM1AT01.wav, 251020VITEMOROM1AT01B.wav, …).
+        # Set via env var DUNAKESZI_LOCAL_POLYWAV_DIR or override directly.
+        # When set, the pipeline reads these local files instead of streaming
+        # from Nextcloud — no credentials or network access required.
+        self.DUNAKESZI_LOCAL_POLYWAV_DIR = os.environ.get(
+            "DUNAKESZI_LOCAL_POLYWAV_DIR", "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/wavs"
+        )
         self.DUNAKESZI_ORIG_SR  = 192_000
         # Polywav channel groups: array name → 0-indexed channel list
         self.DUNAKESZI_ARRAY_CHANNELS = {
@@ -242,36 +251,63 @@ class Config:
         
         self.NEXTCLOUD_BASE_URL    = os.environ.get("NEXTCLOUD_BASE_URL", None)
         self.NEXTCLOUD_SHARE_TOKEN = os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
-        
+
         # Sub-paths inside the share (relative to the share root)
         self.NEXTCLOUD_POLYWAV_PATH = "/Dunakeszi_2025_10_25/Dunakeszi_BRUEL_VIDEO/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053"   # directory containing the 17× 4 GB polywav files
         self.NEXTCLOUD_MEMS_PATH    = "/Dunakeszi_2025_10_25/Dunakeszi_MEMS/Audio"      # directory containing the 12 MEMS audio files
         self.NEXTCLOUD_GPX_PATH     = "/Dunakeszi_2025_10_25/Dunakeszi_DRON-ADATOK/DRON-GPX"  # directory tree with per-show GPX logs
-        
+
         # ── Dunakeszi audio format details (used by dunakeszi_nextcloud.py) ───────────
         #
         # POLYWAV:  192 kHz, 14 ch, float32, 4 GB each → already defined above as DUNAKESZI_ORIG_SR
         # MEMS:     format verified by dunakeszi_ground_truth_fixed.verify_mems_format()
         #           defaults here match the 133.1 MB / (4ch × 3B × 48kHz) = 242 s estimate
-        
+
         self.MEMS_SR       = 48_000   # best-guess sample rate; verify from WAV header
         self.MEMS_CHANNELS = 4        # 4-channel MEMS array
         self.MEMS_BITS     = 24       # 24-bit signed integer PCM
-        
-        # ── TDOA channel subsets (Scorpio channel numbers, 1-indexed) ─────────────────
-        #
-        # The BK-6 arrays have 6 capsules each; only 3 are used for TDOA per array.
-        # Scorpio channels: BK-6-W = ch3,4,5 (W-E, W-H, W-B); BK-6-E = ch9,10,11 (E-E, E-H, E-B)
-        # 0-indexed in the polywav: BK-6-W → [2,3,4],  BK-6-E → [8,9,10]  (already in DUNAKESZI_ARRAY_CHANNELS)
-        
-        # ── Ground-truth measurement origin GPS (for XY conversion in nextcloud module) ──
+
+        # ── TDOA channel subsets (Scorpio channel numbers, 1-indexed) ─────────
+        # BK-6-W = ch3,4,5 (W-E, W-H, W-B); BK-6-E = ch9,10,11 (E-E, E-H, E-B)
+        # 0-indexed in the polywav: BK-6-W → [2,3,4],  BK-6-E → [8,9,10]
+
+        # ── Ground-truth measurement origin GPS ───────────────────────────────
         # Midpoint of BK-6-E (47.6086296, 19.1470983) and BK-6-W (47.6086368, 19.1468423)
         self.DUNAKESZI_ORIGIN_LAT = 47.6086332
         self.DUNAKESZI_ORIGIN_LON = 19.1469703
 
-
-        # ── Custom builder dataset ────────────────────────────────────────
+        # ── Custom builder dataset ────────────────────────────────────────────
         self._init_custom_dataset_defaults()
+
+    # ── Nextcloud credential refresh ──────────────────────────────────────────
+
+    def reload_nextcloud_env(
+        self,
+        base_url:    Optional[str] = None,
+        share_token: Optional[str] = None,
+    ) -> bool:
+        """
+        Refresh NEXTCLOUD_BASE_URL / NEXTCLOUD_SHARE_TOKEN from the environment
+        (or from explicit arguments).  Call this just before any Nextcloud
+        operation to pick up credentials that were exported *after* the Config
+        singleton was first constructed.
+
+        Parameters
+        ----------
+        base_url    : override value; falls back to env var NEXTCLOUD_BASE_URL
+        share_token : override value; falls back to env var NEXTCLOUD_SHARE_TOKEN
+
+        Returns True if both credentials are now non-empty.
+        """
+        self.NEXTCLOUD_BASE_URL    = base_url    or os.environ.get("NEXTCLOUD_BASE_URL",    None)
+        self.NEXTCLOUD_SHARE_TOKEN = share_token or os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
+        configured = bool(self.NEXTCLOUD_BASE_URL and self.NEXTCLOUD_SHARE_TOKEN)
+        import logging as _logging
+        _logging.getLogger("drone_v2").debug(
+            "reload_nextcloud_env: base_url=%r configured=%s",
+            self.NEXTCLOUD_BASE_URL, configured,
+        )
+        return configured
 
     # ──────────────────────────────────────────────────────────────────────────
     # Array geometry helpers
