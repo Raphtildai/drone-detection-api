@@ -63,10 +63,16 @@ class RangeRequestError(RuntimeError):
 # ══════════════════════════════════════════════════════════════════════════════
 
 POLYWAV_SR       = 192_000          # native sample-rate of polywav files
-POLYWAV_CHANNELS = 12               # total channels in each polywav file
-POLYWAV_DTYPE    = np.float32       # 32-bit float
-POLYWAV_BYTES_PER_SAMPLE = 4        # bytes per sample per channel
-POLYWAV_BYTES_PER_FRAME  = POLYWAV_CHANNELS * POLYWAV_BYTES_PER_SAMPLE  # 56
+# Fallback-only defaults, used when the WAV header can't be probed at all.
+# The BRUEL/Norsonic recorder actually writes 14-channel, 24-bit signed PCM
+# (wFormatTag=1, not IEEE float) — confirmed against a real polywav header,
+# which also carries bext/iXML metadata chunks pushing the data offset well
+# past the naive 44/80-byte assumption. Real files are always probed via
+# _parse_wav_format()/_get_wav_format(), which return the true channel count
+# and sample format; these constants only matter if that probe fails outright.
+POLYWAV_CHANNELS = 14               # total channels in each polywav file
+POLYWAV_BYTES_PER_SAMPLE = 3         # 24-bit PCM → 3 bytes per sample per channel
+POLYWAV_BYTES_PER_FRAME  = POLYWAV_CHANNELS * POLYWAV_BYTES_PER_SAMPLE  # 42
 
 MEMS_SR_ASSUMED       = 48_000
 MEMS_CHANNELS_ASSUMED = 4
@@ -89,15 +95,14 @@ _WAV_HEADER_BYTES = 44
 
 # Polywav-specific fallback data offset.
 #
-# The Dunakeszi polywav files are 14-channel IEEE float32 WAV files recorded
-# by the BRUEL multi-channel system.  Their header layout is:
-#
-#   RIFF chunk header         :  12 bytes
-#   fmt  chunk header+payload :  48 bytes  (8-byte hdr + 40-byte extended WAVEFORMATEX)
-#   fact chunk header+payload :  12 bytes  (optional but always present on float WAV)
-#   data chunk header         :   8 bytes
-#   ──────────────────────────────────────
-#   PCM payload starts at     :  80 bytes
+# The Dunakeszi polywav files are 14-channel, 24-bit signed-PCM WAV/RF64 files
+# recorded by the BRUEL multi-channel system — NOT IEEE float32 as originally
+# assumed here. Real files also carry bext/iXML broadcast-metadata chunks of
+# variable size (observed: ds64 + bext + iXML + fmt ≈ 6 KB) before the data
+# chunk, so there is no fixed "true" offset — this 80-byte value is only a
+# last-resort guess for when the header can't be probed at all; real reads
+# always go through _parse_wav_format()/_get_wav_format(), which walk the
+# actual RIFF chunks to find the real offset, channel count and sample format.
 #
 # This value is used as the fallback when the remote server cannot serve the
 # first 256 bytes via an HTTP 206 range response (e.g. when it returns 200 OK
@@ -130,50 +135,103 @@ def _sanitize_audio(arr: np.ndarray, label: str) -> Tuple[np.ndarray, int]:
         arr[bad_mask] = 0.0
     return arr, n_bad
 
-# ============================================================================
-# Cache: url/path → (data_offset, n_channels)
-# ============================================================================
-_WAV_FORMAT_CACHE: Dict[str, Tuple[int, int]] = {}   # url/path -> (data_offset, n_channels)
 
-def _parse_wav_format(header: bytes) -> Tuple[int, int]:
-    """Parse a WAV/RF64 header. Returns (data_offset, n_channels).
-    Falls back to (44, POLYWAV_CHANNELS) if parsing fails."""
+def _decode_pcm_frames(raw: bytes, n_channels: int, bytes_per_sample: int, is_float: bool) -> np.ndarray:
+    """
+    Decode interleaved raw audio bytes into shape (n_frames, n_channels) float32.
+
+    Handles the sample formats actually seen in the wild here: 32-bit IEEE
+    float (polywav's originally-assumed format) and 16/24/32-bit signed PCM
+    (the format the BRUEL recorder actually writes). 24-bit has no native
+    numpy dtype, so it's unpacked from 3 raw bytes per sample and sign-extended
+    — done vectorised (no per-sample Python loop) since polywav windows can be
+    millions of frames at 192 kHz.
+    """
+    frame_bytes = n_channels * bytes_per_sample
+    usable = (len(raw) // frame_bytes) * frame_bytes
+    raw = raw[:usable]
+
+    if bytes_per_sample == 4 and is_float:
+        return np.frombuffer(raw, dtype="<f4").reshape(-1, n_channels)
+    if bytes_per_sample == 2:
+        arr = np.frombuffer(raw, dtype="<i2").reshape(-1, n_channels)
+        return arr.astype(np.float32) / 32768.0
+    if bytes_per_sample == 3:
+        buf = np.frombuffer(raw, dtype=np.uint8).reshape(-1, n_channels, 3)
+        as_i32 = (
+            buf[..., 0].astype(np.int32)
+            | (buf[..., 1].astype(np.int32) << 8)
+            | (buf[..., 2].astype(np.int32) << 16)
+        )
+        as_i32 = np.where(as_i32 & 0x800000, as_i32 - 0x1000000, as_i32)
+        return as_i32.astype(np.float32) / 8388608.0
+    if bytes_per_sample == 4 and not is_float:
+        arr = np.frombuffer(raw, dtype="<i4").reshape(-1, n_channels)
+        return arr.astype(np.float32) / 2147483648.0
+    raise ValueError(f"Unsupported sample format: bytes_per_sample={bytes_per_sample} is_float={is_float}")
+
+
+# ============================================================================
+# Cache: url/path → (data_offset, n_channels, bytes_per_sample, is_float)
+# ============================================================================
+_WAV_FORMAT_CACHE: Dict[str, Tuple[int, int, int, bool]] = {}
+
+def _parse_wav_format(header: bytes) -> Tuple[int, int, int, bool]:
+    """Parse a WAV/RF64 header. Returns (data_offset, n_channels, bytes_per_sample, is_float).
+    Falls back to (44, POLYWAV_CHANNELS, POLYWAV_BYTES_PER_SAMPLE, False) if parsing fails."""
     import struct
-    n_channels  = POLYWAV_CHANNELS   # fallback only
-    data_offset = _WAV_HEADER_BYTES
+    n_channels       = POLYWAV_CHANNELS         # fallback only
+    bytes_per_sample = POLYWAV_BYTES_PER_SAMPLE # fallback only
+    is_float         = False                    # fallback only
+    data_offset      = _WAV_HEADER_BYTES
+
+    def _fallback():
+        return data_offset, n_channels, bytes_per_sample, is_float
+
     try:
         if len(header) < 12:
-            return data_offset, n_channels
+            return _fallback()
         riff_id = header[:4]
         wave_id = header[8:12]
         if riff_id not in (b"RIFF", b"RF64", b"BW64") or wave_id != b"WAVE":
-            return data_offset, n_channels
+            return _fallback()
 
         pos = 12
         while pos + 8 <= len(header):
             chunk_id   = header[pos:pos + 4]
             chunk_size = struct.unpack_from("<I", header, pos + 4)[0]
 
-            if chunk_id == b"fmt " and pos + 8 + 4 <= len(header):
-                # WAVEFORMATEX layout: wFormatTag(2) nChannels(2) ...
-                n_channels = struct.unpack_from("<H", header, pos + 8 + 2)[0]
+            if chunk_id == b"fmt " and pos + 8 + 16 <= len(header):
+                # WAVEFORMATEX layout: wFormatTag(2) nChannels(2) nSamplesPerSec(4)
+                #                       nAvgBytesPerSec(4) nBlockAlign(2) wBitsPerSample(2)
+                fmt_tag, n_channels_p, _, _, _, bits_per_sample = struct.unpack_from(
+                    "<HHIIHH", header, pos + 8
+                )
+                n_channels       = n_channels_p
+                bytes_per_sample = max(1, bits_per_sample // 8)
+                # 1 = WAVE_FORMAT_PCM (int), 3 = WAVE_FORMAT_IEEE_FLOAT.
+                # 0xFFFE (WAVE_FORMAT_EXTENSIBLE) carries the real tag in a
+                # GUID subformat we don't parse — treat as int PCM, the
+                # common case for multichannel recorders that use it.
+                is_float = fmt_tag == 3
 
             if chunk_id == b"data":
                 data_offset = pos + 8
-                return data_offset, n_channels
+                return data_offset, n_channels, bytes_per_sample, is_float
 
             pos += 8 + chunk_size
             if chunk_size % 2:
                 pos += 1
 
-        return data_offset, n_channels
+        return _fallback()
     except Exception as exc:
         log.debug("_parse_wav_format error: %s", exc)
-        return data_offset, n_channels
+        return _fallback()
 
 
-def _get_wav_format(url: str, auth: Tuple[str, str]) -> Tuple[int, int]:
-    """Same probing strategy as _get_wav_data_offset(), but also returns n_channels."""
+def _get_wav_format(url: str, auth: Tuple[str, str]) -> Tuple[int, int, int, bool]:
+    """Same probing strategy as _get_wav_data_offset(), but also returns
+    n_channels, bytes_per_sample and is_float."""
     if url in _WAV_FORMAT_CACHE:
         return _WAV_FORMAT_CACHE[url]
 
@@ -201,17 +259,21 @@ def _get_wav_format(url: str, auth: Tuple[str, str]) -> Tuple[int, int]:
     if header_bytes is None:
         log.warning("_get_wav_format: all probes failed for %s — using fallback %d ch / %d bytes",
                      url, POLYWAV_CHANNELS, _POLYWAV_DATA_OFFSET)
-        result = (_POLYWAV_DATA_OFFSET, POLYWAV_CHANNELS)
+        result = (_POLYWAV_DATA_OFFSET, POLYWAV_CHANNELS, POLYWAV_BYTES_PER_SAMPLE, False)
         _WAV_FORMAT_CACHE[url] = result
         return result
 
-    data_offset, n_channels = _parse_wav_format(header_bytes)
+    data_offset, n_channels, bytes_per_sample, is_float = _parse_wav_format(header_bytes)
     if data_offset == _WAV_HEADER_BYTES:
         data_offset = _POLYWAV_DATA_OFFSET
 
-    log.info("WAV format for %s: data_offset=%d bytes, n_channels=%d", url, data_offset, n_channels)
-    _WAV_FORMAT_CACHE[url] = (data_offset, n_channels)
-    return data_offset, n_channels
+    log.info(
+        "WAV format for %s: data_offset=%d bytes, n_channels=%d, bytes_per_sample=%d, is_float=%s",
+        url, data_offset, n_channels, bytes_per_sample, is_float,
+    )
+    result = (data_offset, n_channels, bytes_per_sample, is_float)
+    _WAV_FORMAT_CACHE[url] = result
+    return result
 
 def _get_wav_data_offset(url: str, auth: Tuple[str, str]) -> int:
     """
@@ -657,7 +719,7 @@ def read_polywav_window(
 
     auth = _auth(cfg)
     url  = _file_download_url(cfg, remote_path)
-    data_offset, n_channels = _get_wav_format(url, auth)
+    data_offset, n_channels, bytes_per_sample, is_float = _get_wav_format(url, auth)
 
     if max(channel_indices) >= n_channels:
         raise RangeRequestError(
@@ -665,7 +727,7 @@ def read_polywav_window(
             f"{remote_path} only has {n_channels} channels"
         )
 
-    bytes_per_frame = n_channels * POLYWAV_BYTES_PER_SAMPLE
+    bytes_per_frame = n_channels * bytes_per_sample
 
     frame_start  = int(start_s    * POLYWAV_SR)
     n_frames     = int(duration_s * POLYWAV_SR)
@@ -695,7 +757,7 @@ def read_polywav_window(
             f"({actual_bytes} bytes, frame_size={bytes_per_frame})"
         )
 
-    arr = np.frombuffer(raw[:usable], dtype=np.float32).reshape(-1, n_channels)
+    arr = _decode_pcm_frames(raw[:usable], n_channels, bytes_per_sample, is_float)
 
     # ── Select the channels we actually care about FIRST ──────────────────────
     selected_raw = arr[:, channel_indices]   # shape (n_frames, n_selected_ch)
@@ -752,24 +814,23 @@ def read_polywav_window_local(
     audio       : np.ndarray  shape (n_channels, n_samples)  float32
     sample_rate : int         always POLYWAV_SR (192 000)
     """
-    import struct
-
-    if channel_indices is None:
-        channel_indices = list(range(POLYWAV_CHANNELS))
-
     path = Path(local_path)
     if not path.exists():
         raise FileNotFoundError(f"read_polywav_window_local: file not found: {local_path}")
 
-    # ── Determine PCM data offset from the WAV header ─────────────────────────
+    # ── Determine PCM format from the WAV header ──────────────────────────────
+    # Uses the same chunk-walking probe as the remote path (_parse_wav_format),
+    # which — unlike the old local-only probe — actually detects the real
+    # channel count and sample format (the BRUEL recorder writes 24-bit PCM,
+    # not the IEEE float32 originally assumed) instead of hardcoding them.
     cache_key = str(path)
-    if cache_key in _WAV_DATA_OFFSET_CACHE:
-        data_offset = _WAV_DATA_OFFSET_CACHE[cache_key]
+    if cache_key in _WAV_FORMAT_CACHE:
+        data_offset, n_channels, bytes_per_sample, is_float = _WAV_FORMAT_CACHE[cache_key]
     else:
         try:
             with open(path, "rb") as fh:
                 header_bytes = fh.read(8192)
-            data_offset = _parse_wav_data_offset(header_bytes)
+            data_offset, n_channels, bytes_per_sample, is_float = _parse_wav_format(header_bytes)
             if data_offset == _WAV_HEADER_BYTES:
                 log.warning(
                     "read_polywav_window_local: header parse returned 44 for %s "
@@ -780,17 +841,32 @@ def read_polywav_window_local(
         except Exception as exc:
             log.warning(
                 "read_polywav_window_local: header probe failed for %s (%s) "
-                "— using polywav-specific offset %d bytes",
-                local_path, exc, _POLYWAV_DATA_OFFSET,
+                "— using polywav-specific fallback format",
+                local_path, exc,
             )
-            data_offset = _POLYWAV_DATA_OFFSET
-        _WAV_DATA_OFFSET_CACHE[cache_key] = data_offset
-        log.debug("Local WAV data offset for %s: %d bytes", local_path, data_offset)
+            data_offset, n_channels, bytes_per_sample, is_float = (
+                _POLYWAV_DATA_OFFSET, POLYWAV_CHANNELS, POLYWAV_BYTES_PER_SAMPLE, False,
+            )
+        _WAV_FORMAT_CACHE[cache_key] = (data_offset, n_channels, bytes_per_sample, is_float)
+        log.info(
+            "Local WAV format for %s: data_offset=%d bytes, n_channels=%d, "
+            "bytes_per_sample=%d, is_float=%s",
+            local_path, data_offset, n_channels, bytes_per_sample, is_float,
+        )
 
+    if channel_indices is None:
+        channel_indices = list(range(n_channels))
+    if max(channel_indices) >= n_channels:
+        raise RangeRequestError(
+            f"read_polywav_window_local: requested channels {channel_indices} but file "
+            f"{local_path} only has {n_channels} channels"
+        )
+
+    bytes_per_frame = n_channels * bytes_per_sample
     frame_start = int(start_s    * POLYWAV_SR)
     n_frames    = int(duration_s * POLYWAV_SR)
-    byte_start  = data_offset + frame_start * POLYWAV_BYTES_PER_FRAME
-    byte_end    = byte_start + n_frames * POLYWAV_BYTES_PER_FRAME
+    byte_start  = data_offset + frame_start * bytes_per_frame
+    byte_end    = byte_start + n_frames * bytes_per_frame
 
     log.debug(
         "Local-reading polywav: %s  t=[%.2f, %.2f)s  bytes=[%d, %d)",
@@ -811,15 +887,15 @@ def read_polywav_window_local(
         raw = fh.read(actual_end - byte_start)
 
     actual_bytes = len(raw)
-    usable = (actual_bytes // POLYWAV_BYTES_PER_FRAME) * POLYWAV_BYTES_PER_FRAME
+    usable = (actual_bytes // bytes_per_frame) * bytes_per_frame
     if usable == 0:
         raise RangeRequestError(
             f"read_polywav_window_local: no complete frames read "
-            f"({actual_bytes} bytes, frame_size={POLYWAV_BYTES_PER_FRAME}) "
+            f"({actual_bytes} bytes, frame_size={bytes_per_frame}) "
             f"from {local_path}"
         )
 
-    arr = np.frombuffer(raw[:usable], dtype=np.float32).reshape(-1, POLYWAV_CHANNELS)
+    arr = _decode_pcm_frames(raw[:usable], n_channels, bytes_per_sample, is_float)
 
     # ── Select the channels we actually care about FIRST ──────────────────────
     selected_raw = arr[:, channel_indices]   # shape (n_frames, n_selected_ch)
@@ -842,11 +918,11 @@ def read_polywav_window_local(
         if pct > 5.0:
             log.warning(
                 "read_polywav_window_local: invalid rate %.1f%% > 5%% in "
-                "selected channels %s — data_offset=%d is likely wrong.  "
+                "selected channels %s — WAV format detection may be wrong.  "
                 "Invalidating cache for %s.",
-                pct, channel_indices, data_offset, cache_key,
+                pct, channel_indices, cache_key,
             )
-            _WAV_DATA_OFFSET_CACHE.pop(cache_key, None)
+            _WAV_FORMAT_CACHE.pop(cache_key, None)
 
     selected = selected_clean.T   # shape (n_ch, n_frames)
     return selected.copy(), POLYWAV_SR
