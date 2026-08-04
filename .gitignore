@@ -42,6 +42,7 @@ drone_detection.egg-info/
 
 # Untrack app_logs file
 app.log
+app_v2.log
 
 # untrack local requirements file
 requirements_local.txt

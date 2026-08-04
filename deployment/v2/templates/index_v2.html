@@ -807,7 +807,15 @@
 // WEBSOCKET
 // ══════════════════════════════════════════════════════════════════════════════
 const BASE = window.location.origin;
-const socket = io(BASE, { path: '/socket.io', transports: ['websocket','polling'] });
+// The backend runs Flask-SocketIO with async_mode="threading" (see app_v2.py),
+// which serves Socket.IO over HTTP long-polling only — it cannot handle a real
+// WebSocket upgrade. Listing 'websocket' first made the browser attempt (and
+// crash) that upgrade on every page load/reconnect: the dev server's
+// AssertionError: write() before start_response for each failed attempt was
+// disrupting the shared per-origin connection pool, occasionally breaking
+// unrelated concurrent fetches (e.g. batch-scan / manual-window). Polling-only
+// avoids the doomed handshake entirely.
+const socket = io(BASE, { path: '/socket.io', transports: ['polling'] });
 
 socket.on('connect', () => {
   document.getElementById('wsDot').className = 'dot connected';
@@ -1977,6 +1985,7 @@ function updateRepoLastSeg(det, label) {
     <div style="font-size:11px;line-height:1.8">
       <div style="color:var(--accent)">Est: ${pos}</div>
       ${det.error_m!=null?`<div style="color:${errColor}">Error: ${det.error_m.toFixed(4)} m</div>`:''}
+      ${det.cap_hit?`<div style="color:var(--red)">⚠ Distance estimate saturated at the model's range cap — target is likely beyond its trained/representable range</div>`:''}
       ${det.cr?`<div style="color:var(--muted)">Confidence radius: ±${det.cr.toFixed(4)} m</div>`:''}
       ${label?.segment_id?`<div style="color:var(--muted)">Segment: ${label.segment_id}</div>`:''}
       ${label?.maneuver_type?`<div style="color:var(--muted)">Maneuver: ${label.maneuver_type}</div>`:''}

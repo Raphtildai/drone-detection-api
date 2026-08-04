@@ -807,27 +807,43 @@ class RepositoryRealtimeSession:
                             "dom_freq_hz":         round(f0, 1) if f0 else None,
                         })
                     else:
-                        loc     = localize(channels, self.config)
-                        est_pos = np.array(loc["xy_position"])
+                        loc      = localize(channels, self.config)
+                        est_pos  = np.array(loc["xy_position"])
+                        dist_est = float(loc.get("distance_m", 0))
                         self._tracker.update([est_pos], timestamp=tick_start)
                         error_m = None
                         if gt_pos_out:
                             error_m = float(np.linalg.norm(est_pos - np.array(gt_pos_out)))
                             self.errors_m.append(error_m)
+
+                        # localize() is a learned CNN regressor whose distance head is
+                        # normalised (and therefore capped) by cfg.MAX_LOCALIZATION_DIST
+                        # (default 30 m — the model was trained on <=20 m near-field
+                        # data). An estimate pegged at that ceiling is almost always a
+                        # sign the true target is beyond the model's representable
+                        # range (Dunakeszi's long-range maneuvers go out to 60-120 m),
+                        # not a real position — flag it rather than reporting it as-is.
+                        cap_hit = dist_est >= 0.95 * self.config.MAX_LOCALIZATION_DIST
+                        true_dist = float(label.get("distance_m") or 0)
+                        if error_m is not None:
+                            reliable = (not cap_hit) and error_m < max(5.0, 0.3 * true_dist)
+                        else:
+                            reliable = not cap_hit
+
                         frame_detections.append({
                             "drone_idx":  0,
                             "position":   [round(float(v), 4) for v in est_pos],
                             "true_pos":   gt_pos_out,
                             "confidence": round(prob, 4),
-                            "reliable":   True,
-                            "cap_hit":    False,
+                            "reliable":   bool(reliable),
+                            "cap_hit":    bool(cap_hit),
                             "cr":         round(float(loc.get("confidence_radius") or 0), 4),
                             "error_m":    round(error_m, 4) if error_m is not None else None,
-                            "localization_method": "tdoa",
+                            "localization_method": "cnn_regression",
                             "azimuth_deg_est":  round(float(loc.get("azimuth_deg", 0)), 2),
                             "azimuth_deg_true": round(float(label.get("azimuth_deg") or 0), 2),
-                            "distance_m_est":   round(float(loc.get("distance_m", 0)), 2),
-                            "distance_m_true":  round(float(label.get("distance_m") or 0), 2),
+                            "distance_m_est":   round(dist_est, 2),
+                            "distance_m_true":  round(true_dist, 2),
                         })
                 # Build track summaries
                 tracks_out = []
