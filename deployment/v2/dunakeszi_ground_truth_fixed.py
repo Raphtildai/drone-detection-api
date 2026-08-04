@@ -979,8 +979,11 @@ def _enrich_segments(segments: list, sessions_by_id: dict) -> list:
             seg_start >= 0
         )
         
-        # ✅ BK-6 arrays recorded continuously for all shows
-        seg["bk_available"] = True
+        # BK-6 arrays recorded continuously for all shows, but the range-read
+        # streamer refuses onsets within the first second of the recording
+        # (that offset falls inside the WAV header, not audio) — see the
+        # onset_s < 1.0 guard in dunakeszi_nextcloud.stream_segment_from_nextcloud.
+        seg["bk_available"] = seg_start >= 1.0
 
         # Azimuth and distance at onset (from start_coord XY)
         # Coordinate frame: X=East, Y=North, Z=Up (mic_array_geometry.json)

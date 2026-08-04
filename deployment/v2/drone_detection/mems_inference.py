@@ -1,3 +1,4 @@
+# mems_inference.py
 # -*- coding: utf-8 -*-
 """
 mems_inference.py
@@ -1238,3 +1239,22 @@ def build_mems_report(results: List[dict]) -> None:
                    if r.get("total_duration_s") is not None else "     -")
         verdict = r.get("crosscheck", {}).get("verdict", "-")
         print(f"{name:40s}  {det}  {prob}  {f0}  {bpf}  {dist}  {dur}  {verdict}")
+
+def pseudo_localize_window(rms_db: float, prob: float, bpf_ratio: float,
+                            snr_db: Optional[float], cfg=None) -> dict:
+    """
+    Single-window spectral-proxy localization for real-time streaming.
+    Wraps _pseudo_localize() with a one-element segment list.
+    """
+    cfg = cfg or _cfg_default()
+    seg = {"rms_db": rms_db, "prob": prob, "bpf_ratio": bpf_ratio,
+           "snr_meta_db": snr_db if snr_db is not None else float("nan")}
+    return _pseudo_localize([seg], cfg)
+
+
+def estimate_dominant_freq(y: np.ndarray, sr: int, **kw) -> float:
+    return _estimate_dominant_freq(y, sr, **kw)
+
+
+def bpf_energy_ratio(y: np.ndarray, sr: int, bpf_hz: float, **kw) -> float:
+    return _bpf_energy_ratio(y, sr, bpf_hz, **kw)

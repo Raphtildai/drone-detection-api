@@ -1,3 +1,4 @@
+# app_v2.py
 # -*- coding: utf-8 -*-
 """
 app_v2.py — Drone Detection System v2 Flask Application
@@ -19,6 +20,10 @@ from __future__ import annotations
 # ── Path bootstrap ─────────────────────────────────────────────────────────
 import sys
 from pathlib import Path
+import hashlib
+import csv
+import re
+from urllib.parse import urlparse, parse_qs
 
 _THIS_DIR  = Path(__file__).parent.resolve()
 _REPO_ROOT = _THIS_DIR.parent.parent.resolve()
@@ -60,9 +65,39 @@ app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 CORS(app, resources={r"/api/v2/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
+_RESULTS_LOG = _THIS_DIR / "logs" / "detection_results.jsonl"
+_RESULTS_LOG.parent.mkdir(parents=True, exist_ok=True)
+_results_log_lock = threading.Lock()
+
+def _append_result_log(record: dict) -> None:
+    """Append one JSON line to the private results log. Never raises."""
+    try:
+        with _results_log_lock:
+            with open(_RESULTS_LOG, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record) + "\n")
+    except Exception:
+        log.exception("Failed to append result log")
 
 # ── Config / model singleton ──────────────────────────────────────────────────
 
+def _parse_nextcloud_share_url(url: str):
+    """
+    Parse a Nextcloud public-share URL like:
+        https://nc.example.com/index.php/s/<TOKEN>?dir=/some/path
+    Returns (base_url, token, dir_path) or None if it isn't a share link.
+    """
+    try:
+        parsed = urlparse(url)
+        m = re.search(r"/s/([A-Za-z0-9]+)", parsed.path)
+        if not m:
+            return None
+        token    = m.group(1)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        dir_path = parse_qs(parsed.query).get("dir", [None])[0]
+        return base_url, token, dir_path
+    except Exception:
+        return None
+    
 def _get_config():
     """Return a Config pointed at this deployment's models directory."""
     from drone_detection import Config
@@ -258,6 +293,14 @@ def detect_single():
                 "max_confidence":    prob,
             },
             "n_tracks": 0,
+        })
+
+        _append_result_log({
+            "timestamp":      time.time(),
+            "filename_hash":  hashlib.sha256(f.filename.encode()).hexdigest()[:12],
+            "detected":       detected,
+            "probability":    prob,
+            "position":       resp.get("position"),
         })
 
         if detected:
@@ -629,23 +672,47 @@ def realtime_start():
         )
 
     elif mode == "repository":
-        dataset_type  = request.form.get("dataset_type", "uavirbase")
-        array         = request.form.get("array",         "BK-6-E")
-        url           = request.form.get("url",           None) or None
-        required_split= request.form.get("required_split",None) or None
-        tick_rate     = float(request.form.get("tick_rate",    1.0))
-        max_dist      = float(request.form.get("max_dist",    100.0))
-        allow_fallback= request.form.get("allow_synthetic_fallback", "true").lower() == "true"
+        dataset_type   = request.form.get("dataset_type", "uavirbase")
+        array          = request.form.get("array",         "BK-6-E")
+        raw_url        = request.form.get("url",           None) or None
+        required_split = request.form.get("required_split",None) or None
+        tick_rate      = float(request.form.get("tick_rate",    1.0))
+        max_dist       = float(request.form.get("max_dist",    100.0))
+        allow_fallback = request.form.get("allow_synthetic_fallback", "true").lower() == "true"
+
+        # Use the shared singleton so Nextcloud credentials set here persist
+        # across requests and match /api/v2/repository/* endpoints.
+        cfg = _repo_cfg
+        threshold = float(request.form.get("threshold", cfg.DETECTION_THRESHOLD))
+
+        remotezip_url = raw_url
+        if raw_url:
+            nc = _parse_nextcloud_share_url(raw_url)
+            if nc:
+                base_url, token, dir_path = nc
+                nc_ready = cfg.reload_nextcloud_env(base_url=base_url, share_token=token)
+                if dir_path:
+                    if dataset_type == "mems":
+                        cfg.NEXTCLOUD_MEMS_PATH = dir_path
+                    else:
+                        cfg.NEXTCLOUD_POLYWAV_PATH = dir_path
+                log.info("Parsed Nextcloud share URL: base=%s dir=%s dataset=%s nc_ready=%s",
+                        base_url, dir_path, dataset_type, nc_ready)
+                remotezip_url = None  # it's a share link, not a raw downloadable zip
+            else:
+                cfg.reload_nextcloud_env()  # pick up env vars set since startup
+        else:
+            cfg.reload_nextcloud_env()
 
         session = RepositoryRealtimeSession(
             cfg, socketio,
-            url                      = url,
+            url                      = remotezip_url,
             dataset_type             = dataset_type,
             array                    = array,
             max_dist                 = max_dist,
             tick_rate                = tick_rate,
             threshold                = threshold,
-            allow_download           = False,   # NEVER download on live server (datasets are 4 GB+)
+            allow_download           = False,
             allow_synthetic_fallback = allow_fallback,
             required_split           = required_split,
         )
@@ -728,67 +795,40 @@ def repo_segments():
 
 @app.route("/api/v2/repository/start-segment", methods=["POST"])
 def repo_start_segment():
-    """
-    Start a repository realtime session for a specific ground-truth segment.
-
-    The segment is loaded via stream_segment_by_gt_id (local → Nextcloud),
-    then replayed through the existing RepositoryRealtimeSession machinery
-    as a one-shot generator (loop=False).
-
-    Optional POST fields
-    --------------------
-    nextcloud_url   : override NEXTCLOUD_BASE_URL  (useful when env vars are not
-                      exported before server start)
-    nextcloud_token : override NEXTCLOUD_SHARE_TOKEN
-    """
     seg_id     = int(  request.form.get("segment_id", 0))
     array      = request.form.get("array",           "BK-6-E")
     session_id = request.form.get("session_id",      "default")
     tick_rate  = float(request.form.get("tick_rate",  1.0))
     threshold  = float(request.form.get("threshold",  0.70))
 
-    # ── Refresh Nextcloud credentials ─────────────────────────────────────────
-    # _repo_cfg is built at import time (before env vars may be exported).
-    # Calling reload_nextcloud_env() here picks up any credentials that have
-    # been exported since then, or accepts them as explicit POST overrides.
     nc_url   = request.form.get("nextcloud_url")   or None
     nc_token = request.form.get("nextcloud_token") or None
     nc_ready = _repo_cfg.reload_nextcloud_env(base_url=nc_url, share_token=nc_token)
-    log.info(
-        "repo_start_segment: seg=%d nc_ready=%s base_url=%r",
-        seg_id, nc_ready, _repo_cfg.NEXTCLOUD_BASE_URL,
-    )
+    log.info("repo_start_segment: seg=%d nc_ready=%s", seg_id, nc_ready)
 
-    # Stop any existing session under this id
     existing = _get_session(session_id)
     if existing and existing.running:
         existing.stop()
         _remove_session(session_id)
 
-    # Load the segment (local pipeline-ready → Nextcloud range-read)
-    result = stream_segment_by_gt_id(seg_id, _repo_cfg, array=array)
-    if result is None:
-        return jsonify({"error": f"Segment {seg_id} not available (not found locally or on Nextcloud)"}), 404
-
-    channels, label = result
-
-    # Wrap the single segment in a one-shot generator and hand it to
-    # RepositoryRealtimeSession via its segment_generator parameter.
-    def _one_shot():
-        yield channels, label
+    # Keep this only to return metadata in the immediate JSON response —
+    # the actual streaming no longer depends on it.
+    preview = stream_segment_by_gt_id(seg_id, _repo_cfg, array=array)
+    if preview is None:
+        return jsonify({"error": f"Segment {seg_id} not available"}), 404
+    _, label = preview
 
     from realtime_sessions import RepositoryRealtimeSession
 
     session = RepositoryRealtimeSession(
         _repo_cfg, socketio,
-        segment_generator        = _one_shot(),
         dataset_type             = "dunakeszi",
         array                    = array,
         tick_rate                = tick_rate,
         threshold                = threshold,
         allow_download           = False,
         allow_synthetic_fallback = False,
-        loop                     = False,
+        segment_id               = seg_id,   # ← this is what actually plays a single segment
     )
     session._mode = "repository"
     _register_session(session_id, session)
@@ -799,8 +839,7 @@ def repo_start_segment():
 
     log.info("repo_start_segment: seg=%d session=%s", seg_id, session_id)
     socketio.emit("realtime_status", {
-        "running": True, "mode": "repository",
-        "error": None, "session_id": session_id,
+        "running": True, "mode": "repository", "error": None, "session_id": session_id,
     })
     return jsonify({"ok": True, "segment_id": seg_id, "label": label, "session_id": session_id})
 
@@ -810,6 +849,324 @@ def repo_files(file_type):
     _repo_cfg.reload_nextcloud_env()
     return jsonify(get_dunakeszi_file_browser(_repo_cfg, file_type))
 
+
+@app.route("/api/v2/repository/files-list", methods=["GET"])
+def repo_files_list():
+    """
+    List available audio filenames for the manual-window picker.
+
+    Query params
+    ------------
+    dataset_type : "polywav" | "mems"   (default "polywav")
+    url          : optional Nextcloud share URL — configures credentials
+                   on the fly, same parsing as /api/v2/realtime/start
+    """
+    dataset_type = request.args.get("dataset_type", "polywav")
+    raw_url = request.args.get("url") or None
+
+    if raw_url:
+        nc = _parse_nextcloud_share_url(raw_url)
+        if nc:
+            base_url, token, dir_path = nc
+            _repo_cfg.reload_nextcloud_env(base_url=base_url, share_token=token)
+            if dir_path:
+                if dataset_type == "mems":
+                    _repo_cfg.NEXTCLOUD_MEMS_PATH = dir_path
+                else:
+                    _repo_cfg.NEXTCLOUD_POLYWAV_PATH = dir_path
+            log.info("files-list: parsed share URL, base=%s dir=%s dataset=%s",
+                      base_url, dir_path, dataset_type)
+        else:
+            _repo_cfg.reload_nextcloud_env()
+    else:
+        _repo_cfg.reload_nextcloud_env()
+
+    if not (_repo_cfg.NEXTCLOUD_BASE_URL and _repo_cfg.NEXTCLOUD_SHARE_TOKEN):
+        return jsonify({
+            "files": [],
+            "error": "Nextcloud not configured — paste a share URL and try again",
+        })
+
+    from drone_detection.dunakeszi_nextcloud import list_polywav_files, list_mems_files
+    try:
+        files = list_mems_files(_repo_cfg) if dataset_type == "mems" else list_polywav_files(_repo_cfg)
+        return jsonify({
+            "files": sorted(f["name"] for f in files),
+            "dataset_type": dataset_type,
+        })
+    except Exception as exc:
+        log.exception("files-list failed")
+        return jsonify({"files": [], "error": str(exc)})
+
+
+@app.route("/api/v2/repository/manual-window", methods=["POST"])
+def repo_manual_window():
+    """
+    Run detection (+localization for polywav) on an explicit file + time window.
+
+    Form fields
+    -----------
+    filename     : e.g. "251020VITEMOROM1AT01G.wav" or "Audio 03_01.wav"
+    start_s      : offset in seconds within that file
+    duration_s   : window length (default 3.0, capped at 30.0)
+    array        : "BK-6-E" | "BK-6-W"   (polywav only)
+    dataset_type : "polywav" | "mems"    (default "polywav")
+    url          : optional Nextcloud share URL to configure credentials
+    threshold    : override detection threshold
+    """
+    filename = request.form.get("filename")
+    if not filename:
+        return jsonify({"error": "filename is required"}), 400
+
+    start_s      = float(request.form.get("start_s", 0))
+    duration_s   = min(float(request.form.get("duration_s", 3.0)), 30.0)
+    array        = request.form.get("array", "BK-6-E")
+    dataset_type = request.form.get("dataset_type", "polywav")
+    raw_url      = request.form.get("url") or None
+
+    if raw_url:
+        nc = _parse_nextcloud_share_url(raw_url)
+        if nc:
+            base_url, token, dir_path = nc
+            _repo_cfg.reload_nextcloud_env(base_url=base_url, share_token=token)
+            if dir_path:
+                if dataset_type == "mems":
+                    _repo_cfg.NEXTCLOUD_MEMS_PATH = dir_path
+                else:
+                    _repo_cfg.NEXTCLOUD_POLYWAV_PATH = dir_path
+        else:
+            _repo_cfg.reload_nextcloud_env()
+    else:
+        _repo_cfg.reload_nextcloud_env()
+
+    threshold = float(request.form.get("threshold", _repo_cfg.DETECTION_THRESHOLD))
+
+    from drone_detection import AudioProcessor, detect, localize
+    ap = AudioProcessor(_repo_cfg)
+
+    # ── Switch config to the correct physical mic array before localizing ──
+    # _repo_cfg is a shared singleton (see _repo_cfg = _get_config() above),
+    # reused by RepositoryRealtimeSession too. It does NOT reset itself
+    # between requests, so we must set geometry explicitly on every call
+    # rather than trust whatever the last request happened to leave behind.
+    #   polywav (BK-6-E/BK-6-W) → GP2 equilateral 2.5 m Brüel triangle
+    #   mems                    → not localized (single channel), left as-is
+    _MANUAL_GEOMETRY = {"polywav": "gp2", "mems": "uavirbase"}
+    geom = _MANUAL_GEOMETRY.get(dataset_type, "gp2")
+    try:
+        _repo_cfg.set_array_geometry(geom)
+    except Exception as exc:
+        log.warning("manual_window: could not set array geometry '%s': %s", geom, exc)
+
+    try:
+        if dataset_type == "mems":
+            from drone_detection.dunakeszi_nextcloud import read_mems_window
+            mems_path = f"{_repo_cfg.NEXTCLOUD_MEMS_PATH}/{filename}"
+            audio_mc, native_sr = read_mems_window(_repo_cfg, mems_path, start_s, duration_s)
+            mono = audio_mc.mean(axis=0).astype("float32")
+            if native_sr != _repo_cfg.SR:
+                import librosa
+                mono = librosa.resample(mono, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+            y = ap.pad_or_truncate(mono)
+            out_channels = [y, y, y]
+        else:
+            from drone_detection.dunakeszi_nextcloud import (
+                read_polywav_window, BK6E_CHANNELS, BK6W_CHANNELS,
+            )
+            ch_map = {"BK-6-E": BK6E_CHANNELS, "BK-6-W": BK6W_CHANNELS}
+            channel_indices = ch_map.get(array, BK6E_CHANNELS)
+            pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
+            audio_raw, native_sr = read_polywav_window(
+                _repo_cfg, pw_path, start_s, duration_s, channel_indices,
+            )
+            out_channels = []
+            for ch_row in audio_raw:
+                if native_sr != _repo_cfg.SR:
+                    import librosa
+                    ch_row = librosa.resample(ch_row, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+                out_channels.append(ap.pad_or_truncate(ch_row))
+            while len(out_channels) < 3:
+                out_channels.append(out_channels[-1].copy())
+            out_channels = out_channels[:3]
+    except Exception as exc:
+        log.exception("manual_window read failed")
+        return jsonify({"error": f"Failed to read window: {exc}"}), 500
+
+    det      = detect(out_channels, _repo_cfg)
+    prob     = float(det["probability"])
+    detected = prob >= threshold
+    # MEMS is single-channel — no real TDOA, so skip localize()
+    loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
+
+    return jsonify({
+        "detected": detected,
+        "probability": prob,
+        "cnn_probability": float(det.get("cnn_probability", prob)),
+        "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
+        "position": loc["xy_position"].tolist() if loc else None,
+        "azimuth_deg": loc["azimuth_deg"] if loc else None,
+        "distance_m": loc["distance_m"] if loc else None,
+        "height_m": loc["height_m"] if loc else None,
+        "filename": filename, "start_s": start_s,
+        "duration_s": duration_s, "array": array,
+        "dataset_type": dataset_type,
+    })
+
+@app.route("/api/v2/repository/batch-scan", methods=["POST"])
+def repo_batch_scan():
+    """
+    Slide a detection window across a stretch of one file and return a
+    timeline of results — one HTTP range-read for the whole scan span,
+    sliced into windows in memory (not one network round-trip per window).
+
+    Form fields
+    -----------
+    filename        : e.g. "251020VITEMOROM1AT01P.wav"
+    start_s         : start of the scan range (default 0)
+    scan_duration_s : total range to scan, seconds (default 60, capped at 600)
+    window_s        : detection window length (default 3.0)
+    hop_s           : step between window starts (default = window_s → no overlap)
+    array           : "BK-6-E" | "BK-6-W"   (polywav only)
+    dataset_type    : "polywav" | "mems"    (default "polywav")
+    url             : optional Nextcloud share URL
+    threshold       : detection threshold override
+    """
+    import numpy as np
+    import librosa
+
+    filename = request.form.get("filename")
+    if not filename:
+        return jsonify({"error": "filename is required"}), 400
+
+    start_s         = float(request.form.get("start_s", 0))
+    scan_duration_s = min(float(request.form.get("scan_duration_s", 60.0)), 600.0)
+    window_s        = float(request.form.get("window_s", 3.0))
+    hop_s           = float(request.form.get("hop_s", window_s))
+    array           = request.form.get("array", "BK-6-E")
+    dataset_type    = request.form.get("dataset_type", "polywav")
+    raw_url         = request.form.get("url") or None
+
+    if window_s <= 0 or hop_s <= 0:
+        return jsonify({"error": "window_s and hop_s must both be > 0"}), 400
+
+    MAX_WINDOWS = 150
+    n_windows_requested = int(scan_duration_s // hop_s)
+    n_windows = min(n_windows_requested, MAX_WINDOWS)
+    truncated_by_cap = n_windows_requested > MAX_WINDOWS
+    if truncated_by_cap:
+        scan_duration_s = n_windows * hop_s
+
+    if raw_url:
+        nc = _parse_nextcloud_share_url(raw_url)
+        if nc:
+            base_url, token, dir_path = nc
+            _repo_cfg.reload_nextcloud_env(base_url=base_url, share_token=token)
+            if dir_path:
+                if dataset_type == "mems":
+                    _repo_cfg.NEXTCLOUD_MEMS_PATH = dir_path
+                else:
+                    _repo_cfg.NEXTCLOUD_POLYWAV_PATH = dir_path
+        else:
+            _repo_cfg.reload_nextcloud_env()
+    else:
+        _repo_cfg.reload_nextcloud_env()
+
+    threshold = float(request.form.get("threshold", _repo_cfg.DETECTION_THRESHOLD))
+
+    from drone_detection import AudioProcessor, detect, localize
+    ap = AudioProcessor(_repo_cfg)
+
+    # Same geometry fix as the manual-window endpoint — _repo_cfg is a shared
+    # singleton and does not reset itself between requests.
+    _GEOMETRY = {"polywav": "gp2", "mems": "uavirbase"}
+    geom = _GEOMETRY.get(dataset_type, "gp2")
+    try:
+        _repo_cfg.set_array_geometry(geom)
+    except Exception as exc:
+        log.warning("batch_scan: could not set array geometry '%s': %s", geom, exc)
+
+    # ── ONE contiguous read covering the whole scan span ───────────────────
+    # Pad the tail by window_s so the last window is full-length.
+    read_dur = scan_duration_s + window_s
+    try:
+        if dataset_type == "mems":
+            from drone_detection.dunakeszi_nextcloud import read_mems_window
+            mems_path = f"{_repo_cfg.NEXTCLOUD_MEMS_PATH}/{filename}"
+            audio_mc, native_sr = read_mems_window(_repo_cfg, mems_path, start_s, read_dur)
+            full_mono     = audio_mc.mean(axis=0).astype("float32")
+            full_channels = None
+        else:
+            from drone_detection.dunakeszi_nextcloud import (
+                read_polywav_window, BK6E_CHANNELS, BK6W_CHANNELS,
+            )
+            ch_map = {"BK-6-E": BK6E_CHANNELS, "BK-6-W": BK6W_CHANNELS}
+            channel_indices = ch_map.get(array, BK6E_CHANNELS)
+            pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
+            full_channels, native_sr = read_polywav_window(
+                _repo_cfg, pw_path, start_s, read_dur, channel_indices,
+            )   # shape (3, n_samples_native)
+            full_mono = None
+    except Exception as exc:
+        log.exception("batch_scan read failed")
+        return jsonify({"error": f"Failed to read scan range: {exc}"}), 500
+
+    n_available = len(full_mono) if full_mono is not None else full_channels.shape[1]
+    hop_native   = int(round(hop_s    * native_sr))
+    win_native   = int(round(window_s * native_sr))
+
+    results = []
+    for i in range(n_windows):
+        off0, off1 = i * hop_native, i * hop_native + win_native
+        if off1 > n_available:
+            break   # ran out of data (short file / end of recording)
+        t_start = start_s + off0 / native_sr
+
+        if dataset_type == "mems":
+            seg = full_mono[off0:off1]
+            if native_sr != _repo_cfg.SR:
+                seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+            y = ap.pad_or_truncate(seg)
+            out_channels = [y, y, y]
+        else:
+            out_channels = []
+            for ch_row in full_channels:
+                seg = ch_row[off0:off1]
+                if native_sr != _repo_cfg.SR:
+                    seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+                out_channels.append(ap.pad_or_truncate(seg))
+            while len(out_channels) < 3:
+                out_channels.append(out_channels[-1].copy())
+            out_channels = out_channels[:3]
+
+        det      = detect(out_channels, _repo_cfg)
+        prob     = float(det["probability"])
+        detected = prob >= threshold
+        loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
+
+        results.append({
+            "t_start": round(t_start, 3),
+            "t_end":   round(t_start + window_s, 3),
+            "detected": detected,
+            "probability": prob,
+            "cnn_probability": float(det.get("cnn_probability", prob)),
+            "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
+            "position": loc["xy_position"].tolist() if loc else None,
+            "azimuth_deg": loc["azimuth_deg"] if loc else None,
+            "distance_m": loc["distance_m"] if loc else None,
+        })
+
+    detected_count = sum(1 for r in results if r["detected"])
+    return jsonify({
+        "filename": filename, "dataset_type": dataset_type, "array": array,
+        "start_s": start_s, "scan_duration_s": scan_duration_s,
+        "window_s": window_s, "hop_s": hop_s,
+        "n_windows": len(results),
+        "truncated": truncated_by_cap or (len(results) < n_windows),
+        "detected_count": detected_count,
+        "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
+        "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,
+        "results": results,
+    })
 
 
 # ── Frontend ───────────────────────────────────────────────────────────────────

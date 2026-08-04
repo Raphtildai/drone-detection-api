@@ -1,3 +1,4 @@
+# repository_loader.py
 # -*- coding: utf-8 -*-
 """
 repository_loader.py
@@ -889,7 +890,7 @@ def stream_repository_segments(
     # ── Resolve mic_indices, ap, and native_sr FIRST ──────────────────────────
     # These must be defined before any early-return branch (extracted dir, etc.)
     # that calls _stream_from_local_extracted_dir() or _load_channels_from_disk().
-    if dataset_type not in ("uavirbase", "dunakeszi"):
+    if dataset_type not in ("uavirbase", "dunakeszi", "mems"):
         log.warning("Unknown dataset_type=%r — treating as 'uavirbase'", dataset_type)
         dataset_type = "uavirbase"
 
@@ -1011,6 +1012,43 @@ def stream_repository_segments(
                 log.warning(
                     "Local polywav streaming failed: %s — trying next strategy", exc
                 )
+
+    def _mono_to_3ch(mono: np.ndarray, native_sr: int, cfg, ap) -> List[np.ndarray]:
+        if native_sr != cfg.SR:
+            import librosa
+            mono = librosa.resample(mono, orig_sr=native_sr, target_sr=cfg.SR)
+        y = ap.pad_or_truncate(mono)
+        return [y, y, y]
+             
+    # ── Strategy 0-MEMS: MEMS Nextcloud streaming ────────────────────────────
+    if dataset_type == "mems":
+        _nc_configured_mems = bool(
+            getattr(cfg, "NEXTCLOUD_BASE_URL", None)
+            and getattr(cfg, "NEXTCLOUD_SHARE_TOKEN", None)
+        )
+        if _nc_configured_mems:
+            try:
+                from .dunakeszi_nextcloud import iter_mems_segments
+            except ImportError:
+                from dunakeszi_nextcloud import iter_mems_segments
+            try:
+                gen = iter_mems_segments(cfg, required_split=required_split,
+                                          segment_id=segment_id, loop=loop)
+                mono, native_sr, label = next(gen)
+                yield _mono_to_3ch(mono, native_sr, cfg, ap), label
+                for mono, native_sr, label in gen:
+                    yield _mono_to_3ch(mono, native_sr, cfg, ap), label
+                return
+            except StopIteration:
+                log.warning("MEMS generator yielded nothing — falling back to synthetic")
+            except Exception as exc:
+                log.warning("MEMS streaming failed: %s — falling back to synthetic", exc)
+
+        if allow_synthetic_fallback:
+            log.warning("MEMS repository unavailable — using synthetic fallback (mono-style)")
+            yield from _stream_synthetic(cfg, n_synthetic, max_dist)
+            return
+        raise RuntimeError("MEMS streaming unavailable and allow_synthetic_fallback=False")
 
     # ── Strategy 1: local pre-extracted directory (Dunakeszi pipeline-ready) ──
     # Used when Nextcloud is not configured OR after Nextcloud fails.

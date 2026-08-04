@@ -1,3 +1,4 @@
+# deployment/v2/realtime_sessions.py
 # -*- coding: utf-8 -*-
 """
 realtime_sessions.py — Real-time detection session management (v2)
@@ -543,7 +544,7 @@ class RealRealtimeSession:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# REPOSITORY SESSION  ← NEW
+# REPOSITORY SESSION
 # ══════════════════════════════════════════════════════════════════════════════
 
 class RepositoryRealtimeSession:
@@ -698,6 +699,7 @@ class RepositoryRealtimeSession:
         _DATASET_GEOMETRY = {
             "uavirbase": "uavirbase",
             "dunakeszi": "gp2",          # BK-6-E/W are both GP2 arrays
+            "mems": "uavirbase",
         }
         geom = _DATASET_GEOMETRY.get(self.dataset_type, "uavirbase")
         try:
@@ -778,32 +780,55 @@ class RepositoryRealtimeSession:
 
                 if prob >= self.threshold:
                     self.detected_frames += 1
-                    loc     = localize(channels, self.config)
-                    est_pos = np.array(loc["xy_position"])
-                    self._tracker.update([est_pos], timestamp=tick_start)
 
-                    error_m = None
-                    if gt_pos_out:
-                        gt_arr  = np.array(gt_pos_out)
-                        error_m = float(np.linalg.norm(est_pos - gt_arr))
-                        self.errors_m.append(error_m)
+                    if self.dataset_type == "mems":
+                        from drone_detection.mems_inference import (
+                            pseudo_localize_window, estimate_dominant_freq, bpf_energy_ratio,
+                        )
+                        rms_db = float(20 * math.log10(float(np.sqrt(np.mean(channels[0] ** 2))) + 1e-8))
+                        f0     = estimate_dominant_freq(channels[0], self.config.SR)
+                        bpf_r  = bpf_energy_ratio(channels[0], self.config.SR, f0 if f0 else 150.0)
+                        loc_sp = pseudo_localize_window(rms_db, prob, bpf_r, None, self.config)
 
-                    frame_detections.append({
-                        "drone_idx":  0,
-                        "position":   [round(float(v), 4) for v in est_pos],
-                        "true_pos":   gt_pos_out,
-                        "confidence": round(prob, 4),
-                        "reliable":   True,
-                        "cap_hit":    False,
-                        "cr":         round(float(loc.get("confidence_radius") or 0), 4),
-                        "error_m":    round(error_m, 4) if error_m is not None else None,
-                        # Repository-specific extras
-                        "azimuth_deg_est":  round(float(loc.get("azimuth_deg", 0)), 2),
-                        "azimuth_deg_true": round(float(label.get("azimuth_deg") or 0), 2),
-                        "distance_m_est":   round(float(loc.get("distance_m", 0)), 2),
-                        "distance_m_true":  round(float(label.get("distance_m") or 0), 2),
-                    })
-
+                        frame_detections.append({
+                            "drone_idx":  0,
+                            "position":   None,               # no fixed point — proxy only
+                            "true_pos":   None,
+                            "confidence": round(prob, 4),
+                            "reliable":   loc_sp["distance_conf"] > 0.4,
+                            "cap_hit":    False,
+                            "cr":         None,
+                            "error_m":    None,
+                            "localization_method": "spectral_proxy",
+                            "distance_m_est":      round(loc_sp["distance_est_m"], 2)
+                                                    if not math.isnan(loc_sp["distance_est_m"]) else None,
+                            "azimuth_unc_deg":     round(loc_sp["azimuth_unc_deg"], 1),
+                            "distance_conf":       round(loc_sp["distance_conf"], 3),
+                            "dom_freq_hz":         round(f0, 1) if f0 else None,
+                        })
+                    else:
+                        loc     = localize(channels, self.config)
+                        est_pos = np.array(loc["xy_position"])
+                        self._tracker.update([est_pos], timestamp=tick_start)
+                        error_m = None
+                        if gt_pos_out:
+                            error_m = float(np.linalg.norm(est_pos - np.array(gt_pos_out)))
+                            self.errors_m.append(error_m)
+                        frame_detections.append({
+                            "drone_idx":  0,
+                            "position":   [round(float(v), 4) for v in est_pos],
+                            "true_pos":   gt_pos_out,
+                            "confidence": round(prob, 4),
+                            "reliable":   True,
+                            "cap_hit":    False,
+                            "cr":         round(float(loc.get("confidence_radius") or 0), 4),
+                            "error_m":    round(error_m, 4) if error_m is not None else None,
+                            "localization_method": "tdoa",
+                            "azimuth_deg_est":  round(float(loc.get("azimuth_deg", 0)), 2),
+                            "azimuth_deg_true": round(float(label.get("azimuth_deg") or 0), 2),
+                            "distance_m_est":   round(float(loc.get("distance_m", 0)), 2),
+                            "distance_m_true":  round(float(label.get("distance_m") or 0), 2),
+                        })
                 # Build track summaries
                 tracks_out = []
                 for t in [tr for tr in self._tracker.tracks if tr.active]:

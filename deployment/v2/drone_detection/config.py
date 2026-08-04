@@ -1,3 +1,4 @@
+# config.py
 # -*- coding: utf-8 -*-
 """
 config.py
@@ -275,6 +276,15 @@ class Config:
         # Midpoint of BK-6-E (47.6086296, 19.1470983) and BK-6-W (47.6086368, 19.1468423)
         self.DUNAKESZI_ORIGIN_LAT = 47.6086332
         self.DUNAKESZI_ORIGIN_LON = 19.1469703
+        # ── MEMS array info (single-channel-per-file, no TDOA geometry) ──────────────
+        # MEMS files have no fixed array geometry usable for localization — they're
+        # treated as independent single-channel recordings. Detection still runs the
+        # standard 3-mic pipeline (mono replicated ×3); localization uses the
+        # spectral-proxy method in mems_inference.py instead of real TDOA.
+        self.MEMS_LOCALIZATION_METHOD = "spectral_proxy"
+        self.MEMS_ASSUMED_FORMAT = {
+            "duration_s": 133.1 * 1024 * 1024 / (self.MEMS_CHANNELS * (self.MEMS_BITS // 8) * self.MEMS_SR),
+        }
 
         # ── Custom builder dataset ────────────────────────────────────────────
         self._init_custom_dataset_defaults()
@@ -287,20 +297,39 @@ class Config:
         share_token: Optional[str] = None,
     ) -> bool:
         """
-        Refresh NEXTCLOUD_BASE_URL / NEXTCLOUD_SHARE_TOKEN from the environment
-        (or from explicit arguments).  Call this just before any Nextcloud
-        operation to pick up credentials that were exported *after* the Config
-        singleton was first constructed.
+        Refresh NEXTCLOUD_BASE_URL / NEXTCLOUD_SHARE_TOKEN.
+
+        Priority: explicit argument > environment variable > existing value
+        already set on this Config instance.
+
+        This last fallback is important: several call sites (e.g.
+        /api/v2/repository/segments, /api/v2/repository/files/<type>) call
+        this with NO arguments just to "refresh from env in case it changed
+        since startup." Without the fallback to self.NEXTCLOUD_BASE_URL /
+        self.NEXTCLOUD_SHARE_TOKEN, those no-argument calls would silently
+        wipe out credentials that were set explicitly moments earlier via
+        a Nextcloud share URL pasted into the UI (since os.environ has
+        nothing set and the old code would reset both fields to None).
 
         Parameters
         ----------
-        base_url    : override value; falls back to env var NEXTCLOUD_BASE_URL
-        share_token : override value; falls back to env var NEXTCLOUD_SHARE_TOKEN
+        base_url    : override value; falls back to env var NEXTCLOUD_BASE_URL,
+                      then to the currently-set self.NEXTCLOUD_BASE_URL
+        share_token : override value; falls back to env var NEXTCLOUD_SHARE_TOKEN,
+                      then to the currently-set self.NEXTCLOUD_SHARE_TOKEN
 
         Returns True if both credentials are now non-empty.
         """
-        self.NEXTCLOUD_BASE_URL    = base_url    or os.environ.get("NEXTCLOUD_BASE_URL",    None)
-        self.NEXTCLOUD_SHARE_TOKEN = share_token or os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
+        self.NEXTCLOUD_BASE_URL = (
+            base_url
+            or os.environ.get("NEXTCLOUD_BASE_URL", None)
+            or self.NEXTCLOUD_BASE_URL
+        )
+        self.NEXTCLOUD_SHARE_TOKEN = (
+            share_token
+            or os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
+            or self.NEXTCLOUD_SHARE_TOKEN
+        )
         configured = bool(self.NEXTCLOUD_BASE_URL and self.NEXTCLOUD_SHARE_TOKEN)
         import logging as _logging
         _logging.getLogger("drone_v2").debug(

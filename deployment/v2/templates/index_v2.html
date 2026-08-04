@@ -1,3 +1,4 @@
+<!-- index_v2.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,6 +247,8 @@
       <button class="nav-btn active" onclick="switchPanel('single',this)"><span class="icon">🎵</span> Single File</button>
       <button class="nav-btn" onclick="switchPanel('threemic',this)"><span class="icon">📡</span> 3-Mic Array</button>
       <button class="nav-btn" onclick="switchPanel('multi',this)"><span class="icon">🚁🚁</span> Multi-Drone</button>
+      <button class="nav-btn" onclick="switchPanel('manual',this)"><span class="icon">📂</span> File + Window</button>
+      <button class="nav-btn" onclick="switchPanel('batch',this)"><span class="icon">📊</span> Batch Scan</button>
     </div>
     <div class="sidebar-section">
       <h3>Analysis</h3>
@@ -355,6 +358,89 @@
         <button class="btn btn-primary" style="margin-top:14px" onclick="runPath()" id="btn-path">Simulate</button>
       </div>
       <div class="card hidden" id="result-path-card"><h2>PATH RESULTS</h2><div id="result-path-viz"></div></div>
+    </div>
+
+    <!-- ── MANUAL ── -->
+    <div id="panel-manual" class="hidden">
+      <div class="card">
+        <h2>📂 MANUAL FILE + TIME WINDOW</h2>
+
+        <div class="mode-toggle" style="margin-bottom:10px">
+          <button class="mode-btn active repo" id="mw-btn-polywav" onclick="setManualDataset('polywav')">📡 Prof. Mics (polywav)</button>
+          <button class="mode-btn repo" id="mw-btn-mems" onclick="setManualDataset('mems')">🎙️ MEMS</button>
+        </div>
+
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Nextcloud share URL</label>
+          <input type="text" id="mw-url"
+            style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:11px;width:100%;outline:none"
+            placeholder="https://nc.example.com/index.php/s/<TOKEN>?dir=/some/path">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>File <button onclick="loadManualFileList()" style="float:right;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:1px 8px;font-size:10px;cursor:pointer">↻ refresh</button></label>
+            <select id="mw-file"><option value="">Click refresh to load…</option></select>
+          </div>
+          <div class="form-group"><label>Start (s)</label><input type="number" id="mw-start" value="0" min="0" step="0.1"></div>
+          <div class="form-group"><label>Duration (s)</label><input type="number" id="mw-dur" value="3.0" min="0.5" max="30" step="0.5"></div>
+          <div class="form-group" id="mw-array-group">
+            <label>Array</label>
+            <select id="mw-array">
+              <option value="BK-6-E">BK-6-E (East)</option>
+              <option value="BK-6-W">BK-6-W (West)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Threshold <span class="range-val" id="mw-thresh-val">0.60</span></label>
+            <input type="range" id="mw-thresh" min="0.1" max="0.99" step="0.01" value="0.60"
+              oninput="document.getElementById('mw-thresh-val').textContent=parseFloat(this.value).toFixed(2)">
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runManualWindow()" id="btn-manual">Run Detection</button>
+      </div>
+      <div class="card hidden" id="result-manual-card"><h2>RESULTS</h2><div id="result-manual-viz"></div></div>
+    </div>
+
+    <!-- ── BATCH ── -->
+    <div id="panel-batch" class="hidden">
+      <div class="card">
+        <h2>📊 BATCH SCAN — DETECTION TIMELINE</h2>
+        <div class="mode-toggle" style="margin-bottom:10px">
+          <button class="mode-btn active repo" id="bs-btn-polywav" onclick="setBatchDataset('polywav')">📡 Prof. Mics (polywav)</button>
+          <button class="mode-btn repo" id="bs-btn-mems" onclick="setBatchDataset('mems')">🎙️ MEMS</button>
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Nextcloud share URL</label>
+          <input type="text" id="bs-url" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:11px;width:100%;outline:none" placeholder="https://nc.example.com/index.php/s/<TOKEN>?dir=/some/path">
+        </div>
+        <div class="form-grid">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>File <button onclick="loadBatchFileList()" style="float:right;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:1px 8px;font-size:10px;cursor:pointer">↻ refresh</button></label>
+            <select id="bs-file"><option value="">Click refresh to load…</option></select>
+          </div>
+          <div class="form-group"><label>Start (s)</label><input type="number" id="bs-start" value="0" min="0" step="1"></div>
+          <div class="form-group"><label>Scan duration (s)</label><input type="number" id="bs-scandur" value="60" min="1" max="600" step="1"></div>
+          <div class="form-group"><label>Window (s)</label><input type="number" id="bs-window" value="3.0" min="0.5" max="30" step="0.5"></div>
+          <div class="form-group"><label>Hop (s)</label><input type="number" id="bs-hop" value="3.0" min="0.1" max="30" step="0.5"></div>
+          <div class="form-group" id="bs-array-group">
+            <label>Array</label>
+            <select id="bs-array"><option value="BK-6-E">BK-6-E (East)</option><option value="BK-6-W">BK-6-W (West)</option></select>
+          </div>
+          <div class="form-group">
+            <label>Threshold <span class="range-val" id="bs-thresh-val">0.60</span></label>
+            <input type="range" id="bs-thresh" min="0.1" max="0.99" step="0.01" value="0.60" oninput="document.getElementById('bs-thresh-val').textContent=parseFloat(this.value).toFixed(2)">
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px">Max 150 windows per scan · scan_duration capped at 600s server-side</div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="runBatchScan()" id="btn-batch">Run Batch Scan</button>
+      </div>
+      <div class="card hidden" id="result-batch-card">
+        <h2>TIMELINE</h2>
+        <div id="batch-summary" style="margin-bottom:12px"></div>
+        <div class="result-section"><canvas id="batch-timeline-canvas" width="1180" height="180" style="width:100%;cursor:pointer"></canvas></div>
+        <div id="batch-window-detail" style="margin-top:12px"></div>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════════════
@@ -560,6 +646,8 @@
             <div class="mode-toggle" style="margin-bottom:10px">
               <button class="mode-btn active repo" id="repo-btn-uav" onclick="setRepoDataset('uavirbase')">📡 UaVirBASE</button>
               <button class="mode-btn" id="repo-btn-dunk" onclick="setRepoDataset('dunakeszi')">🌳 Dunakeszi</button>
+              <button class="mode-btn repo" id="repo-btn-mems" data-repo-source="mems" onclick="setRepoDataset('mems')">🎙️ MEMS</button>
+              <div id="mems-info-banner" class="hidden" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:7px;padding:8px 11px;font-size:10px;color:var(--orange);margin-bottom:8px"></div>
             </div>
 
             <div class="form-grid" style="gap:8px">
@@ -567,7 +655,7 @@
                 <label>Remote ZIP URL</label>
                 <input type="text" id="repo-url" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:11px;width:100%;outline:none" placeholder="Leave blank → use config default">
               </div>
-              <div class="form-group">
+              <div class="form-group" id="repo-array-group">
                 <label>Array</label>
                 <select id="repo-array" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:12px">
                   <option value="BK-6-E">BK-6-E (East)</option>
@@ -759,7 +847,7 @@ function addLiveEvent(data, type='detected') {
 // ══════════════════════════════════════════════════════════════════════════════
 // PANEL SWITCHING
 // ══════════════════════════════════════════════════════════════════════════════
-const PANELS = ['single','threemic','multi','noise','path','realtime','repository','status'];
+const PANELS = ['single','threemic','multi','noise','path','realtime','repository','manual','status'];
 function switchPanel(id, btn) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.add('hidden'));
   document.getElementById('panel-'+id).classList.remove('hidden');
@@ -1466,29 +1554,41 @@ let repoState = {
 };
 
 // ── Dataset toggle ────────────────────────────────────────────────────────────
+const SOURCE_CONFIG = {
+  uavirbase: { hasArraySelector: false, hasSegmentBrowser: false, geometry: 'uavirbase', infoBanner: null },
+  dunakeszi: { hasArraySelector: true,  hasSegmentBrowser: true,  geometry: 'gp2',       infoBanner: null },
+  mems: {
+    hasArraySelector: false, hasSegmentBrowser: true, geometry: 'uavirbase',
+    infoBanner: '⚠️ MEMS is single-channel — azimuth/position are spectral-proxy estimates, not true TDOA. Tracks are not drawn since there is no real 2D position to track.',
+  },
+};
+
 function setRepoDataset(ds) {
   repoState.dataset = ds;
+  const cfg = SOURCE_CONFIG[ds];
+
   document.getElementById('repo-btn-uav').className  = 'mode-btn' + (ds==='uavirbase' ?' active repo':'');
   document.getElementById('repo-btn-dunk').className = 'mode-btn' + (ds==='dunakeszi'?' active repo':'');
-  document.getElementById('repo-array').disabled = ds !== 'dunakeszi';
+  document.getElementById('repo-btn-mems').className = 'mode-btn' + (ds==='mems'     ?' active repo':'');
+
+  document.getElementById('repo-array').disabled = !cfg.hasArraySelector;
+  document.getElementById('repo-array-group').style.display = cfg.hasArraySelector ? '' : 'none';
   document.getElementById('dunk-info-strip').classList.toggle('hidden', ds !== 'dunakeszi');
+  document.getElementById('mems-info-banner').classList.toggle('hidden', !cfg.infoBanner);
+  if (cfg.infoBanner) document.getElementById('mems-info-banner').textContent = cfg.infoBanner;
 
-  // Switch mic geometry immediately so the radar is correct before session starts
-  setMicGeometry(ds === 'dunakeszi' ? 'gp2' : 'uavirbase');
+  setMicGeometry(cfg.geometry);
 
-  // Adjust default max_dist per dataset
   const mdEl = document.getElementById('repo-maxdist');
-  if(mdEl && !mdEl._userEdited) {
+  if (mdEl && !mdEl._userEdited) {
     mdEl.value = ds === 'dunakeszi' ? 100 : 25;
     repoState.maxDist = parseFloat(mdEl.value);
   }
 
-  // Load segment browser for Dunakeszi
   const browserEl = document.getElementById('repo-segment-browser');
-  if(browserEl) browserEl.style.display = ds === 'dunakeszi' ? '' : 'none';
-  if(ds === 'dunakeszi') loadSegmentBrowser();
+  if (browserEl) browserEl.style.display = cfg.hasSegmentBrowser ? '' : 'none';
+  if (cfg.hasSegmentBrowser) loadSegmentBrowser();
 }
-
 // ── Idle radar ────────────────────────────────────────────────────────────────
 function startRepoRadarIdle() {
   if (repoState.idleAnim) return;
@@ -1654,29 +1754,29 @@ socket.on('realtime_stats', onRepoStats);
 socket.on('realtime_status', onRepoStatus);
 
 function onRepoFrame(data) {
-  if (data.mode !== 'repository') return;     // only handle repo frames
+  if (data.mode !== 'repository') return;
   if (!repoState.running) return;
 
   repoState.frame = data.frame;
   repoState.totalFrames = data.frame;
-
-  // Ground-truth positions
   repoState.gtPositions = (data.sim_positions||[]).filter(Boolean);
 
-  // GPX trajectory from dunakeszi label (convert waypoints if present)
   const traj = data.repo_label?.trajectory;
-  if(traj && traj.waypoints && traj.waypoints.length>0){
-    repoState.trajectory = traj;
-  } else {
-    repoState.trajectory = null;
-  }
+  repoState.trajectory = (traj && traj.waypoints && traj.waypoints.length>0) ? traj : null;
 
-  // Update tracks
   (data.tracks||[]).forEach(t=>{
     if(!repoState.tracks[t.id]) repoState.tracks[t.id]={...t,color:TRACK_COLORS[(t.id-1)%TRACK_COLORS.length]};
     else Object.assign(repoState.tracks[t.id],t);
     repoState.tracks[t.id].color = TRACK_COLORS[(t.id-1)%TRACK_COLORS.length];
   });
+
+  // ── Moved out of the dets.length>0 gate: these reflect the STREAM, ─────
+  // not the detection outcome, so they should update on every frame.
+  if(data.repo_label?.source) _setRepoSourceBadge(data.repo_label.source);
+  if(data.repo_label?.dataset_type === 'dunakeszi' || repoState.dataset === 'dunakeszi'){
+    _updateDunkStrip(data.repo_label);
+  }
+  updateRepoGtPanel(null, data.repo_label);   // pass det=null on a miss; panel already handles that
 
   const dets = data.detections||[];
   if(dets.length>0){
@@ -1690,24 +1790,12 @@ function onRepoFrame(data) {
     repoState.errors = repoState.errors.slice(-50);
     updateRepoLog(data, dets);
     updateRepoLastSeg(dets[0], data.repo_label);
-    updateRepoGtPanel(dets[0], data.repo_label);
+    updateRepoGtPanel(dets[0], data.repo_label);   // overwrite with the real detection once we have one
     updateRepoErrHist();
-    // Set data source badge from label on first frame
-    if(data.repo_label?.source) _setRepoSourceBadge(data.repo_label.source);
-    // Update Dunakeszi info strip
-    if(data.repo_label?.dataset_type === 'dunakeszi' || repoState.dataset === 'dunakeszi'){
-      _updateDunkStrip(data.repo_label);
-    }
     dets.forEach(det=>{
-      if(det.position) addLiveEvent({
-        timestamp: data.timestamp,
-        confidence: det.confidence,
-        position: det.position,
-        source: 'repository'
-      }, 'realtime');
+      if(det.position) addLiveEvent({ timestamp: data.timestamp, confidence: det.confidence, position: det.position, source: 'repository' }, 'realtime');
     });
   } else if(data.repo_label) {
-    // No detection but we still update log with non-detection entry
     updateRepoLogMiss(data);
   }
 
@@ -1913,7 +2001,6 @@ async function startRepository() {
   if(url) fd.append('url', url);
   const split = document.getElementById('repo-split').value;
   if(split) fd.append('required_split', split);
-  if(repoState.dataset==='dunakeszi') fd.append('array', document.getElementById('repo-array').value);
 
   const startBtn = document.getElementById('repo-start-btn');
   startBtn.disabled=true;
@@ -1957,6 +2044,179 @@ async function stopRepository() {
     setRepoUiStopped();
     if(d.stats) addRepoLog(`<span style="color:var(--muted)">■ Stopped — frames:${d.stats.total_frames} det:${d.stats.detected_frames} rate:${d.stats.detection_rate}% dur:${d.stats.session_duration}s avg_err:${d.stats.avg_error_m?.toFixed(3)||'—'}m</span>`);
   } catch(e) { repoState.running=false; setRepoUiStopped(); }
+}
+
+// Manual window mode (for testing on arbitrary files) — not part of the main repository flow
+let _manualDataset = 'polywav';
+
+function setManualDataset(ds) {
+  _manualDataset = ds;
+  document.getElementById('mw-btn-polywav').className = 'mode-btn' + (ds==='polywav' ? ' active repo' : '');
+  document.getElementById('mw-btn-mems').className    = 'mode-btn' + (ds==='mems'    ? ' active repo' : '');
+  document.getElementById('mw-array-group').style.display = ds === 'mems' ? 'none' : '';
+  document.getElementById('mw-file').innerHTML = '<option value="">Click refresh to load…</option>';
+}
+
+async function loadManualFileList() {
+  const sel = document.getElementById('mw-file');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  const url = document.getElementById('mw-url').value.trim();
+  const params = new URLSearchParams({ dataset_type: _manualDataset });
+  if (url) params.set('url', url);
+  try {
+    const r = await fetch(`${BASE}/api/v2/repository/files-list?${params.toString()}`);
+    const d = await r.json();
+    if (d.error) {
+      sel.innerHTML = `<option value="">${d.error}</option>`;
+      return;
+    }
+    sel.innerHTML = (d.files || []).map(f => `<option value="${f}">${f}</option>`).join('')
+      || '<option value="">No files found</option>';
+  } catch (e) {
+    sel.innerHTML = `<option value="">Error: ${e.message}</option>`;
+  }
+}
+
+async function runManualWindow() {
+  setBusy('btn-manual', true);
+  try {
+    const fd = new FormData();
+    fd.append('filename',     document.getElementById('mw-file').value);
+    fd.append('start_s',      document.getElementById('mw-start').value);
+    fd.append('duration_s',   document.getElementById('mw-dur').value);
+    fd.append('array',        document.getElementById('mw-array').value);
+    fd.append('threshold',    document.getElementById('mw-thresh').value);
+    fd.append('dataset_type', _manualDataset);
+    const url = document.getElementById('mw-url').value.trim();
+    if (url) fd.append('url', url);
+
+    const r = await fetch(`${BASE}/api/v2/repository/manual-window`, {method:'POST', body:fd});
+    const d = await r.json();
+    document.getElementById('result-manual-card').classList.remove('hidden');
+    renderSingleResult(d);
+  } catch(e) {
+    document.getElementById('result-manual-card').classList.remove('hidden');
+    document.getElementById('result-manual-viz').innerHTML = `<div style="color:var(--red)">❌ ${e.message}</div>`;
+  } finally {
+    setBusy('btn-manual', false);
+  }
+}
+
+// Batch scan mode (for testing on arbitrary files) — not part of the main repository flow
+let _batchDataset = 'polywav';
+let _batchResults = [];
+
+function setBatchDataset(ds) {
+  _batchDataset = ds;
+  document.getElementById('bs-btn-polywav').className = 'mode-btn' + (ds==='polywav' ? ' active repo' : '');
+  document.getElementById('bs-btn-mems').className    = 'mode-btn' + (ds==='mems'    ? ' active repo' : '');
+  document.getElementById('bs-array-group').style.display = ds === 'mems' ? 'none' : '';
+  document.getElementById('bs-file').innerHTML = '<option value="">Click refresh to load…</option>';
+}
+
+async function loadBatchFileList() {
+  const sel = document.getElementById('bs-file');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  const url = document.getElementById('bs-url').value.trim();
+  const params = new URLSearchParams({ dataset_type: _batchDataset });
+  if (url) params.set('url', url);
+  try {
+    const r = await fetch(`${BASE}/api/v2/repository/files-list?${params.toString()}`);
+    const d = await r.json();
+    if (d.error) { sel.innerHTML = `<option value="">${d.error}</option>`; return; }
+    sel.innerHTML = (d.files || []).map(f => `<option value="${f}">${f}</option>`).join('') || '<option value="">No files found</option>';
+  } catch (e) {
+    sel.innerHTML = `<option value="">Error: ${e.message}</option>`;
+  }
+}
+
+async function runBatchScan() {
+  setBusy('btn-batch', true);
+  const card = document.getElementById('result-batch-card');
+  card.classList.remove('hidden');
+  document.getElementById('batch-summary').innerHTML = '<div style="color:var(--muted)">Scanning…</div>';
+  document.getElementById('batch-window-detail').innerHTML = '';
+  try {
+    const fd = new FormData();
+    fd.append('filename',        document.getElementById('bs-file').value);
+    fd.append('start_s',         document.getElementById('bs-start').value);
+    fd.append('scan_duration_s', document.getElementById('bs-scandur').value);
+    fd.append('window_s',        document.getElementById('bs-window').value);
+    fd.append('hop_s',           document.getElementById('bs-hop').value);
+    fd.append('array',           document.getElementById('bs-array').value);
+    fd.append('threshold',       document.getElementById('bs-thresh').value);
+    fd.append('dataset_type',    _batchDataset);
+    const url = document.getElementById('bs-url').value.trim();
+    if (url) fd.append('url', url);
+
+    const r = await fetch(`${BASE}/api/v2/repository/batch-scan`, {method:'POST', body:fd});
+    const d = await r.json();
+    if (d.error) { document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${d.error}</div>`; return; }
+    _batchResults = d.results || [];
+    renderBatchSummary(d);
+    drawBatchTimeline(_batchResults, parseFloat(document.getElementById('bs-thresh').value));
+  } catch(e) {
+    document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${e.message}</div>`;
+  } finally {
+    setBusy('btn-batch', false);
+  }
+}
+
+function renderBatchSummary(d) {
+  const truncNote = d.truncated ? ` <span style="color:var(--orange)">⚠ truncated to ${d.n_windows} windows</span>` : '';
+  document.getElementById('batch-summary').innerHTML = `<div class="stat-grid">
+    <div class="stat-box ${d.detected_count>0?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val">${d.detected_count}<span class="stat-unit">/${d.n_windows}</span></div></div>
+    <div class="stat-box accent"><div class="stat-label">Detection Rate</div><div class="stat-val">${d.detection_rate}<span class="stat-unit">%</span></div></div>
+    <div class="stat-box"><div class="stat-label">Avg Prob</div><div class="stat-val">${(d.avg_probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
+  </div><div style="font-size:11px;color:var(--muted);margin-top:4px">${d.filename} · t=[${d.start_s}s, ${(d.start_s+d.scan_duration_s).toFixed(1)}s) · window=${d.window_s}s hop=${d.hop_s}s${truncNote}</div>`;
+}
+
+function drawBatchTimeline(results, threshold) {
+  const c = document.getElementById('batch-timeline-canvas'), ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+  if (!results.length) { ctx.fillStyle='#888'; ctx.fillText('No windows scanned', 10, H/2); return; }
+
+  const padL=40, padB=20, padT=10, plotW=W-padL-10, plotH=H-padT-padB;
+  const n = results.length, barW = plotW / n;
+
+  const yThresh = padT + plotH * (1 - threshold);
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(padL, yThresh); ctx.lineTo(padL+plotW, yThresh); ctx.stroke();
+  ctx.setLineDash([]);
+
+  results.forEach((r,i) => {
+    const x = padL + i*barW;
+    const barH = plotH * Math.max(0, Math.min(1, r.probability));
+    const y = padT + plotH - barH;
+    ctx.fillStyle = r.detected ? '#22c55e' : (r.probability > threshold*0.5 ? '#f59e0b' : '#3a4152');
+    ctx.fillRect(x, y, Math.max(barW-1,1), barH);
+  });
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle = '#888'; ctx.font = '10px monospace';
+  ctx.fillText('0%', padL-26, padT+plotH);
+  ctx.fillText('100%', padL-30, padT+8);
+  ctx.fillText(`${results[0].t_start.toFixed(1)}s`, padL, H-4);
+  ctx.fillText(`${results[n-1].t_end.toFixed(1)}s`, padL+plotW-30, H-4);
+
+  c.onclick = (ev) => {
+    const rect = c.getBoundingClientRect(), scaleX = c.width / rect.width;
+    const idx = Math.floor(((ev.clientX - rect.left) * scaleX - padL) / barW);
+    if (idx >= 0 && idx < n) showBatchWindowDetail(results[idx]);
+  };
+}
+
+function showBatchWindowDetail(r) {
+  const posHtml = r.position ? `<div class="stat-box"><div class="stat-label">Position</div><div class="stat-val" style="font-size:12px">(${r.position[0].toFixed(2)}, ${r.position[1].toFixed(2)})<span class="stat-unit">m</span></div></div>` : '';
+  document.getElementById('batch-window-detail').innerHTML = `<div class="result-section-title">Window t=[${r.t_start}s, ${r.t_end}s)</div>
+    <div class="stat-grid">
+      <div class="stat-box ${r.detected?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val" style="font-size:14px">${r.detected?'✓ Yes':'✗ No'}</div></div>
+      <div class="stat-box accent"><div class="stat-label">Probability</div><div class="stat-val">${(r.probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
+      <div class="stat-box"><div class="stat-label">CNN</div><div class="stat-val">${(r.cnn_probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
+      ${posHtml}
+    </div>`;
 }
 
 function setRepoUiStopped() {
@@ -2042,7 +2302,7 @@ async function loadSegmentBrowser() {
       if(cur) sessEl.value = cur;
     }
 
-    const segs = data.segments || [];
+    const segs = (data.segments || []).filter(s => repoState.dataset !== 'mems' || s.mems_available);
     if(!segs.length){ content.innerHTML='<div style="color:var(--muted);padding:14px;font-size:11px;text-align:center">No segments match filter</div>'; return; }
 
     const splitColors = {train:'var(--accent2)',val:'var(--orange)',test:'var(--green)',unknown:'var(--muted)'};
@@ -2053,9 +2313,11 @@ async function loadSegmentBrowser() {
       const dist = s.distance_m!=null ? ` d=${s.distance_m.toFixed(0)}m` : '';
       const flags = (s.quality_flags||[]).length ? ` ⚠️` : '';
       const isSelected = s.id === _selectedSegmentId;
-      return `<div class="seg-row${isSelected?' seg-selected':''}" data-segid="${s.id}" onclick="selectSegment(${s.id})"
-        style="padding:7px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:10px;${isSelected?'background:rgba(52,211,153,.12)':''}"
-        title="${s.description||''}">
+      const unplayable = !s.local_available && !s.bk_available;
+      const rowStyle = `padding:7px 10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:10px;${isSelected?'background:rgba(52,211,153,.12)':''}${unplayable?';opacity:.45':''}`;
+      return `<div class="seg-row${isSelected?' seg-selected':''}" data-segid="${s.id}" data-unplayable="${unplayable?'1':'0'}" onclick="selectSegment(${s.id})"
+        style="${rowStyle}"
+        title="${unplayable?'Not streamable — onset falls before the recording start reference':(s.description||'')}">
         <div style="display:flex;align-items:center;gap:6px">
           <span style="color:${sc};font-weight:700;min-width:28px">#${s.id}</span>
           <span style="color:var(--muted);min-width:52px">${s.local_start_hms||'—'}</span>
@@ -2063,6 +2325,7 @@ async function loadSegmentBrowser() {
           <span style="color:var(--muted)">${s.n_drones||1}🚁</span>
           <span style="color:${sc};min-width:32px;text-align:right">${s.split||'?'}</span>
           <span title="${s.local_available?'Available locally':'Remote only'}">${local}</span>
+          ${unplayable?'<span title="Not streamable">🚫</span>':''}
         </div>
         <div style="color:var(--muted);margin-top:2px;padding-left:34px">${az}${dist} alt=${s.altitude_m||'?'}m${s.speed_mps?` v=${s.speed_mps}m/s`:''} ${s.session||''}${flags}</div>
       </div>`;
@@ -2090,9 +2353,17 @@ function selectSegment(id) {
   const seg = (_segBrowserData?.segments || []).find(s => s.id === id);
   const infoEl = document.getElementById('seg-selected-info');
   const labelEl = document.getElementById('seg-selected-label');
+  const playBtn = document.getElementById('seg-play-btn');
   if(infoEl) infoEl.style.display = '';
   if(labelEl && seg) {
     labelEl.textContent = `#${id} — ${seg.description || seg.maneuver_type || '?'} (${seg.local_start_hms||'?'})`;
+  }
+  const unplayable = seg && !seg.local_available && !seg.bk_available;
+  if(playBtn) {
+    playBtn.disabled = !!unplayable;
+    playBtn.title = unplayable ? 'Not streamable — onset falls before the recording start reference' : '';
+    playBtn.style.opacity = unplayable ? '.5' : '1';
+    playBtn.style.cursor = unplayable ? 'not-allowed' : 'pointer';
   }
 }
 
@@ -2113,6 +2384,11 @@ function clearSegmentSelection() {
 
 async function playSelectedSegment() {
   if(_selectedSegmentId === null) { alert('Select a segment first'); return; }
+  const seg = (_segBrowserData?.segments || []).find(s => s.id === _selectedSegmentId);
+  if(seg && !seg.local_available && !seg.bk_available) {
+    alert('This segment is not streamable — its onset falls before the recording start reference (WAV header, not audio). Pick a different segment.');
+    return;
+  }
   const array = document.getElementById('repo-array')?.value || 'BK-6-E';
   const tick  = document.getElementById('repo-tick')?.value || '1.0';
   const thresh= document.getElementById('repo-thresh')?.value || '0.70';
@@ -2198,7 +2474,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-window.addEventListener('load',()=>{ setTimeout(fetchStatus,600); startRadarIdle(); });
+window.addEventListener('load',()=>{ setTimeout(fetchStatus,600); startRadarIdle(); setRepoDataset('uavirbase'); });
 </script>
 </body>
 </html>
