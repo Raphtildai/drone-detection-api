@@ -31,6 +31,53 @@ Open **http://localhost:5001** in your browser.
 
 ---
 
+## Dashboard UI
+
+The dashboard (`templates/index_v2.html`) is a single-page app: a left sidebar
+switches between panels, a right-hand **Live Events** feed shows detections
+from any panel as they happen (pushed over WebSocket), and a header dot shows
+the live connection state. A 🌙/☀️ toggle switches the whole UI between dark
+and light themes (persisted in `localStorage`).
+
+The sidebar is grouped into four sections:
+
+### Detection Modes — single-shot analysis on uploaded audio
+
+| Panel | What it does |
+|-------|---------------|
+| 🎵 **Single File** | Upload one audio file, set an assumed drone (x, y), threshold and segment count → runs the CNN + heuristic hybrid detector and shows a verdict banner, confidence ring, and estimated position on a mic-array map. |
+| 📡 **3-Mic Array** | Upload one file per mic (fixed 3-mic baseline geometry) → precise TDOA localization. Shows a measured-vs-estimated TDOA table per mic pair, a reliability badge, and the confidence radius. |
+| 🚁🚁 **Multi-Drone** | Upload 3 mic files, set max drones to report → the Cartesian Nelder-Mead solver separates multiple simultaneous drones and plots each on the map with its own confidence radius and frequency band. |
+| 📂 **File + Window** | Point at a Nextcloud share (Prof. Mics / polywav, or MEMS), pick one specific remote file from a dropdown, and an exact start time + duration → runs detection and localization on just that window. Built for spot-checking a specific moment in a specific recording. |
+| 📊 **Batch Scan** | Same file/array picker as above, but slides a detection window across a whole span of the file (capped at 600 s / 150 windows) in one read, and renders a clickable detection-probability timeline bar chart — click any bar to see that window's detail. |
+
+### Analysis — synthetic robustness checks
+
+| Panel | What it does |
+|-------|---------------|
+| 🔊 **Noise SNR** | Runs an SNR sweep (configurable dB range/step, clips per level) through `synthesise_drone()` to show how detection rate degrades with noise. |
+| 🛤️ **Path Simulate** | Generates a synthetic multi-waypoint flight path and localizes each waypoint, exercising the `PathTracker` / Kalman filter and flagging points outside the array's reliable 2.5 m zone. |
+
+### Live Operations — continuous streaming sessions with a radar view
+
+| Panel | What it does |
+|-------|---------------|
+| 🔴 **Real-Time** | A radar-style live view with two modes: **Simulated** (runs the exact production pipeline — `synthesise_drone() → detect() → localize() → PathTracker` — against configurable drone count, flight pattern, noise, and spread) or **Live Mic** (captures from a real PyAudio input device). Shows a live frame counter, active/confirmed tracks, detection log, and running stats (detection rate, avg confidence). |
+| 🗄️ **Repository** | Streams **real recorded drone audio** live from a remote dataset — UaVirBASE, Dunakeszi, or MEMS — via HTTP range-requests against a Nextcloud share (no files are downloaded or stored server-side; falls back to a local cache or synthetic BPF-profile audio if the repository is unreachable). Overlays ground-truth position/azimuth against the model's estimate when a segment is labelled, plots a rolling localisation-error histogram, and — for Dunakeszi — includes a **Segment Browser** to filter by split/show and play one specific labelled maneuver on demand. |
+
+### System
+
+| Panel | What it does |
+|-------|---------------|
+| ⚙️ **Status** | Live health check (model loaded, device, sample rate, active sessions) plus a built-in API reference card. |
+
+A **"v2 Fixes Active"** checklist is always visible at the bottom of the
+sidebar, listing the pipeline correctness fixes currently in effect
+(fractional sinc delay, cap-hit guard, NaN-safe GCC-PHAT, etc. — see
+[What changed from the original v2](#what-changed-from-the-original-v2)).
+
+---
+
 ## File structure
 
 ```
@@ -44,8 +91,17 @@ deployment/
     ├── app_v2.py                    Flask app (all routes under /api/v2/)
     ├── run_server_v2.py             Entry point
     ├── real_time_audio_v2.py        PyAudio mic capture + real-time detection
-    ├── realtime_sessions.py         SimulatedRealtimeSession + RealRealtimeSession
+    ├── realtime_sessions.py         Simulated / Live-mic / Repository session classes
     ├── requirements_v2.txt          Python dependencies
+    ├── drone_detection/
+    │   ├── config.py                Config singleton (thresholds, mic geometry, model paths)
+    │   ├── repository_loader.py     Dataset-agnostic router: UaVirBASE / Dunakeszi / MEMS
+    │   ├── dunakeszi_nextcloud.py   Nextcloud HTTP range-read streaming, WAV/polywav decode
+    │   └── mems_inference.py        Single-channel MEMS spectral-proxy localisation
+    ├── dunakeszi_ground_truth_fixed.py  Ground-truth maneuver/segment metadata for Dunakeszi
+    ├── dunakeszi_pipeline_ready_B/  Local cache of pre-paired Dunakeszi audio+label triplets
+    ├── wavs/                        Local polywav cache used as a fallback when Nextcloud
+    │                                is unreachable or unconfigured
     ├── models/
     │   ├── best_detection.pth       Detection model checkpoint
     │   └── best_localization.pth    Localization model checkpoint
@@ -91,19 +147,26 @@ or any external patch files — all v15 fixes are integrated into the package.
 | `POST` | `/api/v2/detect-multi` | 3 mic files → multi-drone (Cartesian solver) |
 | `POST` | `/api/v2/noise-test` | SNR sweep using `synthesise_drone()` |
 | `POST` | `/api/v2/path-simulate` | Synthetic spiral path tracking demo |
-| `POST` | `/api/v2/realtime/start` | Start real-time session (simulated or live mic) |
+| `POST` | `/api/v2/realtime/start` | Start real-time session (`mode`: `simulated` \| `real` \| `repository`) |
 | `POST` | `/api/v2/realtime/stop` | Stop real-time session |
 | `GET`  | `/api/v2/realtime/status` | Session status + running stats |
 | `GET`  | `/api/v2/realtime/audio-devices` | List PyAudio input devices |
+| `GET`  | `/api/v2/repository/segments` | Dunakeszi segment browser: filterable list of labelled maneuvers |
+| `POST` | `/api/v2/repository/start-segment` | Start a repository session streaming one specific labelled segment |
+| `GET`  | `/api/v2/repository/files/<file_type>` | Dunakeszi file browser (raw listing) |
+| `GET`  | `/api/v2/repository/files-list` | Filename list for the File+Window / Batch Scan pickers (`dataset_type`: `polywav` \| `mems`) |
+| `POST` | `/api/v2/repository/manual-window` | Detect + localize an explicit file + time window |
+| `POST` | `/api/v2/repository/batch-scan` | Slide a detection window across a span of one file → timeline of results |
 
 ### WebSocket events (root namespace)
 
 | Event | Direction | Payload |
 |-------|-----------|---------|
 | `drone_detected_v2` | server → client | `{timestamp, confidence, position, source}` |
-| `realtime_frame` | server → client | `{frame, timestamp, detections, tracks, mode, sim_positions}` |
-| `realtime_stats` | server → client | `{total_frames, detected_frames, detection_rate, avg_confidence, session_duration}` |
-| `realtime_status` | server → client | `{running, mode, error}` |
+| `realtime_frame` | server → client | `{frame, timestamp, detections, tracks, mode, sim_positions, repo_label}` |
+| `realtime_stats` | server → client | `{total_frames, detected_frames, detection_rate, avg_confidence, avg_error_m, session_duration}` |
+| `realtime_status` | server → client | `{running, mode, error, loading, final_stats}` |
+| `array_geometry_changed` | server → client | `{geometry, mic_positions}` — fired when a repository session switches mic array layout (e.g. UaVirBASE ring vs. Dunakeszi GP1/GP2 triangle) |
 
 ### Example: single file detection
 
@@ -165,6 +228,36 @@ brew install portaudio
 pip install pyaudio
 ```
 
+### Repository mode
+Streams real recorded drone audio from a public dataset instead of synthetic
+or live-mic audio — `mode=repository`, `dataset_type` one of `uavirbase` |
+`dunakeszi` | `mems`. No audio is ever downloaded to disk; it's read via
+HTTP range-requests against a Nextcloud public share (`remotezip` /
+byte-range reads), with graceful fallback at each step:
+
+```
+local pipeline-ready cache  →  Nextcloud HTTP range-read  →  synthetic
+(if present)                   (real recorded audio)         BPF-profile audio
+                                                               (repo unreachable)
+```
+
+Each dataset has its own mic array geometry, switched automatically and
+broadcast to the UI via `array_geometry_changed`:
+
+| `dataset_type` | Array | Channels |
+|---|---|---|
+| `uavirbase` | 8-mic ring, 1.72 m radius | ch1 (N), ch2 (E), ch4 (W) |
+| `dunakeszi` | GP1/GP2 equilateral triangle (2.165 m / 2.5 m baseline) | `BK-6-E` or `BK-6-W` channel group, selected per request |
+| `mems` | Single channel | Spectral-proxy azimuth/distance only — no true TDOA, so tracks aren't drawn |
+
+When a segment has ground-truth position/azimuth metadata (Dunakeszi), the
+estimate is compared against it live and the running localisation error is
+histogrammed in the UI. Note that the localization model's distance output
+is normalised to `cfg.MAX_LOCALIZATION_DIST` (30 m, trained on ≤20 m
+near-field data) — Dunakeszi's long-range outdoor maneuvers can exceed that
+by 3–4×, in which case the estimate saturates at the cap and is flagged
+`cap_hit` / not `reliable` rather than reported as a real position.
+
 ---
 
 ## Model loading
@@ -204,6 +297,8 @@ SocketIO instances, and runtime state.
 | `SECRET_KEY` | `drone-v2-dev-secret` | Flask session secret |
 | `MODEL_PATH` | — | Directory containing `best_detection.pth` and `best_localization.pth` |
 | `PYTHONPATH` | — | Must include repo root so `drone_detection` is importable |
+| `NEXTCLOUD_BASE_URL` | — | Nextcloud host for Repository mode (e.g. `https://nc.example.com`) — can also be set at runtime by pasting a share URL into the UI |
+| `NEXTCLOUD_SHARE_TOKEN` | — | Public share token for the above; paired with the share URL's `?dir=` path |
 
 ---
 
@@ -218,3 +313,5 @@ SocketIO instances, and runtime state.
 | `No input devices found` | Install `portaudio19-dev` then `pip install pyaudio` |
 | Detection threshold too high/low | Check `/api/v2/status` → `detection_threshold`; pass `threshold=0.62` per-request |
 | TDOA always near zero in simulate | `noise_level` too low — enforced to ≥ 0.05 automatically |
+| `files-list` / `manual-window` / `batch-scan` returns "Nextcloud not configured" | Paste a Nextcloud share URL into that panel's field, or set `NEXTCLOUD_BASE_URL` + `NEXTCLOUD_SHARE_TOKEN` |
+| Repository detection shows huge position error but "Reliable ✓ Yes" | Check `cap_hit` in the response — the localization model's distance output is capped at `cfg.MAX_LOCALIZATION_DIST` (30 m); targets beyond that (e.g. Dunakeszi's long-range maneuvers) can't be represented and the estimate saturates |

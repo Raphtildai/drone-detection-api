@@ -855,7 +855,7 @@ function addLiveEvent(data, type='detected') {
 // ══════════════════════════════════════════════════════════════════════════════
 // PANEL SWITCHING
 // ══════════════════════════════════════════════════════════════════════════════
-const PANELS = ['single','threemic','multi','noise','path','realtime','repository','manual','status'];
+const PANELS = ['single','threemic','multi','noise','path','realtime','repository','manual','batch','status'];
 function switchPanel(id, btn) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.add('hidden'));
   document.getElementById('panel-'+id).classList.remove('hidden');
