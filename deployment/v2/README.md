@@ -88,9 +88,9 @@ deployment/
 │   └── ...
 │
 └── v2/                              ← THIS directory (port 5001)
-    ├── app_v2.py                    Flask app (all routes under /api/v2/) — also the
-    │                                 cPanel Passenger entry point (startup file: app_v2.py, entry: app)
+    ├── app_v2.py                    Flask app (all routes under /api/v2/)
     ├── run_server_v2.py             Local dev entry point (socketio.run())
+    ├── passenger_wsgi.py            cPanel/Passenger entry point (plain WSGI, no SocketIO)
     ├── real_time_audio_v2.py        PyAudio mic capture + real-time detection
     ├── realtime_sessions.py         Simulated / Live-mic / Repository session classes
     ├── requirements_v2.txt          Python dependencies (local dev)
@@ -334,18 +334,20 @@ This app is built for local/VPS use (`socketio.run()`, PyTorch, ~7GB of
 CUDA-bundled deps if installed naively) — a few adjustments make it work on
 a shared cPanel "Setup Python App" (Passenger) plan too.
 
-cPanel's Python App tool manages the Passenger entry point (`passenger_wsgi.py`)
-for you internally, generated from two fields you fill in on the app's
-config page — **you never write that file yourself**:
+Two files exist specifically for this:
 
-- **Application startup file**: `app_v2.py`
-- **Application Entry point**: `app` (the module-level `Flask(__name__, ...)`
-  object `app_v2.py` already exposes)
-
-That bypasses `socketio.run()` entirely, which is fine — Single File and
-Batch Scan are both plain HTTP POST endpoints. **The Real-Time (WebSocket)
-panel will not work this way**, but shared cPanel hosting generally doesn't
-support persistent WebSocket connections regardless.
+- **`passenger_wsgi.py`** — the entry point Passenger requires, physically
+  present at the app root, exposing `application = app_v2.app`. cPanel's
+  "Application startup file" / "Application Entry point" fields (set to
+  `app_v2.py` / `app`) only re-derive this file's wiring at the moment you
+  click **Save** — if the file is later missing (deleted, or absent on a
+  fresh `git clone`/`pull`), Passenger falls back to its own generic
+  placeholder page ("It works! Python vX.Y.Z") instead of regenerating it.
+  So this file has to stay committed and present, not hand-managed per
+  deploy. It bypasses `socketio.run()` entirely, which is fine — Single
+  File and Batch Scan are both plain HTTP POST endpoints. **The Real-Time
+  (WebSocket) panel will not work this way**, but shared cPanel hosting
+  generally doesn't support persistent WebSocket connections regardless.
 
 `requirements-prod.txt` exists for the one thing that *does* need changing:
 same runtime deps as `requirements_v2.txt` minus test-only packages, with
@@ -360,7 +362,7 @@ and can time out mid-install.
    holds tens of GB of research data (`wavs/`, `dataset_builders/`,
    `dunakeszi_data/`, raw multi-GB `.wav` recordings, etc.). Upload just:
    ```
-   app_v2.py  requirements-prod.txt  run_server_v2.py
+   app_v2.py  passenger_wsgi.py  requirements-prod.txt  run_server_v2.py
    real_time_audio_v2.py  realtime_sessions.py  repository_loader.py
    drone_detection/  templates/  static/  models/  logs/
    ```
@@ -387,12 +389,18 @@ and can time out mid-install.
 If you `git pull` onto a cPanel app root that was set up before you had this
 repo layout, you may hit `error: The following untracked working tree files
 would be overwritten by merge: deployment/v2/passenger_wsgi.py` — that's
-cPanel's auto-generated Passenger shim sitting untracked at that path (not
-your data). Safe to remove and re-pull:
+cPanel's own placeholder stub sitting untracked at that path (not your
+data), from before this repo's `passenger_wsgi.py` existed there. Safe to
+remove and re-pull, since the pull immediately replaces it with the real one:
 ```bash
 rm deployment/v2/passenger_wsgi.py
 git pull
 ```
+If the site ever shows cPanel's generic **"It works! Python vX.Y.Z"** page
+instead of the app, that means `passenger_wsgi.py` is missing or broken at
+the app root — confirm it's present and unmodified, then hit **Restart** on
+the Setup Python App page (or `touch tmp/restart.txt` if you're doing it
+over SSH).
 
 ### Operating notes
 
