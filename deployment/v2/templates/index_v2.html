@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Drone Detection v2</title>
+  <title>Drone Detection & Tracking</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -264,14 +264,6 @@
       <h3>System</h3>
       <button class="nav-btn" onclick="switchPanel('status',this)"><span class="icon">⚙️</span> Status</button>
     </div>
-    <div class="sidebar-section" style="margin-top:auto">
-      <h3>v2 Fixes Active</h3>
-      <div style="font-size:10px;color:var(--muted);line-height:1.9">
-        ✅ Fractional sinc delay<br>✅ Cap-hit guard (15m)<br>✅ NaN-safe GCC-PHAT<br>
-        ✅ Error chart populated<br>✅ Short-file hop clamp<br>✅ NaN band skip<br>
-        ✅ Synthetic SNR fallback<br>✅ Real-time sim + live mic
-      </div>
-    </div>
   </nav>
 
   <main class="main">
@@ -285,7 +277,7 @@
           <div class="form-group"><label>Drone X (m)</label><input type="number" id="sgl-x" value="1.0" step="0.1" min="-5" max="5" /></div>
           <div class="form-group"><label>Drone Y (m)</label><input type="number" id="sgl-y" value="0.8" step="0.1" min="-5" max="5" /></div>
           <div class="form-group"><label>Threshold <span class="range-val" id="sgl-thresh-val">0.70</span></label><input type="range" id="sgl-thresh" min="0.1" max="0.99" step="0.01" value="0.70" oninput="document.getElementById('sgl-thresh-val').textContent=parseFloat(this.value).toFixed(2)" /></div>
-          <div class="form-group"><label>Segments</label><input type="number" id="sgl-segs" value="5" min="1" max="20" /></div>
+          <div class="form-group"><label>Max Windows</label><input type="number" id="sgl-segs" value="20" min="1" max="150" /></div>
         </div>
         <div style="margin-top:10px"><label style="font-size:11px;color:var(--muted);cursor:pointer"><input type="checkbox" id="sgl-force" style="margin-right:5px" />Force detect</label></div>
         <button class="btn btn-primary" style="margin-top:14px" onclick="runSingleDetect()" id="btn-single">Run Detection</button>
@@ -438,8 +430,9 @@
       <div class="card hidden" id="result-batch-card">
         <h2>TIMELINE</h2>
         <div id="batch-summary" style="margin-bottom:12px"></div>
-        <div class="result-section"><canvas id="batch-timeline-canvas" width="1180" height="180" style="width:100%;cursor:pointer"></canvas></div>
+        <div class="result-section"><div class="result-section-title">Detection Timeline</div><canvas id="batch-timeline-canvas" width="1180" height="180" style="width:100%;cursor:pointer"></canvas></div>
         <div id="batch-window-detail" style="margin-top:12px"></div>
+        <div class="result-section"><div class="result-section-title">Detection Map</div><div class="map-container"><canvas id="batch-map-canvas" width="560" height="300"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Detection</div></div></div></div>
       </div>
     </div>
 
@@ -1409,11 +1402,25 @@ async function loadAudioDevices() {
 function renderSingleResult(d) {
   const viz=document.getElementById('result-single-viz');
   const prob=d.probability||0, summary=d.summary||d.detection_summary||{}, pos=d.position;
+  const results=d.results||[], hasTimeline=results.length>1;
   let html=detectionBanner(d.detected,prob,`${summary.detected_segments||0}/${summary.total_segments||0} segments`);
-  html+=`<div class="stat-grid"><div class="stat-box ${prob>=0.7?'green':prob>=0.5?'orange':'red'}"><div class="stat-label">Confidence</div><div class="stat-val">${(prob*100).toFixed(1)}<span class="stat-unit">%</span></div></div><div class="stat-box accent"><div class="stat-label">Seg Hit</div><div class="stat-val">${summary.detected_segments||0}<span class="stat-unit">/${summary.total_segments||'?'}</span></div></div><div class="stat-box accent"><div class="stat-label">Tracks</div><div class="stat-val">${d.n_tracks||0}</div></div>${pos?`<div class="stat-box"><div class="stat-label">Position</div><div class="stat-val" style="font-size:12px">(${pos[0].toFixed(2)},${pos[1].toFixed(2)})<span class="stat-unit">m</span></div></div>`:''}</div>`;
-  if(pos){html+=`<div class="result-section"><div class="result-section-title">Position Map</div><div class="map-container"><canvas id="map-single-canvas" width="560" height="280"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Estimated</div></div></div></div>`;}
+  html+=`<div class="stat-grid"><div class="stat-box ${prob>=0.7?'green':prob>=0.5?'orange':'red'}"><div class="stat-label">Confidence</div><div class="stat-val">${(prob*100).toFixed(1)}<span class="stat-unit">%</span></div></div><div class="stat-box accent"><div class="stat-label">Seg Hit</div><div class="stat-val">${summary.detected_segments||0}<span class="stat-unit">/${summary.total_segments||'?'}</span></div></div><div class="stat-box accent"><div class="stat-label">Tracks</div><div class="stat-val">${d.n_tracks||0}</div></div>${pos?`<div class="stat-box"><div class="stat-label">Peak Position</div><div class="stat-val" style="font-size:12px">(${pos[0].toFixed(2)},${pos[1].toFixed(2)})<span class="stat-unit">m</span></div></div>`:''}</div>`;
+  if(hasTimeline){
+    html+=`<div style="font-size:11px;color:var(--muted);margin-bottom:10px">${(d.duration_s||0).toFixed(1)}s file · scanned ${results.length} × ${d.window_s}s window(s)${d.truncated?' <span style="color:var(--orange)">⚠ truncated</span>':''}</div>`;
+    html+=`<div class="result-section"><div class="result-section-title">Detection Timeline</div><canvas id="single-timeline-canvas" width="1180" height="180" style="width:100%;cursor:pointer"></canvas></div>`;
+    html+=`<div id="single-window-detail" style="margin-top:12px"></div>`;
+    html+=`<div class="result-section"><div class="result-section-title">Detection Map</div><div class="map-container"><canvas id="single-map-canvas" width="560" height="300"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Detection</div></div></div></div>`;
+  } else if(pos){
+    html+=`<div class="result-section"><div class="result-section-title">Position Map</div><div class="map-container"><canvas id="map-single-canvas" width="560" height="280"></canvas><div class="map-legend"><div class="legend-item"><div class="legend-tri"></div>Mic</div><div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Estimated</div></div></div></div>`;
+  }
   html+=rawJsonHtml(d); viz.innerHTML=html;
-  if(pos){const c=document.getElementById('map-single-canvas');drawPositionMap(c,[pos],{showZone:true});}
+  if(hasTimeline){
+    const threshold=parseFloat(document.getElementById('sgl-thresh')?.value)||0.7;
+    drawWindowTimeline(document.getElementById('single-timeline-canvas'), results, threshold, 'single-window-detail');
+    drawDetectionMap(document.getElementById('single-map-canvas'), results);
+  } else if(pos){
+    const c=document.getElementById('map-single-canvas');drawPositionMap(c,[pos],{showZone:true});
+  }
 }
 
 function render3MicResult(d) {
@@ -2163,7 +2170,8 @@ async function runBatchScan() {
     if (d.error) { document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${d.error}</div>`; return; }
     _batchResults = d.results || [];
     renderBatchSummary(d);
-    drawBatchTimeline(_batchResults, parseFloat(document.getElementById('bs-thresh').value));
+    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, parseFloat(document.getElementById('bs-thresh').value), 'batch-window-detail');
+    drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults);
   } catch(e) {
     document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${e.message}</div>`;
   } finally {
@@ -2180,8 +2188,8 @@ function renderBatchSummary(d) {
   </div><div style="font-size:11px;color:var(--muted);margin-top:4px">${d.filename} · t=[${d.start_s}s, ${(d.start_s+d.scan_duration_s).toFixed(1)}s) · window=${d.window_s}s hop=${d.hop_s}s${truncNote}</div>`;
 }
 
-function drawBatchTimeline(results, threshold) {
-  const c = document.getElementById('batch-timeline-canvas'), ctx = c.getContext('2d');
+function drawWindowTimeline(canvas, results, threshold, detailTargetId) {
+  const c = canvas, ctx = c.getContext('2d');
   const W = c.width, H = c.height;
   ctx.clearRect(0,0,W,H);
   if (!results.length) { ctx.fillStyle='#888'; ctx.fillText('No windows scanned', 10, H/2); return; }
@@ -2213,19 +2221,34 @@ function drawBatchTimeline(results, threshold) {
   c.onclick = (ev) => {
     const rect = c.getBoundingClientRect(), scaleX = c.width / rect.width;
     const idx = Math.floor(((ev.clientX - rect.left) * scaleX - padL) / barW);
-    if (idx >= 0 && idx < n) showBatchWindowDetail(results[idx]);
+    if (idx >= 0 && idx < n) showWindowDetail(detailTargetId, results[idx]);
   };
 }
 
-function showBatchWindowDetail(r) {
+function showWindowDetail(targetId, r) {
   const posHtml = r.position ? `<div class="stat-box"><div class="stat-label">Position</div><div class="stat-val" style="font-size:12px">(${r.position[0].toFixed(2)}, ${r.position[1].toFixed(2)})<span class="stat-unit">m</span></div></div>` : '';
-  document.getElementById('batch-window-detail').innerHTML = `<div class="result-section-title">Window t=[${r.t_start}s, ${r.t_end}s)</div>
+  document.getElementById(targetId).innerHTML = `<div class="result-section-title">Window t=[${r.t_start}s, ${r.t_end}s)</div>
     <div class="stat-grid">
       <div class="stat-box ${r.detected?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val" style="font-size:14px">${r.detected?'✓ Yes':'✗ No'}</div></div>
       <div class="stat-box accent"><div class="stat-label">Probability</div><div class="stat-val">${(r.probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
       <div class="stat-box"><div class="stat-label">CNN</div><div class="stat-val">${(r.cnn_probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
       ${posHtml}
     </div>`;
+}
+
+function drawDetectionMap(canvas, results) {
+  const ctx = canvas.getContext('2d');
+  const detected = results.filter(r => r.detected && r.position);
+  if (!detected.length) {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--radar-bg').trim() || '#07090f';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#888'; ctx.font = '11px monospace';
+    ctx.fillText('No detections with position data', 10, canvas.height/2);
+    return;
+  }
+  const positions = detected.map(r => r.position);
+  drawPositionMap(canvas, positions, { tracks: [positions], showZone: true });
 }
 
 function setRepoUiStopped() {

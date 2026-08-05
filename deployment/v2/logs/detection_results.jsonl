@@ -1,2 +1,9 @@
 {"timestamp": 1785509601.4811707, "filename_hash": "2f03fa2b207a", "detected": false, "probability": 0.22286025109972343, "position": null}
 {"timestamp": 1785509608.0867813, "filename_hash": "2f03fa2b207a", "detected": false, "probability": 0.22286025109972343, "position": null}
+{"timestamp": 1785877111.5779145, "filename_hash": "d9ff4977a4ca", "detected": false, "probability": 0.29114298305660097, "position": null}
+{"timestamp": 1785877150.0047777, "filename_hash": "eaa9875135b6", "detected": true, "probability": 1.0, "position": [-12.624850273132324, 0.21701355278491974]}
+{"timestamp": 1785939052.3652217, "filename_hash": "d98e59c81ff9", "detected": false, "probability": 0.0963087141023652, "position": null}
+{"timestamp": 1785939073.2815344, "filename_hash": "d98e59c81ff9", "detected": false, "probability": 0.09041559458653427, "position": null}
+{"timestamp": 1785939073.288025, "filename_hash": "220b985cf021", "detected": false, "probability": 0.0, "position": null}
+{"timestamp": 1785939093.1697695, "filename_hash": "c7a510c9dd17", "detected": true, "probability": 0.1293524567567233, "position": [9.565070152282715, -6.043445587158203]}
+{"timestamp": 1785939255.3106818, "filename_hash": "eaa9875135b6", "detected": true, "probability": 1.0, "position": [-12.624850273132324, 0.21701355278491974]}

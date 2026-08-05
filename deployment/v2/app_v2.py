@@ -241,13 +241,18 @@ def detect_single():
     """
     Single audio file detection.
 
+    Slides a fixed-length window (cfg.TARGET_DURATION, no overlap) across the
+    whole uploaded file and returns a timeline of per-window results, same
+    shape as the repository batch-scan endpoint — so long recordings get
+    more than just a single verdict from their first few seconds.
+
     Form fields
     -----------
     file        : audio file (required)
     drone_x     : hint X position metres (default 1.0)
     drone_y     : hint Y position metres (default 0.8)
     threshold   : detection threshold 0.1–0.99 (default cfg.DETECTION_THRESHOLD)
-    n_segments  : number of segments to analyse (default 5)
+    n_segments  : max number of windows to scan (default 20, capped at 150)
     force_detect: skip classifier, always localise (default false)
     """
     if "file" not in request.files:
@@ -256,7 +261,8 @@ def detect_single():
     if _file_ext(f.filename) not in ALLOWED_AUDIO:
         return jsonify({"error": f"Unsupported format: {f.filename}"}), 400
 
-    n_segments   = int(  request.form.get("n_segments",  5))
+    MAX_WINDOWS  = 150
+    max_windows  = min(int(request.form.get("n_segments", 20)), MAX_WINDOWS)
     force_detect = request.form.get("force_detect", "false").lower() == "true"
 
     tmp = _save_upload(f, suffix=_file_ext(f.filename) or ".wav")
@@ -266,47 +272,85 @@ def detect_single():
 
         from drone_detection import AudioProcessor, detect, localize
 
-        ap       = AudioProcessor(cfg)
-        y        = ap.pad_or_truncate(ap.load(tmp))
-        channels = [y, y, y]
+        ap = AudioProcessor(cfg)
+        y_full = ap.load(tmp)
+        total_duration = len(y_full) / cfg.SR
 
-        det      = detect(channels, cfg)
-        prob     = float(det["probability"])
-        detected = force_detect or (prob >= threshold)
+        window_s = cfg.TARGET_DURATION
+        hop_s    = window_s
+        win_n    = int(round(window_s * cfg.SR))
+        hop_n    = int(round(hop_s * cfg.SR))
 
-        loc = None
-        if detected:
-            loc = localize(channels, cfg)
+        n_windows_available = max(int(len(y_full) // hop_n), 1)
+        n_windows = min(n_windows_available, max_windows)
+        truncated = n_windows_available > max_windows
+
+        results = []
+        for i in range(n_windows):
+            off0, off1 = i * hop_n, i * hop_n + win_n
+            seg = ap.pad_or_truncate(y_full[off0:off1])
+            channels = [seg, seg, seg]
+
+            det      = detect(channels, cfg)
+            prob     = float(det["probability"])
+            detected = force_detect or (prob >= threshold)
+            loc = localize(channels, cfg) if detected else None
+
+            results.append({
+                "t_start": round(i * hop_s, 3),
+                "t_end":   round(i * hop_s + window_s, 3),
+                "detected": detected,
+                "probability": prob,
+                "cnn_probability": float(det.get("cnn_probability", prob)),
+                "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
+                "position": loc["xy_position"] if loc else None,
+                "azimuth_deg": loc["azimuth_deg"] if loc else None,
+                "distance_m": loc["distance_m"] if loc else None,
+                "height_m": loc["height_m"] if loc else None,
+            })
+
+        detected_count = sum(1 for r in results if r["detected"])
+        peak = max(results, key=lambda r: r["probability"])
+        avg_probability = float(sum(r["probability"] for r in results) / len(results))
 
         resp = _clean({
-            "detected":              detected,
-            "probability":           prob,
-            "cnn_probability":       float(det.get("cnn_probability", prob)),
-            "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
-            "position":              loc["xy_position"] if loc else None,
-            "azimuth_deg":           loc["azimuth_deg"] if loc else None,
-            "distance_m":            loc["distance_m"]  if loc else None,
-            "height_m":              loc["height_m"]    if loc else None,
+            "detected":              detected_count > 0,
+            "probability":           peak["probability"],
+            "cnn_probability":       peak["cnn_probability"],
+            "heuristic_probability": peak["heuristic_probability"],
+            "position":              peak["position"],
+            "azimuth_deg":           peak["azimuth_deg"],
+            "distance_m":            peak["distance_m"],
+            "height_m":              peak["height_m"],
+            "duration_s":            round(total_duration, 3),
+            "window_s":              window_s,
+            "hop_s":                 hop_s,
+            "n_windows":             len(results),
+            "truncated":             truncated,
+            "detected_count":        detected_count,
+            "detection_rate":        round(100.0 * detected_count / len(results), 1),
+            "avg_probability":       round(avg_probability, 3),
             "detection_summary": {
-                "total_segments":    n_segments,
-                "detected_segments": 1 if detected else 0,
-                "max_confidence":    prob,
+                "total_segments":    len(results),
+                "detected_segments": detected_count,
+                "max_confidence":    peak["probability"],
             },
             "n_tracks": 0,
+            "results": results,
         })
 
         _append_result_log({
             "timestamp":      time.time(),
             "filename_hash":  hashlib.sha256(f.filename.encode()).hexdigest()[:12],
-            "detected":       detected,
-            "probability":    prob,
+            "detected":       resp["detected"],
+            "probability":    resp["probability"],
             "position":       resp.get("position"),
         })
 
-        if detected:
+        if resp["detected"]:
             socketio.emit("drone_detected_v2", {
                 "timestamp":  time.time(),
-                "confidence": prob,
+                "confidence": resp["probability"],
                 "position":   resp.get("position"),
                 "source":     f.filename,
             })
