@@ -45,11 +45,11 @@ The sidebar is grouped into four sections:
 
 | Panel | What it does |
 |-------|---------------|
-| 🎵 **Single File** | Upload one audio file, set an assumed drone (x, y), threshold and segment count → runs the CNN + heuristic hybrid detector and shows a verdict banner, confidence ring, and estimated position on a mic-array map. |
+| 🎵 **Single File** | Upload one audio file, set an assumed drone (x, y), threshold and max windows → slides a detection window across the **whole file** (not just the first few seconds), showing a verdict banner, confidence ring, and — for files with more than one window — a clickable detection-probability timeline plus a Detection Map of every detected window's position. |
 | 📡 **3-Mic Array** | Upload one file per mic (fixed 3-mic baseline geometry) → precise TDOA localization. Shows a measured-vs-estimated TDOA table per mic pair, a reliability badge, and the confidence radius. |
 | 🚁🚁 **Multi-Drone** | Upload 3 mic files, set max drones to report → the Cartesian Nelder-Mead solver separates multiple simultaneous drones and plots each on the map with its own confidence radius and frequency band. |
-| 📂 **File + Window** | Point at a Nextcloud share (Prof. Mics / polywav, or MEMS), pick one specific remote file from a dropdown, and an exact start time + duration → runs detection and localization on just that window. Built for spot-checking a specific moment in a specific recording. |
-| 📊 **Batch Scan** | Same file/array picker as above, but slides a detection window across a whole span of the file (capped at 600 s / 150 windows) in one read, and renders a clickable detection-probability timeline bar chart — click any bar to see that window's detail. |
+| 📂 **File + Window** | Point at a Nextcloud share (Prof. Mics / polywav, or MEMS — leave the share URL blank to use the server's configured default), pick one specific remote file from a dropdown, and an exact start time + duration → runs detection and localization on just that window. Built for spot-checking a specific moment in a specific recording. |
+| 📊 **Batch Scan** | Same file/array picker as above, but slides a detection window across a whole span of the file (capped at 600 s / 150 windows) in one read, and renders a clickable detection-probability timeline plus a Detection Map showing every detected window's position as a chronological trajectory. |
 
 ### Analysis — synthetic robustness checks
 
@@ -88,11 +88,13 @@ deployment/
 │   └── ...
 │
 └── v2/                              ← THIS directory (port 5001)
-    ├── app_v2.py                    Flask app (all routes under /api/v2/)
-    ├── run_server_v2.py             Entry point
+    ├── app_v2.py                    Flask app (all routes under /api/v2/) — also the
+    │                                 cPanel Passenger entry point (startup file: app_v2.py, entry: app)
+    ├── run_server_v2.py             Local dev entry point (socketio.run())
     ├── real_time_audio_v2.py        PyAudio mic capture + real-time detection
     ├── realtime_sessions.py         Simulated / Live-mic / Repository session classes
-    ├── requirements_v2.txt          Python dependencies
+    ├── requirements_v2.txt          Python dependencies (local dev)
+    ├── requirements-prod.txt        Python dependencies for shared/CPU-only hosting
     ├── drone_detection/
     │   ├── config.py                Config singleton (thresholds, mic geometry, model paths)
     │   ├── repository_loader.py     Dataset-agnostic router: UaVirBASE / Dunakeszi / MEMS
@@ -174,8 +176,13 @@ or any external patch files — all v15 fixes are integrated into the package.
 curl -X POST http://localhost:5001/api/v2/detect \
   -F "file=@drone_audio.wav" \
   -F "threshold=0.62" \
-  -F "n_segments=5"
+  -F "n_segments=20"
 ```
+
+`n_segments` caps how many 3-second windows are scanned (max 150) — the file
+is scanned end-to-end regardless of length, not just its first few seconds.
+Top-level `detected`/`probability`/`position` reflect the peak-confidence
+window; `results` holds the full per-window timeline.
 
 Response:
 ```json
@@ -188,12 +195,24 @@ Response:
   "azimuth_deg": 38.7,
   "distance_m": 1.34,
   "height_m": 0.0,
+  "duration_s": 12.0,
+  "window_s": 3.0,
+  "hop_s": 3.0,
+  "n_windows": 4,
+  "truncated": false,
+  "detected_count": 1,
+  "detection_rate": 25.0,
+  "avg_probability": 0.312,
   "detection_summary": {
-    "total_segments": 5,
+    "total_segments": 4,
     "detected_segments": 1,
     "max_confidence": 0.951
   },
-  "n_tracks": 0
+  "n_tracks": 0,
+  "results": [
+    {"t_start": 0.0, "t_end": 3.0, "detected": false, "probability": 0.04, "cnn_probability": 0.03, "heuristic_probability": 0.11, "position": null, "azimuth_deg": null, "distance_m": null, "height_m": null},
+    {"t_start": 3.0, "t_end": 6.0, "detected": true,  "probability": 0.951, "cnn_probability": 0.963, "heuristic_probability": 0.887, "position": [1.06, 0.85], "azimuth_deg": 38.7, "distance_m": 1.34, "height_m": 0.0}
+  ]
 }
 ```
 
@@ -299,6 +318,93 @@ SocketIO instances, and runtime state.
 | `PYTHONPATH` | — | Must include repo root so `drone_detection` is importable |
 | `NEXTCLOUD_BASE_URL` | — | Nextcloud host for Repository mode (e.g. `https://nc.example.com`) — can also be set at runtime by pasting a share URL into the UI |
 | `NEXTCLOUD_SHARE_TOKEN` | — | Public share token for the above; paired with the share URL's `?dir=` path |
+
+Priority is **explicit share URL pasted into the UI > these env vars > whatever
+was set on a previous request** (`Config.reload_nextcloud_env()`). This means
+every Nextcloud share URL field in the UI — Repository, File + Window, Batch
+Scan — is optional: leave it blank and the server falls back to these env
+vars, so people who don't have the actual share link can still browse and
+test against whatever dataset the server operator configured by default.
+
+---
+
+## Deploying to shared cPanel hosting (Truehost)
+
+This app is built for local/VPS use (`socketio.run()`, PyTorch, ~7GB of
+CUDA-bundled deps if installed naively) — a few adjustments make it work on
+a shared cPanel "Setup Python App" (Passenger) plan too.
+
+cPanel's Python App tool manages the Passenger entry point (`passenger_wsgi.py`)
+for you internally, generated from two fields you fill in on the app's
+config page — **you never write that file yourself**:
+
+- **Application startup file**: `app_v2.py`
+- **Application Entry point**: `app` (the module-level `Flask(__name__, ...)`
+  object `app_v2.py` already exposes)
+
+That bypasses `socketio.run()` entirely, which is fine — Single File and
+Batch Scan are both plain HTTP POST endpoints. **The Real-Time (WebSocket)
+panel will not work this way**, but shared cPanel hosting generally doesn't
+support persistent WebSocket connections regardless.
+
+`requirements-prod.txt` exists for the one thing that *does* need changing:
+same runtime deps as `requirements_v2.txt` minus test-only packages, with
+`torch`/`torchaudio` pulled from PyTorch's CPU-only wheel index (embedded as
+an `--extra-index-url` line in the file itself) instead of PyPI's default
+CUDA-bundled build — several GB each, which will blow a shared disk quota
+and can time out mid-install.
+
+### Procedure
+
+1. **Package only the runtime files** — not this whole directory, which also
+   holds tens of GB of research data (`wavs/`, `dataset_builders/`,
+   `dunakeszi_data/`, raw multi-GB `.wav` recordings, etc.). Upload just:
+   ```
+   app_v2.py  requirements-prod.txt  run_server_v2.py
+   real_time_audio_v2.py  realtime_sessions.py  repository_loader.py
+   drone_detection/  templates/  static/  models/  logs/
+   ```
+2. **Upload/clone** into the app root cPanel assigns (or point Setup Python
+   App at wherever you `git clone`d the repo — the app root just needs to be
+   `deployment/v2/` inside your checkout).
+3. **cPanel → Setup Python App → Create Application**
+   - Application root: your `deployment/v2/` path
+   - Application URL: whichever subdomain/path you want it under
+   - Python version: the highest available (torch needs a recent one)
+   - Application startup file: `app_v2.py` · Entry point: `app`
+4. **Configuration files** (same page) — remove `requirements_v2.txt` from
+   the list if present, add `requirements-prod.txt`, then **Run Pip Install**.
+   If CPU wheels for the exact pinned `torch`/`torchaudio` version aren't
+   available for the selected Python version, drop the version pins on just
+   those two lines in `requirements-prod.txt` and reinstall — any recent 2.x
+   CPU build reads the same `.pth` checkpoints fine.
+5. **Restart** the app, then check `https://your-app-url/api/v2/status` →
+   `"model_loaded": true`.
+6. **Environment variables** (same page) — set `NEXTCLOUD_BASE_URL` /
+   `NEXTCLOUD_SHARE_TOKEN` if you want Batch Scan / File + Window to work
+   against your Nextcloud dataset by default (see above).
+
+If you `git pull` onto a cPanel app root that was set up before you had this
+repo layout, you may hit `error: The following untracked working tree files
+would be overwritten by merge: deployment/v2/passenger_wsgi.py` — that's
+cPanel's auto-generated Passenger shim sitting untracked at that path (not
+your data). Safe to remove and re-pull:
+```bash
+rm deployment/v2/passenger_wsgi.py
+git pull
+```
+
+### Operating notes
+
+- Upload size is already capped server-side — `MAX_CONTENT_LENGTH = 50MB` in
+  `app_v2.py` rejects oversized files before any processing starts.
+- The real resource risk on shared hosting is **CPU time, not upload size**:
+  Single File's sliding-window scan runs one CNN inference pass per window
+  (up to `n_segments`, capped at 150). Shared plans enforce a per-request
+  timeout you can't configure — scanning near the 150-window cap on a large
+  file risks the request getting killed mid-scan on constrained CPU. Keep
+  the UI's "Max Windows" default (20 ≈ 60s of audio) for production rather
+  than pushing it toward 150.
 
 ---
 

@@ -32,6 +32,14 @@ for _p in (str(_THIS_DIR), str(_REPO_ROOT)):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+# Load deployment/v2/.env into os.environ *before* drone_detection is
+# imported below — Config() reads NEXTCLOUD_BASE_URL / NEXTCLOUD_SHARE_TOKEN
+# from os.environ at import time (the `config` singleton in
+# drone_detection/config.py is constructed on import). No-op if the file
+# doesn't exist (e.g. cPanel, which injects env vars directly instead).
+from dotenv import load_dotenv
+load_dotenv(_THIS_DIR / ".env")
+
 import json
 import logging
 import os
