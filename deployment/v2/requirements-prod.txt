@@ -1,0 +1,86 @@
+# Production requirements for shared cPanel hosting (Truehost "Setup Python App").
+#
+# Differences from requirements_v2.txt:
+#   - torch / torchaudio pulled from the CPU-only wheel index. The default
+#     PyPI wheels bundle CUDA and are several GB each — they will blow a
+#     shared-hosting disk quota and can time out mid-download. The CPU
+#     build is ~150-300MB each and is all a GPU-less host can use anyway.
+#   - pytest / pytest-flask / iniconfig / pluggy dropped — test-only, never
+#     imported by app_v2.py or the drone_detection package at runtime.
+#   - pyaudio intentionally omitted — live microphone capture doesn't apply
+#     on a remote host; /api/v2/realtime/audio-devices degrades gracefully
+#     without it (see run_server_v2.py's pyaudio preflight check).
+#
+# Install with:
+#   pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-prod.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+absl-py==2.4.0
+anyio==4.12.1
+audioread==3.1.0
+bidict==0.23.1
+blinker==1.9.0
+certifi==2026.2.25
+cffi==2.0.0
+charset-normalizer==3.4.5
+click==8.3.1
+contourpy==1.3.3
+cycler==0.12.1
+decorator==5.2.1
+dnspython==2.8.0
+eventlet==0.40.4
+filelock==3.25.0
+Flask==3.1.3
+Flask-Cors==4.0.2
+Flask-SocketIO==5.6.1
+fonttools==4.61.1
+fsspec==2026.2.0
+greenlet==3.3.2
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.11
+itsdangerous==2.2.0
+Jinja2==3.1.6
+joblib==1.5.3
+kiwisolver==1.4.9
+lazy-loader==0.5
+librosa==0.11.0
+llvmlite==0.46.0
+Markdown==3.10.2
+MarkupSafe==3.0.3
+matplotlib==3.10.8
+mpmath==1.3.0
+msgpack==1.1.2
+networkx==3.6.1
+numba==0.64.0
+numpy==2.4.2
+packaging==26.0
+pillow==12.1.1
+platformdirs==4.9.4
+pooch==1.9.0
+pycparser==3.0
+Pygments==2.19.2
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+python-engineio==4.13.1
+python-socketio==5.16.1
+requests==2.32.5
+scikit-learn==1.8.0
+scipy==1.17.1
+setuptools==82.0.0
+simple-websocket==1.1.0
+six==1.17.0
+soundfile==0.13.1
+soxr==1.0.0
+sympy==1.14.0
+tensorboard==2.20.0
+tensorboard-data-server==0.7.2
+threadpoolctl==3.6.0
+torch==2.10.0
+torchaudio==2.10.0
+tqdm==4.67.3
+typing_extensions==4.15.0
+urllib3==2.6.3
+Werkzeug==3.1.6
+wsproto==1.3.2
