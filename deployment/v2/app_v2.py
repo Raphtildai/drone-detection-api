@@ -17,6 +17,16 @@ Default port: 5001  (v1 uses 5000)
 
 from __future__ import annotations
 
+# ── Thread-pool limits (must run before numpy/scipy is imported) ───────────
+# Shared cPanel hosting caps total processes/threads per account
+# (RLIMIT_NPROC). OpenBLAS sizes its thread pool to the host's CPU count
+# (e.g. 12) by default; with several Passenger workers each spawning that
+# many threads, the account exhausts its process quota and pthread_create()
+# fails with "Resource temporarily unavailable".
+import os
+for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+    os.environ.setdefault(_var, "1")
+
 # ── Path bootstrap ─────────────────────────────────────────────────────────
 import sys
 from pathlib import Path
@@ -42,7 +52,6 @@ load_dotenv(_THIS_DIR / ".env")
 
 import json
 import logging
-import os
 import tempfile
 import threading
 import time
