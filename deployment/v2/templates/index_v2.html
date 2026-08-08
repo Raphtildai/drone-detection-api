@@ -808,7 +808,26 @@ const BASE = window.location.origin;
 // disrupting the shared per-origin connection pool, occasionally breaking
 // unrelated concurrent fetches (e.g. batch-scan / manual-window). Polling-only
 // avoids the doomed handshake entirely.
-const socket = io(BASE, { path: '/socket.io', transports: ['polling'] });
+// Passenger runs multiple worker processes with no shared session store, so
+// a long-poll can land on a worker that doesn't recognize this client's
+// engineio session ("Invalid session" server-side) and forces a reconnect.
+// Socket.IO's default is to retry that forever, and each reconnect attempt
+// makes the server spawn a new ping-keepalive thread (engineio schedule_ping)
+// that's never cleaned up — across enough tabs/time this exhausts the
+// account's RLIMIT_NPROC and takes down every other endpoint (batch scan,
+// model loading, etc. all started failing with "can't start new thread" /
+// "fork: retry: Resource temporarily unavailable"). Capping reconnection
+// attempts stops the runaway thread growth; Real-Time still won't work
+// under this deployment (see passenger_wsgi.py), but it now fails quietly
+// after a few tries instead of taking the whole account down with it.
+const socket = io(BASE, {
+  path: '/socket.io',
+  transports: ['polling'],
+  reconnection: true,
+  reconnectionAttempts: 3,
+  reconnectionDelay: 2000,
+  reconnectionDelayMax: 5000,
+});
 
 socket.on('connect', () => {
   document.getElementById('wsDot').className = 'dot connected';
