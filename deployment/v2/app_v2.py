@@ -27,8 +27,18 @@ import os
 for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
     os.environ.setdefault(_var, "1")
 
-# ── Path bootstrap ─────────────────────────────────────────────────────────
+# ── Force UTF-8 stdout/stderr ───────────────────────────────────────────────
+# Passenger's stdout on this host defaults to ASCII. Code throughout this
+# codebase prints emoji status markers (✅/❌); under ASCII encoding those
+# print() calls raise UnicodeEncodeError, which callers can mistake for the
+# operation itself having failed (e.g. a model that loaded fine gets
+# reported as "load failed" because the success print() blew up).
 import sys
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+# ── Path bootstrap ─────────────────────────────────────────────────────────
 from pathlib import Path
 import hashlib
 import csv

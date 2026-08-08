@@ -45,6 +45,11 @@ import numpy as np
 
 log = logging.getLogger("drone_v2.dunakeszi_nextcloud")
 
+# Bytes that are illegal in XML 1.0 content (outside TAB/LF/CR) — Nextcloud
+# has been observed to emit these unescaped inside <d:href>/<d:displayname>
+# when a filename on the share contains them, which breaks ET.fromstring().
+_XML_ILLEGAL_BYTES_RE = re.compile(rb"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Exceptions
@@ -592,11 +597,21 @@ def list_remote_files(
         log.warning("WebDAV PROPFIND failed (%s): %s", remote_subpath, exc)
         return []
 
-    # Parse the multi-status XML
+    # Parse the multi-status XML. Strip bytes that are illegal in XML 1.0
+    # content first (see _XML_ILLEGAL_BYTES_RE) rather than losing the whole
+    # directory listing over one bad filename.
+    content = _XML_ILLEGAL_BYTES_RE.sub(b"", resp.content)
     try:
-        root = ET.fromstring(resp.content)
+        root = ET.fromstring(content)
     except ET.ParseError as exc:
-        log.warning("WebDAV XML parse error: %s", exc)
+        pos = getattr(exc, "position", None)
+        snippet = ""
+        if pos:
+            line_no, col_no = pos
+            lines = content.decode("utf-8", errors="replace").splitlines()
+            if 0 <= line_no - 1 < len(lines):
+                snippet = lines[line_no - 1][max(0, col_no - 40):col_no + 40]
+        log.warning("WebDAV XML parse error: %s | near: %r", exc, snippet)
         return []
 
     ns = {"d": _DAV_NS}
