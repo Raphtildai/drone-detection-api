@@ -29,6 +29,8 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
     && pip install --no-cache-dir gunicorn==23.0.0
 
 COPY app_v2.py .
+COPY realtime_sessions.py .
+COPY real_time_audio_v2.py .
 COPY drone_detection/ ./drone_detection/
 COPY models/ ./models/
 COPY templates/ ./templates/

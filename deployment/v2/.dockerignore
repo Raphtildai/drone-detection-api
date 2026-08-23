@@ -6,6 +6,8 @@
 
 !Dockerfile
 !app_v2.py
+!realtime_sessions.py
+!real_time_audio_v2.py
 !requirements-prod.txt
 
 !drone_detection
