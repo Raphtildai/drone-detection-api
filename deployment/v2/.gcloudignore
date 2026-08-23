@@ -4,6 +4,7 @@
 # Dockerfile actually COPYs.
 *
 
+!Dockerfile
 !app_v2.py
 !requirements-prod.txt
 
@@ -12,9 +13,6 @@
 
 !models
 !models/**
-
-!static
-!static/**
 
 !templates
 !templates/**

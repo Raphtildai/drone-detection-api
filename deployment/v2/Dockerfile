@@ -31,7 +31,6 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
 COPY app_v2.py .
 COPY drone_detection/ ./drone_detection/
 COPY models/ ./models/
-COPY static/ ./static/
 COPY templates/ ./templates/
 
 # Cloud Run injects $PORT (defaults to 8080) and expects the container to
