@@ -786,6 +786,7 @@
             <option value="single">Single File</option>
             <option value="3mic">3-Mic</option>
             <option value="multi">Multi-Drone</option>
+            <option value="batch">Batch Scan</option>
           </select>
           <button class="btn btn-ghost" onclick="loadHistory()">Refresh</button>
         </div>
@@ -1562,8 +1563,8 @@ function renderPathResult(d) {
 // HISTORY (Single File / 3-Mic / Multi-Drone — durable via Firestore)
 // ══════════════════════════════════════════════════════════════════════════════
 
-const HIST_TYPE_LABEL = {single:'🎵 Single File', '3mic':'📡 3-Mic', multi:'🚁🚁 Multi-Drone'};
-const HIST_PANEL_ID   = {single:'single', '3mic':'threemic', multi:'multi'};
+const HIST_TYPE_LABEL = {single:'🎵 Single File', '3mic':'📡 3-Mic', multi:'🚁🚁 Multi-Drone', batch:'📊 Batch Scan'};
+const HIST_PANEL_ID   = {single:'single', '3mic':'threemic', multi:'multi', batch:'batch'};
 
 async function loadHistory() {
   const list = document.getElementById('hist-list');
@@ -1574,7 +1575,7 @@ async function loadHistory() {
     const d = await r.json();
     const items = d.items || [];
     if (d.error) { list.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${d.error}</div>`; return; }
-    if (items.length === 0) { list.innerHTML = '<div style="color:var(--muted);padding:16px 0">No history yet — results from Single File, 3-Mic, and Multi-Drone detections appear here.</div>'; return; }
+    if (items.length === 0) { list.innerHTML = '<div style="color:var(--muted);padding:16px 0">No history yet — results from Single File, 3-Mic, Multi-Drone, and Batch Scan detections appear here.</div>'; return; }
     list.innerHTML = items.map(it => {
       const dt = new Date(it.timestamp * 1000).toLocaleString();
       const posStr = it.position ? `(${it.position[0].toFixed(2)}, ${it.position[1].toFixed(2)})m` : '';
@@ -1611,6 +1612,12 @@ async function replayHistory(id) {
     } else if (record.type === 'multi') {
       document.getElementById('result-multi-card').classList.remove('hidden');
       renderMultiResult(record.full_result);
+    } else if (record.type === 'batch') {
+      document.getElementById('result-batch-card').classList.remove('hidden');
+      _batchResults = record.full_result.results || [];
+      renderBatchSummary(record.full_result);
+      drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, record.full_result.threshold ?? 0.6, 'batch-window-detail');
+      drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults);
     }
   } catch(e) {
     alert(`Replay failed: ${e.message}`);

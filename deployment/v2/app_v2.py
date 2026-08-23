@@ -1387,17 +1387,27 @@ def repo_batch_scan():
         })
 
     detected_count = sum(1 for r in results if r["detected"])
-    return jsonify({
+    resp = {
         "filename": filename, "dataset_type": dataset_type, "array": array,
         "start_s": start_s, "scan_duration_s": scan_duration_s,
-        "window_s": window_s, "hop_s": hop_s,
+        "window_s": window_s, "hop_s": hop_s, "threshold": threshold,
         "n_windows": len(results),
         "truncated": truncated_by_cap or (len(results) < n_windows),
         "detected_count": detected_count,
         "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
         "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,
         "results": results,
-    })
+    }
+
+    peak = max(results, key=lambda r: r["probability"]) if results else None
+    history_store.log_detection("batch", {
+        "source":      f"{filename} ({dataset_type}/{array})",
+        "detected":    detected_count > 0,
+        "probability": peak["probability"] if peak else 0.0,
+        "position":    peak["position"] if peak else None,
+    }, resp)
+
+    return jsonify(resp)
 
 
 # ── Frontend ───────────────────────────────────────────────────────────────────
