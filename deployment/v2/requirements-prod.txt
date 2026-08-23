@@ -66,6 +66,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-engineio==4.13.1
 python-socketio==5.16.1
+remotezip
 requests==2.32.5
 scikit-learn==1.8.0
 scipy==1.17.1
