@@ -1346,45 +1346,49 @@ def repo_batch_scan():
     win_native   = int(round(window_s * native_sr))
 
     results = []
-    for i in range(n_windows):
-        off0, off1 = i * hop_native, i * hop_native + win_native
-        if off1 > n_available:
-            break   # ran out of data (short file / end of recording)
-        t_start = start_s + off0 / native_sr
+    try:
+        for i in range(n_windows):
+            off0, off1 = i * hop_native, i * hop_native + win_native
+            if off1 > n_available:
+                break   # ran out of data (short file / end of recording)
+            t_start = start_s + off0 / native_sr
 
-        if dataset_type == "mems":
-            seg = full_mono[off0:off1]
-            if native_sr != _repo_cfg.SR:
-                seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
-            y = ap.pad_or_truncate(seg)
-            out_channels = [y, y, y]
-        else:
-            out_channels = []
-            for ch_row in full_channels:
-                seg = ch_row[off0:off1]
+            if dataset_type == "mems":
+                seg = full_mono[off0:off1]
                 if native_sr != _repo_cfg.SR:
                     seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
-                out_channels.append(ap.pad_or_truncate(seg))
-            while len(out_channels) < 3:
-                out_channels.append(out_channels[-1].copy())
-            out_channels = out_channels[:3]
+                y = ap.pad_or_truncate(seg)
+                out_channels = [y, y, y]
+            else:
+                out_channels = []
+                for ch_row in full_channels:
+                    seg = ch_row[off0:off1]
+                    if native_sr != _repo_cfg.SR:
+                        seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+                    out_channels.append(ap.pad_or_truncate(seg))
+                while len(out_channels) < 3:
+                    out_channels.append(out_channels[-1].copy())
+                out_channels = out_channels[:3]
 
-        det      = detect(out_channels, _repo_cfg)
-        prob     = float(det["probability"])
-        detected = prob >= threshold
-        loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
+            det      = detect(out_channels, _repo_cfg)
+            prob     = float(det["probability"])
+            detected = prob >= threshold
+            loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
 
-        results.append({
-            "t_start": round(t_start, 3),
-            "t_end":   round(t_start + window_s, 3),
-            "detected": detected,
-            "probability": prob,
-            "cnn_probability": float(det.get("cnn_probability", prob)),
-            "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
-            "position": loc["xy_position"].tolist() if loc else None,
-            "azimuth_deg": loc["azimuth_deg"] if loc else None,
-            "distance_m": loc["distance_m"] if loc else None,
-        })
+            results.append({
+                "t_start": round(t_start, 3),
+                "t_end":   round(t_start + window_s, 3),
+                "detected": detected,
+                "probability": prob,
+                "cnn_probability": float(det.get("cnn_probability", prob)),
+                "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
+                "position": loc["xy_position"].tolist() if loc else None,
+                "azimuth_deg": loc["azimuth_deg"] if loc else None,
+                "distance_m": loc["distance_m"] if loc else None,
+            })
+    except Exception as exc:
+        log.exception("batch_scan window processing failed")
+        return jsonify({"error": f"Scan failed partway through: {exc}"}), 500
 
     detected_count = sum(1 for r in results if r["detected"])
     resp = {
