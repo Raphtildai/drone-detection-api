@@ -601,6 +601,16 @@ def list_remote_files(
     # content first (see _XML_ILLEGAL_BYTES_RE) rather than losing the whole
     # directory listing over one bad filename.
     content = _XML_ILLEGAL_BYTES_RE.sub(b"", resp.content)
+
+    # This share's server has been observed to return the PROPFIND response
+    # body duplicated — a second `<?xml ...?>` declaration appears mid
+    # document, which is illegal (only one is allowed, at position 0) and
+    # makes the whole thing unparseable. Discard everything from the second
+    # declaration onward and parse just the first (complete) document.
+    xml_decl_positions = [m.start() for m in re.finditer(rb"<\?xml\b", content)]
+    if len(xml_decl_positions) > 1:
+        content = content[:xml_decl_positions[1]]
+
     try:
         root = ET.fromstring(content)
     except ET.ParseError as exc:
