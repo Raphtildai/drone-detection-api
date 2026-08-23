@@ -273,6 +273,8 @@
       <div class="card">
         <h2>🎵 SINGLE FILE DETECTION</h2>
         <div class="dropzone"><input type="file" id="file-single" accept=".wav,.mp3,.flac,.ogg,.m4a" /><div class="dz-icon">📂</div><div class="dz-text">Click to select audio</div><div class="dz-files" id="dz-single-name"></div></div>
+        <div style="text-align:center;color:var(--muted);font-size:10px;margin:8px 0">— or —</div>
+        <div class="form-group"><label>Paste a direct audio/video file URL</label><input type="text" id="sgl-url" placeholder="https://example.com/clip.wav" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:11px;width:100%;outline:none" /></div>
         <div class="form-grid" style="margin-top:14px">
           <div class="form-group"><label>Drone X (m)</label><input type="number" id="sgl-x" value="1.0" step="0.1" min="-5" max="5" /></div>
           <div class="form-group"><label>Drone Y (m)</label><input type="number" id="sgl-y" value="0.8" step="0.1" min="-5" max="5" /></div>
@@ -1520,10 +1522,12 @@ function renderStatus(d) {
 // ══════════════════════════════════════════════════════════════════════════════
 async function runSingleDetect() {
   const f=document.getElementById('file-single').files[0];
-  if(!f){alert('Select a file');return;}
+  const url=document.getElementById('sgl-url').value.trim();
+  if(!f && !url){alert('Select a file or paste a URL');return;}
   setBusy('btn-single',true);
   const fd=new FormData();
-  fd.append('file',f);fd.append('drone_x',document.getElementById('sgl-x').value);fd.append('drone_y',document.getElementById('sgl-y').value);fd.append('threshold',document.getElementById('sgl-thresh').value);fd.append('n_segments',document.getElementById('sgl-segs').value);fd.append('force_detect',document.getElementById('sgl-force').checked?'true':'false');
+  if(f){fd.append('file',f);}else{fd.append('url',url);}
+  fd.append('drone_x',document.getElementById('sgl-x').value);fd.append('drone_y',document.getElementById('sgl-y').value);fd.append('threshold',document.getElementById('sgl-thresh').value);fd.append('n_segments',document.getElementById('sgl-segs').value);fd.append('force_detect',document.getElementById('sgl-force').checked?'true':'false');
   try{const r=await fetch(`${BASE}/api/v2/detect`,{method:'POST',body:fd});const d=await r.json();document.getElementById('result-single-card').classList.remove('hidden');renderSingleResult(d);}catch(e){document.getElementById('result-single-card').classList.remove('hidden');document.getElementById('result-single-viz').innerHTML=`<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;}finally{setBusy('btn-single',false);}
 }
 async function run3Mic() {

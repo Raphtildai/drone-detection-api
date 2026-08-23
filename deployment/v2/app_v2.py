@@ -43,7 +43,7 @@ from pathlib import Path
 import hashlib
 import csv
 import re
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urljoin
 
 _THIS_DIR  = Path(__file__).parent.resolve()
 _REPO_ROOT = _THIS_DIR.parent.parent.resolve()
@@ -190,6 +190,91 @@ def _cleanup(*paths: str) -> None:
             pass
 
 
+def _assert_public_url(url: str) -> None:
+    """
+    Reject URLs that resolve to private/loopback/link-local addresses.
+
+    This app fetches user-supplied URLs server-side (Single File "paste a
+    link" input). Without this check, a request for e.g.
+    http://169.254.169.254/computeMetadata/v1/instance/service-accounts/
+    default/token would let anyone steal this Cloud Run service's
+    credentials — a classic SSRF-to-metadata-server attack. Every hostname
+    the URL resolves to must be a public address before we let `requests`
+    touch it.
+    """
+    import ipaddress
+    import socket
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("URL must be http:// or https://")
+    if not parsed.hostname:
+        raise ValueError("URL has no hostname")
+
+    try:
+        addrs = socket.getaddrinfo(parsed.hostname, None)
+    except socket.gaierror as exc:
+        raise ValueError(f"Could not resolve host: {parsed.hostname}") from exc
+
+    for family, _, _, _, sockaddr in addrs:
+        ip = ipaddress.ip_address(sockaddr[0])
+        if not ip.is_global:
+            raise ValueError(
+                f"URL resolves to a non-public address ({ip}) — not allowed"
+            )
+
+
+def _save_from_url(url: str, max_bytes: int) -> str:
+    """
+    Download a user-supplied URL to a temp file for detection, same
+    contract as _save_upload(). Streams with a hard byte cap so a huge or
+    slow-loris remote file can't exhaust memory/time — mirrors the
+    MAX_CONTENT_LENGTH cap already enforced on direct uploads.
+    """
+    import requests
+
+    ext = _file_ext(url.split("?")[0].split("#")[0]) or ".wav"
+    if ext not in ALLOWED_AUDIO:
+        ext = ".wav"  # content-type below decides whether this actually works
+
+    # Validate + follow redirects manually (max 5 hops) rather than
+    # requests' allow_redirects=True, which would only validate the
+    # original URL — a public URL that 302s to an internal address would
+    # otherwise sail straight past _assert_public_url().
+    next_url = url
+    for _ in range(5):
+        _assert_public_url(next_url)
+        resp = requests.get(next_url, stream=True, timeout=30, allow_redirects=False)
+        if resp.is_redirect or resp.is_permanent_redirect:
+            location = resp.headers.get("Location")
+            resp.close()
+            if not location:
+                raise ValueError("Redirect response missing Location header")
+            next_url = urljoin(next_url, location)
+            continue
+        break
+    else:
+        raise ValueError("Too many redirects")
+
+    resp.raise_for_status()
+
+    tf = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
+    written = 0
+    try:
+        for chunk in resp.iter_content(chunk_size=1024 * 256):
+            written += len(chunk)
+            if written > max_bytes:
+                raise ValueError(f"Remote file exceeds {max_bytes // (1024*1024)}MB limit")
+            tf.write(chunk)
+    except Exception:
+        tf.close()
+        os.unlink(tf.name)
+        raise
+    tf.close()
+    return tf.name
+
+
 def _file_ext(filename: str) -> str:
     return Path(filename).suffix.lower()
 
@@ -275,24 +360,38 @@ def detect_single():
 
     Form fields
     -----------
-    file        : audio file (required)
+    file        : audio file — required unless `url` is given
+    url         : direct link to an audio/video file, fetched server-side —
+                  alternative to `file` (not both). Must resolve to a public
+                  address; private/loopback/link-local targets are rejected.
     drone_x     : hint X position metres (default 1.0)
     drone_y     : hint Y position metres (default 0.8)
     threshold   : detection threshold 0.1–0.99 (default cfg.DETECTION_THRESHOLD)
     n_segments  : max number of windows to scan (default 20, capped at 150)
     force_detect: skip classifier, always localise (default false)
     """
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-    f = request.files["file"]
-    if _file_ext(f.filename) not in ALLOWED_AUDIO:
-        return jsonify({"error": f"Unsupported format: {f.filename}"}), 400
+    url = request.form.get("url", "").strip()
+    if "file" in request.files and request.files["file"].filename:
+        f = request.files["file"]
+        if _file_ext(f.filename) not in ALLOWED_AUDIO:
+            return jsonify({"error": f"Unsupported format: {f.filename}"}), 400
+        source_label = f.filename
+        get_tmp = lambda: _save_upload(f, suffix=_file_ext(f.filename) or ".wav")
+    elif url:
+        source_label = url
+        get_tmp = lambda: _save_from_url(url, app.config["MAX_CONTENT_LENGTH"])
+    else:
+        return jsonify({"error": "No file uploaded and no url given"}), 400
 
     MAX_WINDOWS  = 150
     max_windows  = min(int(request.form.get("n_segments", 20)), MAX_WINDOWS)
     force_detect = request.form.get("force_detect", "false").lower() == "true"
 
-    tmp = _save_upload(f, suffix=_file_ext(f.filename) or ".wav")
+    try:
+        tmp = get_tmp()
+    except Exception as exc:
+        return jsonify({"error": f"Could not fetch audio: {exc}"}), 400
+
     try:
         m, cfg = get_model()
         threshold = float(request.form.get("threshold", cfg.DETECTION_THRESHOLD))
@@ -368,7 +467,7 @@ def detect_single():
 
         _append_result_log({
             "timestamp":      time.time(),
-            "filename_hash":  hashlib.sha256(f.filename.encode()).hexdigest()[:12],
+            "filename_hash":  hashlib.sha256(source_label.encode()).hexdigest()[:12],
             "detected":       resp["detected"],
             "probability":    resp["probability"],
             "position":       resp.get("position"),
@@ -379,7 +478,7 @@ def detect_single():
                 "timestamp":  time.time(),
                 "confidence": resp["probability"],
                 "position":   resp.get("position"),
-                "source":     f.filename,
+                "source":     source_label,
             })
 
         return jsonify(resp)
