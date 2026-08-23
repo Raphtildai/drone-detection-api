@@ -575,6 +575,11 @@
           <!-- Active tracks -->
           <div class="card" style="padding:14px">
             <h2 style="margin-bottom:10px">ACTIVE TRACKS <span id="rt-track-count" style="color:var(--muted);font-size:11px;font-weight:400">(0)</span></h2>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--muted)">
+              <input type="text" id="rt-track-search" placeholder="Filter by track # or m/s" oninput="updateTrackList()" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:4px 7px;font-family:inherit;font-size:10px;outline:none" />
+              <label style="cursor:pointer;white-space:nowrap"><input type="checkbox" id="rt-track-confirmed-only" onchange="updateTrackList()" style="margin-right:3px" />confirmed only</label>
+              <button class="btn" onclick="rtState.tracks={};updateTrackList();drawRadar();" title="Clear all tracks" style="padding:3px 8px;font-size:10px;background:var(--border);color:var(--text)">Clear</button>
+            </div>
             <div class="rt-track-list" id="rt-track-list">
               <div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No confirmed tracks yet</div>
             </div>
@@ -743,6 +748,11 @@
           <!-- Active tracks -->
           <div class="card" style="padding:14px">
             <h2 style="margin-bottom:10px">ACTIVE TRACKS <span id="repo-track-count" style="color:var(--muted);font-size:11px;font-weight:400">(0)</span></h2>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;font-size:10px;color:var(--muted)">
+              <input type="text" id="repo-track-search" placeholder="Filter by track # or m/s" oninput="updateRepoTrackList()" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:4px 7px;font-family:inherit;font-size:10px;outline:none" />
+              <label style="cursor:pointer;white-space:nowrap"><input type="checkbox" id="repo-track-confirmed-only" onchange="updateRepoTrackList()" style="margin-right:3px" />confirmed only</label>
+              <button class="btn" onclick="repoState.tracks={};updateRepoTrackList();drawRepoRadar();" title="Clear all tracks" style="padding:3px 8px;font-size:10px;background:var(--border);color:var(--text)">Clear</button>
+            </div>
             <div class="rt-track-list" id="repo-track-list">
               <div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No confirmed tracks yet</div>
             </div>
@@ -1085,6 +1095,7 @@ function drawRadar() {
 
   // Tracks
   Object.values(rtState.tracks).forEach(track=>{
+    if(track.visible===false) return;
     const pts=track.positions;
     if(!pts||pts.length===0) return;
     const col=track.color;
@@ -1259,25 +1270,49 @@ function addRtLog(html) {
 
 function updateTrackList() {
   const list = document.getElementById('rt-track-list');
-  const tracks = Object.values(rtState.tracks).sort((a,b)=>b.hits-a.hits);
-  if(tracks.length===0){
+  const allTracks = Object.values(rtState.tracks);
+  document.getElementById('rt-track-count').textContent=`(${allTracks.filter(t=>t.confirmed).length} confirmed)`;
+  const tracks = filterTracks(allTracks, 'rt-track-search', 'rt-track-confirmed-only');
+  if(allTracks.length===0){
     list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks yet</div>';
-    document.getElementById('rt-track-count').textContent='(0)';
     return;
   }
-  const confirmed = tracks.filter(t=>t.confirmed);
-  document.getElementById('rt-track-count').textContent=`(${confirmed.length} confirmed)`;
+  if(tracks.length===0){
+    list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks match filter</div>';
+    return;
+  }
   list.innerHTML = tracks.map(t=>{
     const last=t.positions&&t.positions.length?t.positions[t.positions.length-1]:null;
     const posStr = last?`(${last[0].toFixed(2)},${last[1].toFixed(2)})m`:'—';
-    return `<div class="rt-track-item">
+    const hidden = t.visible===false;
+    return `<div class="rt-track-item" onclick="toggleTrackVisible(rtState,${t.id});updateTrackList();drawRadar();" title="Click to ${hidden?'show':'hide'} on radar" style="cursor:pointer;opacity:${hidden?0.4:1}">
       <div class="rt-track-dot" style="background:${t.color}"></div>
       <div style="flex:1">
-        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'}</div>
+        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'} ${hidden?'<span style="color:var(--muted);font-weight:400">(hidden)</span>':''}</div>
         <div style="color:var(--muted);font-size:10px">${posStr} &nbsp; ${t.speed.toFixed(2)}m/s &nbsp; hits:${t.hits}</div>
       </div>
     </div>`;
   }).join('');
+}
+
+// Shared by updateTrackList() / updateRepoTrackList(): text search (matches
+// track id or speed) + optional "confirmed only", sorted by most hits first.
+function filterTracks(tracks, searchId, confirmedOnlyId) {
+  const q = (document.getElementById(searchId)?.value||'').trim().toLowerCase();
+  const confirmedOnly = document.getElementById(confirmedOnlyId)?.checked;
+  return tracks
+    .filter(t=>!confirmedOnly || t.confirmed)
+    .filter(t=>!q || String(t.id).includes(q) || t.speed.toFixed(2).includes(q))
+    .sort((a,b)=>b.hits-a.hits);
+}
+
+// Toggles whether a track is drawn on the radar/map, without discarding its
+// data — lets users declutter a crowded view (e.g. a long repository scan
+// that's accumulated dozens of tracks) without losing history.
+function toggleTrackVisible(state, trackId) {
+  const t = state.tracks[trackId];
+  if(!t) return;
+  t.visible = t.visible===false ? true : false;
 }
 
 function updateLastDetection(det) {
@@ -1656,7 +1691,7 @@ function drawRepoRadar() {
   let VIEW = repoState.maxDist > 5 ? repoState.maxDist * 0.55 : 3.2;
   // collect all real positions to compute tight view
   const _allPts = [];
-  Object.values(repoState.tracks).forEach(t=>(t.positions||[]).forEach(p=>_allPts.push(p)));
+  Object.values(repoState.tracks).forEach(t=>{ if(t.visible!==false) (t.positions||[]).forEach(p=>_allPts.push(p)); });
   repoState.gtPositions.forEach(p=>{ if(p) _allPts.push(p); });
   repoState.lastDetections.forEach(d=>{ if(d.position) _allPts.push(d.position); });
   if(_allPts.length>0){
@@ -1732,6 +1767,7 @@ function drawRepoRadar() {
 
   // Tracks
   Object.values(repoState.tracks).forEach(track=>{
+    if(track.visible===false) return;
     const pts=track.positions;
     if(!pts||pts.length===0) return;
     const col=track.color;
@@ -1975,21 +2011,25 @@ function updateRepoErrHist() {
 
 function updateRepoTrackList() {
   const list = document.getElementById('repo-track-list');
-  const tracks = Object.values(repoState.tracks).sort((a,b)=>b.hits-a.hits);
-  if(tracks.length===0){
+  const allTracks = Object.values(repoState.tracks);
+  document.getElementById('repo-track-count').textContent=`(${allTracks.filter(t=>t.confirmed).length} confirmed)`;
+  const tracks = filterTracks(allTracks, 'repo-track-search', 'repo-track-confirmed-only');
+  if(allTracks.length===0){
     list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks yet</div>';
-    document.getElementById('repo-track-count').textContent='(0)';
     return;
   }
-  const confirmed=tracks.filter(t=>t.confirmed);
-  document.getElementById('repo-track-count').textContent=`(${confirmed.length} confirmed)`;
+  if(tracks.length===0){
+    list.innerHTML='<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px 0">No tracks match filter</div>';
+    return;
+  }
   list.innerHTML=tracks.map(t=>{
     const last=t.positions&&t.positions.length?t.positions[t.positions.length-1]:null;
     const posStr=last?`(${last[0].toFixed(2)},${last[1].toFixed(2)})m`:'—';
-    return `<div class="rt-track-item">
+    const hidden = t.visible===false;
+    return `<div class="rt-track-item" onclick="toggleTrackVisible(repoState,${t.id});updateRepoTrackList();drawRepoRadar();" title="Click to ${hidden?'show':'hide'} on map" style="cursor:pointer;opacity:${hidden?0.4:1}">
       <div class="rt-track-dot" style="background:${t.color}"></div>
       <div style="flex:1">
-        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'}</div>
+        <div style="color:${t.color};font-weight:700">Track #${t.id} ${t.confirmed?'<span class="rt-track-confirmed">✓ CONFIRMED</span>':'<span class="rt-track-pending">⌛ pending</span>'} ${hidden?'<span style="color:var(--muted);font-weight:400">(hidden)</span>':''}</div>
         <div style="color:var(--muted);font-size:10px">${posStr} &nbsp; ${t.speed.toFixed(2)}m/s &nbsp; hits:${t.hits}</div>
       </div>
     </div>`;
