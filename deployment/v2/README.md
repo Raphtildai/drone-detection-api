@@ -416,6 +416,107 @@ over SSH).
 
 ---
 
+## Deploying to Google Cloud Run
+
+Moved here after shared cPanel hosting's account-wide process cap (a
+CloudLinux LVE limit as low as 50 processes/threads for the *whole*
+account, not just this app) turned out too low for a PyTorch+SciPy app —
+every Cloud Run container gets its own dedicated CPU/memory instead of
+sharing one pool with every other app on the account.
+
+`Dockerfile`, `.dockerignore` and `.gcloudignore` exist specifically for
+this. Like the cPanel path, this directory also holds tens of GB of
+research data that must never enter the build context — the ignore files
+exclude everything by default and explicitly allow back in only:
+`Dockerfile`, `app_v2.py`, `realtime_sessions.py`, `real_time_audio_v2.py`,
+`requirements-prod.txt`, `drone_detection/`, `models/`, `templates/`.
+`static/` is intentionally omitted — it's empty and unused (the dashboard
+is a single inlined HTML file). **If you add a new top-level sibling
+module that `app_v2.py` imports lazily** (grep for `from realtime_sessions
+import` / `from real_time_audio_v2 import` — anything imported inside a
+route handler rather than at module level is easy to miss), add both a
+`COPY` line in the Dockerfile and a `!filename.py` line in both ignore
+files, or it'll deploy fine and then 500 with `No module named '...'` the
+first time that route is hit.
+
+`async_mode` stays `"threading"` (unchanged from the cPanel deployment)
+rather than switching to `eventlet` for real WebSocket support — Cloud Run
+does support WebSocket upgrades, but eventlet's monkey-patching has known
+conflicts with PyTorch's native threads, and it wasn't worth the risk for
+this migration. Real-Time stays polling-only, same as before.
+
+### Procedure
+
+1. **Get a GCP project with billing linked.** A billing account (with a
+   card on file) is required to enable Cloud Run/Cloud Build even for
+   free-tier usage — you won't be charged while under the free monthly
+   quota, but the APIs won't enable without one attached:
+   ```bash
+   gcloud billing accounts list
+   gcloud billing projects link YOUR_PROJECT_ID --billing-account=ACCOUNT_ID
+   ```
+2. **Grant the default Compute service account the builder role.** New GCP
+   projects no longer auto-grant this, and its absence fails source
+   uploads with `PERMISSION_DENIED ... could not resolve source` on the
+   `run-sources-*` bucket:
+   ```bash
+   PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
+   gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+     --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+     --role="roles/cloudbuild.builds.builder"
+   ```
+3. **Deploy from source** (Cloud Build builds the image — no local Docker
+   needed; this also works unmodified from Cloud Shell):
+   ```bash
+   cd deployment/v2
+   gcloud services enable run.googleapis.com cloudbuild.googleapis.com
+   gcloud run deploy drone-detection \
+     --source . \
+     --region europe-west1 \
+     --allow-unauthenticated \
+     --memory 2Gi \
+     --cpu 2 \
+     --min-instances 0 \
+     --max-instances 3 \
+     --timeout 300 \
+     --set-env-vars NEXTCLOUD_BASE_URL="...",NEXTCLOUD_SHARE_TOKEN="..."
+   ```
+   Prints a `*.run.app` URL when done — check
+   `https://YOUR-URL/api/v2/status` before moving on.
+4. **Map your custom domain:**
+   ```bash
+   gcloud run domain-mappings create \
+     --service drone-detection \
+     --domain drone-detection.yourdomain.com \
+     --region europe-west1
+   ```
+   If the domain isn't already verified on your Google account, this walks
+   you to Search Console for a TXT-record verification first. Once
+   verified, it prints the DNS records to add (typically a `CNAME` to
+   `ghs.googlehosted.com.`) — add them via your DNS provider (cPanel's Zone
+   Editor if that's where the domain's DNS is hosted), replacing whatever
+   record currently points that subdomain elsewhere.
+
+### Operating notes
+
+- `--min-instances 0` means a cold start (torch/scipy import + model load)
+  on the first request after idle — a few seconds. Set `--min-instances 1`
+  to keep one warm instead, at the cost of that instance's memory/CPU
+  counting continuously against the free monthly quota.
+- Redeploying is `git pull` (in Cloud Shell or wherever you keep the repo
+  checked out) followed by the same `gcloud run deploy` command — Cloud
+  Build rebuilds the image from the current source each time.
+- View logs for a specific failure with a text filter rather than
+  `services logs read`'s raw tail, which mixes in routine PyTorch
+  `NNPACK`/warning spam from every model load:
+  ```bash
+  gcloud logging read \
+    'resource.type="cloud_run_revision" AND resource.labels.service_name="drone-detection" AND severity>=WARNING' \
+    --limit 50 --format="value(timestamp,textPayload)"
+  ```
+
+---
+
 ## Troubleshooting
 
 | Problem | Fix |
