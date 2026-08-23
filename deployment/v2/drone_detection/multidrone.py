@@ -62,6 +62,20 @@ _RESIDUAL_THRESHOLD = 1e-8
 # Position deduplication: two solutions within this distance are the same drone.
 _POS_DEDUP_M = 0.50             # v1 raised from 0.15 m
 
+# Minimum GCC-PHAT strength a candidate needs, relative to the strongest
+# candidate in this call, to be accepted as a distinct drone. Without this
+# gate, every prior filter here is purely geometric (TDOA self-consistency,
+# residual, dedup, min distance) — none of them check whether a peak is
+# actually strong evidence of a real source vs. reverberation/multipath
+# noise. PHAT-normalized correlation specifically sharpens the true peak
+# while also amplifying noise-floor peaks relative to plain GCC, so on a
+# real single-drone recording it's common to get 2-3 "geometrically valid"
+# but spurious extra peaks — exactly enough to fill out whatever max_drones
+# was requested, regardless of how many drones are actually present.
+# 0.6 is a starting point, not a validated constant — tune against known
+# single- vs multi-drone recordings if it still over- or under-reports.
+_MIN_RELATIVE_STRENGTH = 0.6
+
 # Soft barrier strengths
 _BARRIER_WEIGHT_IN  = 1e-6      # repel from r < _MIN_SOLUTION_DIST_M
 _BARRIER_WEIGHT_OUT = 5e-8      # soft repel from r > max_dist (v2 — no hard clip)
@@ -212,6 +226,7 @@ def localize_multi_drone(
                 candidates.append((tau12, tau13, tau13 - tau12, strength, consistency))
 
     candidates.sort(key=lambda x: -x[3])    # highest GCC strength first
+    min_strength = candidates[0][3] * _MIN_RELATIVE_STRENGTH if candidates else 0.0
 
     drones:   List[dict]          = []
     seen_pos: List[np.ndarray]    = []
@@ -219,6 +234,11 @@ def localize_multi_drone(
 
     for tau12, tau13, tau23, strength, consistency in candidates:
         if len(drones) >= max_drones:
+            break
+
+        # Candidates are sorted strongest-first, so once one falls below the
+        # relative-strength gate, every remaining candidate does too.
+        if strength < min_strength:
             break
 
         # Coarse TDOA deduplication
