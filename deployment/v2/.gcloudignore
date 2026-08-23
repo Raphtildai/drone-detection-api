@@ -1,0 +1,20 @@
+# This directory also holds large scratch/training data (multi-GB .wav
+# files, dataset zips, notebooks) that must never enter the build context —
+# ignore everything by default, then explicitly allow only what the
+# Dockerfile actually COPYs.
+*
+
+!app_v2.py
+!requirements-prod.txt
+
+!drone_detection
+!drone_detection/**
+
+!models
+!models/**
+
+!static
+!static/**
+
+!templates
+!templates/**
