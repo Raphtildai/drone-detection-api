@@ -253,10 +253,14 @@ class Config:
         self.NEXTCLOUD_BASE_URL    = os.environ.get("NEXTCLOUD_BASE_URL", None)
         self.NEXTCLOUD_SHARE_TOKEN = os.environ.get("NEXTCLOUD_SHARE_TOKEN", None)
 
-        # Sub-paths inside the share (relative to the share root)
-        self.NEXTCLOUD_POLYWAV_PATH = "/Dunakeszi_2025_10_25/Dunakeszi_BRUEL_VIDEO/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053"   # directory containing the 17× 4 GB polywav files
-        self.NEXTCLOUD_MEMS_PATH    = "/Dunakeszi_2025_10_25/Dunakeszi_MEMS/Audio"      # directory containing the 12 MEMS audio files
-        self.NEXTCLOUD_GPX_PATH     = "/Dunakeszi_2025_10_25/Dunakeszi_DRON-ADATOK/DRON-GPX"  # directory tree with per-show GPX logs
+        # Sub-paths inside the share (relative to the share root).
+        # The share was reorganized into numbered event folders at some
+        # point after these were first set — verified against the live
+        # share on 2026-08-23 (PROPFIND was 404ing under the old
+        # Dunakeszi_2025_10_25/... prefix, which no longer exists).
+        self.NEXTCLOUD_POLYWAV_PATH = "/4-251020-Dunakeszi-VITEMOROM1/Dunakeszi_BRUEL_VIDEO/192KHZ_MULTIWAV_AUDIO_12X_BRUEL4053"   # directory containing the 17× 4 GB polywav files
+        self.NEXTCLOUD_MEMS_PATH    = "/4-251020-Dunakeszi-VITEMOROM1/Dunakeszi_MEMS/Audio"      # directory containing the 12 MEMS audio files
+        self.NEXTCLOUD_GPX_PATH     = "/4-251020-Dunakeszi-VITEMOROM1/Dunakeszi_DRON-ADATOK/DRON-GPX"  # directory tree with per-show GPX logs
 
         # ── Dunakeszi audio format details (used by dunakeszi_nextcloud.py) ───────────
         #
