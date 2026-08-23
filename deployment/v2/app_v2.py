@@ -76,6 +76,8 @@ from drone_detection.repository_loader import (
     get_dunakeszi_file_browser,
 )
 
+import history_store
+
 # NOTE: _get_config() is defined below; _repo_cfg is initialised after it.
 
 logging.basicConfig(
@@ -348,6 +350,43 @@ def status():
     })
 
 
+@app.route("/api/v2/history", methods=["GET"])
+def history_list():
+    """
+    List saved detection history (Single File / 3-Mic / Multi-Drone),
+    most recent first.
+
+    Query params
+    ------------
+    type  : filter to one detection type ("single" | "3mic" | "multi")
+    limit : max entries to return (default 50, capped at 200)
+    """
+    try:
+        limit = int(request.args.get("limit", 50))
+    except ValueError:
+        limit = 50
+    detection_type = request.args.get("type") or None
+    try:
+        items = history_store.list_history(limit=limit, detection_type=detection_type)
+        return jsonify({"items": items})
+    except Exception as exc:
+        log.exception("history_list failed")
+        return jsonify({"error": str(exc)}), 500
+
+
+@app.route("/api/v2/history/<record_id>", methods=["GET"])
+def history_get(record_id):
+    """Full record for one history entry, for replaying it in the UI."""
+    try:
+        record = history_store.get_detection(record_id)
+    except Exception as exc:
+        log.exception("history_get failed")
+        return jsonify({"error": str(exc)}), 500
+    if record is None:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(record)
+
+
 @app.route("/api/v2/detect", methods=["POST"])
 def detect_single():
     """
@@ -472,6 +511,12 @@ def detect_single():
             "probability":    resp["probability"],
             "position":       resp.get("position"),
         })
+        history_store.log_detection("single", {
+            "source":      source_label,
+            "detected":    resp["detected"],
+            "probability": resp["probability"],
+            "position":    resp.get("position"),
+        }, resp)
 
         if resp["detected"]:
             socketio.emit("drone_detected_v2", {
@@ -547,6 +592,14 @@ def detect_3mic():
                 "position":   _clean(loc["xy_position"]),
                 "source":     "3-mic",
             })
+
+        source_label = ", ".join(request.files[k].filename for k in ("mic1", "mic2", "mic3"))
+        history_store.log_detection("3mic", {
+            "source":      source_label,
+            "detected":    resp["detected"],
+            "probability": resp["probability"],
+            "position":    resp.get("localization", {}).get("position") if resp.get("localization") else None,
+        }, resp)
 
         return jsonify(resp)
 
@@ -624,6 +677,14 @@ def detect_multi():
                 "drones":     drones_out,
                 "source":     "multi-drone",
             })
+
+        source_label = ", ".join(request.files[k].filename for k in ("mic1", "mic2", "mic3"))
+        history_store.log_detection("multi", {
+            "source":      source_label,
+            "detected":    resp["detected"],
+            "probability": resp["probability"],
+            "position":    drones_out[0]["position"] if drones_out else None,
+        }, resp)
 
         return jsonify(resp)
 

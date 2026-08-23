@@ -262,6 +262,7 @@
     </div>
     <div class="sidebar-section">
       <h3>System</h3>
+      <button class="nav-btn" onclick="switchPanel('history',this)"><span class="icon">🕘</span> History</button>
       <button class="nav-btn" onclick="switchPanel('status',this)"><span class="icon">⚙️</span> Status</button>
     </div>
   </nav>
@@ -775,6 +776,24 @@
       </div>
     </div>
 
+    <!-- ── HISTORY ── -->
+    <div id="panel-history" class="hidden">
+      <div class="card">
+        <h2>🕘 DETECTION HISTORY</h2>
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px">
+          <select id="hist-type-filter" onchange="loadHistory()" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-family:inherit;font-size:12px">
+            <option value="">All types</option>
+            <option value="single">Single File</option>
+            <option value="3mic">3-Mic</option>
+            <option value="multi">Multi-Drone</option>
+          </select>
+          <button class="btn btn-ghost" onclick="loadHistory()">Refresh</button>
+        </div>
+        <div style="color:var(--muted);font-size:10px;margin-bottom:10px">Click an entry to replay it in its original panel.</div>
+        <div id="hist-list" style="color:var(--muted);font-size:11px;text-align:center;padding:20px 0">Loading…</div>
+      </div>
+    </div>
+
     <!-- ── STATUS ── -->
     <div id="panel-status" class="hidden">
       <div class="card"><h2>⚙️ SYSTEM STATUS</h2><button class="btn btn-ghost" onclick="fetchStatus()">Refresh</button><div id="result-status" style="margin-top:14px"></div></div>
@@ -879,7 +898,7 @@ function addLiveEvent(data, type='detected') {
 // ══════════════════════════════════════════════════════════════════════════════
 // PANEL SWITCHING
 // ══════════════════════════════════════════════════════════════════════════════
-const PANELS = ['single','threemic','multi','noise','path','realtime','repository','manual','batch','status'];
+const PANELS = ['single','threemic','multi','noise','path','realtime','repository','manual','batch','status','history'];
 function switchPanel(id, btn) {
   PANELS.forEach(p => document.getElementById('panel-'+p).classList.add('hidden'));
   document.getElementById('panel-'+id).classList.remove('hidden');
@@ -887,6 +906,7 @@ function switchPanel(id, btn) {
   if (btn) btn.classList.add('active');
   if (id === 'realtime') { startRadarIdle(); loadAudioDevices(); }
   if (id === 'repository') { startRepoRadarIdle(); }
+  if (id === 'history') { loadHistory(); }
 }
 
 // File dropzones
@@ -1536,6 +1556,65 @@ function renderPathResult(d) {
   }
   html+=rawJsonHtml(d); viz.innerHTML=html;
   if(tracks.length>0){const c=document.getElementById('map-path-canvas');drawPositionMap(c,[],{tracks:tracks.map(t=>t.positions||[]),showZone:true});}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HISTORY (Single File / 3-Mic / Multi-Drone — durable via Firestore)
+// ══════════════════════════════════════════════════════════════════════════════
+
+const HIST_TYPE_LABEL = {single:'🎵 Single File', '3mic':'📡 3-Mic', multi:'🚁🚁 Multi-Drone'};
+const HIST_PANEL_ID   = {single:'single', '3mic':'threemic', multi:'multi'};
+
+async function loadHistory() {
+  const list = document.getElementById('hist-list');
+  list.innerHTML = 'Loading…';
+  const type = document.getElementById('hist-type-filter').value;
+  try {
+    const r = await fetch(`${BASE}/api/v2/history?limit=50${type?'&type='+type:''}`);
+    const d = await r.json();
+    const items = d.items || [];
+    if (d.error) { list.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${d.error}</div>`; return; }
+    if (items.length === 0) { list.innerHTML = '<div style="color:var(--muted);padding:16px 0">No history yet — results from Single File, 3-Mic, and Multi-Drone detections appear here.</div>'; return; }
+    list.innerHTML = items.map(it => {
+      const dt = new Date(it.timestamp * 1000).toLocaleString();
+      const posStr = it.position ? `(${it.position[0].toFixed(2)}, ${it.position[1].toFixed(2)})m` : '';
+      return `<div class="rt-track-item" onclick="replayHistory('${it.id}')" style="cursor:pointer;text-align:left">
+        <div class="rt-track-dot" style="background:${it.detected?'#22c55e':'#6b7280'}"></div>
+        <div style="flex:1">
+          <div style="font-weight:700">${HIST_TYPE_LABEL[it.type]||it.type} — ${it.detected?'✓ Detected':'No detection'} <span style="color:var(--muted);font-weight:400;font-size:10px">${dt}</span></div>
+          <div style="color:var(--muted);font-size:10px">${(it.source||'').slice(0,60)} &nbsp; conf:${((it.probability||0)*100).toFixed(1)}% ${posStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${e.message}</div>`;
+  }
+}
+
+async function replayHistory(id) {
+  try {
+    const r = await fetch(`${BASE}/api/v2/history/${id}`);
+    const record = await r.json();
+    if (record.error) { alert(`Could not load: ${record.error}`); return; }
+    const panelId = HIST_PANEL_ID[record.type];
+    if (!panelId) { alert(`Unknown history type: ${record.type}`); return; }
+
+    const navBtn = document.querySelector(`.nav-btn[onclick*="switchPanel('${panelId}'"]`);
+    switchPanel(panelId, navBtn);
+
+    if (record.type === 'single') {
+      document.getElementById('result-single-card').classList.remove('hidden');
+      renderSingleResult(record.full_result);
+    } else if (record.type === '3mic') {
+      document.getElementById('result-3mic-card').classList.remove('hidden');
+      render3MicResult(record.full_result);
+    } else if (record.type === 'multi') {
+      document.getElementById('result-multi-card').classList.remove('hidden');
+      renderMultiResult(record.full_result);
+    }
+  } catch(e) {
+    alert(`Replay failed: ${e.message}`);
+  }
 }
 
 function renderStatus(d) {
