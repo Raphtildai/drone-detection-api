@@ -1247,14 +1247,26 @@ def repo_manual_window():
 def repo_batch_scan():
     """
     Slide a detection window across a stretch of one file and return a
-    timeline of results — one HTTP range-read for the whole scan span,
-    sliced into windows in memory (not one network round-trip per window).
+    timeline of results.
+
+    Reads happen in fixed-size chunks (_CHUNK_S seconds each) rather than one
+    contiguous HTTP range-read for the whole scan span — the original
+    single-read approach made peak memory scale with scan_duration_s, which
+    was hitting Cloud Run's container memory limit (visible client-side as
+    an empty response / "Unexpected end of JSON input") on anything much
+    past ~60s. Chunking keeps peak memory roughly constant regardless of how
+    long the scan is, which is also what makes full_file=true (scan to the
+    end of the recording, ignoring scan_duration_s) practical.
 
     Form fields
     -----------
     filename        : e.g. "251020VITEMOROM1AT01P.wav"
     start_s         : start of the scan range (default 0)
     scan_duration_s : total range to scan, seconds (default 60, capped at 600)
+                       — ignored if full_file=true
+    full_file       : "true" to scan from start_s to end of file, chunk by
+                       chunk, stopping when a read comes back short (EOF)
+                       instead of at a fixed duration
     window_s        : detection window length (default 3.0)
     hop_s           : step between window starts (default = window_s → no overlap)
     array           : "BK-6-E" | "BK-6-W"   (polywav only)
@@ -1269,23 +1281,23 @@ def repo_batch_scan():
     if not filename:
         return jsonify({"error": "filename is required"}), 400
 
-    start_s         = float(request.form.get("start_s", 0))
-    scan_duration_s = min(float(request.form.get("scan_duration_s", 60.0)), 600.0)
-    window_s        = float(request.form.get("window_s", 3.0))
-    hop_s           = float(request.form.get("hop_s", window_s))
-    array           = request.form.get("array", "BK-6-E")
-    dataset_type    = request.form.get("dataset_type", "polywav")
-    raw_url         = request.form.get("url") or None
+    start_s      = float(request.form.get("start_s", 0))
+    window_s     = float(request.form.get("window_s", 3.0))
+    hop_s        = float(request.form.get("hop_s", window_s))
+    array        = request.form.get("array", "BK-6-E")
+    dataset_type = request.form.get("dataset_type", "polywav")
+    raw_url      = request.form.get("url") or None
+    full_file    = request.form.get("full_file", "false").lower() == "true"
 
     if window_s <= 0 or hop_s <= 0:
         return jsonify({"error": "window_s and hop_s must both be > 0"}), 400
 
-    MAX_WINDOWS = 150
-    n_windows_requested = int(scan_duration_s // hop_s)
-    n_windows = min(n_windows_requested, MAX_WINDOWS)
-    truncated_by_cap = n_windows_requested > MAX_WINDOWS
-    if truncated_by_cap:
-        scan_duration_s = n_windows * hop_s
+    if full_file:
+        MAX_WINDOWS = 3000   # generous safety cap, not an expected target
+        scan_duration_s = None
+    else:
+        MAX_WINDOWS = 150
+        scan_duration_s = min(float(request.form.get("scan_duration_s", 60.0)), 600.0)
 
     if raw_url:
         nc = _parse_nextcloud_share_url(raw_url)
@@ -1316,87 +1328,118 @@ def repo_batch_scan():
     except Exception as exc:
         log.warning("batch_scan: could not set array geometry '%s': %s", geom, exc)
 
-    # ── ONE contiguous read covering the whole scan span ───────────────────
-    # Pad the tail by window_s so the last window is full-length.
-    read_dur = scan_duration_s + window_s
-    try:
-        if dataset_type == "mems":
-            from drone_detection.dunakeszi_nextcloud import read_mems_window
-            mems_path = f"{_repo_cfg.NEXTCLOUD_MEMS_PATH}/{filename}"
-            audio_mc, native_sr = read_mems_window(_repo_cfg, mems_path, start_s, read_dur)
-            full_mono     = audio_mc.mean(axis=0).astype("float32")
-            full_channels = None
-        else:
-            from drone_detection.dunakeszi_nextcloud import (
-                read_polywav_window, BK6E_CHANNELS, BK6W_CHANNELS,
-            )
-            ch_map = {"BK-6-E": BK6E_CHANNELS, "BK-6-W": BK6W_CHANNELS}
-            channel_indices = ch_map.get(array, BK6E_CHANNELS)
-            pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
-            full_channels, native_sr = read_polywav_window(
-                _repo_cfg, pw_path, start_s, read_dur, channel_indices,
-            )   # shape (3, n_samples_native)
-            full_mono = None
-    except Exception as exc:
-        log.exception("batch_scan read failed")
-        return jsonify({"error": f"Failed to read scan range: {exc}"}), 500
+    if dataset_type == "mems":
+        from drone_detection.dunakeszi_nextcloud import read_mems_window
+        mems_path = f"{_repo_cfg.NEXTCLOUD_MEMS_PATH}/{filename}"
+        channel_indices = None
+    else:
+        from drone_detection.dunakeszi_nextcloud import (
+            read_polywav_window, BK6E_CHANNELS, BK6W_CHANNELS,
+        )
+        ch_map = {"BK-6-E": BK6E_CHANNELS, "BK-6-W": BK6W_CHANNELS}
+        channel_indices = ch_map.get(array, BK6E_CHANNELS)
+        pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
 
-    n_available = len(full_mono) if full_mono is not None else full_channels.shape[1]
-    hop_native   = int(round(hop_s    * native_sr))
-    win_native   = int(round(window_s * native_sr))
+    # Chunk size for each HTTP range-read — bounds peak memory regardless of
+    # scan_duration_s / full_file. Padded by window_s so windows near the
+    # tail of a chunk still have a full window's worth of data available.
+    _CHUNK_S = 30.0
 
     results = []
+    chunk_start = start_s
+    stop = False
     try:
-        for i in range(n_windows):
-            off0, off1 = i * hop_native, i * hop_native + win_native
-            if off1 > n_available:
-                break   # ran out of data (short file / end of recording)
-            t_start = start_s + off0 / native_sr
+        while not stop and len(results) < MAX_WINDOWS:
+            if scan_duration_s is not None and chunk_start >= start_s + scan_duration_s:
+                break
+            chunk_dur = _CHUNK_S
+            if scan_duration_s is not None:
+                chunk_dur = min(chunk_dur, start_s + scan_duration_s - chunk_start)
+            read_dur = chunk_dur + window_s   # pad tail for the last full window
 
             if dataset_type == "mems":
-                seg = full_mono[off0:off1]
-                if native_sr != _repo_cfg.SR:
-                    seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
-                y = ap.pad_or_truncate(seg)
-                out_channels = [y, y, y]
+                audio_mc, native_sr = read_mems_window(_repo_cfg, mems_path, chunk_start, read_dur)
+                full_mono     = audio_mc.mean(axis=0).astype("float32")
+                full_channels = None
+                n_available   = len(full_mono)
             else:
-                out_channels = []
-                for ch_row in full_channels:
-                    seg = ch_row[off0:off1]
+                full_channels, native_sr = read_polywav_window(
+                    _repo_cfg, pw_path, chunk_start, read_dur, channel_indices,
+                )   # shape (3, n_samples_native)
+                full_mono   = None
+                n_available = full_channels.shape[1]
+
+            expected_available = int(round(read_dur * native_sr))
+            if n_available < expected_available:
+                stop = True   # server returned less than asked — end of file
+
+            hop_native = int(round(hop_s    * native_sr))
+            win_native = int(round(window_s * native_sr))
+
+            i = 0
+            while True:
+                off0, off1 = i * hop_native, i * hop_native + win_native
+                if off1 > n_available:
+                    break   # ran out of data within this chunk
+                t_start = chunk_start + off0 / native_sr
+
+                if dataset_type == "mems":
+                    seg = full_mono[off0:off1]
                     if native_sr != _repo_cfg.SR:
                         seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
-                    out_channels.append(ap.pad_or_truncate(seg))
-                while len(out_channels) < 3:
-                    out_channels.append(out_channels[-1].copy())
-                out_channels = out_channels[:3]
+                    y = ap.pad_or_truncate(seg)
+                    out_channels = [y, y, y]
+                else:
+                    out_channels = []
+                    for ch_row in full_channels:
+                        seg = ch_row[off0:off1]
+                        if native_sr != _repo_cfg.SR:
+                            seg = librosa.resample(seg, orig_sr=native_sr, target_sr=_repo_cfg.SR)
+                        out_channels.append(ap.pad_or_truncate(seg))
+                    while len(out_channels) < 3:
+                        out_channels.append(out_channels[-1].copy())
+                    out_channels = out_channels[:3]
 
-            det      = detect(out_channels, _repo_cfg)
-            prob     = float(det["probability"])
-            detected = prob >= threshold
-            loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
+                det      = detect(out_channels, _repo_cfg)
+                prob     = float(det["probability"])
+                detected = prob >= threshold
+                loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
 
-            results.append({
-                "t_start": round(t_start, 3),
-                "t_end":   round(t_start + window_s, 3),
-                "detected": detected,
-                "probability": prob,
-                "cnn_probability": float(det.get("cnn_probability", prob)),
-                "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
-                "position": loc["xy_position"].tolist() if loc else None,
-                "azimuth_deg": loc["azimuth_deg"] if loc else None,
-                "distance_m": loc["distance_m"] if loc else None,
-            })
+                results.append({
+                    "t_start": round(t_start, 3),
+                    "t_end":   round(t_start + window_s, 3),
+                    "detected": detected,
+                    "probability": prob,
+                    "cnn_probability": float(det.get("cnn_probability", prob)),
+                    "heuristic_probability": float(det.get("heuristic_probability", 0.0)),
+                    "position": loc["xy_position"].tolist() if loc else None,
+                    "azimuth_deg": loc["azimuth_deg"] if loc else None,
+                    "distance_m": loc["distance_m"] if loc else None,
+                })
+                i += 1
+                if len(results) >= MAX_WINDOWS:
+                    stop = True
+                    break
+
+            chunk_start += chunk_dur
     except Exception as exc:
-        log.exception("batch_scan window processing failed")
-        return jsonify({"error": f"Scan failed partway through: {exc}"}), 500
+        log.exception("batch_scan failed")
+        if not results:
+            return jsonify({"error": f"Scan failed: {exc}"}), 500
+        # Partial results are still useful — surface the failure via
+        # `truncated`/history rather than discarding everything scanned so far.
+        log.warning("batch_scan: returning %d partial windows after failure", len(results))
 
+    actual_scan_duration = (results[-1]["t_end"] - start_s) if results else 0.0
     detected_count = sum(1 for r in results if r["detected"])
     resp = {
         "filename": filename, "dataset_type": dataset_type, "array": array,
-        "start_s": start_s, "scan_duration_s": scan_duration_s,
+        "start_s": start_s,
+        "scan_duration_s": scan_duration_s if scan_duration_s is not None else round(actual_scan_duration, 3),
+        "full_file": full_file,
         "window_s": window_s, "hop_s": hop_s, "threshold": threshold,
         "n_windows": len(results),
-        "truncated": truncated_by_cap or (len(results) < n_windows),
+        "truncated": len(results) >= MAX_WINDOWS,
         "detected_count": detected_count,
         "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
         "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,

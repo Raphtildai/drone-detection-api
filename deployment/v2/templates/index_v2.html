@@ -416,6 +416,12 @@
           </div>
           <div class="form-group"><label>Start (s)</label><input type="number" id="bs-start" value="0" min="0" step="1"></div>
           <div class="form-group"><label>Scan duration (s)</label><input type="number" id="bs-scandur" value="60" min="1" max="600" step="1"></div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label style="font-size:11px;color:var(--muted);cursor:pointer">
+              <input type="checkbox" id="bs-full-file" style="margin-right:5px" onchange="document.getElementById('bs-scandur').disabled=this.checked" />
+              Scan entire file (ignores duration above, reads to end of recording in chunks)
+            </label>
+          </div>
           <div class="form-group"><label>Window (s)</label><input type="number" id="bs-window" value="3.0" min="0.5" max="30" step="0.5"></div>
           <div class="form-group"><label>Hop (s)</label><input type="number" id="bs-hop" value="3.0" min="0.1" max="30" step="0.5"></div>
           <div class="form-group" id="bs-array-group">
@@ -427,7 +433,7 @@
             <input type="range" id="bs-thresh" min="0.1" max="0.99" step="0.01" value="0.60" oninput="document.getElementById('bs-thresh-val').textContent=parseFloat(this.value).toFixed(2)">
           </div>
         </div>
-        <div style="font-size:10px;color:var(--muted);margin-top:6px">Max 150 windows per scan · scan_duration capped at 600s server-side</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px">Max 150 windows per scan (3000 when scanning the entire file) · scan_duration capped at 600s server-side</div>
         <button class="btn btn-primary" style="margin-top:14px" onclick="runBatchScan()" id="btn-batch">Run Batch Scan</button>
       </div>
       <div class="card hidden" id="result-batch-card">
@@ -2301,11 +2307,17 @@ async function runBatchScan() {
   card.classList.remove('hidden');
   document.getElementById('batch-summary').innerHTML = '<div style="color:var(--muted)">Scanning…</div>';
   document.getElementById('batch-window-detail').innerHTML = '';
+  // Clear any stale chart from a previous run so a failed scan doesn't
+  // leave misleadingly-old results on screen underneath the error.
+  _batchResults = [];
+  drawWindowTimeline(document.getElementById('batch-timeline-canvas'), [], 0.6, 'batch-window-detail');
+  drawDetectionMap(document.getElementById('batch-map-canvas'), []);
   try {
     const fd = new FormData();
     fd.append('filename',        document.getElementById('bs-file').value);
     fd.append('start_s',         document.getElementById('bs-start').value);
     fd.append('scan_duration_s', document.getElementById('bs-scandur').value);
+    fd.append('full_file',       document.getElementById('bs-full-file').checked ? 'true' : 'false');
     fd.append('window_s',        document.getElementById('bs-window').value);
     fd.append('hop_s',           document.getElementById('bs-hop').value);
     fd.append('array',           document.getElementById('bs-array').value);
