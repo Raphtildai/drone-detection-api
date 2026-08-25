@@ -993,7 +993,7 @@ socket.on('array_geometry_changed', data => {
 });
 
 function drawPositionMap(canvas, positions, opts={}) {
-  const {truePos=null,tracks=[],showZone=true,title=''} = opts;
+  const {truePos=null,tracks=[],showZone=true,title='',labels=true,highlightIndex=null} = opts;
   const W=canvas.width, H=canvas.height;
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,W,H);
@@ -1012,7 +1012,28 @@ function drawPositionMap(canvas, positions, opts={}) {
   const tcols=['#00d4ff','#7c3aed','#f59e0b','#ec4899','#10b981'];
   tracks.forEach((track,ti)=>{if(track.length<2)return;const col=tcols[ti%tcols.length];ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2;const[tx0,ty0]=toC(track[0][0],track[0][1]);ctx.moveTo(tx0,ty0);track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.lineTo(tx,ty);});ctx.stroke();track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.beginPath();ctx.arc(tx,ty,3,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();});});
   if(truePos){const[tx,ty]=toC(truePos[0],truePos[1]);ctx.beginPath();const s=8;ctx.moveTo(tx,ty-s);ctx.lineTo(tx+s,ty+s);ctx.lineTo(tx-s,ty+s);ctx.closePath();ctx.fillStyle='#2980b9';ctx.fill();ctx.strokeStyle='#1a5276';ctx.lineWidth=1;ctx.stroke();}
-  positions.forEach(pos=>{const[ex,ey]=toC(pos[0],pos[1]);const g=ctx.createRadialGradient(ex,ey,0,ex,ey,16);g.addColorStop(0,'rgba(239,68,68,.4)');g.addColorStop(1,'rgba(239,68,68,0)');ctx.beginPath();ctx.arc(ex,ey,16,0,2*Math.PI);ctx.fillStyle=g;ctx.fill();ctx.font='18px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',ex,ey);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle='#ef4444';ctx.font='10px monospace';ctx.fillText(`(${pos[0].toFixed(2)},${pos[1].toFixed(2)})`,ex+12,ey+4);});
+  positions.forEach((pos,pi)=>{
+    const isHi=highlightIndex===pi;
+    const[ex,ey]=toC(pos[0],pos[1]);
+    const r=isHi?24:16;
+    const g=ctx.createRadialGradient(ex,ey,0,ex,ey,r);
+    if(isHi){g.addColorStop(0,'rgba(250,204,21,.6)');g.addColorStop(1,'rgba(250,204,21,0)');}
+    else{g.addColorStop(0,'rgba(239,68,68,.4)');g.addColorStop(1,'rgba(239,68,68,0)');}
+    ctx.beginPath();ctx.arc(ex,ey,r,0,2*Math.PI);ctx.fillStyle=g;ctx.fill();
+    ctx.font=isHi?'26px serif':'18px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle=isHi?'#facc15':'#ef4444';
+    ctx.fillText('★',ex,ey);
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    // Always-on labels get unreadable fast with many points on one map — show
+    // a coordinate label only for the highlighted point (click a timeline bar
+    // to pick one) unless the caller explicitly wants every point labelled
+    // (labels:true, the default, for callers with few points e.g. Path Simulate).
+    if(isHi||labels){
+      ctx.fillStyle=isHi?'#facc15':'#ef4444';
+      ctx.font=isHi?'bold 11px monospace':'10px monospace';
+      ctx.fillText(`(${pos[0].toFixed(2)},${pos[1].toFixed(2)})`,ex+(isHi?16:12),ey+4);
+    }
+  });
   MICS.forEach((mic,i)=>{const[mx,my]=toC(mic[0],mic[1]);ctx.beginPath();ctx.moveTo(mx,my-9);ctx.lineTo(mx+7.5,my+4.5);ctx.lineTo(mx-7.5,my+4.5);ctx.closePath();ctx.fillStyle='#2c3e50';ctx.strokeStyle='#00d4ff';ctx.lineWidth=1.5;ctx.fill();ctx.stroke();ctx.fillStyle='#00d4ff';ctx.font='bold 9px monospace';ctx.fillText(`M${i+1}`,mx+10,my+3);});
   if(title){ctx.fillStyle='rgba(100,116,139,.7)';ctx.font='10px monospace';ctx.fillText(title,8,14);}
 }
@@ -1500,7 +1521,7 @@ function renderSingleResult(d) {
   html+=rawJsonHtml(d); viz.innerHTML=html;
   if(hasTimeline){
     const threshold=parseFloat(document.getElementById('sgl-thresh')?.value)||0.7;
-    drawWindowTimeline(document.getElementById('single-timeline-canvas'), results, threshold, 'single-window-detail');
+    drawWindowTimeline(document.getElementById('single-timeline-canvas'), results, threshold, 'single-window-detail', 'single-map-canvas');
     drawDetectionMap(document.getElementById('single-map-canvas'), results);
   } else if(pos){
     const c=document.getElementById('map-single-canvas');drawPositionMap(c,[pos],{showZone:true});
@@ -1623,7 +1644,7 @@ async function replayHistory(id) {
       document.getElementById('result-batch-card').classList.remove('hidden');
       _batchResults = record.full_result.results || [];
       renderBatchSummary(record.full_result);
-      drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, record.full_result.threshold ?? 0.6, 'batch-window-detail');
+      drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, record.full_result.threshold ?? 0.6, 'batch-window-detail', 'batch-map-canvas');
       drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults);
     } else if (record.type === 'repository') {
       replayRepositorySession(record);
@@ -2376,7 +2397,7 @@ function onBatchScanProgress(data) {
     const detectedSoFar = soFar.filter(r => r.detected).length;
     document.getElementById('batch-summary').innerHTML =
       `<div style="color:var(--muted)">Scanning… ${soFar.length} window(s) processed, ${detectedSoFar} detected so far — t=${soFar[soFar.length-1].t_end.toFixed(1)}s</div>`;
-    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), soFar, thresh, 'batch-window-detail');
+    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), soFar, thresh, 'batch-window-detail', 'batch-map-canvas');
     drawDetectionMap(document.getElementById('batch-map-canvas'), soFar);
   });
 }
@@ -2392,7 +2413,7 @@ async function runBatchScan() {
   _batchResults = [];
   _batchProgressResults = [];
   _currentBatchRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  drawWindowTimeline(document.getElementById('batch-timeline-canvas'), [], 0.6, 'batch-window-detail');
+  drawWindowTimeline(document.getElementById('batch-timeline-canvas'), [], 0.6, 'batch-window-detail', 'batch-map-canvas');
   drawDetectionMap(document.getElementById('batch-map-canvas'), []);
   try {
     const fd = new FormData();
@@ -2414,7 +2435,7 @@ async function runBatchScan() {
     if (d.error) { document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${d.error}</div>`; return; }
     _batchResults = d.results || [];
     renderBatchSummary(d);
-    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, parseFloat(document.getElementById('bs-thresh').value), 'batch-window-detail');
+    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, parseFloat(document.getElementById('bs-thresh').value), 'batch-window-detail', 'batch-map-canvas');
     drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults);
   } catch(e) {
     document.getElementById('batch-summary').innerHTML = `<div style="color:var(--red)">❌ ${e.message}</div>`;
@@ -2434,7 +2455,7 @@ function renderBatchSummary(d) {
   </div><div style="font-size:11px;color:var(--muted);margin-top:4px">${d.filename} · t=[${d.start_s}s, ${(d.start_s+d.scan_duration_s).toFixed(1)}s) · window=${d.window_s}s hop=${d.hop_s}s${truncNote}</div>`;
 }
 
-function drawWindowTimeline(canvas, results, threshold, detailTargetId) {
+function drawWindowTimeline(canvas, results, threshold, detailTargetId, mapCanvasId=null) {
   const c = canvas, ctx = c.getContext('2d');
   const W = c.width, H = c.height;
   ctx.clearRect(0,0,W,H);
@@ -2467,7 +2488,10 @@ function drawWindowTimeline(canvas, results, threshold, detailTargetId) {
   c.onclick = (ev) => {
     const rect = c.getBoundingClientRect(), scaleX = c.width / rect.width;
     const idx = Math.floor(((ev.clientX - rect.left) * scaleX - padL) / barW);
-    if (idx >= 0 && idx < n) showWindowDetail(detailTargetId, results[idx]);
+    if (idx >= 0 && idx < n) {
+      showWindowDetail(detailTargetId, results[idx]);
+      if (mapCanvasId) drawDetectionMap(document.getElementById(mapCanvasId), results, idx);
+    }
   };
 }
 
@@ -2482,7 +2506,7 @@ function showWindowDetail(targetId, r) {
     </div>`;
 }
 
-function drawDetectionMap(canvas, results) {
+function drawDetectionMap(canvas, results, highlightWindowIndex=null) {
   const ctx = canvas.getContext('2d');
   const detected = results.filter(r => r.detected && r.position);
   if (!detected.length) {
@@ -2494,7 +2518,15 @@ function drawDetectionMap(canvas, results) {
     return;
   }
   const positions = detected.map(r => r.position);
-  drawPositionMap(canvas, positions, { tracks: [positions], showZone: true });
+  // highlightWindowIndex refers to results[]; map it to detected[]'s index
+  // (only detected+positioned windows are plotted at all).
+  const hiResult = highlightWindowIndex!=null ? results[highlightWindowIndex] : null;
+  const highlightIndex = hiResult ? detected.indexOf(hiResult) : null;
+  drawPositionMap(canvas, positions, {
+    tracks: [positions], showZone: true,
+    labels: positions.length <= 8,   // few enough points to label all of them clearly
+    highlightIndex: highlightIndex>=0 ? highlightIndex : null,
+  });
 }
 
 function setRepoUiStopped() {
