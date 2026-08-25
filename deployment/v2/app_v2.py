@@ -1341,6 +1341,15 @@ def repo_batch_scan():
         channel_indices = ch_map.get(array, BK6E_CHANNELS)
         pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
 
+    # Ground-truth position lookup (optional — only ~24% of the recording
+    # falls within a cataloged maneuver with a recorded position; everything
+    # else legitimately has no ground truth, not a bug). Resolved once, not
+    # per-window — degrades to None everywhere if the catalog isn't deployed.
+    try:
+        from dunakeszi_ground_truth_fixed import ground_truth_xy_at
+    except ImportError:
+        ground_truth_xy_at = None
+
     # Chunk size for each HTTP range-read — bounds peak memory regardless of
     # scan_duration_s / full_file. Padded by window_s so windows near the
     # tail of a chunk still have a full window's worth of data available.
@@ -1421,6 +1430,8 @@ def repo_batch_scan():
                 detected = prob >= threshold
                 loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
 
+                gt_match = ground_truth_xy_at(filename, t_start, dataset_type) if ground_truth_xy_at else None
+
                 window_result = {
                     "t_start": round(t_start, 3),
                     "t_end":   round(t_start + window_s, 3),
@@ -1431,6 +1442,8 @@ def repo_batch_scan():
                     "position": loc["xy_position"].tolist() if loc else None,
                     "azimuth_deg": loc["azimuth_deg"] if loc else None,
                     "distance_m": loc["distance_m"] if loc else None,
+                    "true_position":  gt_match["position"] if gt_match else None,
+                    "maneuver_type":  gt_match["maneuver_type"] if gt_match else None,
                 }
                 results.append(window_result)
 
@@ -1479,6 +1492,7 @@ def repo_batch_scan():
         "detected_count": detected_count,
         "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
         "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,
+        "windows_with_ground_truth": sum(1 for r in results if r.get("true_position")),
         "results": results,
     }
 

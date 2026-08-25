@@ -432,6 +432,12 @@
             <label>Threshold <span class="range-val" id="bs-thresh-val">0.60</span></label>
             <input type="range" id="bs-thresh" min="0.1" max="0.99" step="0.01" value="0.60" oninput="document.getElementById('bs-thresh-val').textContent=parseFloat(this.value).toFixed(2)">
           </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label style="font-size:11px;color:var(--muted);cursor:pointer">
+              <input type="checkbox" id="bs-show-gt" style="margin-right:5px" checked onchange="drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults)" />
+              Show ground truth (from the cataloged flight plan, where available for this file/time)
+            </label>
+          </div>
         </div>
         <div style="font-size:10px;color:var(--muted);margin-top:6px">Max 150 windows per scan (3000 when scanning the entire file) · scan_duration capped at 600s server-side</div>
         <button class="btn btn-primary" style="margin-top:14px" onclick="runBatchScan()" id="btn-batch">Run Batch Scan</button>
@@ -2497,19 +2503,34 @@ function drawWindowTimeline(canvas, results, threshold, detailTargetId, mapCanva
 
 function showWindowDetail(targetId, r) {
   const posHtml = r.position ? `<div class="stat-box"><div class="stat-label">Position</div><div class="stat-val" style="font-size:12px">(${r.position[0].toFixed(2)}, ${r.position[1].toFixed(2)})<span class="stat-unit">m</span></div></div>` : '';
+  let gtHtml = '';
+  if (r.true_position) {
+    const gt = r.true_position;
+    const errHtml = r.position
+      ? (() => { const err = Math.hypot(r.position[0]-gt[0], r.position[1]-gt[1]);
+          return `<div class="stat-box ${err<2.5?'green':err<10?'orange':'red'}"><div class="stat-label">Error</div><div class="stat-val" style="font-size:12px">${err.toFixed(2)}<span class="stat-unit">m</span></div></div>`; })()
+      : '';
+    gtHtml = `<div class="stat-box" style="border-color:#7c3aed"><div class="stat-label">True Position</div><div class="stat-val" style="font-size:12px;color:#7c3aed">(${gt[0].toFixed(2)}, ${gt[1].toFixed(2)})<span class="stat-unit">m</span></div></div>${errHtml}`;
+  }
+  const maneuverHtml = r.maneuver_type ? `<div style="font-size:10px;color:var(--muted);margin-top:6px">Ground-truth maneuver: ${r.maneuver_type}</div>` : '';
   document.getElementById(targetId).innerHTML = `<div class="result-section-title">Window t=[${r.t_start}s, ${r.t_end}s)</div>
     <div class="stat-grid">
       <div class="stat-box ${r.detected?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val" style="font-size:14px">${r.detected?'✓ Yes':'✗ No'}</div></div>
       <div class="stat-box accent"><div class="stat-label">Probability</div><div class="stat-val">${(r.probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
       <div class="stat-box"><div class="stat-label">CNN</div><div class="stat-val">${(r.cnn_probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
       ${posHtml}
-    </div>`;
+      ${gtHtml}
+    </div>${maneuverHtml}`;
 }
 
 function drawDetectionMap(canvas, results, highlightWindowIndex=null) {
   const ctx = canvas.getContext('2d');
   const detected = results.filter(r => r.detected && r.position);
-  if (!detected.length) {
+  const showGtEl = document.getElementById('bs-show-gt');
+  const showGt = !showGtEl || showGtEl.checked;   // no checkbox on this panel (e.g. Single File) → default on, harmless if empty
+  const gtTrack = showGt ? results.filter(r => r.true_position).map(r => r.true_position) : [];
+
+  if (!detected.length && !gtTrack.length) {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--radar-bg').trim() || '#07090f';
     ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -2522,11 +2543,16 @@ function drawDetectionMap(canvas, results, highlightWindowIndex=null) {
   // (only detected+positioned windows are plotted at all).
   const hiResult = highlightWindowIndex!=null ? results[highlightWindowIndex] : null;
   const highlightIndex = hiResult ? detected.indexOf(hiResult) : null;
+  const tracks = gtTrack.length ? [positions, gtTrack] : [positions];
   drawPositionMap(canvas, positions, {
-    tracks: [positions], showZone: true,
+    tracks, showZone: true,
     labels: positions.length <= 8,   // few enough points to label all of them clearly
     highlightIndex: highlightIndex>=0 ? highlightIndex : null,
   });
+  if (gtTrack.length) {
+    ctx.fillStyle = '#7c3aed'; ctx.font = 'bold 10px monospace';
+    ctx.fillText(`— ground truth (${gtTrack.length}/${results.length} windows)`, 8, canvas.height - 8);
+  }
 }
 
 function setRepoUiStopped() {

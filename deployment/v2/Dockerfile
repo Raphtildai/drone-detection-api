@@ -32,6 +32,7 @@ COPY app_v2.py .
 COPY realtime_sessions.py .
 COPY real_time_audio_v2.py .
 COPY history_store.py .
+COPY dunakeszi_ground_truth_fixed.py .
 COPY drone_detection/ ./drone_detection/
 COPY models/ ./models/
 COPY templates/ ./templates/

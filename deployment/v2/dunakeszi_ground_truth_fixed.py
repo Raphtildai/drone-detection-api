@@ -1395,6 +1395,81 @@ def mems_seek_sample(seg_id: int, gt: dict) -> Optional[dict]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Ground-truth position lookup for an arbitrary (filename, local-time) pair
+# ══════════════════════════════════════════════════════════════════════════════
+# Used by Batch Scan to compare estimated vs. actual drone position — the
+# maneuver catalog above already has everything needed: each segment knows
+# its absolute onset (onset_from_rec_s) and, for hover, a fixed position
+# (start_coord == end_coord) or, for transit/diagonal maneuvers, a straight
+# line from start_coord to end_coord covered linearly over duration_s. No
+# separate telemetry replay is needed — the flight plan *is* the ground
+# truth here, which is why these are the coordinates the drone operator flew
+# to on the day, not GPS logs (those exist per-drone in DRONE_LOGS but
+# aren't parsed into a queryable position-over-time series in this module).
+
+_enriched_cache: Dict[str, Any] = {}
+
+def _get_enriched_segments() -> List[Dict[str, Any]]:
+    if "segments" not in _enriched_cache:
+        sessions_by_id = {s["session_id"]: s for s in _enrich_sessions(SESSIONS)}
+        _enriched_cache["segments"] = _enrich_segments(MANEUVER_SEGMENTS, sessions_by_id)
+    return _enriched_cache["segments"]
+
+
+def ground_truth_xy_at(
+    filename: str, local_time_s: float, dataset_type: str = "polywav",
+) -> Optional[Dict[str, Any]]:
+    """
+    Ground-truth (x, y) position, in the same East/North metre frame as
+    everything else in the app, for a given moment within a given raw file.
+
+    Parameters
+    ----------
+    filename     : e.g. "251020VITEMOROM1AT01Q.wav" (polywav) or a MEMS
+                   audio filename
+    local_time_s : seconds from the start of THIS file (not the whole
+                   recording — matches Batch Scan's per-window t_start)
+    dataset_type : "polywav" | "mems"
+
+    Returns
+    -------
+    {"position": [x, y], "maneuver_type": ..., "description": ..., "session": ...}
+    or None if this moment falls outside every cataloged maneuver segment,
+    or the covering segment has no start_coord/end_coord (some pre-measurement
+    segments don't).
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return None
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return None
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+
+    abs_time = chunk_start_s + local_time_s
+
+    for seg in _get_enriched_segments():
+        onset = seg["onset_from_rec_s"]
+        if not (onset <= abs_time < onset + seg["duration_s"]):
+            continue
+        sc, ec = seg.get("start_coord"), seg.get("end_coord")
+        if not sc or not ec or sc[0] is None or ec[0] is None:
+            return None   # in-segment but this maneuver has no recorded position
+        frac = (abs_time - onset) / seg["duration_s"] if seg["duration_s"] > 0 else 0.0
+        x = sc[0] + (ec[0] - sc[0]) * frac
+        y = sc[1] + (ec[1] - sc[1]) * frac
+        return {
+            "position":      [round(x, 3), round(y, 3)],
+            "maneuver_type": seg.get("maneuver_type"),
+            "description":   seg.get("description"),
+            "session":       seg.get("session"),
+        }
+    return None
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # CLI
 # ══════════════════════════════════════════════════════════════════════════════
 

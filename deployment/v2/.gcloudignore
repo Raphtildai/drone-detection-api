@@ -9,6 +9,7 @@
 !realtime_sessions.py
 !real_time_audio_v2.py
 !history_store.py
+!dunakeszi_ground_truth_fixed.py
 !requirements-prod.txt
 
 !drone_detection
