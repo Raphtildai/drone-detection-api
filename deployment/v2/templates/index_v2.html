@@ -793,6 +793,7 @@
             <option value="3mic">3-Mic</option>
             <option value="multi">Multi-Drone</option>
             <option value="batch">Batch Scan</option>
+            <option value="repository">Repository</option>
           </select>
           <button class="btn btn-ghost" onclick="loadHistory()">Refresh</button>
         </div>
@@ -1569,8 +1570,8 @@ function renderPathResult(d) {
 // HISTORY (Single File / 3-Mic / Multi-Drone — durable via Firestore)
 // ══════════════════════════════════════════════════════════════════════════════
 
-const HIST_TYPE_LABEL = {single:'🎵 Single File', '3mic':'📡 3-Mic', multi:'🚁🚁 Multi-Drone', batch:'📊 Batch Scan'};
-const HIST_PANEL_ID   = {single:'single', '3mic':'threemic', multi:'multi', batch:'batch'};
+const HIST_TYPE_LABEL = {single:'🎵 Single File', '3mic':'📡 3-Mic', multi:'🚁🚁 Multi-Drone', batch:'📊 Batch Scan', repository:'🗄️ Repository'};
+const HIST_PANEL_ID   = {single:'single', '3mic':'threemic', multi:'multi', batch:'batch', repository:'repository'};
 
 async function loadHistory() {
   const list = document.getElementById('hist-list');
@@ -1581,7 +1582,7 @@ async function loadHistory() {
     const d = await r.json();
     const items = d.items || [];
     if (d.error) { list.innerHTML = `<div style="color:var(--red);padding:12px">❌ ${d.error}</div>`; return; }
-    if (items.length === 0) { list.innerHTML = '<div style="color:var(--muted);padding:16px 0">No history yet — results from Single File, 3-Mic, Multi-Drone, and Batch Scan detections appear here.</div>'; return; }
+    if (items.length === 0) { list.innerHTML = '<div style="color:var(--muted);padding:16px 0">No history yet — results from Single File, 3-Mic, Multi-Drone, Batch Scan, and Repository sessions appear here.</div>'; return; }
     list.innerHTML = items.map(it => {
       const dt = new Date(it.timestamp * 1000).toLocaleString();
       const posStr = it.position ? `(${it.position[0].toFixed(2)}, ${it.position[1].toFixed(2)})m` : '';
@@ -1624,10 +1625,52 @@ async function replayHistory(id) {
       renderBatchSummary(record.full_result);
       drawWindowTimeline(document.getElementById('batch-timeline-canvas'), _batchResults, record.full_result.threshold ?? 0.6, 'batch-window-detail');
       drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults);
+    } else if (record.type === 'repository') {
+      replayRepositorySession(record);
     }
   } catch(e) {
     alert(`Replay failed: ${e.message}`);
   }
+}
+
+// Replays a saved Repository session frame-by-frame through the same
+// onRepoFrame() renderer the live session uses, so it looks the same as it
+// did when it actually ran — rather than just showing final summary stats.
+let _repoReplayTimer = null;
+
+function replayRepositorySession(record) {
+  if (_repoReplayTimer) { clearInterval(_repoReplayTimer); _repoReplayTimer = null; }
+  if (repoState.durationTimer) { clearInterval(repoState.durationTimer); repoState.durationTimer = null; }
+
+  const frames     = record.full_result.frames || [];
+  const finalStats = record.full_result.stats  || {};
+
+  repoState.dataset = record.full_result.dataset_type || 'uavirbase';
+  setMicGeometry(repoState.dataset === 'dunakeszi' ? 'gp2' : 'uavirbase');
+  repoState.running = true;   // onRepoFrame() no-ops unless this is true
+  repoState.frame = 0; repoState.tracks = {}; repoState.lastDetections = [];
+  repoState.gtPositions = []; repoState.errors = []; repoState.totalFrames = 0; repoState.detectedFrames = 0;
+
+  document.getElementById('repo-start-btn').classList.add('hidden');
+  document.getElementById('repo-stop-btn').classList.remove('hidden');
+  document.getElementById('repo-stop-btn').disabled = false;
+  const truncNote = record.full_result.frame_log_truncated
+    ? ' (only the most recent frames from this session were saved)' : '';
+  addRepoLog(`<span style="color:var(--accent)">▶ Replaying ${frames.length} frame(s) from history${truncNote} — click Stop to cancel</span>`);
+
+  let i = 0;
+  _repoReplayTimer = setInterval(() => {
+    if (i >= frames.length) {
+      clearInterval(_repoReplayTimer); _repoReplayTimer = null;
+      onRepoStats(finalStats);
+      repoState.running = false;
+      setRepoUiStopped();
+      addRepoLog(`<span style="color:var(--muted)">■ Replay finished — frames:${finalStats.total_frames} det:${finalStats.detected_frames} rate:${finalStats.detection_rate}% dur:${finalStats.session_duration}s avg_err:${finalStats.avg_error_m?.toFixed(3)||'—'}m</span>`);
+      return;
+    }
+    onRepoFrame(frames[i]);
+    i++;
+  }, 400);
 }
 
 function renderStatus(d) {
@@ -2206,6 +2249,13 @@ async function startRepository() {
 }
 
 async function stopRepository() {
+  if (_repoReplayTimer) {
+    clearInterval(_repoReplayTimer); _repoReplayTimer = null;
+    repoState.running = false;
+    setRepoUiStopped();
+    addRepoLog(`<span style="color:var(--muted)">■ Replay cancelled</span>`);
+    return;
+  }
   document.getElementById('repo-stop-btn').disabled=true;
   try {
     const fd=new FormData(); fd.append('session_id','default');

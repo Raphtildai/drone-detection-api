@@ -43,10 +43,13 @@ import random
 import tempfile
 import threading
 import time
+from collections import deque
 from typing import List, Optional
 
 import numpy as np
 import soundfile as sf
+
+import history_store
 
 log = logging.getLogger("drone_v2.realtime_session")
 
@@ -620,6 +623,14 @@ class RepositoryRealtimeSession:
         # Ground-truth error tracking (when label has position info)
         self.errors_m:        List[float] = []
 
+        # Frame-by-frame log for History replay — the realtime_frame payload
+        # emitted each tick, kept as a rolling window of the most recent 200
+        # frames (~200-300KB at this payload size) so a long-running stream
+        # can't push the Firestore document past its 1MiB limit. A capped
+        # recent window replays more usefully than a truncated-at-the-start
+        # one for a session that ran for many minutes.
+        self.frame_log = deque(maxlen=200)
+
         DroneTrack._id_counter = 0
         self._tracker = PathTracker(config)
 
@@ -648,10 +659,35 @@ class RepositoryRealtimeSession:
         if self._thread:
             self._thread.join(timeout=10.0)
         log.info("Repository session stopped")
+        final_stats = self.get_stats()
         self.socketio.emit("realtime_status", {
             "running": False, "mode": "repository",
-            "error": None, "final_stats": self.get_stats(),
+            "error": None, "final_stats": final_stats,
         })
+
+        if self.total_frames > 0:
+            frames = list(self.frame_log)
+            last_pos = None
+            for f in reversed(frames):
+                if f.get("detections"):
+                    last_pos = f["detections"][0].get("position")
+                    if last_pos:
+                        break
+            try:
+                history_store.log_detection("repository", {
+                    "source":      f"{self.dataset_type} repository session ({self.array})",
+                    "detected":    self.detected_frames > 0,
+                    "probability": final_stats.get("avg_confidence", 0.0),
+                    "position":    last_pos,
+                }, {
+                    "stats":        final_stats,
+                    "dataset_type": self.dataset_type,
+                    "array":        self.array,
+                    "frame_log_truncated": self.total_frames > len(frames),
+                    "frames":       frames,
+                })
+            except Exception:
+                log.exception("Failed to log repository session to history")
 
     def get_stats(self) -> dict:
         dur = time.time() - self.start_time if self.start_time else 0.0
@@ -860,7 +896,7 @@ class RepositoryRealtimeSession:
                     })
 
                 # Emit frame (compatible shape; gt_pos goes in sim_positions)
-                self.socketio.emit("realtime_frame", {
+                _frame_payload = {
                     "frame":         self.total_frames,
                     "timestamp":     round(time.time(), 3),
                     "mode":          "repository",
@@ -906,7 +942,9 @@ class RepositoryRealtimeSession:
                         "trajectory":      label.get("trajectory"),
                         "audio_file":      label.get("audio_file"),
                     },
-                })
+                }
+                self.socketio.emit("realtime_frame", _frame_payload)
+                self.frame_log.append(_frame_payload)
 
                 if self.total_frames % 10 == 0:
                     self.socketio.emit("realtime_stats", self.get_stats())
