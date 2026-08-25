@@ -1345,11 +1345,26 @@ def repo_batch_scan():
     # tail of a chunk still have a full window's worth of data available.
     _CHUNK_S = 30.0
 
+    # Wall-clock safety net: some recordings run 6-12 minutes, and a Cloud
+    # Run request timeout kills the connection mid-response with no chance
+    # to send a body (the "Unexpected end of JSON input" failure mode this
+    # whole endpoint was rewritten to avoid). Stopping ourselves comfortably
+    # before that deadline means the client always gets valid JSON — a
+    # truncated result with an honest reason, never a dead connection.
+    # Keep _MAX_SCAN_SECONDS well under the Cloud Run --timeout you deploy
+    # with (e.g. --timeout 900 gives 300s of buffer for read/serialize/network).
+    _MAX_SCAN_SECONDS = 600
+    _scan_deadline = time.time() + _MAX_SCAN_SECONDS
+    time_budget_exceeded = False
+
     results = []
     chunk_start = start_s
     stop = False
     try:
         while not stop and len(results) < MAX_WINDOWS:
+            if time.time() >= _scan_deadline:
+                time_budget_exceeded = True
+                break
             if scan_duration_s is not None and chunk_start >= start_s + scan_duration_s:
                 break
             chunk_dur = _CHUNK_S
@@ -1420,6 +1435,10 @@ def repo_batch_scan():
                 if len(results) >= MAX_WINDOWS:
                     stop = True
                     break
+                if time.time() >= _scan_deadline:
+                    time_budget_exceeded = True
+                    stop = True
+                    break
 
             chunk_start += chunk_dur
     except Exception as exc:
@@ -1439,7 +1458,8 @@ def repo_batch_scan():
         "full_file": full_file,
         "window_s": window_s, "hop_s": hop_s, "threshold": threshold,
         "n_windows": len(results),
-        "truncated": len(results) >= MAX_WINDOWS,
+        "truncated": len(results) >= MAX_WINDOWS or time_budget_exceeded,
+        "time_budget_exceeded": time_budget_exceeded,
         "detected_count": detected_count,
         "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
         "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,

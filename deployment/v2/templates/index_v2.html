@@ -2341,7 +2341,9 @@ async function runBatchScan() {
 }
 
 function renderBatchSummary(d) {
-  const truncNote = d.truncated ? ` <span style="color:var(--orange)">⚠ truncated to ${d.n_windows} windows</span>` : '';
+  const truncNote = d.time_budget_exceeded
+    ? ` <span style="color:var(--orange)">⚠ stopped early at ${d.n_windows} windows — time budget reached (results up to t=${d.results?.[d.results.length-1]?.t_end?.toFixed(1)}s are complete)</span>`
+    : d.truncated ? ` <span style="color:var(--orange)">⚠ truncated to ${d.n_windows} windows</span>` : '';
   document.getElementById('batch-summary').innerHTML = `<div class="stat-grid">
     <div class="stat-box ${d.detected_count>0?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val">${d.detected_count}<span class="stat-unit">/${d.n_windows}</span></div></div>
     <div class="stat-box accent"><div class="stat-label">Detection Rate</div><div class="stat-val">${d.detection_rate}<span class="stat-unit">%</span></div></div>
