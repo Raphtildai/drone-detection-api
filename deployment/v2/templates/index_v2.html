@@ -1005,7 +1005,7 @@ function drawPositionMap(canvas, positions, opts={}) {
   ctx.clearRect(0,0,W,H);
   const allPts=[...MICS,...positions];
   if(truePos) allPts.push(truePos);
-  tracks.forEach(t=>t.forEach(p=>allPts.push(p)));
+  tracks.forEach(t=>(Array.isArray(t)?t:t.points||[]).forEach(p=>allPts.push(p)));
   const xs=allPts.map(p=>p[0]),ys=allPts.map(p=>p[1]);
   let mnX=Math.min(...xs)-0.5,mxX=Math.max(...xs)+0.5,mnY=Math.min(...ys)-0.5,mxY=Math.max(...ys)+0.5;
   const pad=28,scale=Math.min((W-2*pad)/(mxX-mnX||1),(H-2*pad)/(mxY-mnY||1));
@@ -1016,7 +1016,21 @@ function drawPositionMap(canvas, positions, opts={}) {
   for(let gy=Math.floor(mnY/0.5)*0.5;gy<=mxY;gy+=0.5){const[,cy]=toC(mnX,gy);ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke();}
   if(showZone){const[zx,zy]=toC(MIC_CTR[0],MIC_CTR[1]);const zr=2.5*scale;ctx.beginPath();ctx.arc(zx,zy,zr,0,2*Math.PI);ctx.strokeStyle='rgba(34,197,94,.3)';ctx.lineWidth=1;ctx.setLineDash([5,4]);ctx.stroke();ctx.fillStyle='rgba(34,197,94,.05)';ctx.fill();ctx.setLineDash([]);}
   const tcols=['#00d4ff','#7c3aed','#f59e0b','#ec4899','#10b981'];
-  tracks.forEach((track,ti)=>{if(track.length<2)return;const col=tcols[ti%tcols.length];ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2;const[tx0,ty0]=toC(track[0][0],track[0][1]);ctx.moveTo(tx0,ty0);track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.lineTo(tx,ty);});ctx.stroke();track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.beginPath();ctx.arc(tx,ty,3,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();});});
+  tracks.forEach((rawTrack,ti)=>{
+    // A track is either a plain [ [x,y], ... ] array (dots on, e.g. Path
+    // Simulate's discrete waypoints) or {points, dots:false} for a dense
+    // continuous path (e.g. ground truth telemetry) where a dot at every
+    // sample would just render as a solid blob and hide whatever's under it.
+    const track = Array.isArray(rawTrack) ? rawTrack : rawTrack.points;
+    const showDots = Array.isArray(rawTrack) ? true : rawTrack.dots !== false;
+    if(!track || track.length<2) return;
+    const col=tcols[ti%tcols.length];
+    ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=2;
+    const[tx0,ty0]=toC(track[0][0],track[0][1]);ctx.moveTo(tx0,ty0);
+    track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.lineTo(tx,ty);});
+    ctx.stroke();
+    if(showDots) track.forEach(pt=>{const[tx,ty]=toC(pt[0],pt[1]);ctx.beginPath();ctx.arc(tx,ty,3,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();});
+  });
   if(truePos){const[tx,ty]=toC(truePos[0],truePos[1]);ctx.beginPath();const s=8;ctx.moveTo(tx,ty-s);ctx.lineTo(tx+s,ty+s);ctx.lineTo(tx-s,ty+s);ctx.closePath();ctx.fillStyle='#2980b9';ctx.fill();ctx.strokeStyle='#1a5276';ctx.lineWidth=1;ctx.stroke();}
   positions.forEach((pos,pi)=>{
     const isHi=highlightIndex===pi;
@@ -2560,7 +2574,10 @@ function drawDetectionMap(canvas, results, highlightWindowIndex=null) {
   // (only detected+positioned windows are plotted at all).
   const hiResult = highlightWindowIndex!=null ? results[highlightWindowIndex] : null;
   const highlightIndex = hiResult ? detected.indexOf(hiResult) : null;
-  const tracks = gtTrack.length ? [positions, gtTrack] : [positions];
+  // GT track is usually far denser than the detection track (continuous
+  // telemetry vs. one point per window) — a dot at every sample would render
+  // as a solid blob dominating the view, so it gets a plain line instead.
+  const tracks = gtTrack.length ? [positions, {points: gtTrack, dots: false}] : [positions];
   drawPositionMap(canvas, positions, {
     tracks, showZone: true,
     labels: positions.length <= 8,   // few enough points to label all of them clearly
