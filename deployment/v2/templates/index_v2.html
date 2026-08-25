@@ -2454,11 +2454,27 @@ function renderBatchSummary(d) {
   const truncNote = d.time_budget_exceeded
     ? ` <span style="color:var(--orange)">⚠ stopped early at ${d.n_windows} windows — time budget reached (results up to t=${d.results?.[d.results.length-1]?.t_end?.toFixed(1)}s are complete)</span>`
     : d.truncated ? ` <span style="color:var(--orange)">⚠ truncated to ${d.n_windows} windows</span>` : '';
+
+  const m = d.detection_metrics || {};
+  let metricsHtml = '';
+  if ((m.n_confirmed_present || 0) + (m.n_confirmed_absent || 0) > 0) {
+    const box = (label, val, n) => val != null
+      ? `<div class="stat-box accent"><div class="stat-label">${label}</div><div class="stat-val">${(val*100).toFixed(1)}<span class="stat-unit">%</span></div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`
+      : `<div class="stat-box"><div class="stat-label">${label}</div><div class="stat-val" style="font-size:11px;color:var(--muted)">n/a</div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`;
+    metricsHtml = `<div class="result-section-title" style="margin-top:10px">Detection accuracy vs. ground truth</div>
+      <div class="stat-grid">
+        ${box('Recall', m.recall, m.n_confirmed_present)}
+        ${box('Precision', m.precision, m.n_confirmed_absent)}
+        ${box('F1', m.f1, `${m.n_confirmed_present||0} present, ${m.n_confirmed_absent||0} absent`)}
+      </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">Recall = of windows confirmed to have a drone present (real telemetry or planned flight path), how many were detected. Precision = of windows confirmed empty (before the day's first show or well after the last), how many were correctly left undetected. "n/a" means too few confirmed windows of that kind in this scan to measure — most of the recording has no ground truth either way and isn't counted.</div>`;
+  }
+
   document.getElementById('batch-summary').innerHTML = `<div class="stat-grid">
     <div class="stat-box ${d.detected_count>0?'green':'red'}"><div class="stat-label">Detected</div><div class="stat-val">${d.detected_count}<span class="stat-unit">/${d.n_windows}</span></div></div>
     <div class="stat-box accent"><div class="stat-label">Detection Rate</div><div class="stat-val">${d.detection_rate}<span class="stat-unit">%</span></div></div>
     <div class="stat-box"><div class="stat-label">Avg Prob</div><div class="stat-val">${(d.avg_probability*100).toFixed(1)}<span class="stat-unit">%</span></div></div>
-  </div><div style="font-size:11px;color:var(--muted);margin-top:4px">${d.filename} · t=[${d.start_s}s, ${(d.start_s+d.scan_duration_s).toFixed(1)}s) · window=${d.window_s}s hop=${d.hop_s}s${truncNote}</div>`;
+  </div><div style="font-size:11px;color:var(--muted);margin-top:4px">${d.filename} · t=[${d.start_s}s, ${(d.start_s+d.scan_duration_s).toFixed(1)}s) · window=${d.window_s}s hop=${d.hop_s}s${truncNote}</div>${metricsHtml}`;
 }
 
 function drawWindowTimeline(canvas, results, threshold, detailTargetId, mapCanvasId=null) {

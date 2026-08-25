@@ -1574,6 +1574,50 @@ def ground_truth_xy_at_telemetry(
     }
 
 
+# Generous buffer after a session's nominal start before treating a moment as
+# "confirmed no flight" — sessions run several minutes (jegyzőkönyv shows
+# 6-10 min per show) and we don't have a precise end time for every one, so
+# this errs toward NOT calling something a confirmed negative rather than
+# wrongly excluding a moment that might still be mid-flight.
+_SESSION_END_MARGIN_S = 900.0   # 15 min
+
+
+def is_confirmed_no_flight(
+    filename: str, local_time_s: float, dataset_type: str = "polywav",
+) -> bool:
+    """
+    True only when this moment is confidently OUTSIDE every cataloged
+    session's flight window — i.e. before the day's first show or well
+    after the last one. Used to compute detection precision/specificity:
+    recall only needs "confirmed present" (ground_truth_xy_at* returning a
+    position), but precision also needs confident negatives, and treating
+    "no ground truth" as "no drone" would be wrong — most of the recording
+    just isn't covered by ground truth at all, which is a different thing
+    from confirmed silence. False (not a confirmed negative) is returned
+    for anything ambiguous, on purpose — an undercount of negatives is a
+    much safer error than mislabeling a real flight window as empty.
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return False
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return False
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+    abs_time = chunk_start_s + local_time_s
+
+    sessions = _get_enriched_sessions()
+    if not sessions:
+        return False
+    if abs_time < sessions[0]["onset_from_rec_s"]:
+        return True
+    if abs_time > sessions[-1]["onset_from_rec_s"] + _SESSION_END_MARGIN_S:
+        return True
+    return False
+
+
 def ground_truth_xy_at(
     filename: str, local_time_s: float, dataset_type: str = "polywav",
 ) -> Optional[Dict[str, Any]]:

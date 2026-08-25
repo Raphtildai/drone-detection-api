@@ -292,6 +292,61 @@ def _clean(obj):
     return obj
 
 
+def _compute_detection_metrics(results: list) -> dict:
+    """
+    Precision/recall/F1 for the *detection* step (is there a drone in this
+    window at all), evaluated against ground truth — separate from the
+    localization error already shown per-window, and unaffected by the
+    array-geometry issue: this only checks the detected/not-detected verdict,
+    never the estimated position.
+
+    Recall only needs confirmed-present windows (gt_presence == "present",
+    i.e. a matched real/planned position) — usually decent coverage.
+    Precision additionally needs confirmed-absent windows (gt_presence ==
+    "absent", i.e. before the first show or well after the last one) — for
+    Dunakeszi this is often sparse or empty, since sessions run back-to-back
+    with only a few minutes between them, which the ground-truth module
+    deliberately treats as ambiguous rather than guessing. n_confirmed_*
+    are always included so a metric based on very few samples reads as
+    exactly that, not as a solid result.
+    """
+    tp = fn = fp = tn = 0
+    for r in results:
+        presence = r.get("gt_presence")
+        if presence == "present":
+            if r["detected"]:
+                tp += 1
+            else:
+                fn += 1
+        elif presence == "absent":
+            if r["detected"]:
+                fp += 1
+            else:
+                tn += 1
+
+    n_present = tp + fn
+    n_absent  = fp + tn
+    # With zero confirmed-absent windows, fp is trivially always 0 too, so
+    # tp/(tp+fp) would read as a misleadingly perfect 1.0 rather than "not
+    # measurable" — require at least one actual negative example to report
+    # precision at all, not just a nonzero denominator.
+    precision = tp / (tp + fp) if n_absent > 0 and (tp + fp) > 0 else None
+    recall    = tp / (tp + fn) if (tp + fn) > 0 else None
+    f1 = (
+        2 * precision * recall / (precision + recall)
+        if precision is not None and recall is not None and (precision + recall) > 0
+        else None
+    )
+    return {
+        "tp": tp, "fn": fn, "fp": fp, "tn": tn,
+        "n_confirmed_present": n_present,
+        "n_confirmed_absent":  n_absent,
+        "precision": round(precision, 3) if precision is not None else None,
+        "recall":    round(recall, 3) if recall is not None else None,
+        "f1":        round(f1, 3) if f1 is not None else None,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # REST endpoints
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1349,10 +1404,13 @@ def repo_batch_scan():
     # only the cataloged maneuvers have ground truth at all (~24% of the
     # full recording) — a None result there is expected, not a bug.
     try:
-        from dunakeszi_ground_truth_fixed import ground_truth_xy_at, ground_truth_xy_at_telemetry
+        from dunakeszi_ground_truth_fixed import (
+            ground_truth_xy_at, ground_truth_xy_at_telemetry, is_confirmed_no_flight,
+        )
     except ImportError:
         ground_truth_xy_at = None
         ground_truth_xy_at_telemetry = None
+        is_confirmed_no_flight = None
 
     # Chunk size for each HTTP range-read — bounds peak memory regardless of
     # scan_duration_s / full_file. Padded by window_s so windows near the
@@ -1443,6 +1501,19 @@ def repo_batch_scan():
                 if gt_match is None and ground_truth_xy_at:
                     gt_match = ground_truth_xy_at(filename, t_start, dataset_type)
 
+                # For detection-accuracy metrics (separate from position ground
+                # truth above): "present" needs a matched position; "absent"
+                # needs is_confirmed_no_flight's stricter before-first/after-last
+                # check — most of the recording is neither (no ground truth
+                # either way) and stays None, excluded from the metric rather
+                # than guessed at.
+                if gt_match is not None:
+                    gt_presence = "present"
+                elif is_confirmed_no_flight and is_confirmed_no_flight(filename, t_start, dataset_type):
+                    gt_presence = "absent"
+                else:
+                    gt_presence = None
+
                 window_result = {
                     "t_start": round(t_start, 3),
                     "t_end":   round(t_start + window_s, 3),
@@ -1456,6 +1527,7 @@ def repo_batch_scan():
                     "true_position":  gt_match["position"] if gt_match else None,
                     "maneuver_type":  gt_match.get("maneuver_type") if gt_match else None,
                     "true_position_source": gt_match.get("source", "planned_maneuver") if gt_match else None,
+                    "gt_presence": gt_presence,
                 }
                 results.append(window_result)
 
@@ -1508,6 +1580,7 @@ def repo_batch_scan():
         "windows_with_telemetry_ground_truth": sum(
             1 for r in results if r.get("true_position_source") == "gpx_telemetry"
         ),
+        "detection_metrics": _compute_detection_metrics(results),
         "results": results,
     }
 
