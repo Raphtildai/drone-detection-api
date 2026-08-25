@@ -74,11 +74,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import logging
 import math
 import re
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+log = logging.getLogger("drone_v2.dunakeszi_ground_truth")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1414,6 +1417,161 @@ def _get_enriched_segments() -> List[Dict[str, Any]]:
         sessions_by_id = {s["session_id"]: s for s in _enrich_sessions(SESSIONS)}
         _enriched_cache["segments"] = _enrich_segments(MANEUVER_SEGMENTS, sessions_by_id)
     return _enriched_cache["segments"]
+
+
+def _get_enriched_sessions() -> List[Dict[str, Any]]:
+    if "sessions" not in _enriched_cache:
+        _enriched_cache["sessions"] = sorted(
+            _enrich_sessions(SESSIONS), key=lambda s: s["onset_from_rec_s"]
+        )
+    return _enriched_cache["sessions"]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Ground-truth from real GPX telemetry (preferred over the planned-maneuver
+# interpolation above when reachable — this is the drone's actual recorded
+# flight path, not the flight plan it was supposed to follow. Verified against
+# a real file (Show07/20251020-004.gpx): the drone was still climbing to
+# altitude well into what the plan calls the first "diagonal transit" maneuver
+# — exactly the kind of plan-vs-reality gap the scripted version can't see.)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_gpx_track_cache: Dict[str, Any] = {}   # session_id -> sorted [(onset_from_rec_s, x, y), ...] | None
+
+
+def _parse_iso_time_to_onset_s(time_iso: str) -> Optional[float]:
+    """'2025-10-20T12:24:42.257Z' (UTC) -> seconds from recording start."""
+    try:
+        from datetime import datetime, timezone
+        dt = datetime.fromisoformat(time_iso.replace("Z", "+00:00"))
+        utc_midnight = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        utc_s = (dt - utc_midnight).total_seconds()
+        local_s = utc_s + UTC_TO_LOCAL_S
+        return local_s - RECORDING_REF_LOCAL_S
+    except (ValueError, TypeError):
+        return None
+
+
+def _session_folder_name(session_id: str) -> Optional[str]:
+    """'show_7' -> 'Show07' (matches the bySHOW/ folder naming on the share)."""
+    try:
+        n = int(session_id.split("_")[1])
+        return f"Show{n:02d}"
+    except (IndexError, ValueError):
+        return None
+
+
+def _load_gpx_track_for_session(session_id: str, cfg) -> Optional[List[Tuple[float, float, float]]]:
+    """
+    Fetch + parse + convert the GPX telemetry for one session, cached for the
+    lifetime of this process. Returns a time-sorted list of
+    (onset_from_rec_s, x_m, y_m) or None if unavailable (network, missing
+    file, or unparsable — callers should fall back to the planned-maneuver
+    version rather than fail the whole scan over one missing GPX file).
+    """
+    if session_id in _gpx_track_cache:
+        return _gpx_track_cache[session_id]
+
+    track = None
+    try:
+        from drone_detection.dunakeszi_nextcloud import list_gpx_files, fetch_gpx
+
+        folder = _session_folder_name(session_id)
+        if folder:
+            show_subpath = f"bySHOW/{folder}"
+            files = list_gpx_files(cfg, show_subpath)
+            gpx_files = [f for f in files if f["name"].lower().endswith(".gpx")]
+            if gpx_files:
+                # Build the path relative to the share root ourselves — list_gpx_files's
+                # "path" field is the raw WebDAV href (includes the /public.php/webdav/
+                # prefix from the PROPFIND response), which is NOT what fetch_gpx expects
+                # (confirmed via a live 404 during testing: it was doubling the prefix).
+                # NEXTCLOUD_POLYWAV_PATH/NEXTCLOUD_MEMS_PATH callers elsewhere in this
+                # codebase avoid this by building paths manually for the same reason.
+                gpx_base = getattr(cfg, "NEXTCLOUD_GPX_PATH", "/DRON-GPX")
+                remote_path = f"{gpx_base}/{show_subpath}/{gpx_files[0]['name']}"
+                points = fetch_gpx(cfg, remote_path)
+                rows = []
+                for pt in points:
+                    if not pt.get("time_iso"):
+                        continue
+                    onset_s = _parse_iso_time_to_onset_s(pt["time_iso"])
+                    if onset_s is None:
+                        continue
+                    x, y = gps_to_xy(pt["lat"], pt["lon"])
+                    rows.append((onset_s, x, y))
+                if rows:
+                    rows.sort(key=lambda r: r[0])
+                    track = rows
+    except Exception as exc:
+        log.warning("GPX telemetry load failed for %s: %s", session_id, exc)
+
+    _gpx_track_cache[session_id] = track
+    return track
+
+
+def ground_truth_xy_at_telemetry(
+    filename: str, local_time_s: float, dataset_type: str, cfg,
+) -> Optional[Dict[str, Any]]:
+    """
+    Real-telemetry equivalent of ground_truth_xy_at() — same
+    (filename, local_time_s) contract, but interpolates the drone's actual
+    recorded GPS position instead of the idealized flight plan. Returns None
+    (not an approximation) if this moment falls outside the actual recorded
+    span of whichever session's flight was active, or the GPX couldn't be
+    fetched at all — callers should fall back to ground_truth_xy_at() in
+    that case, not treat None as "no drone was flying".
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return None
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return None
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+    abs_time = chunk_start_s + local_time_s
+
+    # Candidate session = the most recently started one at or before abs_time.
+    # Sessions don't overlap in practice, so this is a reliable single guess;
+    # we still verify against the GPX's own real time span before trusting it.
+    sessions = _get_enriched_sessions()
+    candidate = None
+    for s in sessions:
+        if s["onset_from_rec_s"] <= abs_time:
+            candidate = s
+        else:
+            break
+    if candidate is None:
+        return None
+
+    track = _load_gpx_track_for_session(candidate["session_id"], cfg)
+    if not track:
+        return None
+
+    import bisect
+    times = [r[0] for r in track]
+    if abs_time < times[0] or abs_time > times[-1]:
+        return None   # outside this session's actual recorded flight time
+
+    i = bisect.bisect_left(times, abs_time)
+    if i == 0:
+        _, x, y = track[0]
+    elif i >= len(track):
+        _, x, y = track[-1]
+    else:
+        t0, x0, y0 = track[i - 1]
+        t1, x1, y1 = track[i]
+        frac = (abs_time - t0) / (t1 - t0) if t1 > t0 else 0.0
+        x = x0 + (x1 - x0) * frac
+        y = y0 + (y1 - y0) * frac
+
+    return {
+        "position": [round(x, 3), round(y, 3)],
+        "session":  candidate["session_id"],
+        "source":   "gpx_telemetry",
+    }
 
 
 def ground_truth_xy_at(

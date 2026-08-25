@@ -1341,14 +1341,18 @@ def repo_batch_scan():
         channel_indices = ch_map.get(array, BK6E_CHANNELS)
         pw_path = f"{_repo_cfg.NEXTCLOUD_POLYWAV_PATH}/{filename}"
 
-    # Ground-truth position lookup (optional — only ~24% of the recording
-    # falls within a cataloged maneuver with a recorded position; everything
-    # else legitimately has no ground truth, not a bug). Resolved once, not
-    # per-window — degrades to None everywhere if the catalog isn't deployed.
+    # Ground-truth position lookup. Real GPX telemetry (the drone's actual
+    # recorded flight) is tried first and is authoritative when available;
+    # the idealized flight-plan interpolation is only a fallback for moments
+    # the real GPX doesn't cover (network hiccup, or genuinely outside every
+    # session's recorded span). Neither is guaranteed for a given window —
+    # only the cataloged maneuvers have ground truth at all (~24% of the
+    # full recording) — a None result there is expected, not a bug.
     try:
-        from dunakeszi_ground_truth_fixed import ground_truth_xy_at
+        from dunakeszi_ground_truth_fixed import ground_truth_xy_at, ground_truth_xy_at_telemetry
     except ImportError:
         ground_truth_xy_at = None
+        ground_truth_xy_at_telemetry = None
 
     # Chunk size for each HTTP range-read — bounds peak memory regardless of
     # scan_duration_s / full_file. Padded by window_s so windows near the
@@ -1430,7 +1434,14 @@ def repo_batch_scan():
                 detected = prob >= threshold
                 loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
 
-                gt_match = ground_truth_xy_at(filename, t_start, dataset_type) if ground_truth_xy_at else None
+                gt_match = None
+                if ground_truth_xy_at_telemetry:
+                    try:
+                        gt_match = ground_truth_xy_at_telemetry(filename, t_start, dataset_type, _repo_cfg)
+                    except Exception:
+                        log.exception("ground_truth_xy_at_telemetry failed for %s@%.2fs", filename, t_start)
+                if gt_match is None and ground_truth_xy_at:
+                    gt_match = ground_truth_xy_at(filename, t_start, dataset_type)
 
                 window_result = {
                     "t_start": round(t_start, 3),
@@ -1443,7 +1454,8 @@ def repo_batch_scan():
                     "azimuth_deg": loc["azimuth_deg"] if loc else None,
                     "distance_m": loc["distance_m"] if loc else None,
                     "true_position":  gt_match["position"] if gt_match else None,
-                    "maneuver_type":  gt_match["maneuver_type"] if gt_match else None,
+                    "maneuver_type":  gt_match.get("maneuver_type") if gt_match else None,
+                    "true_position_source": gt_match.get("source", "planned_maneuver") if gt_match else None,
                 }
                 results.append(window_result)
 
@@ -1493,6 +1505,9 @@ def repo_batch_scan():
         "detection_rate": round(100.0 * detected_count / len(results), 1) if results else 0.0,
         "avg_probability": round(float(np.mean([r["probability"] for r in results])), 3) if results else 0.0,
         "windows_with_ground_truth": sum(1 for r in results if r.get("true_position")),
+        "windows_with_telemetry_ground_truth": sum(
+            1 for r in results if r.get("true_position_source") == "gpx_telemetry"
+        ),
         "results": results,
     }
 

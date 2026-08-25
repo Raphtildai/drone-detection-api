@@ -435,7 +435,7 @@
           <div class="form-group" style="grid-column:1/-1">
             <label style="font-size:11px;color:var(--muted);cursor:pointer">
               <input type="checkbox" id="bs-show-gt" style="margin-right:5px" checked onchange="drawDetectionMap(document.getElementById('batch-map-canvas'), _batchResults)" />
-              Show ground truth (from the cataloged flight plan, where available for this file/time)
+              Show ground truth (real GPS telemetry where available, otherwise the planned flight path)
             </label>
           </div>
         </div>
@@ -2510,7 +2510,8 @@ function showWindowDetail(targetId, r) {
       ? (() => { const err = Math.hypot(r.position[0]-gt[0], r.position[1]-gt[1]);
           return `<div class="stat-box ${err<2.5?'green':err<10?'orange':'red'}"><div class="stat-label">Error</div><div class="stat-val" style="font-size:12px">${err.toFixed(2)}<span class="stat-unit">m</span></div></div>`; })()
       : '';
-    gtHtml = `<div class="stat-box" style="border-color:#7c3aed"><div class="stat-label">True Position</div><div class="stat-val" style="font-size:12px;color:#7c3aed">(${gt[0].toFixed(2)}, ${gt[1].toFixed(2)})<span class="stat-unit">m</span></div></div>${errHtml}`;
+    const srcLabel = r.true_position_source === 'gpx_telemetry' ? 'True Position (GPS telemetry)' : 'True Position (planned, ~approx)';
+    gtHtml = `<div class="stat-box" style="border-color:#7c3aed"><div class="stat-label">${srcLabel}</div><div class="stat-val" style="font-size:12px;color:#7c3aed">(${gt[0].toFixed(2)}, ${gt[1].toFixed(2)})<span class="stat-unit">m</span></div></div>${errHtml}`;
   }
   const maneuverHtml = r.maneuver_type ? `<div style="font-size:10px;color:var(--muted);margin-top:6px">Ground-truth maneuver: ${r.maneuver_type}</div>` : '';
   document.getElementById(targetId).innerHTML = `<div class="result-section-title">Window t=[${r.t_start}s, ${r.t_end}s)</div>
@@ -2550,8 +2551,11 @@ function drawDetectionMap(canvas, results, highlightWindowIndex=null) {
     highlightIndex: highlightIndex>=0 ? highlightIndex : null,
   });
   if (gtTrack.length) {
+    const nTelemetry = results.filter(r => r.true_position_source === 'gpx_telemetry').length;
+    const srcNote = nTelemetry === gtTrack.length ? 'GPS telemetry'
+      : nTelemetry === 0 ? 'planned flight path' : `${nTelemetry} telemetry, ${gtTrack.length-nTelemetry} planned`;
     ctx.fillStyle = '#7c3aed'; ctx.font = 'bold 10px monospace';
-    ctx.fillText(`— ground truth (${gtTrack.length}/${results.length} windows)`, 8, canvas.height - 8);
+    ctx.fillText(`— ground truth: ${srcNote} (${gtTrack.length}/${results.length} windows)`, 8, canvas.height - 8);
   }
 }
 
