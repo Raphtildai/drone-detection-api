@@ -1288,6 +1288,7 @@ def repo_batch_scan():
     dataset_type = request.form.get("dataset_type", "polywav")
     raw_url      = request.form.get("url") or None
     full_file    = request.form.get("full_file", "false").lower() == "true"
+    request_id   = request.form.get("request_id") or None
 
     if window_s <= 0 or hop_s <= 0:
         return jsonify({"error": "window_s and hop_s must both be > 0"}), 400
@@ -1420,7 +1421,7 @@ def repo_batch_scan():
                 detected = prob >= threshold
                 loc = localize(out_channels, _repo_cfg) if (detected and dataset_type != "mems") else None
 
-                results.append({
+                window_result = {
                     "t_start": round(t_start, 3),
                     "t_end":   round(t_start + window_s, 3),
                     "detected": detected,
@@ -1430,7 +1431,22 @@ def repo_batch_scan():
                     "position": loc["xy_position"].tolist() if loc else None,
                     "azimuth_deg": loc["azimuth_deg"] if loc else None,
                     "distance_m": loc["distance_m"] if loc else None,
-                })
+                }
+                results.append(window_result)
+
+                if request_id:
+                    # Live progress — lets the UI plot each window as it's
+                    # processed instead of waiting for the whole scan to
+                    # finish, same idea as the Repository panel's streaming.
+                    # The HTTP response at the end is still the authoritative
+                    # complete result (used for History); this is purely
+                    # progressive UI, safe to miss/reorder if a socket drops.
+                    socketio.emit("batch_scan_progress", {
+                        "request_id": request_id,
+                        "index":      len(results) - 1,
+                        "window":     window_result,
+                    })
+
                 i += 1
                 if len(results) >= MAX_WINDOWS:
                     stop = True

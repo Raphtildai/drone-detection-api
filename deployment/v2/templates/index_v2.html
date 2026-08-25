@@ -1961,6 +1961,7 @@ function drawRepoRadar() {
 socket.on('realtime_frame', onRepoFrame);
 socket.on('realtime_stats', onRepoStats);
 socket.on('realtime_status', onRepoStatus);
+socket.on('batch_scan_progress', onBatchScanProgress);
 
 function onRepoFrame(data) {
   if (data.mode !== 'repository') return;
@@ -2351,6 +2352,35 @@ async function loadBatchFileList() {
   }
 }
 
+// Batch Scan live progress — populated by batch_scan_progress socket events
+// as the server processes each window, so the timeline/map fill in as the
+// scan runs instead of appearing all at once when the request finally
+// returns. _currentBatchRequestId scopes incoming events to the scan this
+// tab actually started (harmless to receive another tab's, but pointless).
+let _currentBatchRequestId = null;
+let _batchProgressResults  = [];
+let _batchRedrawPending    = false;
+
+function onBatchScanProgress(data) {
+  if (!data.request_id || data.request_id !== _currentBatchRequestId) return;
+  _batchProgressResults[data.index] = data.window;
+  if (_batchRedrawPending) return;
+  _batchRedrawPending = true;
+  requestAnimationFrame(() => {
+    _batchRedrawPending = false;
+    // Sparse-safe: MAX_WINDOWS/time-budget stops can leave trailing holes
+    // if an event is ever dropped — filter rather than assume a dense array.
+    const soFar = _batchProgressResults.filter(Boolean);
+    if (!soFar.length) return;
+    const thresh = parseFloat(document.getElementById('bs-thresh').value) || 0.6;
+    const detectedSoFar = soFar.filter(r => r.detected).length;
+    document.getElementById('batch-summary').innerHTML =
+      `<div style="color:var(--muted)">Scanning… ${soFar.length} window(s) processed, ${detectedSoFar} detected so far — t=${soFar[soFar.length-1].t_end.toFixed(1)}s</div>`;
+    drawWindowTimeline(document.getElementById('batch-timeline-canvas'), soFar, thresh, 'batch-window-detail');
+    drawDetectionMap(document.getElementById('batch-map-canvas'), soFar);
+  });
+}
+
 async function runBatchScan() {
   setBusy('btn-batch', true);
   const card = document.getElementById('result-batch-card');
@@ -2360,6 +2390,8 @@ async function runBatchScan() {
   // Clear any stale chart from a previous run so a failed scan doesn't
   // leave misleadingly-old results on screen underneath the error.
   _batchResults = [];
+  _batchProgressResults = [];
+  _currentBatchRequestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   drawWindowTimeline(document.getElementById('batch-timeline-canvas'), [], 0.6, 'batch-window-detail');
   drawDetectionMap(document.getElementById('batch-map-canvas'), []);
   try {
@@ -2373,6 +2405,7 @@ async function runBatchScan() {
     fd.append('array',           document.getElementById('bs-array').value);
     fd.append('threshold',       document.getElementById('bs-thresh').value);
     fd.append('dataset_type',    _batchDataset);
+    fd.append('request_id',      _currentBatchRequestId);
     const url = document.getElementById('bs-url').value.trim();
     if (url) fd.append('url', url);
 
