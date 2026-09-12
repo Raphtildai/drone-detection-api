@@ -45,11 +45,11 @@ The sidebar is grouped into four sections:
 
 | Panel | What it does |
 |-------|---------------|
-| 🎵 **Single File** | Upload one audio file, set an assumed drone (x, y), threshold and max windows → slides a detection window across the **whole file** (not just the first few seconds), showing a verdict banner, confidence ring, and — for files with more than one window — a clickable detection-probability timeline plus a Detection Map of every detected window's position. |
+| 🎵 **Single File** | Upload one audio file — or paste a direct link to an audio/video file instead of uploading (fetched server-side, SSRF-guarded: rejects private/loopback/link-local targets and re-validates every redirect hop) — set an assumed drone (x, y), threshold and max windows → slides a detection window across the **whole file** (not just the first few seconds), showing a verdict banner, confidence ring, and — for files with more than one window — a clickable detection-probability timeline plus a Detection Map of every detected window's position. |
 | 📡 **3-Mic Array** | Upload one file per mic (fixed 3-mic baseline geometry) → precise TDOA localization. Shows a measured-vs-estimated TDOA table per mic pair, a reliability badge, and the confidence radius. |
 | 🚁🚁 **Multi-Drone** | Upload 3 mic files, set max drones to report → the Cartesian Nelder-Mead solver separates multiple simultaneous drones and plots each on the map with its own confidence radius and frequency band. |
 | 📂 **File + Window** | Point at a Nextcloud share (Prof. Mics / polywav, or MEMS — leave the share URL blank to use the server's configured default), pick one specific remote file from a dropdown, and an exact start time + duration → runs detection and localization on just that window. Built for spot-checking a specific moment in a specific recording. |
-| 📊 **Batch Scan** | Same file/array picker as above, but slides a detection window across a whole span of the file (capped at 600 s / 150 windows) in one read, and renders a clickable detection-probability timeline plus a Detection Map showing every detected window's position as a chronological trajectory. |
+| 📊 **Batch Scan** | Same file/array picker as above, but slides a detection window across a whole span of the file, in fixed 30 s chunks (peak memory stays flat regardless of scan length) — capped at 600 s / 150 windows by default, or check **"Scan entire file"** to read to the actual end of the recording (3000-window safety cap, plus a wall-clock deadline so a very long scan still returns a valid partial result rather than timing out). Progress streams live over WebSocket as each window is processed, rather than waiting for the whole scan to finish. Renders a clickable detection-probability timeline (clicking a bar highlights that window's point on the map) plus a Detection Map showing every detected window's position as a chronological trajectory. For Dunakeszi polywav/MEMS files, a **"Show ground truth"** toggle overlays the drone's real recorded position (from GPX telemetry when available, falling back to the planned flight-script position) as a second track, and the results include **detection accuracy vs. ground truth** — precision/recall/F1 computed by comparing each window's verdict against confirmed-present/confirmed-absent ground truth. |
 
 ### Analysis — synthetic robustness checks
 
@@ -62,13 +62,14 @@ The sidebar is grouped into four sections:
 
 | Panel | What it does |
 |-------|---------------|
-| 🔴 **Real-Time** | A radar-style live view with two modes: **Simulated** (runs the exact production pipeline — `synthesise_drone() → detect() → localize() → PathTracker` — against configurable drone count, flight pattern, noise, and spread) or **Live Mic** (captures from a real PyAudio input device). Shows a live frame counter, active/confirmed tracks, detection log, and running stats (detection rate, avg confidence). |
-| 🗄️ **Repository** | Streams **real recorded drone audio** live from a remote dataset — UaVirBASE, Dunakeszi, or MEMS — via HTTP range-requests against a Nextcloud share (no files are downloaded or stored server-side; falls back to a local cache or synthetic BPF-profile audio if the repository is unreachable). Overlays ground-truth position/azimuth against the model's estimate when a segment is labelled, plots a rolling localisation-error histogram, and — for Dunakeszi — includes a **Segment Browser** to filter by split/show and play one specific labelled maneuver on demand. |
+| 🔴 **Real-Time** | A radar-style live view with two modes: **Simulated** (runs the exact production pipeline — `synthesise_drone() → detect() → localize() → PathTracker` — against configurable drone count, flight pattern, noise, and spread) or **Live Mic** (captures from a real PyAudio input device). Shows a live frame counter, active/confirmed tracks, detection log, and running stats (detection rate, avg confidence). The Active Tracks list can be filtered by a confirmed-only toggle and a free-text search (by track # or speed), and any track can be hidden from the radar individually without losing its data — useful once a session has accumulated enough tracks to get visually crowded. |
+| 🗄️ **Repository** | Streams **real recorded drone audio** live from a remote dataset — UaVirBASE, Dunakeszi, or MEMS — via HTTP range-requests against a Nextcloud share (no files are downloaded or stored server-side; falls back to a local cache or synthetic BPF-profile audio if the repository is unreachable). Overlays ground-truth position/azimuth against the model's estimate when a segment is labelled, plots a rolling localisation-error histogram, and — for Dunakeszi — includes a **Segment Browser** to filter by split/show and play one specific labelled maneuver on demand. Same Active Tracks filtering (confirmed-only, search, per-track hide) as Real-Time. Completed sessions are saved to History with a frame-by-frame replay. |
 
 ### System
 
 | Panel | What it does |
 |-------|---------------|
+| 🕓 **History** | Every detection run (Single File, 3-Mic, Multi-Drone, Batch Scan, and completed Repository sessions) is logged automatically — filterable by type, click any entry to replay it through the same panel/visualization it originally rendered in (Repository sessions replay frame-by-frame at 400 ms/frame from up to 200 saved frames). Backed by Firestore when available (see [Cloud Run deployment](#deploying-to-google-cloud-run) below for setup), with an automatic local-file fallback for local dev or if Firestore isn't reachable. |
 | ⚙️ **Status** | Live health check (model loaded, device, sample rate, active sessions) plus a built-in API reference card. |
 
 A **"v2 Fixes Active"** checklist is always visible at the bottom of the
@@ -135,6 +136,7 @@ or any external patch files — all v15 fixes are integrated into the package.
 | Model file name | `best_model.pth` | `best_detection.pth` + `best_localization.pth` |
 | Tracker positions | Hardcoded `ARRAY_CENTER` | Real `localize()` output per segment |
 | `noise_level` minimum | 0.04 (GCC-PHAT could fail) | Enforced ≥ 0.05 |
+| Multi-drone candidate filter | Purely geometric (self-consistency, min distance, dedup) | Also gated on GCC-PHAT strength relative to the strongest candidate (`_MIN_RELATIVE_STRENGTH = 0.6`) — without this, a single real drone commonly produced 2-3 spurious extra "detections" from reverberation/multipath peaks, silently filling out whatever `max_drones` was requested |
 
 ---
 
@@ -144,7 +146,7 @@ or any external patch files — all v15 fixes are integrated into the package.
 |--------|------|-------------|
 | `GET`  | `/api/v2/status` | Health check + model info + active threshold |
 | `GET`  | `/api/v2/version` | Version string + full fixes list |
-| `POST` | `/api/v2/detect` | Single file → CNN+heuristic detection + localization |
+| `POST` | `/api/v2/detect` | Single file (or `url` form field instead of a file upload) → CNN+heuristic detection + localization |
 | `POST` | `/api/v2/detect-3mic` | 3 mic files → precise localization |
 | `POST` | `/api/v2/detect-multi` | 3 mic files → multi-drone (Cartesian solver) |
 | `POST` | `/api/v2/noise-test` | SNR sweep using `synthesise_drone()` |
@@ -158,7 +160,9 @@ or any external patch files — all v15 fixes are integrated into the package.
 | `GET`  | `/api/v2/repository/files/<file_type>` | Dunakeszi file browser (raw listing) |
 | `GET`  | `/api/v2/repository/files-list` | Filename list for the File+Window / Batch Scan pickers (`dataset_type`: `polywav` \| `mems`) |
 | `POST` | `/api/v2/repository/manual-window` | Detect + localize an explicit file + time window |
-| `POST` | `/api/v2/repository/batch-scan` | Slide a detection window across a span of one file → timeline of results |
+| `POST` | `/api/v2/repository/batch-scan` | Slide a detection window across a span of one file (or the whole file, `full_file=true`) → timeline of results, ground truth, and detection-accuracy metrics |
+| `GET`  | `/api/v2/history` | List saved detection history (`type` filter, `limit`, default 50 / max 200) |
+| `GET`  | `/api/v2/history/<id>` | Full saved record for one history entry, including its replay data |
 
 ### WebSocket events (root namespace)
 
@@ -169,6 +173,7 @@ or any external patch files — all v15 fixes are integrated into the package.
 | `realtime_stats` | server → client | `{total_frames, detected_frames, detection_rate, avg_confidence, avg_error_m, session_duration}` |
 | `realtime_status` | server → client | `{running, mode, error, loading, final_stats}` |
 | `array_geometry_changed` | server → client | `{geometry, mic_positions}` — fired when a repository session switches mic array layout (e.g. UaVirBASE ring vs. Dunakeszi GP1/GP2 triangle) |
+| `batch_scan_progress` | server → client | `{request_id, index, window}` — emitted per window as Batch Scan processes it, so the UI plots results live instead of waiting for the whole scan to finish. Purely progressive: the final HTTP response remains authoritative, safe to miss/reorder a few of these |
 
 ### Example: single file detection
 
@@ -465,7 +470,26 @@ this migration. Real-Time stays polling-only, same as before.
      --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
      --role="roles/cloudbuild.builds.builder"
    ```
-3. **Deploy from source** (Cloud Build builds the image — no local Docker
+3. **Enable Firestore for detection History** (optional — everything else
+   works without this, and History transparently falls back to a local
+   JSONL file if Firestore isn't set up or isn't reachable, but the local
+   file doesn't survive a redeploy/restart and isn't shared across
+   `--max-instances` > 1, so this is worth doing for anything beyond local
+   testing):
+   ```bash
+   gcloud services enable firestore.googleapis.com
+   gcloud firestore databases create --location=eur3 --type=firestore-native
+   PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
+   gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+     --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+     --role="roles/datastore.user"
+   ```
+   No application code or env vars needed beyond this — Cloud Run's
+   attached service account authenticates automatically once the role is
+   granted. Pick a `--location` region close to wherever you deployed the
+   service (Firestore locations and Cloud Run regions aren't required to
+   match, but keeping them close reduces latency).
+4. **Deploy from source** (Cloud Build builds the image — no local Docker
    needed; this also works unmodified from Cloud Shell):
    ```bash
    cd deployment/v2
@@ -474,28 +498,53 @@ this migration. Real-Time stays polling-only, same as before.
      --source . \
      --region europe-west1 \
      --allow-unauthenticated \
-     --memory 2Gi \
+     --memory 4Gi \
      --cpu 2 \
      --min-instances 0 \
      --max-instances 3 \
-     --timeout 300 \
+     --timeout 900 \
      --set-env-vars NEXTCLOUD_BASE_URL="...",NEXTCLOUD_SHARE_TOKEN="..."
    ```
-   Prints a `*.run.app` URL when done — check
+   `--memory 4Gi` and `--timeout 900` matter more than they look: Batch
+   Scan against the 192kHz/12-channel Dunakeszi polywav files needs real
+   headroom for both (a smaller memory limit OOM-kills the container
+   mid-scan — surfaces client-side as an empty response / "Unexpected end
+   of JSON input" — and a shorter timeout truncates long/`full_file`
+   scans). Prints a `*.run.app` URL when done — check
    `https://YOUR-URL/api/v2/status` before moving on.
-4. **Map your custom domain:**
+5. **Map your custom domain:**
    ```bash
-   gcloud run domain-mappings create \
+   gcloud domains verify drone-detection.yourdomain.com
+   ```
+   Prints a Search Console link — open it (signed in as the same Google
+   account running `gcloud`), verify ownership via **DNS record (TXT)**
+   (add the `google-site-verification=...` value it gives you as a TXT
+   record for the domain in whatever DNS provider you use — the **Name**
+   field is the bare domain, e.g. `yourdomain.com`, *not* the verification
+   string; that's a mistake it's easy to make the other way round). Once
+   verified:
+   ```bash
+   gcloud beta run domain-mappings create \
      --service drone-detection \
      --domain drone-detection.yourdomain.com \
      --region europe-west1
    ```
-   If the domain isn't already verified on your Google account, this walks
-   you to Search Console for a TXT-record verification first. Once
-   verified, it prints the DNS records to add (typically a `CNAME` to
-   `ghs.googlehosted.com.`) — add them via your DNS provider (cPanel's Zone
+   Prints the DNS record to add (typically a `CNAME` to
+   `ghs.googlehosted.com.`) — add it via your DNS provider (cPanel's Zone
    Editor if that's where the domain's DNS is hosted), replacing whatever
-   record currently points that subdomain elsewhere.
+   record currently points that subdomain elsewhere. Certificate
+   provisioning then proceeds automatically — check progress with:
+   ```bash
+   gcloud beta run domain-mappings describe --domain drone-detection.yourdomain.com --region europe-west1
+   ```
+   Look for `Ready: 'True'` under `status.conditions`. This can take
+   anywhere from a few minutes to an hour or so after the DNS record is in
+   place; "Waiting for certificate provisioning... DNS not properly
+   configured or has not fully propagated" while the CNAME is freshly
+   added is expected and not an error — it retries on its own. Each
+   additional domain pointed at the same service (e.g. adding a second TLD)
+   repeats this whole step from scratch — domain mappings and their
+   certificates are per-hostname, not per-service.
 
 ### Operating notes
 
