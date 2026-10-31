@@ -50,6 +50,7 @@ import numpy as np
 import soundfile as sf
 
 import history_store
+from detection_metrics import azimuth_error_deg, compute_detection_metrics, summarise_errors
 
 log = logging.getLogger("drone_v2.realtime_session")
 
@@ -622,6 +623,15 @@ class RepositoryRealtimeSession:
 
         # Ground-truth error tracking (when label has position info)
         self.errors_m:        List[float] = []
+        self.az_errors_deg:   List[float] = []
+        self.dist_errors_m:   List[float] = []
+        # One {"detected", "gt_presence"} row per streamed segment, for the
+        # detection confusion matrix. Synthetic fallback segments are not
+        # ground truth and are counted separately instead.
+        self.detection_rows:  List[dict]  = []
+        self.synthetic_frames: int        = 0
+        self._history_logged = False
+        self._history_lock   = threading.Lock()
 
         # Frame-by-frame log for History replay — the realtime_frame payload
         # emitted each tick, kept as a rolling window of the most recent 200
@@ -659,35 +669,48 @@ class RepositoryRealtimeSession:
         if self._thread:
             self._thread.join(timeout=10.0)
         log.info("Repository session stopped")
+        self._log_history()   # no-op if the loop already saved it
         final_stats = self.get_stats()
         self.socketio.emit("realtime_status", {
             "running": False, "mode": "repository",
             "error": None, "final_stats": final_stats,
         })
 
-        if self.total_frames > 0:
-            frames = list(self.frame_log)
-            last_pos = None
-            for f in reversed(frames):
-                if f.get("detections"):
-                    last_pos = f["detections"][0].get("position")
-                    if last_pos:
-                        break
-            try:
-                history_store.log_detection("repository", {
-                    "source":      f"{self.dataset_type} repository session ({self.array})",
-                    "detected":    self.detected_frames > 0,
-                    "probability": final_stats.get("avg_confidence", 0.0),
-                    "position":    last_pos,
-                }, {
-                    "stats":        final_stats,
-                    "dataset_type": self.dataset_type,
-                    "array":        self.array,
-                    "frame_log_truncated": self.total_frames > len(frames),
-                    "frames":       frames,
-                })
-            except Exception:
-                log.exception("Failed to log repository session to history")
+    def _log_history(self) -> None:
+        """Save the session to History once, however it ended (Stop pressed,
+        segment finished, or the stream failed)."""
+        with self._history_lock:
+            if self._history_logged or self.total_frames == 0:
+                return
+            self._history_logged = True
+        final_stats = self.get_stats()
+        frames = list(self.frame_log)
+        last_pos = None
+        for f in reversed(frames):
+            if f.get("detections"):
+                last_pos = f["detections"][0].get("position")
+                if last_pos:
+                    break
+        dm = final_stats["detection_metrics"]
+        try:
+            history_store.log_detection("repository", {
+                "source":      f"{self.dataset_type} repository session ({self.array})",
+                "detected":    self.detected_frames > 0,
+                "probability": final_stats.get("avg_confidence", 0.0),
+                "position":    last_pos,
+                "metrics": {
+                    "recall": dm["recall"], "precision": dm["precision"], "f1": dm["f1"],
+                    "n": dm["n_confirmed_present"] + dm["n_confirmed_absent"],
+                },
+            }, {
+                "stats":        final_stats,
+                "dataset_type": self.dataset_type,
+                "array":        self.array,
+                "frame_log_truncated": self.total_frames > len(frames),
+                "frames":       frames,
+            })
+        except Exception:
+            log.exception("Failed to log repository session to history")
 
     def get_stats(self) -> dict:
         dur = time.time() - self.start_time if self.start_time else 0.0
@@ -707,6 +730,15 @@ class RepositoryRealtimeSession:
             "n_segments_streamed": self.total_frames,
             "mode": "repository",
             "dataset_type": self.dataset_type,
+            "synthetic_frames": self.synthetic_frames,
+            "detection_metrics": compute_detection_metrics(self.detection_rows),
+            # Localization runs only on detected segments, so these are
+            # conditional on detection (n = segments with ground truth).
+            "localization_metrics": {
+                "azimuth_deg":    summarise_errors(self.az_errors_deg),
+                "distance_m":     summarise_errors(self.dist_errors_m),
+                "position_err_m": summarise_errors(self.errors_m),
+            },
         }
 
     # ── Main loop ──────────────────────────────────────────────────────────────
@@ -786,7 +818,15 @@ class RepositoryRealtimeSession:
             "running": True, "mode": "repository", "error": None, "loading": False,
         })
 
-        for channels, label in segment_gen:
+        def _until_stream_error(gen):
+            # A failing stream (e.g. a dropped connection) ends the session
+            # like a finished one, so its frames still reach History below.
+            try:
+                yield from gen
+            except Exception:
+                log.exception("Repository stream failed after %d segments", self.total_frames)
+
+        for channels, label in _until_stream_error(segment_gen):
             if self._stop.is_set():
                 break
 
@@ -801,6 +841,18 @@ class RepositoryRealtimeSession:
                 det  = detect(channels, self.config)
                 prob = float(det["probability"])
                 self.confidences.append(prob)
+
+                if label.get("source") == "synthetic":
+                    self.synthetic_frames += 1
+                else:
+                    # Repository segments are drone flights (UaVirBASE ambient
+                    # recordings are skipped by the loader); n_drones == 0
+                    # would mark a confirmed drone-free segment.
+                    n_drones = label.get("n_drones")
+                    self.detection_rows.append({
+                        "detected":    prob >= self.threshold,
+                        "gt_presence": "absent" if n_drones == 0 else "present",
+                    })
 
                 frame_detections: List[dict] = []
                 gt_pos_out: Optional[List[float]] = None
@@ -851,6 +903,11 @@ class RepositoryRealtimeSession:
                         if gt_pos_out:
                             error_m = float(np.linalg.norm(est_pos - np.array(gt_pos_out)))
                             self.errors_m.append(error_m)
+                            if label.get("source") != "synthetic":
+                                self.az_errors_deg.append(azimuth_error_deg(
+                                    loc.get("azimuth_deg", 0), label["azimuth_deg"]))
+                                self.dist_errors_m.append(
+                                    dist_est - float(label.get("distance_m") or 0))
 
                         # localize() is a learned CNN regressor whose distance head is
                         # normalised (and therefore capped) by cfg.MAX_LOCALIZATION_DIST
@@ -960,6 +1017,7 @@ class RepositoryRealtimeSession:
 
         # Generator exhausted or stopped
         self.running = False
+        self._log_history()
         self.socketio.emit("realtime_status", {
             "running":     False,
             "mode":        "repository",

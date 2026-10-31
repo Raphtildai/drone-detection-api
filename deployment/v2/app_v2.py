@@ -77,6 +77,7 @@ from drone_detection.repository_loader import (
 )
 
 import history_store
+from detection_metrics import compute_detection_metrics
 
 # NOTE: _get_config() is defined below; _repo_cfg is initialised after it.
 
@@ -290,61 +291,6 @@ def _clean(obj):
     if isinstance(obj, (list, tuple)):
         return [_clean(x) for x in obj]
     return obj
-
-
-def _compute_detection_metrics(results: list) -> dict:
-    """
-    Precision/recall/F1 for the *detection* step (is there a drone in this
-    window at all), evaluated against ground truth — separate from the
-    localization error already shown per-window, and unaffected by the
-    array-geometry issue: this only checks the detected/not-detected verdict,
-    never the estimated position.
-
-    Recall only needs confirmed-present windows (gt_presence == "present",
-    i.e. a matched real/planned position) — usually decent coverage.
-    Precision additionally needs confirmed-absent windows (gt_presence ==
-    "absent", i.e. before the first show or well after the last one) — for
-    Dunakeszi this is often sparse or empty, since sessions run back-to-back
-    with only a few minutes between them, which the ground-truth module
-    deliberately treats as ambiguous rather than guessing. n_confirmed_*
-    are always included so a metric based on very few samples reads as
-    exactly that, not as a solid result.
-    """
-    tp = fn = fp = tn = 0
-    for r in results:
-        presence = r.get("gt_presence")
-        if presence == "present":
-            if r["detected"]:
-                tp += 1
-            else:
-                fn += 1
-        elif presence == "absent":
-            if r["detected"]:
-                fp += 1
-            else:
-                tn += 1
-
-    n_present = tp + fn
-    n_absent  = fp + tn
-    # With zero confirmed-absent windows, fp is trivially always 0 too, so
-    # tp/(tp+fp) would read as a misleadingly perfect 1.0 rather than "not
-    # measurable" — require at least one actual negative example to report
-    # precision at all, not just a nonzero denominator.
-    precision = tp / (tp + fp) if n_absent > 0 and (tp + fp) > 0 else None
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else None
-    f1 = (
-        2 * precision * recall / (precision + recall)
-        if precision is not None and recall is not None and (precision + recall) > 0
-        else None
-    )
-    return {
-        "tp": tp, "fn": fn, "fp": fp, "tn": tn,
-        "n_confirmed_present": n_present,
-        "n_confirmed_absent":  n_absent,
-        "precision": round(precision, 3) if precision is not None else None,
-        "recall":    round(recall, 3) if recall is not None else None,
-        "f1":        round(f1, 3) if f1 is not None else None,
-    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1580,16 +1526,21 @@ def repo_batch_scan():
         "windows_with_telemetry_ground_truth": sum(
             1 for r in results if r.get("true_position_source") == "gpx_telemetry"
         ),
-        "detection_metrics": _compute_detection_metrics(results),
+        "detection_metrics": compute_detection_metrics(results),
         "results": results,
     }
 
     peak = max(results, key=lambda r: r["probability"]) if results else None
+    dm = resp["detection_metrics"]
     history_store.log_detection("batch", {
         "source":      f"{filename} ({dataset_type}/{array})",
         "detected":    detected_count > 0,
         "probability": peak["probability"] if peak else 0.0,
         "position":    peak["position"] if peak else None,
+        "metrics": {
+            "recall": dm["recall"], "precision": dm["precision"], "f1": dm["f1"],
+            "n": dm["n_confirmed_present"] + dm["n_confirmed_absent"],
+        },
     }, resp)
 
     return jsonify(resp)

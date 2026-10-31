@@ -777,6 +777,12 @@
             <div id="repo-last-seg" style="color:var(--muted);font-size:11px">Waiting…</div>
           </div>
 
+          <!-- Session metrics vs. ground truth -->
+          <div class="card" style="padding:14px">
+            <h2 style="margin-bottom:10px">SESSION METRICS</h2>
+            <div id="repo-metrics" style="color:var(--muted);font-size:11px">Waiting…</div>
+          </div>
+
           <!-- Error histogram (rolling last 50 segments) -->
           <div class="card" style="padding:14px">
             <h2 style="margin-bottom:8px">LOCALISATION ERROR DIST.</h2>
@@ -1627,11 +1633,13 @@ async function loadHistory() {
     list.innerHTML = items.map(it => {
       const dt = new Date(it.timestamp * 1000).toLocaleString();
       const posStr = it.position ? `(${it.position[0].toFixed(2)}, ${it.position[1].toFixed(2)})m` : '';
+      const mt = it.metrics;
+      const metStr = mt && mt.recall != null ? ` &nbsp; recall:${(mt.recall*100).toFixed(1)}%${mt.f1 != null ? ` F1:${(mt.f1*100).toFixed(1)}%` : ''} (n=${mt.n})` : '';
       return `<div class="rt-track-item" onclick="replayHistory('${it.id}')" style="cursor:pointer;text-align:left">
         <div class="rt-track-dot" style="background:${it.detected?'#22c55e':'#6b7280'}"></div>
         <div style="flex:1">
           <div style="font-weight:700">${HIST_TYPE_LABEL[it.type]||it.type} — ${it.detected?'✓ Detected':'No detection'} <span style="color:var(--muted);font-weight:400;font-size:10px">${dt}</span></div>
-          <div style="color:var(--muted);font-size:10px">${(it.source||'').slice(0,60)} &nbsp; conf:${((it.probability||0)*100).toFixed(1)}% ${posStr}</div>
+          <div style="color:var(--muted);font-size:10px">${(it.source||'').slice(0,60)} &nbsp; conf:${((it.probability||0)*100).toFixed(1)}% ${posStr}${metStr}</div>
         </div>
       </div>`;
     }).join('');
@@ -1691,6 +1699,7 @@ function replayRepositorySession(record) {
   repoState.running = true;   // onRepoFrame() no-ops unless this is true
   repoState.frame = 0; repoState.tracks = {}; repoState.lastDetections = [];
   repoState.gtPositions = []; repoState.errors = []; repoState.totalFrames = 0; repoState.detectedFrames = 0;
+  renderRepoMetrics({});
 
   document.getElementById('repo-start-btn').classList.add('hidden');
   document.getElementById('repo-stop-btn').classList.remove('hidden');
@@ -2064,6 +2073,7 @@ function onRepoFrame(data) {
 
 function onRepoStats(stats) {
   if(stats.mode !== 'repository') return;
+  renderRepoMetrics(stats);
   document.getElementById('repo-avg-conf').textContent = stats.avg_confidence?.toFixed(3)||'—';
   document.getElementById('repo-duration').textContent = stats.session_duration?.toFixed(0)||'0';
   if(stats.avg_error_m != null && stats.avg_error_m > 0) {
@@ -2086,6 +2096,7 @@ function onRepoStatus(data) {
   }
   if(data.final_stats) {
     const s = data.final_stats;
+    renderRepoMetrics(s);
     addRepoLog(`<span style="color:var(--muted)">■ Session ended — ${s.n_segments_streamed} segs, det=${s.detection_rate}%, avg_err=${s.avg_error_m?.toFixed(3)||'—'}m</span>`);
     _setRepoSourceBadge('stopped');
   }
@@ -2270,6 +2281,7 @@ async function startRepository() {
     repoState.running=true; repoState.frame=0; repoState.tracks={}; repoState.lastDetections=[];
     repoState.gtPositions=[]; repoState.errors=[]; repoState.totalFrames=0; repoState.detectedFrames=0;
     repoState.sessionStart=Date.now();
+    renderRepoMetrics({});
 
     startBtn.classList.add('hidden');
     document.getElementById('repo-stop-btn').classList.remove('hidden');
@@ -2464,6 +2476,48 @@ async function runBatchScan() {
   }
 }
 
+// Detection confusion matrix (rows = ground truth, columns = model verdict).
+// A row with no confirmed windows shows "—": e.g. repository datasets have
+// no drone-free segments, so FP/TN (and hence precision/F1) aren't measurable.
+function renderConfusionMatrix(m) {
+  const hasPos = (m.n_confirmed_present || 0) > 0, hasNeg = (m.n_confirmed_absent || 0) > 0;
+  const cell = (v, ok, good) => `<td style="padding:6px 10px;text-align:center;font-weight:700;border:1px solid var(--border);color:${!ok ? 'var(--muted)' : good ? 'var(--green)' : 'var(--red)'}">${ok ? v : '—'}</td>`;
+  const th = 'style="padding:4px 8px;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-weight:400"';
+  return `<table style="border-collapse:collapse;font-size:12px;margin:6px 0">
+    <tr><td></td><td ${th}>Detected</td><td ${th}>Not detected</td></tr>
+    <tr><td ${th}>Drone present</td>${cell(m.tp, hasPos, true)}${cell(m.fn, hasPos, false)}</tr>
+    <tr><td ${th}>No drone</td>${cell(m.fp, hasNeg, false)}${cell(m.tn, hasNeg, true)}</tr>
+  </table>`;
+}
+
+function metricBox(label, val, n) {
+  return val != null
+    ? `<div class="stat-box accent"><div class="stat-label">${label}</div><div class="stat-val">${(val*100).toFixed(1)}<span class="stat-unit">%</span></div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`
+    : `<div class="stat-box"><div class="stat-label">${label}</div><div class="stat-val" style="font-size:11px;color:var(--muted)">n/a</div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`;
+}
+
+function renderRepoMetrics(stats) {
+  const el = document.getElementById('repo-metrics');
+  if (!el) return;
+  const m = stats.detection_metrics;
+  if (!m) { el.innerHTML = 'Waiting…'; return; }
+  const loc = stats.localization_metrics || {};
+  const err = (e, unit) => e ? `${e.mae.toFixed(2)}${unit} <span style="color:var(--muted)">(median ${e.median.toFixed(2)}, RMSE ${e.rmse.toFixed(2)}, n=${e.n})</span>` : '<span style="color:var(--muted)">—</span>';
+  const synth = stats.synthetic_frames ? `<div style="color:var(--orange);font-size:10px;margin-bottom:6px">⚠ ${stats.synthetic_frames} synthetic fallback segment(s) excluded from these metrics</div>` : '';
+  el.innerHTML = `${synth}<div class="stat-grid" style="margin-bottom:6px">
+      ${metricBox('Recall', m.recall, m.n_confirmed_present)}
+      ${metricBox('Precision', m.precision, m.n_confirmed_absent)}
+      ${metricBox('F1', m.f1, (m.n_confirmed_present||0) + (m.n_confirmed_absent||0))}
+    </div>
+    ${renderConfusionMatrix(m)}
+    <div style="font-size:11px;line-height:1.7;margin-top:4px">
+      <div>Azimuth MAE: ${err(loc.azimuth_deg, '°')}</div>
+      <div>Distance MAE: ${err(loc.distance_m, ' m')}</div>
+      <div>Position error: ${err(loc.position_err_m, ' m')}</div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-top:4px">Every repository segment is a drone flight, so only recall is measurable here; precision and F1 need drone-free segments. Localization errors are over detected segments with a ground-truth position.</div>`;
+}
+
 function renderBatchSummary(d) {
   const truncNote = d.time_budget_exceeded
     ? ` <span style="color:var(--orange)">⚠ stopped early at ${d.n_windows} windows — time budget reached (results up to t=${d.results?.[d.results.length-1]?.t_end?.toFixed(1)}s are complete)</span>`
@@ -2472,15 +2526,14 @@ function renderBatchSummary(d) {
   const m = d.detection_metrics || {};
   let metricsHtml = '';
   if ((m.n_confirmed_present || 0) + (m.n_confirmed_absent || 0) > 0) {
-    const box = (label, val, n) => val != null
-      ? `<div class="stat-box accent"><div class="stat-label">${label}</div><div class="stat-val">${(val*100).toFixed(1)}<span class="stat-unit">%</span></div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`
-      : `<div class="stat-box"><div class="stat-label">${label}</div><div class="stat-val" style="font-size:11px;color:var(--muted)">n/a</div><div style="font-size:9px;color:var(--muted)">n=${n}</div></div>`;
+    const box = metricBox;
     metricsHtml = `<div class="result-section-title" style="margin-top:10px">Detection accuracy vs. ground truth</div>
       <div class="stat-grid">
         ${box('Recall', m.recall, m.n_confirmed_present)}
         ${box('Precision', m.precision, m.n_confirmed_absent)}
         ${box('F1', m.f1, `${m.n_confirmed_present||0} present, ${m.n_confirmed_absent||0} absent`)}
       </div>
+      ${renderConfusionMatrix(m)}
       <div style="font-size:10px;color:var(--muted);margin-top:2px">Recall = of windows confirmed to have a drone present (real telemetry or planned flight path), how many were detected. Precision = of windows confirmed empty (before the day's first show or well after the last), how many were correctly left undetected. "n/a" means too few confirmed windows of that kind in this scan to measure — most of the recording has no ground truth either way and isn't counted.</div>`;
   }
 
@@ -2787,6 +2840,7 @@ async function playSelectedSegment() {
     repoState.running=true; repoState.frame=0; repoState.tracks={}; repoState.lastDetections=[];
     repoState.gtPositions=[]; repoState.errors=[]; repoState.totalFrames=0; repoState.detectedFrames=0;
     repoState.sessionStart=Date.now();
+    renderRepoMetrics({});
     repoState.maxDist = parseFloat(document.getElementById('repo-maxdist')?.value) || 100;
     // Set GP2 geometry immediately for Dunakeszi
     setMicGeometry('gp2');
