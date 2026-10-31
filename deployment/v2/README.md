@@ -11,7 +11,7 @@ Lives in `deployment/v2/` alongside the original deployment in `deployment/v1/`.
 
 ```bash
 # From the deployment/v2/ directory:
-pip install -r requirements_v2.txt
+pip install -r requirements.txt
 
 # Make the drone_detection package importable:
 export PYTHONPATH=/path/to/drone-detection-api:$PYTHONPATH
@@ -94,14 +94,14 @@ deployment/
     ├── passenger_wsgi.py            cPanel/Passenger entry point (plain WSGI, no SocketIO)
     ├── real_time_audio_v2.py        PyAudio mic capture + real-time detection
     ├── realtime_sessions.py         Simulated / Live-mic / Repository session classes
-    ├── requirements_v2.txt          Python dependencies (local dev)
+    ├── requirements.txt          Python dependencies (local dev)
     ├── requirements-prod.txt        Python dependencies for shared/CPU-only hosting
     ├── drone_detection/
     │   ├── config.py                Config singleton (thresholds, mic geometry, model paths)
     │   ├── repository_loader.py     Dataset-agnostic router: UaVirBASE / Dunakeszi / MEMS
     │   ├── dunakeszi_nextcloud.py   Nextcloud HTTP range-read streaming, WAV/polywav decode
     │   └── mems_inference.py        Single-channel MEMS spectral-proxy localisation
-    ├── dunakeszi_ground_truth_fixed.py  Ground-truth maneuver/segment metadata for Dunakeszi
+    ├── dunakeszi_ground_truth.py  Ground-truth maneuver/segment metadata for Dunakeszi
     ├── dunakeszi_pipeline_ready_B/  Local cache of pre-paired Dunakeszi audio+label triplets
     ├── wavs/                        Local polywav cache used as a fallback when Nextcloud
     │                                is unreachable or unconfigured
@@ -355,7 +355,7 @@ Two files exist specifically for this:
   generally doesn't support persistent WebSocket connections regardless.
 
 `requirements-prod.txt` exists for the one thing that *does* need changing:
-same runtime deps as `requirements_v2.txt` minus test-only packages, with
+same runtime deps as `requirements.txt` minus test-only packages, with
 `torch`/`torchaudio` pulled from PyTorch's CPU-only wheel index (embedded as
 an `--extra-index-url` line in the file itself) instead of PyPI's default
 CUDA-bundled build — several GB each, which will blow a shared disk quota
@@ -379,7 +379,7 @@ and can time out mid-install.
    - Application URL: whichever subdomain/path you want it under
    - Python version: the highest available (torch needs a recent one)
    - Application startup file: `app_v2.py` · Entry point: `app`
-4. **Configuration files** (same page) — remove `requirements_v2.txt` from
+4. **Configuration files** (same page) — remove `requirements.txt` from
    the list if present, add `requirements-prod.txt`, then **Run Pip Install**.
    If CPU wheels for the exact pinned `torch`/`torchaudio` version aren't
    available for the selected Python version, drop the version pins on just

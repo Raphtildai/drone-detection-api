@@ -5,8 +5,8 @@ dunakeszi_pipeline_analysis.py
 End-to-end Dunakeszi 2025-10-20 dataset analysis for Google Colab.
 
 Covers the full three-stage pipeline:
-  Stage 1  dunakeszi_ground_truth_fixed.py   → ground truth JSON/CSV
-  Stage 2  dunakeszi_segment_extractor_fixed.py → per-segment WAVs + label JSONs
+  Stage 1  dunakeszi_ground_truth.py   → ground truth JSON/CSV
+  Stage 2  dunakeszi_segment_extractor.py → per-segment WAVs + label JSONs
   Stage 3  prepare_dunakeszi_for_pipeline.py  → pipeline-ready format
   Stage 4  drone_detection inference          → detect + localize + evaluate
 
@@ -875,12 +875,12 @@ def analyse_dunakeszi(
 #
 # ── Cell 2: Rebuild ground truth (only needed once) ──────────────────────────
 #
-# !python dunakeszi_ground_truth_fixed.py \
+# !python dunakeszi_ground_truth.py \
 #     --out_dir /content/drive/MyDrive/dunakeszi/ground_truth
 #
 # ── Cell 3: Extract segments from polywav files ───────────────────────────────
 #
-# !python dunakeszi_segment_extractor_fixed.py \
+# !python dunakeszi_segment_extractor.py \
 #     --segments /content/drive/MyDrive/dunakeszi/ground_truth/ground_truth_segments.json \
 #     --wav-dir  /content/drive/MyDrive/dunakeszi/polywav_J/ \
 #     --array    BK-6-E \

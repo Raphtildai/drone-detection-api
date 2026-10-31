@@ -1350,7 +1350,7 @@ def repo_batch_scan():
     # only the cataloged maneuvers have ground truth at all (~24% of the
     # full recording) — a None result there is expected, not a bug.
     try:
-        from dunakeszi_ground_truth_fixed import (
+        from dunakeszi_ground_truth import (
             ground_truth_xy_at, ground_truth_xy_at_telemetry, is_confirmed_no_flight,
         )
     except ImportError:

@@ -35,7 +35,7 @@ Design notes
 - All label conversion is done in-process using the same logic as
   prepare_dunakeszi_for_pipeline.py (bearing_to_pipeline_az + convert_label).
 - Channel extraction uses the same ARRAY_CHANNELS mapping as
-  dunakeszi_segment_extractor_fixed.py.
+  dunakeszi_segment_extractor.py.
 - Audio resampling uses AudioProcessor.load() (librosa, float32, TARGET_SR).
 - The module is self-contained: it only imports from the standard drone_detection
   package and the Python stdlib + numpy/soundfile.

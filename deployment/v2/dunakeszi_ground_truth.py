@@ -74,11 +74,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import logging
 import math
 import re
 import struct
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+log = logging.getLogger("drone_v2.dunakeszi_ground_truth")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -908,11 +911,16 @@ _PW_BYTES_PER_FRAME = 14 * 4   # 14 channels × float32
 _PW_FRAMES = _PW_SIZE_BYTES // _PW_BYTES_PER_FRAME
 PW_CHUNK_DUR_S = _PW_FRAMES / 192_000   # 399.46 s ≈ 6 min 39 s
 
+# FIX: the recording ran 13:36–16:28 (≈172 min = 10 328 s), requiring 26 chunks (slots 0-25).
+# The original list was hardcoded to 17 files (unlabeled + A–P, covering only to ~15:29).
+# Shows 13, 14, 15, 10 (15:42 onward) require files Q through Y — now included.
+# The extractor scans the WAV directory at runtime, so it will find any file present;
+# this list is used only for file_index.json cross-reference and consistency checks.
 POLYWAV_FILES: List[str] = (
-    ["251020VITEMOROM1AT01.wav"]                              # unlabeled first chunk
-    + [f"251020VITEMOROM1AT01{L}.wav" for L in "ABCDEFGHIJKLMNOP"]  # A–P
+    ["251020VITEMOROM1AT01.wav"]                                       # slot 0 — unlabeled
+    + [f"251020VITEMOROM1AT01{L}.wav" for L in "ABCDEFGHIJKLMNOPQRSTUVWXY"]  # slots 1-25 (A–Y)
 )
-assert len(POLYWAV_FILES) == 17, "Expected 17 PolyWav chunks"
+assert len(POLYWAV_FILES) == 26, "Expected 26 PolyWav chunks (unlabeled + A–Y)"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -974,14 +982,26 @@ def _enrich_segments(segments: list, sessions_by_id: dict) -> list:
             seg_start >= 0
         )
         
-        # ✅ BK-6 arrays recorded continuously for all shows
-        seg["bk_available"] = True
+        # BK-6 arrays recorded continuously for all shows, but the range-read
+        # streamer refuses onsets within the first second of the recording
+        # (that offset falls inside the WAV header, not audio) — see the
+        # onset_s < 1.0 guard in dunakeszi_nextcloud.stream_segment_from_nextcloud.
+        seg["bk_available"] = seg_start >= 1.0
 
         # Azimuth and distance at onset (from start_coord XY)
+        # Coordinate frame: X=East, Y=North, Z=Up (mic_array_geometry.json)
+        # Azimuth convention: standard geographic bearing measured clockwise from North.
+        #   bearing = atan2(X, Y)  (NOT atan2(Y, X) which gives the math/Cartesian angle)
+        # Examples:
+        #   drone due North  → (x=0,  y=+60) → atan2(0,  60) =   0°
+        #   drone due East   → (x=+60,y=0  ) → atan2(60,  0) =  90°
+        #   drone due South  → (x=0,  y=-60) → atan2(0, -60) = 180°
+        #   drone due West   → (x=-60,y=0  ) → atan2(-60,0)  = -90° (= 270°)
+        # FIX: original used atan2(y, x) giving math angle, not bearing from North.
         sc = seg.get("start_coord")
         if sc and sc[0] is not None and sc[1] is not None:
             x, y = sc[0], sc[1]
-            seg["azimuth_deg_onset"]  = round(math.degrees(math.atan2(y, x)), 1)
+            seg["azimuth_deg_onset"]   = round(math.degrees(math.atan2(x, y)), 1)
             seg["distance_xy_m_onset"] = round(math.hypot(x, y), 1)
             seg["distance_3d_m_onset"] = round(math.hypot(x, y, sc[2] if len(sc) > 2 else 0), 1)
         else:
@@ -1378,6 +1398,280 @@ def mems_seek_sample(seg_id: int, gt: dict) -> Optional[dict]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Ground-truth position lookup for an arbitrary (filename, local-time) pair
+# ══════════════════════════════════════════════════════════════════════════════
+# Used by Batch Scan to compare estimated vs. actual drone position — the
+# maneuver catalog above already has everything needed: each segment knows
+# its absolute onset (onset_from_rec_s) and, for hover, a fixed position
+# (start_coord == end_coord) or, for transit/diagonal maneuvers, a straight
+# line from start_coord to end_coord covered linearly over duration_s. No
+# separate telemetry replay is needed — the flight plan *is* the ground
+# truth here, which is why these are the coordinates the drone operator flew
+# to on the day, not GPS logs (those exist per-drone in DRONE_LOGS but
+# aren't parsed into a queryable position-over-time series in this module).
+
+_enriched_cache: Dict[str, Any] = {}
+
+def _get_enriched_segments() -> List[Dict[str, Any]]:
+    if "segments" not in _enriched_cache:
+        sessions_by_id = {s["session_id"]: s for s in _enrich_sessions(SESSIONS)}
+        _enriched_cache["segments"] = _enrich_segments(MANEUVER_SEGMENTS, sessions_by_id)
+    return _enriched_cache["segments"]
+
+
+def _get_enriched_sessions() -> List[Dict[str, Any]]:
+    if "sessions" not in _enriched_cache:
+        _enriched_cache["sessions"] = sorted(
+            _enrich_sessions(SESSIONS), key=lambda s: s["onset_from_rec_s"]
+        )
+    return _enriched_cache["sessions"]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Ground-truth from real GPX telemetry (preferred over the planned-maneuver
+# interpolation above when reachable — this is the drone's actual recorded
+# flight path, not the flight plan it was supposed to follow. Verified against
+# a real file (Show07/20251020-004.gpx): the drone was still climbing to
+# altitude well into what the plan calls the first "diagonal transit" maneuver
+# — exactly the kind of plan-vs-reality gap the scripted version can't see.)
+# ══════════════════════════════════════════════════════════════════════════════
+
+_gpx_track_cache: Dict[str, Any] = {}   # session_id -> sorted [(onset_from_rec_s, x, y), ...] | None
+
+
+def _parse_iso_time_to_onset_s(time_iso: str) -> Optional[float]:
+    """'2025-10-20T12:24:42.257Z' (UTC) -> seconds from recording start."""
+    try:
+        from datetime import datetime, timezone
+        dt = datetime.fromisoformat(time_iso.replace("Z", "+00:00"))
+        utc_midnight = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+        utc_s = (dt - utc_midnight).total_seconds()
+        local_s = utc_s + UTC_TO_LOCAL_S
+        return local_s - RECORDING_REF_LOCAL_S
+    except (ValueError, TypeError):
+        return None
+
+
+def _session_folder_name(session_id: str) -> Optional[str]:
+    """'show_7' -> 'Show07' (matches the bySHOW/ folder naming on the share)."""
+    try:
+        n = int(session_id.split("_")[1])
+        return f"Show{n:02d}"
+    except (IndexError, ValueError):
+        return None
+
+
+def _load_gpx_track_for_session(session_id: str, cfg) -> Optional[List[Tuple[float, float, float]]]:
+    """
+    Fetch + parse + convert the GPX telemetry for one session, cached for the
+    lifetime of this process. Returns a time-sorted list of
+    (onset_from_rec_s, x_m, y_m) or None if unavailable (network, missing
+    file, or unparsable — callers should fall back to the planned-maneuver
+    version rather than fail the whole scan over one missing GPX file).
+    """
+    if session_id in _gpx_track_cache:
+        return _gpx_track_cache[session_id]
+
+    track = None
+    try:
+        from drone_detection.dunakeszi_nextcloud import list_gpx_files, fetch_gpx
+
+        folder = _session_folder_name(session_id)
+        if folder:
+            show_subpath = f"bySHOW/{folder}"
+            files = list_gpx_files(cfg, show_subpath)
+            gpx_files = [f for f in files if f["name"].lower().endswith(".gpx")]
+            if gpx_files:
+                # Build the path relative to the share root ourselves — list_gpx_files's
+                # "path" field is the raw WebDAV href (includes the /public.php/webdav/
+                # prefix from the PROPFIND response), which is NOT what fetch_gpx expects
+                # (confirmed via a live 404 during testing: it was doubling the prefix).
+                # NEXTCLOUD_POLYWAV_PATH/NEXTCLOUD_MEMS_PATH callers elsewhere in this
+                # codebase avoid this by building paths manually for the same reason.
+                gpx_base = getattr(cfg, "NEXTCLOUD_GPX_PATH", "/DRON-GPX")
+                remote_path = f"{gpx_base}/{show_subpath}/{gpx_files[0]['name']}"
+                points = fetch_gpx(cfg, remote_path)
+                rows = []
+                for pt in points:
+                    if not pt.get("time_iso"):
+                        continue
+                    onset_s = _parse_iso_time_to_onset_s(pt["time_iso"])
+                    if onset_s is None:
+                        continue
+                    x, y = gps_to_xy(pt["lat"], pt["lon"])
+                    rows.append((onset_s, x, y))
+                if rows:
+                    rows.sort(key=lambda r: r[0])
+                    track = rows
+    except Exception as exc:
+        log.warning("GPX telemetry load failed for %s: %s", session_id, exc)
+
+    _gpx_track_cache[session_id] = track
+    return track
+
+
+def ground_truth_xy_at_telemetry(
+    filename: str, local_time_s: float, dataset_type: str, cfg,
+) -> Optional[Dict[str, Any]]:
+    """
+    Real-telemetry equivalent of ground_truth_xy_at() — same
+    (filename, local_time_s) contract, but interpolates the drone's actual
+    recorded GPS position instead of the idealized flight plan. Returns None
+    (not an approximation) if this moment falls outside the actual recorded
+    span of whichever session's flight was active, or the GPX couldn't be
+    fetched at all — callers should fall back to ground_truth_xy_at() in
+    that case, not treat None as "no drone was flying".
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return None
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return None
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+    abs_time = chunk_start_s + local_time_s
+
+    # Candidate session = the most recently started one at or before abs_time.
+    # Sessions don't overlap in practice, so this is a reliable single guess;
+    # we still verify against the GPX's own real time span before trusting it.
+    sessions = _get_enriched_sessions()
+    candidate = None
+    for s in sessions:
+        if s["onset_from_rec_s"] <= abs_time:
+            candidate = s
+        else:
+            break
+    if candidate is None:
+        return None
+
+    track = _load_gpx_track_for_session(candidate["session_id"], cfg)
+    if not track:
+        return None
+
+    import bisect
+    times = [r[0] for r in track]
+    if abs_time < times[0] or abs_time > times[-1]:
+        return None   # outside this session's actual recorded flight time
+
+    i = bisect.bisect_left(times, abs_time)
+    if i == 0:
+        _, x, y = track[0]
+    elif i >= len(track):
+        _, x, y = track[-1]
+    else:
+        t0, x0, y0 = track[i - 1]
+        t1, x1, y1 = track[i]
+        frac = (abs_time - t0) / (t1 - t0) if t1 > t0 else 0.0
+        x = x0 + (x1 - x0) * frac
+        y = y0 + (y1 - y0) * frac
+
+    return {
+        "position": [round(x, 3), round(y, 3)],
+        "session":  candidate["session_id"],
+        "source":   "gpx_telemetry",
+    }
+
+
+# Generous buffer after a session's nominal start before treating a moment as
+# "confirmed no flight" — sessions run several minutes (jegyzőkönyv shows
+# 6-10 min per show) and we don't have a precise end time for every one, so
+# this errs toward NOT calling something a confirmed negative rather than
+# wrongly excluding a moment that might still be mid-flight.
+_SESSION_END_MARGIN_S = 900.0   # 15 min
+
+
+def is_confirmed_no_flight(
+    filename: str, local_time_s: float, dataset_type: str = "polywav",
+) -> bool:
+    """
+    True only when this moment is confidently OUTSIDE every cataloged
+    session's flight window — i.e. before the day's first show or well
+    after the last one. Used to compute detection precision/specificity:
+    recall only needs "confirmed present" (ground_truth_xy_at* returning a
+    position), but precision also needs confident negatives, and treating
+    "no ground truth" as "no drone" would be wrong — most of the recording
+    just isn't covered by ground truth at all, which is a different thing
+    from confirmed silence. False (not a confirmed negative) is returned
+    for anything ambiguous, on purpose — an undercount of negatives is a
+    much safer error than mislabeling a real flight window as empty.
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return False
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return False
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+    abs_time = chunk_start_s + local_time_s
+
+    sessions = _get_enriched_sessions()
+    if not sessions:
+        return False
+    if abs_time < sessions[0]["onset_from_rec_s"]:
+        return True
+    if abs_time > sessions[-1]["onset_from_rec_s"] + _SESSION_END_MARGIN_S:
+        return True
+    return False
+
+
+def ground_truth_xy_at(
+    filename: str, local_time_s: float, dataset_type: str = "polywav",
+) -> Optional[Dict[str, Any]]:
+    """
+    Ground-truth (x, y) position, in the same East/North metre frame as
+    everything else in the app, for a given moment within a given raw file.
+
+    Parameters
+    ----------
+    filename     : e.g. "251020VITEMOROM1AT01Q.wav" (polywav) or a MEMS
+                   audio filename
+    local_time_s : seconds from the start of THIS file (not the whole
+                   recording — matches Batch Scan's per-window t_start)
+    dataset_type : "polywav" | "mems"
+
+    Returns
+    -------
+    {"position": [x, y], "maneuver_type": ..., "description": ..., "session": ...}
+    or None if this moment falls outside every cataloged maneuver segment,
+    or the covering segment has no start_coord/end_coord (some pre-measurement
+    segments don't).
+    """
+    if dataset_type == "mems":
+        if filename not in MEMS_FILES:
+            return None
+        chunk_start_s = (MEMS_START_LOCAL_S - RECORDING_REF_LOCAL_S) \
+            + MEMS_FILES.index(filename) * MEMS_ASSUMED_FORMAT["duration_s"]
+    else:
+        if filename not in POLYWAV_FILES:
+            return None
+        chunk_start_s = POLYWAV_FILES.index(filename) * PW_CHUNK_DUR_S
+
+    abs_time = chunk_start_s + local_time_s
+
+    for seg in _get_enriched_segments():
+        onset = seg["onset_from_rec_s"]
+        if not (onset <= abs_time < onset + seg["duration_s"]):
+            continue
+        sc, ec = seg.get("start_coord"), seg.get("end_coord")
+        if not sc or not ec or sc[0] is None or ec[0] is None:
+            return None   # in-segment but this maneuver has no recorded position
+        frac = (abs_time - onset) / seg["duration_s"] if seg["duration_s"] > 0 else 0.0
+        x = sc[0] + (ec[0] - sc[0]) * frac
+        y = sc[1] + (ec[1] - sc[1]) * frac
+        return {
+            "position":      [round(x, 3), round(y, 3)],
+            "maneuver_type": seg.get("maneuver_type"),
+            "description":   seg.get("description"),
+            "session":       seg.get("session"),
+        }
+    return None
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # CLI
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -1395,3 +1689,12 @@ if __name__ == "__main__":
         print()
 
     build_ground_truth(args.out_dir)
+
+    # # Usage
+    # python dunakeszi_ground_truth.py --out_dir ground_truth/
+    # # Then in your extractor, import load_ground_truth and segments_for_file to access the data.
+    # python dunakeszi_segment_extractor.py \
+    # --segments ground_truth/ground_truth_segments.json \
+    # --wav-dir /path/containing/just/J_file/ \
+    # --array BK-6-E \
+    # --clip-position 0.5

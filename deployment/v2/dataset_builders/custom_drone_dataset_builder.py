@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-# custom_drone_dataset_builder.py
+"""
+Custom Drone Dataset Builder 
+
+A comprehensive tool for building synthetic drone audio datasets by:
+1. Extracting drone segments from raw recordings with purity-aware detection
+2. Collecting background noise from various sources (Freesound, UrbanSound8K, local files)
+3. Creating augmented training samples by mixing drone segments with background noise
+4. Generating train/validation/test splits with proper group-based separation
+"""
 
 import os
 import sys
@@ -12,9 +20,11 @@ import tempfile
 import tarfile
 import warnings
 import argparse
+import hashlib
+import csv
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Any, Union
 
 import numpy as np
 import soundfile as sf
@@ -29,133 +39,151 @@ import matplotlib.pyplot as plt
 
 try:
     from pydub import AudioSegment
+    from scipy.signal import lfilter, butter, sosfilt
     PYDUB_OK = True
 except ImportError:
     PYDUB_OK = False
+    lfilter = butter = sosfilt = None
 
-
+# Constants
 AUDIO_EXTS = (".wav", ".mp3", ".ogg", ".flac", ".aif", ".aiff", ".m4a")
+FREESOUND_BASE_URL = "https://freesound.org/apiv2"
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Config
-# ─────────────────────────────────────────────────────────────────────────────
 
 @dataclass
 class BuilderConfig:
-    sr: int = 22050
-    segment_window_sec: float = 1.25
-    segment_hop_sec: float = 0.35
-    detect_threshold: float = 0.52
-    weak_threshold: float = 0.34
-    merge_gap_sec: float = 0.40
-    min_segment_sec: float = 0.90
-    max_segment_sec: float = 4.00
-    segment_overlap_sec: float = 0.25
+    """
+    Configuration class for the drone dataset builder.
+    
+    All parameters control different aspects of the pipeline:
+    - Detection parameters for drone segment identification
+    - Mixing parameters for audio augmentation
+    - Split parameters for dataset organization
+    - Quality control parameters for purity filtering
+    """
+    # Audio processing parameters
+    sr: int = 22050  # Sample rate for all audio processing
+    segment_window_sec: float = 1.25  # Window size for analysis
+    segment_hop_sec: float = 0.35  # Hop length for sliding window
+    detect_threshold: float = 0.52  # Threshold for drone detection
+    weak_threshold: float = 0.34  # Threshold for weak drone detection
+    merge_gap_sec: float = 0.40  # Max gap to merge adjacent detections
+    min_segment_sec: float = 0.90  # Minimum segment duration to keep
+    max_segment_sec: float = 4.00  # Maximum segment duration
+    segment_overlap_sec: float = 0.25  # Overlap when splitting long segments
 
-    snr_min_db: float = -5.0
-    snr_max_db: float = 15.0
-    drone_gain_min_db: float = -6.0
-    drone_gain_max_db: float = 6.0
-    bg_gain_min_db: float = -6.0
-    bg_gain_max_db: float = 6.0
+    # Mixing parameters
+    snr_min_db: float = -5.0  # Minimum SNR for background mixing
+    snr_max_db: float = 15.0  # Maximum SNR for background mixing
+    drone_gain_min_db: float = -6.0  # Min gain adjustment for drone
+    drone_gain_max_db: float = 6.0  # Max gain adjustment for drone
+    bg_gain_min_db: float = -6.0  # Min gain adjustment for background
+    bg_gain_max_db: float = 6.0  # Max gain adjustment for background
 
-    clean_peak: float = 0.98
-    trim_top_db: float = 28.0
-    min_peak: float = 0.02
-    min_clip_sec: float = 0.4
-    augments_per_segment: int = 4
-    val_fraction: float = 0.15
-    seed: int = 42
+    # Quality control parameters
+    clean_peak: float = 0.98  # Target peak amplitude for normalized audio
+    trim_top_db: float = 28.0  # Threshold for silence trimming
+    min_peak: float = 0.02  # Minimum peak amplitude to keep segment
+    min_clip_sec: float = 0.4  # Minimum clip duration
+    augments_per_segment: int = 4  # Number of augmentations per clean segment
+    val_fraction: float = 0.15  # Fraction of data for validation
+    test_fraction: float = 0.10  # Fraction of data for testing
+    seed: int = 42  # Random seed for reproducibility
 
-    # anti-silence / anti-speech
-    silence_rms_db_threshold: float = -40.0
-    silence_peak_threshold: float = 0.015
-    min_active_frame_ratio: float = 0.18
+    # Silence detection parameters
+    silence_rms_db_threshold: float = -40.0  # RMS threshold for silence
+    silence_peak_threshold: float = 0.015  # Peak threshold for silence
+    min_active_frame_ratio: float = 0.18  # Minimum active frames ratio
 
+    # Speech detection parameters
     speech_voiced_ratio_threshold: float = 0.72
     speech_centroid_max_hz: float = 2200.0
     speech_bandwidth_max_hz: float = 1800.0
     speech_f0_max_hz: float = 280.0
 
-    # ── Freesound (replaces Pixabay) ──────────────────────────────────────────
-    # Get a free API key at https://freesound.org/apiv2/apply/
-    # You can also pass it via the FREESOUND_API_KEY environment variable.
+    # Freesound API parameters
     freesound_api_key: str = ""
     freesound_timeout_connect: int = 6
     freesound_timeout_read: int = 30
-    freesound_page_size: int = 15          # results per query page
-    freesound_max_per_query: int = 10      # clips to actually download per query
+    freesound_page_size: int = 15
+    freesound_max_per_query: int = 10
     freesound_max_total_backgrounds: int = 60
-    # Queries sent to Freesound – feel free to extend this list
     freesound_queries: Tuple[str, ...] = (
-        "wind outdoor",
-        "rain ambience",
-        "traffic city",
-        "crowd outdoor",
-        "construction noise",
-        "birds forest",
-        "city ambience",
-        "engine idle",
-        "park ambience",
-        "market background",
+        "wind outdoor", "rain ambience", "traffic city", "crowd outdoor",
+        "construction noise", "birds forest", "city ambience", "engine idle",
+        "park ambience", "market background"
     )
 
-    # ── UrbanSound8K ─────────────────────────────────────────────────────────
+    # UrbanSound8K parameters
     use_urbansound8k: bool = True
-    # Official Zenodo download URL (no login required, ~6 GB)
     urbansound8k_url: str = (
         "https://zenodo.org/records/1203745/files/UrbanSound8K.tar.gz?download=1"
     )
     urbansound8k_max_total_backgrounds: int = 80
     urbansound8k_allowed_classes: Tuple[str, ...] = (
-        "air_conditioner",
-        "engine_idling",
-        "jackhammer",
-        "drilling",
-        "siren",
-        "car_horn",
-        "street_music",
+        "air_conditioner", "engine_idling", "jackhammer", "drilling",
+        "siren", "car_horn", "street_music"
     )
 
-    # ── Synthetic fallback ────────────────────────────────────────────────────
-    # When no real backgrounds are found, generate N synthetic noise clips so
-    # the augmentation pipeline can still run.
+    # Synthetic fallback parameters
     synth_fallback_count: int = 30
     synth_clip_sec: float = 6.0
-
-    # Global caps
     max_background_pool_total: int = 150
 
+    # Dataset splitting parameters
+    split_mode: str = "grouped"  # "grouped" or "random"
+    include_test_split: bool = True
+    segment_group_strategy: str = "source_file"  # "source_file" or "source_prefix"
+    background_group_strategy: str = "source_family"
+    write_csv_manifest: bool = True
+    use_source_full_file_as_fallback_positive: bool = False
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Utilities
-# ─────────────────────────────────────────────────────────────────────────────
+    # Purity-aware filtering parameters
+    quarantine_enabled: bool = True
+    trim_edge_margin_sec: float = 0.12
+    window_label_drone_threshold: float = 0.58
+    window_label_speech_threshold: float = 0.60
+    min_drone_window_ratio: float = 0.72
+    max_speech_window_ratio: float = 0.12
+    max_silence_window_ratio: float = 0.18
+    max_uncertain_window_ratio: float = 0.25
+    purity_weak_join_threshold: float = 0.44
+
+
+# ============================================================================
+# UTILITY FUNCTIONS
+# ============================================================================
 
 def safe_slug(name: str) -> str:
+    """Convert a string to a safe filename slug."""
     keep = [ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in name]
-    return "".join(keep).strip("_") or "output"
+    return "".join(keep).strip("_") or "output_v3"
 
 
-def ensure_dir(path: Path):
+def ensure_dir(path: Path) -> None:
+    """Create directory if it doesn't exist."""
     path.mkdir(parents=True, exist_ok=True)
 
 
 def db_to_gain(db: float) -> float:
+    """Convert decibels to linear gain factor."""
     return float(10 ** (db / 20.0))
 
 
 def rms_energy(y: np.ndarray) -> float:
+    """Calculate RMS energy of audio signal."""
     return float(np.sqrt(np.mean(np.asarray(y, dtype=np.float32) ** 2)) + 1e-8)
 
 
 def normalize_peak(y: np.ndarray, peak: float = 0.98) -> np.ndarray:
+    """Normalize audio to target peak amplitude."""
     y = np.asarray(y, dtype=np.float32)
     m = float(np.max(np.abs(y)) + 1e-8)
     return np.clip(y * (peak / m), -1.0, 1.0).astype(np.float32)
 
 
 def random_crop_or_loop(y: np.ndarray, target_n: int) -> np.ndarray:
+    """Crop or loop audio to reach target length."""
     y = np.asarray(y, dtype=np.float32)
     if len(y) == 0:
         return np.zeros(target_n, dtype=np.float32)
@@ -169,6 +197,7 @@ def random_crop_or_loop(y: np.ndarray, target_n: int) -> np.ndarray:
 
 
 def mix_at_snr(drone_y: np.ndarray, bg_y: np.ndarray, snr_db: float) -> np.ndarray:
+    """Mix drone and background audio at specified SNR."""
     drone_y = np.asarray(drone_y, dtype=np.float32)
     bg_y = np.asarray(bg_y, dtype=np.float32)
     d_rms = rms_energy(drone_y)
@@ -180,6 +209,7 @@ def mix_at_snr(drone_y: np.ndarray, bg_y: np.ndarray, snr_db: float) -> np.ndarr
 
 
 def load_audio_any(path: Path, sr: int) -> np.ndarray:
+    """Load audio from any supported format."""
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
@@ -201,6 +231,7 @@ def load_audio_any(path: Path, sr: int) -> np.ndarray:
 
 
 def trim_silence_edges(y: np.ndarray, top_db: float = 28.0) -> np.ndarray:
+    """Trim silence from beginning and end of audio."""
     if len(y) == 0:
         return y.astype(np.float32)
     try:
@@ -210,32 +241,29 @@ def trim_silence_edges(y: np.ndarray, top_db: float = 28.0) -> np.ndarray:
         return y.astype(np.float32)
 
 
-def sliding_window_ranges(
-    n_samples: int, sr: int, window_sec: float, hop_sec: float
-) -> List[Tuple[int, int]]:
+def sliding_window_ranges(n_samples: int, sr: int, window_sec: float, 
+                         hop_sec: float) -> List[Tuple[int, int]]:
+    """Generate sliding window indices."""
     win = int(window_sec * sr)
     hop = int(hop_sec * sr)
     if n_samples <= 0 or win <= 0 or hop <= 0:
         return []
-
     starts = list(range(0, max(1, n_samples - win + 1), hop))
     if n_samples > win and starts and starts[-1] != n_samples - win:
         starts.append(n_samples - win)
     elif n_samples <= win:
         starts = [0]
-
     return [(s, min(s + win, n_samples)) for s in starts]
 
 
-def merge_regions(
-    regions: List[Dict], max_gap_sec: float, min_duration_sec: float
-) -> List[Dict]:
+def merge_regions(regions: List[Dict], max_gap_sec: float, 
+                 min_duration_sec: float) -> List[Dict]:
+    """Merge adjacent regions that are close in time."""
     if not regions:
         return []
-
     regions = sorted(regions, key=lambda r: r["start_s"])
     merged = [regions[0].copy()]
-
+    
     for r in regions[1:]:
         prev = merged[-1]
         gap = r["start_s"] - prev["end_s"]
@@ -246,7 +274,7 @@ def merge_regions(
             prev["windows"] += r.get("windows", 1)
         else:
             merged.append(r.copy())
-
+    
     out = []
     for r in merged:
         dur = r["end_s"] - r["start_s"]
@@ -256,13 +284,12 @@ def merge_regions(
     return out
 
 
-def split_long_region(
-    start_s: float, end_s: float, max_chunk_sec: float, overlap_sec: float
-) -> List[Tuple[float, float]]:
+def split_long_region(start_s: float, end_s: float, max_chunk_sec: float, 
+                     overlap_sec: float) -> List[Tuple[float, float]]:
+    """Split long regions into overlapping chunks."""
     dur = end_s - start_s
     if dur <= max_chunk_sec:
         return [(start_s, end_s)]
-
     step = max(0.2, max_chunk_sec - overlap_sec)
     out = []
     t = start_s
@@ -275,69 +302,111 @@ def split_long_region(
     return out
 
 
-def analyze_window_quality(y: np.ndarray, sr: int, cfg: BuilderConfig) -> Dict:
-    y = np.asarray(y, dtype=np.float32)
-    if len(y) == 0:
-        return {"rms_db": -120.0, "peak": 0.0, "active_ratio": 0.0, "is_silent": True}
-
-    rms = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
-    rms_db = 20.0 * math.log10(rms + 1e-8)
-    peak = float(np.max(np.abs(y)) + 1e-8)
-
-    frame = max(256, int(0.03 * sr))
-    hop = max(128, int(0.01 * sr))
-
-    energies = []
-    for start in range(0, max(1, len(y) - frame + 1), hop):
-        seg = y[start:start + frame]
-        if len(seg) < frame:
-            seg = np.pad(seg, (0, frame - len(seg)))
-        energies.append(float(np.sqrt(np.mean(seg ** 2)) + 1e-8))
-
-    energies = np.asarray(energies, dtype=np.float32)
-    active_ratio = (
-        float(np.mean(energies > (10 ** (cfg.silence_rms_db_threshold / 20.0))))
-        if len(energies) > 0 else 0.0
-    )
-
-    is_silent = (
-        rms_db < cfg.silence_rms_db_threshold
-        or peak < cfg.silence_peak_threshold
-        or active_ratio < cfg.min_active_frame_ratio
-    )
-
-    return {
-        "rms_db": rms_db,
-        "peak": peak,
-        "active_ratio": active_ratio,
-        "is_silent": bool(is_silent),
-    }
+def file_sha1(path: Path) -> str:
+    """Calculate SHA1 hash of a file."""
+    h = hashlib.sha1()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
-def looks_like_speech(features: Dict, cfg: BuilderConfig) -> bool:
-    voiced_ratio = float(features.get("voiced_ratio", 0.0))
-    centroid = float(features.get("centroid_hz", 0.0))
-    bandwidth = float(features.get("bandwidth_hz", 0.0))
-    f0 = float(features.get("f0_median_hz", 0.0))
-    f0_std = float(features.get("f0_std_hz", 0.0))
+def infer_source_group(path: Path, strategy: str = "source_file") -> str:
+    """Infer source group for train/val/test splitting."""
+    stem = safe_slug(path.stem.lower())
+    if strategy == "source_prefix":
+        toks = stem.split("_")
+        return "_".join(toks[:2]) if len(toks) >= 2 else stem
+    return stem
 
-    return bool(
-        voiced_ratio >= cfg.speech_voiced_ratio_threshold
-        and centroid <= cfg.speech_centroid_max_hz
-        and bandwidth <= cfg.speech_bandwidth_max_hz
-        and 70.0 <= f0 <= cfg.speech_f0_max_hz
-        and f0_std <= 80.0
-    )
+
+def infer_background_group(path: Path, strategy: str = "source_family") -> str:
+    """Infer background group for manifest tracking."""
+    stem = safe_slug(path.stem.lower())
+    parts = [p.lower() for p in path.parts]
+    parent = safe_slug(path.parent.name.lower()) if path.parent else "root"
+    
+    if strategy == "source_family":
+        if "freesound" in stem or "freesound" in parent or "freesound" in parts:
+            toks = stem.split("_")
+            prefix = toks[0] if toks else ""
+            suffix = toks[1] if len(toks) > 1 else parent
+            return f"{prefix}_{suffix}"
+        if stem.startswith("us8k_"):
+            toks = stem.split("_")
+            return "_".join(toks[:2]) if len(toks) >= 2 else "us8k"
+        if stem.startswith("synth_bg_"):
+            toks = stem.split("_")
+            return "_".join(toks[:3]) if len(toks) >= 3 else "synthetic"
+        return f"{parent}_{stem.split('_')[0] if stem else 'bg'}"
+    return stem
+
+
+def assign_groups_to_splits(group_ids: List[str], cfg: BuilderConfig) -> Dict[str, str]:
+    """Assign groups to train/val/test splits."""
+    uniq = sorted(set(group_ids))
+    rng = random.Random(cfg.seed)
+    rng.shuffle(uniq)
+    
+    n = len(uniq)
+    if n == 0:
+        return {}
+    
+    n_test = int(round(cfg.test_fraction * n)) if cfg.include_test_split else 0
+    n_val = int(round(cfg.val_fraction * n))
+    
+    # Ensure at least one sample in each split when possible
+    if n >= 3 and cfg.include_test_split:
+        n_test = max(1, n_test)
+    if n >= 2:
+        n_val = max(1, n_val)
+    
+    # Adjust if splits exceed available groups
+    if n_test + n_val >= n:
+        if cfg.include_test_split and n >= 3:
+            n_test, n_val = 1, 1
+        elif n >= 2:
+            n_test, n_val = 0, 1
+        else:
+            n_test = n_val = 0
+    
+    out = {}
+    for i, gid in enumerate(uniq):
+        if i < n_test:
+            out[gid] = "test"
+        elif i < n_test + n_val:
+            out[gid] = "val"
+        else:
+            out[gid] = "train"
+    return out
+
+
+def write_json(path: Path, obj: Dict) -> None:
+    """Write object to JSON file."""
+    ensure_dir(path.parent)
+    path.write_text(json.dumps(obj, indent=2))
+
+
+def maybe_write_csv_from_rows(path: Path, rows: List[Dict]) -> None:
+    """Write list of dicts to CSV file."""
+    if not rows:
+        return
+    ensure_dir(path.parent)
+    keys = sorted({k for row in rows for k in row.keys()})
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=keys)
+        w.writeheader()
+        w.writerows(rows)
 
 
 def _make_session(retries: int = 3, backoff: float = 0.5) -> requests.Session:
-    """Return a requests Session with automatic retry logic."""
+    """Create HTTP session with retry logic."""
     session = requests.Session()
     retry = Retry(
-        total=retries,
-        backoff_factor=backoff,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
+        total=retries, 
+        backoff_factor=backoff, 
+        status_forcelist=[429, 500, 502, 503, 504], 
+        allowed_methods=["GET"]
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount("https://", adapter)
@@ -345,21 +414,17 @@ def _make_session(retries: int = 3, backoff: float = 0.5) -> requests.Session:
     return session
 
 
-def download_file(
-    url: str,
-    out_path: Path,
-    timeout: Tuple[int, int] = (10, 60),
-    session: Optional[requests.Session] = None,
-    headers: Optional[Dict] = None,
-) -> bool:
-    """Stream-download *url* to *out_path*, using a .part temp file."""
+def download_file(url: str, out_path: Path, timeout: Tuple[int, int] = (10, 60),
+                 session: Optional[requests.Session] = None, 
+                 headers: Optional[Dict] = None) -> bool:
+    """Download file with progress and retry logic."""
     ensure_dir(out_path.parent)
     tmp_path = out_path.with_suffix(out_path.suffix + ".part")
     _session = session or requests.Session()
+    
     try:
-        with _session.get(
-            url, stream=True, timeout=timeout, headers=headers or {}
-        ) as resp:
+        with _session.get(url, stream=True, timeout=timeout, 
+                         headers=headers or {}) as resp:
             resp.raise_for_status()
             with open(tmp_path, "wb") as f:
                 for chunk in resp.iter_content(chunk_size=65536):
@@ -376,83 +441,80 @@ def download_file(
         return False
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Plotting
-# ─────────────────────────────────────────────────────────────────────────────
+# ============================================================================
+# AUDIO ANALYSIS FUNCTIONS
+# ============================================================================
 
-def save_waveform_and_mel_plot(
-    audio_path: Path, y: np.ndarray, sr: int, out_path: Path, title: str
-):
-    ensure_dir(out_path.parent)
-    fig = plt.figure(figsize=(14, 8))
-
-    ax1 = fig.add_subplot(2, 1, 1)
-    t = np.arange(len(y)) / sr
-    ax1.plot(t, y, linewidth=0.6)
-    ax1.set_title(f"{title} — Waveform")
-    ax1.set_xlabel("Time (s)")
-    ax1.set_ylabel("Amplitude")
-    ax1.grid(True, alpha=0.2)
-
-    ax2 = fig.add_subplot(2, 1, 2)
-    mel = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=1024, hop_length=256, n_mels=64)
-    mel_db = librosa.power_to_db(mel, ref=np.max)
-    img = ax2.imshow(
-        mel_db,
-        origin="lower",
-        aspect="auto",
-        extent=[0, len(y) / sr, 0, sr / 2 / 1000],
-        cmap="magma",
+def analyze_window_quality(y: np.ndarray, sr: int, cfg: BuilderConfig) -> Dict:
+    """Analyze quality metrics for an audio window."""
+    y = np.asarray(y, dtype=np.float32)
+    if len(y) == 0:
+        return {"rms_db": -120.0, "peak": 0.0, "active_ratio": 0.0, "is_silent": True}
+    
+    rms = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
+    rms_db = 20.0 * math.log10(rms + 1e-8)
+    peak = float(np.max(np.abs(y)) + 1e-8)
+    
+    frame = max(256, int(0.03 * sr))
+    hop = max(128, int(0.01 * sr))
+    energies = []
+    
+    for start in range(0, max(1, len(y) - frame + 1), hop):
+        seg = y[start:start + frame]
+        if len(seg) < frame:
+            seg = np.pad(seg, (0, frame - len(seg)))
+        energies.append(float(np.sqrt(np.mean(seg ** 2)) + 1e-8))
+    
+    energies = np.asarray(energies, dtype=np.float32)
+    threshold = 10 ** (cfg.silence_rms_db_threshold / 20.0)
+    active_ratio = float(np.mean(energies > threshold)) if len(energies) > 0 else 0.0
+    
+    is_silent = (
+        rms_db < cfg.silence_rms_db_threshold
+        or peak < cfg.silence_peak_threshold
+        or active_ratio < cfg.min_active_frame_ratio
     )
-    ax2.set_title(f"{title} — Mel Spectrogram")
-    ax2.set_xlabel("Time (s)")
-    ax2.set_ylabel("Frequency (kHz)")
-    fig.colorbar(img, ax=ax2, format="%+2.0f dB")
-
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=140, bbox_inches="tight")
-    plt.close(fig)
-
-
-def save_mix_comparison_plot(
-    drone_y: np.ndarray,
-    bg_y: np.ndarray,
-    mixed_y: np.ndarray,
-    sr: int,
-    out_path: Path,
-    title: str = "Drone + Background Mix",
-):
-    ensure_dir(out_path.parent)
-    fig = plt.figure(figsize=(15, 10))
-    for i, (name, sig) in enumerate(
-        [("Drone Segment", drone_y), ("Background", bg_y), ("Mixed Output", mixed_y)], 1
-    ):
-        ax = fig.add_subplot(3, 1, i)
-        t = np.arange(len(sig)) / sr
-        ax.plot(t, sig, linewidth=0.6)
-        ax.set_title(name)
-        ax.set_xlabel("Time (s)")
-        ax.set_ylabel("Amplitude")
-        ax.grid(True, alpha=0.2)
-
-    fig.suptitle(title)
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=140, bbox_inches="tight")
-    plt.close(fig)
+    
+    return {
+        "rms_db": rms_db, 
+        "peak": peak, 
+        "active_ratio": active_ratio, 
+        "is_silent": bool(is_silent)
+    }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Heuristic drone scoring
-# ─────────────────────────────────────────────────────────────────────────────
+def looks_like_speech(features: Dict, cfg: BuilderConfig) -> bool:
+    """Determine if audio features suggest speech content."""
+    voiced_ratio = float(features.get("voiced_ratio", 0.0))
+    centroid = float(features.get("centroid_hz", 0.0))
+    bandwidth = float(features.get("bandwidth_hz", 0.0))
+    f0 = float(features.get("f0_median_hz", 0.0))
+    f0_std = float(features.get("f0_std_hz", 0.0))
+    
+    return bool(
+        voiced_ratio >= cfg.speech_voiced_ratio_threshold
+        and centroid <= cfg.speech_centroid_max_hz
+        and bandwidth <= cfg.speech_bandwidth_max_hz
+        and 70.0 <= f0 <= cfg.speech_f0_max_hz
+        and f0_std <= 80.0
+    )
+
 
 def heuristic_drone_score(y: np.ndarray, sr: int) -> Dict:
+    """
+    Compute heuristic score indicating likelihood of drone audio.
+    
+    Returns a score between 0 and 1, along with extracted features.
+    """
     y = np.asarray(y, dtype=np.float32)
     if len(y) == 0:
         return {"score": 0.0, "features": {}}
-
+    
+    # Basic energy features
     rms = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
     rms_db = 20.0 * math.log10(rms + 1e-8)
-
+    
+    # Spectral features
     try:
         S = np.abs(librosa.stft(y, n_fft=1024, hop_length=256))
         centroid = float(np.mean(librosa.feature.spectral_centroid(S=S, sr=sr)))
@@ -462,13 +524,14 @@ def heuristic_drone_score(y: np.ndarray, sr: int) -> Dict:
         zcr = float(np.mean(librosa.feature.zero_crossing_rate(y, frame_length=1024, hop_length=256)))
     except Exception:
         centroid = rolloff = bandwidth = flatness = zcr = 0.0
-
+        S = None
+    
+    # Pitch/voicing features
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
-            f0, _, _ = librosa.pyin(
-                y, fmin=50.0, fmax=500.0, sr=sr, hop_length=256, fill_na=0.0
-            )
+            f0, _, _ = librosa.pyin(y, fmin=50.0, fmax=500.0, sr=sr, 
+                                   hop_length=256, fill_na=0.0)
         f0 = np.nan_to_num(f0, nan=0.0).astype(np.float32)
         voiced_ratio = float(np.mean(f0 > 0.0))
         voiced_f0 = f0[f0 > 0.0]
@@ -476,22 +539,24 @@ def heuristic_drone_score(y: np.ndarray, sr: int) -> Dict:
         f0_std = float(np.std(voiced_f0)) if len(voiced_f0) > 0 else 0.0
     except Exception:
         voiced_ratio = f0_median = f0_std = 0.0
-
+    
+    # Band ratios
     try:
         freqs = librosa.fft_frequencies(sr=sr, n_fft=1024)
-        power = np.mean(S ** 2, axis=1)
-
+        power = np.mean(S ** 2, axis=1) if S is not None else np.zeros(513, dtype=np.float32)
+        
         def band_ratio(lo, hi):
             mask = (freqs >= lo) & (freqs <= hi)
             total = float(np.sum(power) + 1e-8)
             return float(np.sum(power[mask]) / total)
-
+        
         low_mid_ratio = band_ratio(80, 1200)
         drone_band_ratio = band_ratio(80, 2500)
         speech_band_ratio = band_ratio(100, 4000)
     except Exception:
         low_mid_ratio = drone_band_ratio = speech_band_ratio = 0.0
-
+    
+    # Compute component scores
     energy_score = float(np.clip((rms_db + 45.0) / 25.0, 0.0, 1.0))
     f0_score = 1.0 if 70 <= f0_median <= 260 else (0.6 if 50 <= f0_median <= 350 else 0.0)
     voiced_score = float(np.clip(voiced_ratio / 0.55, 0.0, 1.0))
@@ -501,273 +566,364 @@ def heuristic_drone_score(y: np.ndarray, sr: int) -> Dict:
     bandwidth_score = 1.0 if 180 <= bandwidth <= 3200 else 0.50
     texture_score = 1.0 - float(np.clip(flatness / 0.5, 0.0, 1.0))
     drone_band_score = float(np.clip(drone_band_ratio / 0.45, 0.0, 1.0))
-
+    
+    # Penalty for speech-like content
     speech_penalty = 0.0
-    if (
-        voiced_ratio > 0.72
-        and 70 <= f0_median <= 280
-        and centroid < 2200
-        and bandwidth < 1800
-    ):
+    if (voiced_ratio > 0.72 and 70 <= f0_median <= 280 and 
+        centroid < 2200 and bandwidth < 1800):
         speech_penalty = 0.25
-
+    
+    # Combine scores
     score = (
-        0.16 * energy_score
-        + 0.18 * f0_score
-        + 0.12 * voiced_score
-        + 0.12 * stability_score
-        + 0.09 * centroid_score
-        + 0.07 * rolloff_score
-        + 0.07 * bandwidth_score
-        + 0.05 * texture_score
-        + 0.14 * drone_band_score
+        0.16 * energy_score + 0.18 * f0_score + 0.12 * voiced_score + 
+        0.12 * stability_score + 0.09 * centroid_score + 0.07 * rolloff_score + 
+        0.07 * bandwidth_score + 0.05 * texture_score + 0.14 * drone_band_score
     ) - speech_penalty
-
+    
     return {
-        "score": float(np.clip(score, 0.0, 1.0)),
+        "score": float(np.clip(score, 0.0, 1.0)), 
         "features": {
-            "rms_db": rms_db,
-            "centroid_hz": centroid,
-            "rolloff_hz": rolloff,
+            "rms_db": rms_db, 
+            "centroid_hz": centroid, 
+            "rolloff_hz": rolloff, 
             "bandwidth_hz": bandwidth,
-            "flatness": flatness,
-            "zcr": zcr,
-            "voiced_ratio": voiced_ratio,
+            "flatness": flatness, 
+            "zcr": zcr, 
+            "voiced_ratio": voiced_ratio, 
             "f0_median_hz": f0_median,
-            "f0_std_hz": f0_std,
-            "low_mid_ratio": low_mid_ratio,
+            "f0_std_hz": f0_std, 
+            "low_mid_ratio": low_mid_ratio, 
             "drone_band_ratio": drone_band_ratio,
             "speech_band_ratio": speech_band_ratio,
-        },
+        }
     }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Background source 1 – Freesound.org  (replaces the broken Pixabay scraper)
-# ─────────────────────────────────────────────────────────────────────────────
+def classify_window_purity(clip: np.ndarray, sr: int, cfg: BuilderConfig) -> Dict:
+    """
+    Classify an audio window as drone, speech, silence, or uncertain.
+    
+    This is the core purity classification used for segment filtering.
+    """
+    quality = analyze_window_quality(clip, sr, cfg)
+    res = heuristic_drone_score(clip, sr)
+    feats = res.get("features", {})
+    drone_score = float(res.get("score", 0.0))
+    speech_like = looks_like_speech(feats, cfg)
+    silence_like = bool(quality.get("is_silent", False))
+    
+    # Calculate periodicity
+    periodicity = 0.0
+    try:
+        ac = librosa.autocorrelate(np.asarray(clip, dtype=np.float32), 
+                                   max_size=min(len(clip), int(sr * 0.03)))
+        if len(ac) > 4:
+            ac = ac / (np.max(np.abs(ac)) + 1e-8)
+            periodicity = float(np.max(ac[1:]))
+    except Exception:
+        periodicity = 0.0
+    
+    # Determine label based on thresholds
+    if silence_like:
+        label = "silence"
+    elif speech_like and drone_score < cfg.window_label_speech_threshold:
+        label = "speech"
+    elif drone_score >= cfg.window_label_drone_threshold and not speech_like:
+        label = "drone"
+    elif drone_score >= cfg.purity_weak_join_threshold and not silence_like:
+        label = "uncertain"
+    else:
+        label = "uncertain" if not silence_like else "silence"
+    
+    return {
+        "label": label,
+        "score": drone_score,
+        "speech_like": bool(speech_like),
+        "silence_like": bool(silence_like),
+        "periodicity": periodicity,
+        "quality": quality,
+        "features": feats,
+    }
+
+
+def build_candidate_regions_from_window_labels(windows: List[Dict], 
+                                                max_gap_sec: float) -> List[Tuple[int, int]]:
+    """Build contiguous regions from window labels."""
+    candidate_idxs = [i for i, w in enumerate(windows) 
+                     if w.get("window_label") in ("drone", "uncertain")]
+    if not candidate_idxs:
+        return []
+    
+    groups = []
+    start = prev = candidate_idxs[0]
+    for idx in candidate_idxs[1:]:
+        gap = float(windows[idx]["start_s"]) - float(windows[prev]["end_s"])
+        if gap <= max_gap_sec:
+            prev = idx
+        else:
+            groups.append((start, prev))
+            start = prev = idx
+    groups.append((start, prev))
+    return groups
+
+
+def evaluate_region_purity(region_windows: List[Dict], cfg: BuilderConfig) -> Dict:
+    """Evaluate the purity of a region for drone content."""
+    n = max(1, len(region_windows))
+    labels = [w.get("window_label", "uncertain") for w in region_windows]
+    
+    drone_ratio = sum(l == "drone" for l in labels) / n
+    speech_ratio = sum(l == "speech" for l in labels) / n
+    silence_ratio = sum(l == "silence" for l in labels) / n
+    uncertain_ratio = sum(l == "uncertain" for l in labels) / n
+    
+    scores = [float(w.get("score", 0.0)) for w in region_windows]
+    mean_drone_score = float(np.mean(scores)) if scores else 0.0
+    max_drone_score = float(np.max(scores)) if scores else 0.0
+    
+    accept = (
+        drone_ratio >= cfg.min_drone_window_ratio
+        and speech_ratio <= cfg.max_speech_window_ratio
+        and silence_ratio <= cfg.max_silence_window_ratio
+        and uncertain_ratio <= cfg.max_uncertain_window_ratio
+        and mean_drone_score >= cfg.weak_threshold
+        and max_drone_score >= cfg.detect_threshold
+    )
+    
+    return {
+        "accept": bool(accept),
+        "drone_ratio": float(drone_ratio),
+        "speech_ratio": float(speech_ratio),
+        "silence_ratio": float(silence_ratio),
+        "uncertain_ratio": float(uncertain_ratio),
+        "mean_drone_score": mean_drone_score,
+        "max_drone_score": max_drone_score,
+    }
+
+
+def trim_region_edges_by_labels(region_windows: List[Dict], 
+                                cfg: BuilderConfig) -> Optional[Tuple[float, float]]:
+    """Trim region edges based on label purity."""
+    keep_idx = [i for i, w in enumerate(region_windows) 
+               if w.get("window_label") == "drone"]
+    if not keep_idx:
+        return None
+    
+    first, last = keep_idx[0], keep_idx[-1]
+    start_s = max(0.0, float(region_windows[first]["start_s"]) - cfg.trim_edge_margin_sec)
+    end_s = float(region_windows[last]["end_s"]) + cfg.trim_edge_margin_sec
+    
+    if end_s <= start_s:
+        return None
+    return float(start_s), float(end_s)
+
+
+def decide_output_bucket(purity: Dict) -> str:
+    """Determine output bucket based on purity analysis."""
+    if purity.get("accept", False):
+        return "clean"
+    if float(purity.get("speech_ratio", 0.0)) > 0.25:
+        return "rejected_speech"
+    if float(purity.get("silence_ratio", 0.0)) > 0.35:
+        return "rejected_silence"
+    return "quarantine_uncertain"
+
+
+# ============================================================================
+# PLOTTING FUNCTIONS
+# ============================================================================
+
+def save_waveform_and_mel_plot(audio_path: Path, y: np.ndarray, sr: int, 
+                               out_path: Path, title: str) -> None:
+    """Generate and save waveform and mel spectrogram plot."""
+    ensure_dir(out_path.parent)
+    fig = plt.figure(figsize=(14, 8))
+    
+    # Waveform
+    ax1 = fig.add_subplot(2, 1, 1)
+    t = np.arange(len(y)) / sr
+    ax1.plot(t, y, linewidth=0.6)
+    ax1.set_title(f"{title} — Waveform")
+    ax1.set_xlabel("Time (s)")
+    ax1.set_ylabel("Amplitude")
+    ax1.grid(True, alpha=0.2)
+    
+    # Mel spectrogram
+    ax2 = fig.add_subplot(2, 1, 2)
+    mel = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=1024, 
+                                         hop_length=256, n_mels=64)
+    mel_db = librosa.power_to_db(mel, ref=np.max)
+    img = ax2.imshow(mel_db, origin="lower", aspect="auto", 
+                     extent=[0, len(y) / sr, 0, sr / 2 / 1000], cmap="magma")
+    ax2.set_title(f"{title} — Mel Spectrogram")
+    ax2.set_xlabel("Time (s)")
+    ax2.set_ylabel("Frequency (kHz)")
+    fig.colorbar(img, ax=ax2, format="%+2.0f dB")
+    
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=140, bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_mix_comparison_plot(drone_y: np.ndarray, bg_y: np.ndarray, mixed_y: np.ndarray, 
+                            sr: int, out_path: Path, title: str = "Drone + Background Mix") -> None:
+    """Generate comparison plot of drone, background, and mixed audio."""
+    ensure_dir(out_path.parent)
+    fig = plt.figure(figsize=(15, 10))
+    
+    for i, (name, sig) in enumerate([
+        ("Drone Segment", drone_y), 
+        ("Background", bg_y), 
+        ("Mixed Output", mixed_y)
+    ], 1):
+        ax = fig.add_subplot(3, 1, i)
+        t = np.arange(len(sig)) / sr
+        ax.plot(t, sig, linewidth=0.6)
+        ax.set_title(name)
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Amplitude")
+        ax.grid(True, alpha=0.2)
+    
+    fig.suptitle(title)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=140, bbox_inches="tight")
+    plt.close(fig)
+
+
+# ============================================================================
+# BACKGROUND COLLECTION CLASSES
+# ============================================================================
 
 class FreesoundBackgroundDownloader:
-    """
-    Downloads ambient/background sounds from Freesound using their public API v2.
-
-    How to get an API key (free):
-      1. Register at https://freesound.org/
-      2. Go to https://freesound.org/apiv2/apply/
-      3. Create an application – you'll get a Client secret which is your API key.
-      4. Pass it via BuilderConfig.freesound_api_key  or the
-         FREESOUND_API_KEY environment variable.
-    """
-
-    BASE_URL = "https://freesound.org/apiv2"
-
+    """Download background sounds from Freesound API."""
+    
     def __init__(self, cfg: BuilderConfig):
         self.cfg = cfg
-        self.api_key = (
-            cfg.freesound_api_key
-            or os.environ.get("FREESOUND_API_KEY", "")
-        ).strip()
+        self.api_key = (cfg.freesound_api_key or 
+                       os.environ.get("FREESOUND_API_KEY", "")).strip()
         self.session = _make_session()
-
+    
     def enabled(self) -> bool:
+        """Check if API key is available."""
         return bool(self.api_key)
-
-    # ── internal helpers ──────────────────────────────────────────────────────
-
+    
     def _get(self, endpoint: str, params: Dict) -> Optional[Dict]:
+        """Make GET request to Freesound API."""
         params["token"] = self.api_key
-        url = f"{self.BASE_URL}{endpoint}"
+        url = f"{FREESOUND_BASE_URL}{endpoint}"
         try:
-            resp = self.session.get(
-                url,
-                params=params,
-                timeout=(self.cfg.freesound_timeout_connect, self.cfg.freesound_timeout_read),
-            )
+            resp = self.session.get(url, params=params, timeout=(
+                self.cfg.freesound_timeout_connect, 
+                self.cfg.freesound_timeout_read
+            ))
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
             print(f"  ⚠️  Freesound API error: {e}")
             return None
-
+    
     def _search(self, query: str) -> List[Dict]:
-        """Return a list of sound metadata dicts for *query*."""
-        data = self._get(
-            "/search/text/",
-            {
-                "query": query,
-                "fields": "id,name,previews,license,duration",
-                "filter": "duration:[2 TO 30] type:(wav OR mp3 OR ogg)",
-                "page_size": self.cfg.freesound_page_size,
-                "sort": "downloads_desc",
-            },
-        )
-        if data is None:
-            return []
-        return data.get("results", [])
-
+        """Search Freesound for audio clips."""
+        data = self._get("/search/text/", {
+            "query": query,
+            "fields": "id,name,previews,license,duration",
+            "filter": "duration:[2 TO 30] type:(wav OR mp3 OR ogg)",
+            "page_size": self.cfg.freesound_page_size,
+            "sort": "downloads_desc",
+        })
+        return [] if data is None else data.get("results", [])
+    
     def _download_preview(self, sound: Dict, out_path: Path) -> bool:
-        """Download the HQ preview MP3 (no OAuth needed)."""
+        """Download preview of a Freesound clip."""
         previews = sound.get("previews", {})
-        # prefer high-quality; fall back to low-quality
         url = previews.get("preview-hq-mp3") or previews.get("preview-lq-mp3")
         if not url:
             return False
-        return download_file(
-            url,
-            out_path,
-            timeout=(self.cfg.freesound_timeout_connect, self.cfg.freesound_timeout_read),
-            session=self.session,
-        )
-
-    # ── public API ────────────────────────────────────────────────────────────
-
-    def download_backgrounds(
-        self,
-        save_dir: Path,
-        queries: Optional[List[str]] = None,
-        force: bool = False,
-        max_total: Optional[int] = None,
-    ) -> Dict[str, int]:
+        return download_file(url, out_path, timeout=(
+            self.cfg.freesound_timeout_connect, 
+            self.cfg.freesound_timeout_read
+        ), session=self.session)
+    
+    def download_backgrounds(self, save_dir: Path, queries: Optional[List[str]] = None, 
+                             force: bool = False, max_total: Optional[int] = None) -> Dict[str, int]:
+        """Download background clips from Freesound."""
         if not self.enabled():
-            print(
-                "ℹ️  No Freesound API key found.\n"
-                "   Set BuilderConfig.freesound_api_key or the FREESOUND_API_KEY env var.\n"
-                "   Get a free key at https://freesound.org/apiv2/apply/\n"
-                "   Skipping Freesound download."
-            )
+            print("ℹ️  No Freesound API key found. Skipping Freesound download.")
             return {"downloaded": 0, "queries": 0, "skipped_existing": 0}
-
+        
         ensure_dir(save_dir)
         queries = list(queries or self.cfg.freesound_queries)
         max_total = max_total or self.cfg.freesound_max_total_backgrounds
         downloaded = skipped = searched = 0
-
+        
         print(f"\n🌐 Freesound: downloading up to {max_total} background clips …")
-
         for query in queries:
             if downloaded >= max_total:
                 break
-
             searched += 1
             print(f"  🔎 Query: '{query}'")
             results = self._search(query)
-
             kept = 0
+            
             for sound in results:
                 if downloaded >= max_total or kept >= self.cfg.freesound_max_per_query:
                     break
-
+                
                 sid = sound.get("id")
                 name = safe_slug(sound.get("name", f"sound_{sid}"))
                 out_path = save_dir / f"freesound_{sid}_{name[:40]}.mp3"
-
+                
                 if out_path.exists() and not force:
                     skipped += 1
                     continue
-
+                
                 ok = self._download_preview(sound, out_path)
                 if ok:
                     downloaded += 1
                     kept += 1
-                    print(f"    ✅ {out_path.name} ({sound.get('duration', '?'):.1f}s)")
+                    duration = sound.get("duration", 0.0)
+                    try:
+                        duration_str = f"{float(duration):.1f}s"
+                    except Exception:
+                        duration_str = "?s"
+                    print(f"    ✅ {out_path.name} ({duration_str})")
+            
+            time.sleep(0.25)
+        
+        print(f"✅ Freesound: downloaded={downloaded}, queries={searched}, "
+              f"skipped_existing={skipped}")
+        return {"downloaded": downloaded, "queries": searched, 
+                "skipped_existing": skipped}
 
-            time.sleep(0.25)  # be polite to the API
-
-        print(
-            f"✅ Freesound: downloaded={downloaded}, "
-            f"queries={searched}, skipped_existing={skipped}"
-        )
-        return {"downloaded": downloaded, "queries": searched, "skipped_existing": skipped}
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Background source 2 – UrbanSound8K  (now with auto-download)
-# ─────────────────────────────────────────────────────────────────────────────
 
 class UrbanSound8KImporter:
-    """
-    Imports (and optionally auto-downloads) UrbanSound8K background clips.
-
-    Auto-download:
-      If the dataset is not found at *dataset_root*, the importer will try to
-      download the ~6 GB tar.gz from Zenodo and extract it automatically.
-      Pass  auto_download=True  (or set  cfg.use_urbansound8k=True  and call
-      import_backgrounds with  auto_download=True).
-    """
-
+    """Import and extract UrbanSound8K dataset for background noise."""
+    
     def __init__(self, cfg: BuilderConfig):
         self.cfg = cfg
         self.session = _make_session()
-
-    # ── layout detection ─────────────────────────────────────────────────────
-    # Three folder layouts are supported:
-    #
-    # Layout A – standard extracted archive (default from Zenodo):
-    #   <root>/UrbanSound8K/audio/fold1/…
-    #   <root>/UrbanSound8K/metadata/UrbanSound8K.csv
-    #
-    # Layout B – already inside the inner folder:
-    #   <root>/audio/fold1/…
-    #   <root>/metadata/UrbanSound8K.csv
-    #
-    # Layout C – pre-sorted by class (output of sort_urbansound8k.py):
-    #   <root>/air_conditioner/*.wav
-    #   <root>/engine_idling/*.wav
-    #   … (any of the allowed class names as subfolders)
-
-    _KNOWN_CLASSES = {
-        "air_conditioner", "car_horn", "children_playing", "dog_bark",
-        "drilling", "engine_idling", "gun_shot", "jackhammer",
-        "siren", "street_music",
-    }
-
-    def _detect_layout(self, dataset_root: Path):
-        """Return (layout, audio_root_or_None, meta_csv_or_None).
-        layout is 'A', 'B', 'C', or None (not found).
-        """
-        # Layout A
-        a_audio = dataset_root / "UrbanSound8K" / "audio"
-        a_csv   = dataset_root / "UrbanSound8K" / "metadata" / "UrbanSound8K.csv"
-        if a_audio.exists() and a_csv.exists():
-            return "A", a_audio, a_csv
-
-        # Layout B
-        b_audio = dataset_root / "audio"
-        b_csv   = dataset_root / "metadata" / "UrbanSound8K.csv"
-        if b_audio.exists() and b_csv.exists():
-            return "B", b_audio, b_csv
-
-        # Layout C – class-named subfolders present
-        subdirs = {d.name for d in dataset_root.iterdir() if d.is_dir()}
-        if subdirs & self._KNOWN_CLASSES:
-            return "C", dataset_root, None
-
-        return None, None, None
-
+    
     def _dataset_present(self, dataset_root: Path) -> bool:
-        layout, _, _ = self._detect_layout(dataset_root)
-        return layout is not None
-
+        """Check if UrbanSound8K dataset exists."""
+        audio_root = dataset_root / "UrbanSound8K" / "audio"
+        meta_csv = dataset_root / "UrbanSound8K" / "metadata" / "UrbanSound8K.csv"
+        return audio_root.exists() and meta_csv.exists()
+    
     def _auto_download(self, dataset_root: Path) -> bool:
+        """Automatically download UrbanSound8K dataset."""
         ensure_dir(dataset_root)
         tar_path = dataset_root / "UrbanSound8K.tar.gz"
-
+        
         if not tar_path.exists():
             print(f"\n📥 UrbanSound8K not found – downloading (~6 GB) …")
-            print(f"   URL : {self.cfg.urbansound8k_url}")
-            print(f"   Dest: {tar_path}")
-            print("   This may take a while depending on your connection.")
-            ok = download_file(
-                self.cfg.urbansound8k_url,
-                tar_path,
-                timeout=(30, 600),
-                session=self.session,
-            )
+            ok = download_file(self.cfg.urbansound8k_url, tar_path, 
+                              timeout=(30, 600), session=self.session)
             if not ok:
                 print("❌ UrbanSound8K download failed. Skipping.")
                 return False
         else:
             print(f"  📦 Found existing archive: {tar_path}")
-
+        
         print(f"  📂 Extracting {tar_path.name} …")
         try:
             with tarfile.open(tar_path, "r:gz") as tf:
@@ -777,592 +933,644 @@ class UrbanSound8KImporter:
         except Exception as e:
             print(f"❌ Extraction failed: {e}")
             return False
-
-    # ── public API ────────────────────────────────────────────────────────────
-
-    def import_backgrounds(
-        self,
-        dataset_root: Path,
-        save_dir: Path,
-        force: bool = False,
-        max_total: Optional[int] = None,
-        auto_download: bool = False,
-    ) -> Dict[str, int]:
-        """
-        Import background clips from UrbanSound8K into *save_dir*.
-
-        Supports three folder layouts automatically:
-          A  Standard extracted archive  (<root>/UrbanSound8K/audio/fold1/…)
-          B  Already inside inner folder (<root>/audio/fold1/…)
-          C  Pre-sorted by class         (<root>/engine_idling/*.wav  etc.)
-             This is the output of sort_urbansound8k.py – no CSV needed.
-        """
+    
+    def import_backgrounds(self, dataset_root: Path, save_dir: Path, 
+                           force: bool = False, max_total: Optional[int] = None, 
+                           auto_download: bool = False) -> Dict[str, int]:
+        """Import backgrounds from UrbanSound8K dataset."""
         ensure_dir(save_dir)
         max_total = max_total or self.cfg.urbansound8k_max_total_backgrounds
-
-        layout, audio_root, metadata_csv = self._detect_layout(dataset_root)
-
-        if layout is None:
+        
+        if not self._dataset_present(dataset_root):
             if auto_download:
                 success = self._auto_download(dataset_root)
-                layout, audio_root, metadata_csv = self._detect_layout(dataset_root)
-                if layout is None:
-                    print("❌  UrbanSound8K still not found after download attempt.")
+                if not success or not self._dataset_present(dataset_root):
                     return {"imported": 0, "scanned": 0}
             else:
-                print(
-                    f"ℹ️  UrbanSound8K not found at {dataset_root}.\n"
-                    "   Supported layouts:\n"
-                    "     A) standard archive extract: <root>/UrbanSound8K/audio/fold1/\n"
-                    "     B) inside inner folder:      <root>/audio/fold1/\n"
-                    "     C) pre-sorted by class:      <root>/engine_idling/*.wav  etc.\n"
-                    "   Pass --urbansound8k-auto-download to fetch it automatically (~6 GB)."
-                )
+                print(f"ℹ️  UrbanSound8K not found at {dataset_root}.")
                 return {"imported": 0, "scanned": 0}
-
+        
+        audio_root = dataset_root / "UrbanSound8K" / "audio"
+        metadata_csv = dataset_root / "UrbanSound8K" / "metadata" / "UrbanSound8K.csv"
+        
+        # Read and filter allowed classes
+        rows = []
         allowed = set(self.cfg.urbansound8k_allowed_classes)
+        with open(metadata_csv, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                if row.get("class", "").strip() in allowed:
+                    rows.append(row)
+        
+        random.shuffle(rows)
         imported = scanned = 0
-        print(f"\n🎵 UrbanSound8K (layout {layout}): importing up to {max_total} clips from {dataset_root} …")
-
-        # ── Layout C: class-named subfolders, no CSV needed ───────────────────
-        if layout == "C":
-            candidates = []
-            for cls_dir in sorted(dataset_root.iterdir()):
-                if not cls_dir.is_dir():
-                    continue
-                cls = cls_dir.name
-                if cls not in allowed:
-                    continue
-                for f in cls_dir.rglob("*"):
-                    if f.is_file() and f.suffix.lower() in AUDIO_EXTS:
-                        candidates.append((cls, f))
-
-            random.shuffle(candidates)
-            for cls, src in candidates:
-                if imported >= max_total:
-                    break
-                scanned += 1
-                dst = save_dir / f"us8k_{cls}_{src.name}"
-                stem, suffix = dst.stem, dst.suffix
-                idx = 1
-                while dst.exists() and not force:
-                    dst = save_dir / f"{stem}_{idx}{suffix}"
-                    idx += 1
-                try:
-                    shutil.copy2(str(src), str(dst))
-                    imported += 1
-                except Exception as e:
-                    print(f"  ⚠️  Failed to import {src.name}: {e}")
-
-        # ── Layout A / B: fold-based structure with CSV ───────────────────────
-        else:
-            import csv
-            rows = []
-            with open(metadata_csv, newline="", encoding="utf-8") as f:
-                for row in csv.DictReader(f):
-                    if row.get("class", "").strip() in allowed:
-                        rows.append(row)
-
-            random.shuffle(rows)
-            for row in rows:
-                if imported >= max_total:
-                    break
-                fold  = row["fold"]
-                fname = row["slice_file_name"]
-                cls   = row["class"].strip()
-                src   = audio_root / f"fold{fold}" / fname
-                if not src.exists():
-                    continue
-                scanned += 1
-                dst = save_dir / f"us8k_{cls}_{fname}"
-                stem, suffix = dst.stem, dst.suffix
-                idx = 1
-                while dst.exists() and not force:
-                    dst = save_dir / f"{stem}_{idx}{suffix}"
-                    idx += 1
-                try:
-                    shutil.copy2(str(src), str(dst))
-                    imported += 1
-                except Exception as e:
-                    print(f"  ⚠️  Failed to import {fname}: {e}")
-
+        
+        print(f"\n🎵 UrbanSound8K: importing up to {max_total} clips …")
+        for row in rows:
+            if imported >= max_total:
+                break
+            
+            fold = row["fold"]
+            fname = row["slice_file_name"]
+            cls = row["class"].strip()
+            src = audio_root / f"fold{fold}" / fname
+            
+            if not src.exists():
+                continue
+            
+            scanned += 1
+            dst = save_dir / f"us8k_{cls}_{fname}"
+            stem, suffix = dst.stem, dst.suffix
+            idx = 1
+            while dst.exists() and not force:
+                dst = save_dir / f"{stem}_{idx}{suffix}"
+                idx += 1
+            
+            try:
+                shutil.copy2(str(src), str(dst))
+                imported += 1
+            except Exception as e:
+                print(f"  ⚠️  Failed to import {fname}: {e}")
+        
         print(f"✅ UrbanSound8K: imported={imported}, scanned={scanned}")
         return {"imported": imported, "scanned": scanned}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Background source 3 – Synthetic fallback
-# ─────────────────────────────────────────────────────────────────────────────
-
 class SyntheticBackgroundGenerator:
-    """
-    Generates simple synthetic noise backgrounds when no real ones are available.
-    Produces a variety of coloured-noise textures so augmented clips are not all
-    identical.
-    """
-
+    """Generate synthetic background noise as fallback."""
+    
     def __init__(self, cfg: BuilderConfig):
         self.cfg = cfg
-
+    
     def generate(self, save_dir: Path, count: Optional[int] = None) -> List[Path]:
+        """Generate synthetic background clips."""
         ensure_dir(save_dir)
         count = count or self.cfg.synth_fallback_count
         sr = self.cfg.sr
         n = int(self.cfg.synth_clip_sec * sr)
-
         saved: List[Path] = []
+        
         print(f"\n🔧 Generating {count} synthetic background clips …")
-
         for i in range(count):
             kind = i % 5
             rng = np.random.default_rng(self.cfg.seed + i)
-
-            if kind == 0:
-                # White noise
+            
+            if kind == 0:  # White noise
                 y = rng.standard_normal(n).astype(np.float32)
-            elif kind == 1:
-                # Pink noise (approximate)
+            elif kind == 1:  # Colored noise
                 white = rng.standard_normal(n).astype(np.float32)
                 b, a = [0.049922035, -0.095993537, 0.050612699, -0.004408786], \
                        [1.0, -2.494956002, 2.017265875, -0.522189400]
-                from scipy.signal import lfilter
                 try:
                     y = lfilter(b, a, white).astype(np.float32)
                 except Exception:
                     y = white
-            elif kind == 2:
-                # Low-frequency rumble
+            elif kind == 2:  # Sinusoidal
                 freqs = rng.uniform(40, 200, 8).astype(np.float32)
                 t = np.linspace(0, self.cfg.synth_clip_sec, n, dtype=np.float32)
                 y = sum(np.sin(2 * np.pi * f * t) for f in freqs).astype(np.float32)
                 y += 0.15 * rng.standard_normal(n).astype(np.float32)
-            elif kind == 3:
-                # Band-pass noise (traffic-like 100–800 Hz)
+            elif kind == 3:  # Band-pass noise
                 white = rng.standard_normal(n).astype(np.float32)
-                from scipy.signal import butter, sosfilt
                 try:
-                    sos = butter(4, [100 / (sr / 2), 800 / (sr / 2)], btype="band", output="sos")
+                    sos = butter(4, [100 / (sr / 2), 800 / (sr / 2)], 
+                                btype="band", output="sos")
                     y = sosfilt(sos, white).astype(np.float32)
                 except Exception:
                     y = white
-            else:
-                # High-frequency hiss
+            else:  # High-pass noise
                 white = rng.standard_normal(n).astype(np.float32)
-                from scipy.signal import butter, sosfilt
                 try:
                     sos = butter(4, 3000 / (sr / 2), btype="high", output="sos")
                     y = sosfilt(sos, white).astype(np.float32)
                 except Exception:
                     y = white
-
+            
             y = normalize_peak(y, peak=0.85)
             out_path = save_dir / f"synth_bg_{i:04d}_kind{kind}.wav"
             sf.write(str(out_path), y, sr)
             saved.append(out_path)
-
+        
         print(f"✅ Synthetic backgrounds generated: {len(saved)}")
         return saved
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Main builder
-# ─────────────────────────────────────────────────────────────────────────────
+# ============================================================================
+# MAIN DATASET BUILDER CLASS
+# ============================================================================
 
 class CustomDroneDatasetBuilder:
+    """Main class for building drone detection dataset."""
+    
     def __init__(self, cfg: BuilderConfig):
         self.cfg = cfg
         random.seed(cfg.seed)
         np.random.seed(cfg.seed)
-
+    
     def analyze_file(self, audio_path: Path) -> Dict:
+        """
+        Analyze an audio file to detect potential drone segments.
+        
+        Returns a comprehensive analysis including:
+        - Window-level classifications
+        - Candidate regions
+        - Purity-filtered segments
+        """
         y = load_audio_any(audio_path, self.cfg.sr)
         total_s = len(y) / self.cfg.sr
-
-        windows = sliding_window_ranges(
-            len(y), self.cfg.sr, self.cfg.segment_window_sec, self.cfg.segment_hop_sec
-        )
-
+        windows = sliding_window_ranges(len(y), self.cfg.sr, 
+                                       self.cfg.segment_window_sec, 
+                                       self.cfg.segment_hop_sec)
+        
+        # Classify each window
         window_details = []
-        candidate_regions = []
-
         for i, (s, e) in enumerate(windows):
             clip = y[s:e]
             target_len = int(self.cfg.segment_window_sec * self.cfg.sr)
             if len(clip) < target_len:
                 clip = np.pad(clip, (0, target_len - len(clip)))
-
-            quality = analyze_window_quality(clip, self.cfg.sr, self.cfg)
-            res = heuristic_drone_score(clip, self.cfg.sr)
-            score = float(res["score"])
-            start_s = s / self.cfg.sr
-            end_s = e / self.cfg.sr
-
-            speech_like = looks_like_speech(res["features"], self.cfg)
-            is_silent = quality["is_silent"]
-
-            keep = False
-            if not is_silent and not speech_like:
-                if score >= self.cfg.detect_threshold:
-                    keep = True
-                elif (
-                    score >= self.cfg.weak_threshold
-                    and res["features"].get("drone_band_ratio", 0.0) >= 0.18
-                    and quality["active_ratio"] >= self.cfg.min_active_frame_ratio
-                ):
-                    keep = True
-
-            window_details.append(
-                {
-                    "window_index": i,
-                    "start_s": float(start_s),
-                    "end_s": float(end_s),
-                    "score": score,
-                    "quality": quality,
-                    "speech_like": bool(speech_like),
-                    "is_silent": bool(is_silent),
-                    "kept": bool(keep),
-                    "features": res["features"],
-                }
-            )
-
-            if keep:
-                candidate_regions.append(
-                    {
-                        "start_s": float(start_s),
-                        "end_s": float(end_s),
-                        "max_score": score,
-                        "mean_score": score,
-                        "windows": 1,
-                    }
-                )
-
-        merged = merge_regions(
-            candidate_regions,
-            max_gap_sec=self.cfg.merge_gap_sec,
-            min_duration_sec=self.cfg.min_segment_sec,
+            
+            cls = classify_window_purity(clip, self.cfg.sr, self.cfg)
+            window_details.append({
+                "window_index": i,
+                "start_s": float(s / self.cfg.sr),
+                "end_s": float(e / self.cfg.sr),
+                "score": float(cls["score"]),
+                "quality": cls["quality"],
+                "speech_like": bool(cls["speech_like"]),
+                "is_silent": bool(cls["silence_like"]),
+                "window_label": cls["label"],
+                "periodicity": float(cls.get("periodicity", 0.0)),
+                "features": cls["features"],
+                "kept": bool(cls["label"] == "drone"),
+            })
+        
+        # Build regions from candidate windows
+        candidate_ranges = build_candidate_regions_from_window_labels(
+            window_details, max_gap_sec=self.cfg.merge_gap_sec
         )
-
+        
+        # Process each candidate region
+        merged = []
         final_segments = []
-        for region in merged:
-            start_s = max(0.0, region["start_s"] - 0.15)
-            end_s = min(total_s, region["end_s"] + 0.15)
-            for cs, ce in split_long_region(
-                start_s, end_s,
-                max_chunk_sec=self.cfg.max_segment_sec,
-                overlap_sec=self.cfg.segment_overlap_sec,
-            ):
-                final_segments.append(
-                    {
-                        "start_s": float(cs),
-                        "end_s": float(ce),
-                        "duration_s": float(ce - cs),
-                        "score": float(region["max_score"]),
-                    }
-                )
-
+        quarantined_segments = []
+        
+        for ridx, (a, b) in enumerate(candidate_ranges, 1):
+            region_windows = window_details[a:b+1]
+            purity = evaluate_region_purity(region_windows, self.cfg)
+            trimmed = trim_region_edges_by_labels(region_windows, self.cfg)
+            raw_start_s = float(region_windows[0]["start_s"])
+            raw_end_s = float(region_windows[-1]["end_s"])
+            bucket = decide_output_bucket(purity)
+            
+            region_info = {
+                "region_index": ridx,
+                "start_s": raw_start_s,
+                "end_s": raw_end_s,
+                "duration_s": float(raw_end_s - raw_start_s),
+                "windows": len(region_windows),
+                "purity": purity,
+                "bucket": bucket,
+            }
+            if trimmed is not None:
+                region_info["trimmed_start_s"] = float(trimmed[0])
+                region_info["trimmed_end_s"] = float(trimmed[1])
+            merged.append(region_info)
+            
+            if trimmed is None:
+                continue
+            
+            start_s, end_s = trimmed
+            if (end_s - start_s) < self.cfg.min_segment_sec:
+                continue
+            
+            # Split long regions into chunks
+            target_list = final_segments if purity.get("accept", False) else quarantined_segments
+            for cs, ce in split_long_region(start_s, end_s, 
+                                            max_chunk_sec=self.cfg.max_segment_sec, 
+                                            overlap_sec=self.cfg.segment_overlap_sec):
+                seg = {
+                    "start_s": float(cs),
+                    "end_s": float(ce),
+                    "duration_s": float(ce - cs),
+                    "score": float(purity.get("max_drone_score", 0.0)),
+                    "bucket": bucket,
+                    "purity": purity,
+                }
+                target_list.append(seg)
+        
         return {
             "file": str(audio_path),
             "duration_s": float(total_s),
             "windows_total": len(window_details),
             "detected_regions": merged,
             "segments": final_segments,
+            "quarantine_segments": quarantined_segments,
             "window_details": window_details,
         }
-
-    def extract_segments_from_file(
-        self,
-        audio_path: Path,
-        analysis: Dict,
-        out_dir: Path,
-        plot_dir: Optional[Path] = None,
-    ) -> List[Path]:
+    
+    def extract_segments_from_file(self, audio_path: Path, analysis: Dict, 
+                                   out_dir: Path, plot_dir: Optional[Path] = None) -> Dict[str, List[Path]]:
+        """Extract and save audio segments from analysis results."""
         ensure_dir(out_dir)
         if plot_dir is not None:
             ensure_dir(plot_dir)
-
+        
+        # Setup bucket directories
+        bucket_dirs = {
+            "clean": out_dir,
+            "quarantine_uncertain": out_dir.parent / "quarantine_uncertain",
+            "rejected_speech": out_dir.parent / "rejected_speech",
+            "rejected_silence": out_dir.parent / "rejected_silence",
+        }
+        for p in bucket_dirs.values():
+            ensure_dir(p)
+        
         y = load_audio_any(audio_path, self.cfg.sr)
-        saved = []
-
-        for i, seg in enumerate(analysis.get("segments", []), 1):
+        saved = {k: [] for k in bucket_dirs.keys()}
+        
+        segment_candidates = list(analysis.get("segments", [])) + \
+                            list(analysis.get("quarantine_segments", []))
+        
+        for i, seg in enumerate(segment_candidates, 1):
             s = int(seg["start_s"] * self.cfg.sr)
             e = int(seg["end_s"] * self.cfg.sr)
             clip = y[s:e].astype(np.float32)
-
+            
             if len(clip) == 0:
                 continue
-
+            
             clip = trim_silence_edges(clip, top_db=self.cfg.trim_top_db)
             quality = analyze_window_quality(clip, self.cfg.sr, self.cfg)
             res = heuristic_drone_score(clip, self.cfg.sr)
-
+            purity = dict(seg.get("purity", {}))
+            bucket = seg.get("bucket") or decide_output_bucket(purity)
+            
+            # Reclassify based on final quality
             if quality["is_silent"]:
-                continue
-            if looks_like_speech(res["features"], self.cfg):
-                continue
+                bucket = "rejected_silence"
+            elif (looks_like_speech(res["features"], self.cfg) and 
+                  float(res.get("score", 0.0)) < self.cfg.window_label_speech_threshold):
+                bucket = "rejected_speech"
+            
             if len(clip) < int(self.cfg.min_clip_sec * self.cfg.sr):
-                continue
-
+                bucket = "rejected_silence" if quality["is_silent"] else "quarantine_uncertain"
+            
             peak = float(np.max(np.abs(clip)) + 1e-8)
             if peak < self.cfg.min_peak:
-                continue
-
+                bucket = "rejected_silence"
+            
             clip = normalize_peak(clip, peak=self.cfg.clean_peak)
-
-            out_name = (
-                f"{safe_slug(audio_path.stem)}"
-                f"_seg_{i:03d}"
-                f"_{int(seg['start_s'] * 1000):07d}"
-                f"_{int(seg['end_s'] * 1000):07d}.wav"
-            )
-            out_path = out_dir / out_name
+            
+            out_name = f"{safe_slug(audio_path.stem)}_seg_{i:03d}_" \
+                      f"{int(seg['start_s'] * 1000):07d}_{int(seg['end_s'] * 1000):07d}.wav"
+            out_path = bucket_dirs[bucket] / out_name
             sf.write(str(out_path), clip, self.cfg.sr)
-            saved.append(out_path)
-
+            saved[bucket].append(out_path)
+            
             if plot_dir is not None:
-                plot_path = plot_dir / f"{out_path.stem}.png"
-                save_waveform_and_mel_plot(
-                    audio_path=out_path,
-                    y=clip,
-                    sr=self.cfg.sr,
-                    out_path=plot_path,
-                    title=f"Extracted Segment: {out_path.stem}",
-                )
-
+                plot_subdir = plot_dir / bucket
+                ensure_dir(plot_subdir)
+                plot_path = plot_subdir / f"{out_path.stem}.png"
+                save_waveform_and_mel_plot(audio_path=out_path, y=clip, sr=self.cfg.sr,
+                                          out_path=plot_path, title=f"{bucket}: {out_path.stem}")
+        
         return saved
-
-    def extract_from_folder(
-        self,
-        source_root: Path,
-        clean_out_dir: Path,
-        debug_out_dir: Path,
-        recursive: bool = True,
-    ) -> Dict:
+    
+    def extract_from_folder(self, source_root: Path, clean_out_dir: Path, 
+                           debug_out_dir: Path, recursive: bool = True) -> Dict:
+        """Extract drone segments from all audio files in a folder."""
         ensure_dir(clean_out_dir)
         ensure_dir(debug_out_dir)
-
+        
+        # Setup output directories
+        quarantine_dir = clean_out_dir.parent / "quarantine_uncertain"
+        rejected_speech_dir = clean_out_dir.parent / "rejected_speech"
+        rejected_silence_dir = clean_out_dir.parent / "rejected_silence"
+        for p in [quarantine_dir, rejected_speech_dir, rejected_silence_dir]:
+            ensure_dir(p)
+        
+        # Find all audio files
         pattern_iter = source_root.rglob("*") if recursive else source_root.glob("*")
-        audio_files = [
-            f for f in pattern_iter if f.is_file() and f.suffix.lower() in AUDIO_EXTS
-        ]
-
+        audio_files = [f for f in pattern_iter 
+                      if f.is_file() and f.suffix.lower() in AUDIO_EXTS]
+        
         if not audio_files:
             print(f"⚠️  No audio files found in {source_root}")
-            return {"files": 0, "segments": 0, "saved": 0}
-
-        total_segments = total_saved = 0
-
+            return {"files": 0, "segments": 0, "saved": 0, 
+                    "quarantine": 0, "rejected_speech": 0, "rejected_silence": 0}
+        
+        total_segments = total_saved = total_quarantine = 0
+        total_rej_speech = total_rej_silence = 0
+        segment_manifest = []
+        
         for fpath in audio_files:
             try:
                 analysis = self.analyze_file(fpath)
-
+                
+                # Save source plot
                 source_plot_dir = debug_out_dir / "source_plots"
                 ensure_dir(source_plot_dir)
                 y_src = load_audio_any(fpath, self.cfg.sr)
                 save_waveform_and_mel_plot(
-                    audio_path=fpath,
-                    y=y_src,
-                    sr=self.cfg.sr,
+                    audio_path=fpath, y=y_src, sr=self.cfg.sr,
                     out_path=source_plot_dir / f"{safe_slug(fpath.stem)}_source.png",
-                    title=f"Source File: {fpath.name}",
+                    title=f"Source File: {fpath.name}"
                 )
-
+                
+                # Save analysis JSON
                 dbg_path = debug_out_dir / f"{safe_slug(fpath.stem)}_analysis.json"
                 dbg_path.write_text(json.dumps(analysis, indent=2))
-
-                total_segments += len(analysis.get("segments", []))
-                saved = self.extract_segments_from_file(
-                    audio_path=fpath,
-                    analysis=analysis,
-                    out_dir=clean_out_dir,
-                    plot_dir=debug_out_dir / "segment_plots",
+                
+                total_segments += len(analysis.get("segments", [])) + \
+                                 len(analysis.get("quarantine_segments", []))
+                
+                saved_map = self.extract_segments_from_file(
+                    audio_path=fpath, analysis=analysis, 
+                    out_dir=clean_out_dir, plot_dir=debug_out_dir / "segment_plots"
                 )
-                total_saved += len(saved)
-
-                print(
-                    f"🎯 {fpath.name}: "
-                    f"windows={analysis['windows_total']} "
-                    f"segments={len(analysis.get('segments', []))} "
-                    f"saved={len(saved)}"
-                )
+                
+                src_group = infer_source_group(fpath, self.cfg.segment_group_strategy)
+                
+                # Update manifest
+                for bucket, paths in saved_map.items():
+                    for out_path in paths:
+                        segment_manifest.append({
+                            "segment_path": str(out_path),
+                            "segment_name": out_path.name,
+                            "bucket": bucket,
+                            "source_file": str(fpath),
+                            "source_group": src_group,
+                            "source_sha1": file_sha1(fpath),
+                            "segment_sha1": file_sha1(out_path),
+                        })
+                
+                total_saved += len(saved_map.get("clean", []))
+                total_quarantine += len(saved_map.get("quarantine_uncertain", []))
+                total_rej_speech += len(saved_map.get("rejected_speech", []))
+                total_rej_silence += len(saved_map.get("rejected_silence", []))
+                
+                # Fallback: use full file if no segments found
+                if not saved_map.get("clean") and self.cfg.use_source_full_file_as_fallback_positive:
+                    y = trim_silence_edges(y_src, top_db=self.cfg.trim_top_db)
+                    if len(y) >= int(self.cfg.min_clip_sec * self.cfg.sr):
+                        out_path = clean_out_dir / f"{safe_slug(fpath.stem)}_full.wav"
+                        sf.write(str(out_path), normalize_peak(y, peak=self.cfg.clean_peak), 
+                                self.cfg.sr)
+                        segment_manifest.append({
+                            "segment_path": str(out_path), 
+                            "segment_name": out_path.name, 
+                            "bucket": "clean", 
+                            "source_file": str(fpath),
+                            "source_group": src_group, 
+                            "source_sha1": file_sha1(fpath), 
+                            "segment_sha1": file_sha1(out_path),
+                            "fallback_full_file": True,
+                        })
+                        total_saved += 1
+                
+                print(f"🎯 {fpath.name}: windows={analysis['windows_total']} "
+                      f"clean={len(saved_map.get('clean', []))} "
+                      f"quarantine={len(saved_map.get('quarantine_uncertain', []))} "
+                      f"speech_rej={len(saved_map.get('rejected_speech', []))} "
+                      f"silence_rej={len(saved_map.get('rejected_silence', []))}")
+                
             except Exception as e:
                 print(f"⚠️  Failed processing {fpath.name}: {e}")
-
-        print(
-            f"\n✅ Extraction complete: "
-            f"files={len(audio_files)}, segments={total_segments}, saved={total_saved}"
-        )
-        return {"files": len(audio_files), "segments": total_segments, "saved": total_saved}
-
-    def build_background_pool(
-        self,
-        background_source_dir: Path,
-        background_pool_dir: Path,
-        max_total: Optional[int] = None,
-    ) -> List[Path]:
+        
+        # Save manifest
+        write_json(debug_out_dir / "segment_manifest.json", {"rows": segment_manifest})
+        maybe_write_csv_from_rows(debug_out_dir / "segment_manifest.csv", segment_manifest)
+        
+        print(f"\n✅ Extraction complete: files={len(audio_files)}, "
+              f"clean={total_saved}, quarantine={total_quarantine}, "
+              f"rejected_speech={total_rej_speech}, rejected_silence={total_rej_silence}")
+        
+        return {
+            "files": len(audio_files), 
+            "segments": total_segments, 
+            "saved": total_saved, 
+            "quarantine": total_quarantine, 
+            "rejected_speech": total_rej_speech, 
+            "rejected_silence": total_rej_silence
+        }
+    
+    def build_background_pool(self, background_source_dir: Path, 
+                              background_pool_dir: Path, 
+                              max_total: Optional[int] = None) -> List[Path]:
+        """Build a pool of background audio files."""
         ensure_dir(background_pool_dir)
         max_total = max_total or self.cfg.max_background_pool_total
-
-        all_candidates = [
-            f for f in background_source_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in AUDIO_EXTS
-        ]
+        
+        all_candidates = [f for f in background_source_dir.rglob("*") 
+                         if f.is_file() and f.suffix.lower() in AUDIO_EXTS]
         random.shuffle(all_candidates)
-
+        
         copied = 0
         bg_files: List[Path] = []
-
+        bg_manifest = []
+        
         for f in all_candidates:
             if copied >= max_total:
                 break
-
+            
             dst = background_pool_dir / f.name
             stem, suffix = dst.stem, dst.suffix
             idx = 1
             while dst.exists():
                 dst = background_pool_dir / f"{stem}_{idx}{suffix}"
                 idx += 1
-
+            
             try:
                 shutil.copy2(str(f), str(dst))
                 bg_files.append(dst)
+                bg_manifest.append({
+                    "background_path": str(dst),
+                    "original_path": str(f),
+                    "background_group": infer_background_group(f, self.cfg.background_group_strategy),
+                    "background_sha1": file_sha1(dst),
+                })
                 copied += 1
             except Exception as e:
                 print(f"⚠️  Failed to copy background {f.name}: {e}")
-
+        
+        write_json(background_pool_dir / "_background_manifest.json", {"rows": bg_manifest})
+        maybe_write_csv_from_rows(background_pool_dir / "_background_manifest.csv", bg_manifest)
         print(f"✅ Background pool ready: {copied} files")
         return bg_files
-
-    def augment_clean_segments(
-        self,
-        clean_drone_dir: Path,
-        background_pool_dir: Path,
-        train_out_dir: Path,
-        val_out_dir: Path,
-        manifest_path: Optional[Path] = None,
-        plot_dir: Optional[Path] = None,
-        max_plot_examples: int = 20,
-    ) -> Dict:
+    
+    def _load_segment_manifest(self, clean_drone_dir: Path) -> Dict[str, Dict]:
+        """Load segment manifest from debug output."""
+        manifest_json = clean_drone_dir.parent / "analysis_debug" / "segment_manifest.json"
+        if manifest_json.exists():
+            try:
+                rows = json.loads(manifest_json.read_text()).get("rows", [])
+                return {Path(r["segment_path"]).name: r for r in rows if "segment_path" in r}
+            except Exception:
+                pass
+        return {}
+    
+    def _load_background_manifest(self, background_pool_dir: Path) -> Dict[str, Dict]:
+        """Load background manifest."""
+        manifest_json = background_pool_dir / "_background_manifest.json"
+        if manifest_json.exists():
+            try:
+                rows = json.loads(manifest_json.read_text()).get("rows", [])
+                return {Path(r["background_path"]).name: r for r in rows if "background_path" in r}
+            except Exception:
+                pass
+        return {}
+    
+    def augment_clean_segments(self, clean_drone_dir: Path, background_pool_dir: Path,
+                               train_out_dir: Path, val_out_dir: Path, 
+                               test_out_dir: Optional[Path] = None,
+                               manifest_path: Optional[Path] = None, 
+                               plot_dir: Optional[Path] = None,
+                               max_plot_examples: int = 20) -> Dict:
+        """Create augmented training samples by mixing drone with background noise."""
         ensure_dir(train_out_dir)
         ensure_dir(val_out_dir)
+        if self.cfg.include_test_split and test_out_dir is not None:
+            ensure_dir(test_out_dir)
         if plot_dir is not None:
             ensure_dir(plot_dir)
-
+        
         drone_files = sorted(clean_drone_dir.glob("*.wav"))
-        bg_files = [
-            f for f in background_pool_dir.rglob("*")
-            if f.is_file() and f.suffix.lower() in AUDIO_EXTS
-        ]
-
+        bg_files = [f for f in background_pool_dir.rglob("*") 
+                   if f.is_file() and f.suffix.lower() in AUDIO_EXTS]
+        
         if not drone_files:
             print(f"⚠️  No clean drone clips found in {clean_drone_dir}")
-            return {"train": 0, "val": 0, "clean": 0}
-
+            return {"train": 0, "val": 0, "test": 0, "clean": 0}
         if not bg_files:
             print(f"⚠️  No background clips found in {background_pool_dir}")
-            return {"train": 0, "val": 0, "clean": 0}
-
-        n_train = n_val = n_clean = 0
+            return {"train": 0, "val": 0, "test": 0, "clean": 0}
+        
+        seg_manifest = self._load_segment_manifest(clean_drone_dir)
+        bg_manifest = self._load_background_manifest(background_pool_dir)
+        
+        # Split by clean drone source group
+        drone_group_ids = []
+        drone_group_for_file = {}
+        for drone_path in drone_files:
+            row = seg_manifest.get(drone_path.name, {})
+            gid = row.get("source_group") or infer_source_group(
+                drone_path, self.cfg.segment_group_strategy
+            )
+            drone_group_ids.append(gid)
+            drone_group_for_file[drone_path] = gid
+        
+        group_to_split = assign_groups_to_splits(drone_group_ids, self.cfg) \
+                        if self.cfg.split_mode == "grouped" else {}
+        
+        n_train = n_val = n_test = n_clean = 0
         manifest_rows = []
         plotted = 0
-
+        
         for drone_path in drone_files:
             try:
                 drone_y = load_audio_any(drone_path, self.cfg.sr)
                 drone_y = trim_silence_edges(drone_y, top_db=self.cfg.trim_top_db)
-
                 if len(drone_y) < int(self.cfg.min_clip_sec * self.cfg.sr):
                     continue
-
-                # always save a clean copy
-                clean_target = train_out_dir / f"clean_{drone_path.stem}.wav"
+                
+                drone_gid = drone_group_for_file[drone_path]
+                split = group_to_split.get(drone_gid, "train") if group_to_split else \
+                       ("val" if random.random() < self.cfg.val_fraction else "train")
+                if split == "test" and (test_out_dir is None or not self.cfg.include_test_split):
+                    split = "val"
+                
+                split_dir = (train_out_dir if split == "train" else 
+                            val_out_dir if split == "val" else test_out_dir)
+                assert split_dir is not None
+                
+                # Save clean version
+                clean_target = split_dir / f"clean_{drone_path.stem}.wav"
                 if not clean_target.exists():
                     sf.write(str(clean_target), normalize_peak(drone_y), self.cfg.sr)
                     n_clean += 1
-
+                    manifest_rows.append({
+                        "kind": "clean", "source_clean": str(drone_path), 
+                        "output_v3": str(clean_target), "split": split,
+                        "source_group": drone_gid,
+                    })
+                
+                # Create augmented versions
                 for j in range(self.cfg.augments_per_segment):
                     bg_path = random.choice(bg_files)
                     bg_y = load_audio_any(bg_path, self.cfg.sr)
                     bg_y = random_crop_or_loop(bg_y, len(drone_y))
-
-                    dy = np.clip(
-                        drone_y * db_to_gain(
-                            random.uniform(self.cfg.drone_gain_min_db, self.cfg.drone_gain_max_db)
-                        ),
-                        -1.0, 1.0,
-                    ).astype(np.float32)
-
-                    by = np.clip(
-                        bg_y * db_to_gain(
-                            random.uniform(self.cfg.bg_gain_min_db, self.cfg.bg_gain_max_db)
-                        ),
-                        -1.0, 1.0,
-                    ).astype(np.float32)
-
+                    
+                    # Apply gain adjustments
+                    dy = np.clip(drone_y * db_to_gain(random.uniform(
+                        self.cfg.drone_gain_min_db, self.cfg.drone_gain_max_db
+                    )), -1.0, 1.0).astype(np.float32)
+                    
+                    by = np.clip(bg_y * db_to_gain(random.uniform(
+                        self.cfg.bg_gain_min_db, self.cfg.bg_gain_max_db
+                    )), -1.0, 1.0).astype(np.float32)
+                    
                     snr_db = random.uniform(self.cfg.snr_min_db, self.cfg.snr_max_db)
                     mixed = mix_at_snr(dy, by, snr_db)
-
+                    
+                    # Add random noise occasionally
                     if random.random() < 0.35:
                         noise = np.random.randn(len(mixed)).astype(np.float32)
                         noise /= np.max(np.abs(noise)) + 1e-8
                         mixed = normalize_peak(mixed + 0.008 * noise)
-
-                    split = "val" if random.random() < self.cfg.val_fraction else "train"
-                    out_dir = val_out_dir if split == "val" else train_out_dir
-                    out_name = (
-                        f"aug_{drone_path.stem}_{j:02d}_{safe_slug(bg_path.stem)}.wav"
-                    )
-                    out_path = out_dir / out_name
+                    
+                    out_name = f"aug_{drone_path.stem}_{j:02d}_{safe_slug(bg_path.stem)}.wav"
+                    out_path = split_dir / out_name
                     sf.write(str(out_path), mixed, self.cfg.sr)
-
-                    manifest_rows.append(
-                        {
-                            "source_clean": str(drone_path),
-                            "background": str(bg_path),
-                            "output": str(out_path),
-                            "split": split,
-                            "snr_db": round(float(snr_db), 3),
-                        }
-                    )
-
+                    
+                    bg_row = bg_manifest.get(bg_path.name, {})
+                    manifest_rows.append({
+                        "kind": "augmented", "source_clean": str(drone_path), 
+                        "background": str(bg_path), "output_v3": str(out_path),
+                        "split": split, "snr_db": round(float(snr_db), 3), 
+                        "source_group": drone_gid,
+                        "background_group": bg_row.get("background_group") or 
+                                           infer_background_group(bg_path, self.cfg.background_group_strategy),
+                    })
+                    
                     if plot_dir is not None and plotted < max_plot_examples:
                         save_mix_comparison_plot(
-                            drone_y=dy,
-                            bg_y=by,
-                            mixed_y=mixed,
-                            sr=self.cfg.sr,
+                            drone_y=dy, bg_y=by, mixed_y=mixed, sr=self.cfg.sr,
                             out_path=plot_dir / f"{out_path.stem}_mix.png",
-                            title=(
-                                f"Mix | {drone_path.stem} + {bg_path.stem} "
-                                f"| SNR={snr_db:.2f} dB"
-                            ),
+                            title=f"Mix | {drone_path.stem} + {bg_path.stem} | SNR={snr_db:.2f} dB"
                         )
                         plotted += 1
-
+                    
                     if split == "val":
                         n_val += 1
+                    elif split == "test":
+                        n_test += 1
                     else:
                         n_train += 1
-
+                        
             except Exception as e:
                 print(f"⚠️  Failed augmentation for {drone_path.name}: {e}")
-
+        
         if manifest_path is not None:
-            ensure_dir(manifest_path.parent)
-            manifest_path.write_text(json.dumps(manifest_rows, indent=2))
+            write_json(manifest_path, {"rows": manifest_rows})
+            if self.cfg.write_csv_manifest:
+                maybe_write_csv_from_rows(manifest_path.with_suffix(".csv"), manifest_rows)
+        
+        print(f"✅ Augmentation complete: train={n_train}, val={n_val}, "
+              f"test={n_test}, clean={n_clean}")
+        return {"train": n_train, "val": n_val, "test": n_test, "clean": n_clean}
 
-        print(f"✅ Augmentation complete: train={n_train}, val={n_val}, clean={n_clean}")
-        return {"train": n_train, "val": n_val, "clean": n_clean}
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Storage / Colab helpers
-# ─────────────────────────────────────────────────────────────────────────────
+# ============================================================================
+# ENVIRONMENT AND UTILITY FUNCTIONS
+# ============================================================================
 
 def running_in_colab() -> bool:
+    """Check if running in Google Colab environment."""
     return "google.colab" in sys.modules
 
 
 def running_in_notebook() -> bool:
+    """Check if running in an IPython notebook."""
     try:
         from IPython import get_ipython
         return get_ipython() is not None
@@ -1370,86 +1578,89 @@ def running_in_notebook() -> bool:
         return False
 
 
-def upload_to_colab(target_dir: Path, prompt: str = "Upload files"):
+def upload_to_colab(target_dir: Path, prompt: str = "Upload files") -> List[Path]:
+    """Upload files to Colab environment."""
     if not running_in_colab():
         raise RuntimeError("upload_to_colab() only works inside Google Colab.")
     from google.colab import files
-
     ensure_dir(target_dir)
     print(f"\n📤 {prompt}")
     uploaded = files.upload()
-
     saved_paths = []
     for name, content in uploaded.items():
         out_path = target_dir / name
         with open(out_path, "wb") as f:
             f.write(content)
         saved_paths.append(out_path)
-
     print(f"✅ Uploaded {len(saved_paths)} file(s) to {target_dir}")
     return saved_paths
 
 
 def get_drive_base_dir() -> Path:
+    """Get base directory for Google Drive or local filesystem."""
     if running_in_colab():
         candidates = [
-            Path("/content/drive/MyDrive"),
-            Path("/content/drive/drone_data/MyDrive"),
+            Path("/content/drive/MyDrive"), 
+            Path("/content/drive/drone_data/MyDrive")
         ]
         for c in candidates:
             if c.exists():
                 base = c / "custom_drone_builder"
                 ensure_dir(base)
                 return base
-        raise RuntimeError(
-            "Google Drive appears not mounted. "
-            "Mount it first: drive.mount('/content/drive')"
-        )
+        raise RuntimeError("Google Drive appears not mounted. Mount it first.")
     base = Path.cwd() / "custom_drone_builder"
     ensure_dir(base)
     return base
 
 
 def get_project_dirs(base_dir: Optional[Path] = None) -> Dict[str, Path]:
+    """Get standard project directory structure."""
     if base_dir is None:
         base_dir = get_drive_base_dir()
-
+    
     dirs = {
         "base": base_dir,
         "inputs": base_dir / "inputs",
         "source": base_dir / "inputs" / "source",
         "backgrounds": base_dir / "inputs" / "backgrounds",
-        "output": base_dir / "output",
-        "clean": base_dir / "output" / "clean_drone_segments",
-        "debug": base_dir / "output" / "analysis_debug",
-        "background_pool": base_dir / "output" / "background_pool",
-        "train": base_dir / "output" / "train" / "drone",
-        "val": base_dir / "output" / "val" / "drone",
-        "plots": base_dir / "output" / "plots",
-        "source_plots": base_dir / "output" / "plots" / "source",
-        "segment_plots": base_dir / "output" / "plots" / "segments",
-        "mix_plots": base_dir / "output" / "plots" / "mixes",
-        "manifest": base_dir / "output" / "augmentation_manifest.json",
+        "output": base_dir / "output_v3",
+        "clean": base_dir / "output_v3" / "clean_drone_segments",
+        "quarantine": base_dir / "output_v3" / "quarantine_uncertain",
+        "rejected_speech": base_dir / "output_v3" / "rejected_speech",
+        "rejected_silence": base_dir / "output_v3" / "rejected_silence",
+        "debug": base_dir / "output_v3" / "analysis_debug",
+        "background_pool": base_dir / "output_v3" / "background_pool",
+        "train": base_dir / "output_v3" / "train" / "drone",
+        "val": base_dir / "output_v3" / "val" / "drone",
+        "test": base_dir / "output_v3" / "test" / "drone",
+        "plots": base_dir / "output_v3" / "plots",
+        "source_plots": base_dir / "output_v3" / "plots" / "source",
+        "segment_plots": base_dir / "output_v3" / "plots" / "segments",
+        "mix_plots": base_dir / "output_v3" / "plots" / "mixes",
+        "manifest": base_dir / "output_v3" / "augmentation_manifest.json",
     }
-
+    
     for k, p in dirs.items():
         if k != "manifest":
             ensure_dir(p)
-
     return dirs
 
 
-def upload_sources_to_persistent_drive():
+def upload_sources_to_persistent_drive() -> List[Path]:
+    """Upload source drone recordings to persistent storage."""
     dirs = get_project_dirs()
     return upload_to_colab(dirs["source"], prompt="Upload source drone recordings")
 
 
-def upload_backgrounds_to_persistent_drive():
+def upload_backgrounds_to_persistent_drive() -> List[Path]:
+    """Upload background recordings to persistent storage."""
     dirs = get_project_dirs()
     return upload_to_colab(dirs["backgrounds"], prompt="Upload background recordings")
 
 
-def clear_project_inputs():
+def clear_project_inputs() -> None:
+    """Clear all input files from project directories."""
     dirs = get_project_dirs()
     for key in ["source", "backgrounds"]:
         for f in dirs[key].rglob("*"):
@@ -1458,56 +1669,48 @@ def clear_project_inputs():
     print("✅ Cleared persistent input folders.")
 
 
-def clear_project_output():
+def clear_project_output() -> None:
+    """Clear all output files."""
     dirs = get_project_dirs()
-    out = dirs["output"]
+    out = dirs["output_v3"]
     if out.exists():
         shutil.rmtree(out)
     ensure_dir(out)
     print("✅ Cleared output folder.")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Runner
-# ─────────────────────────────────────────────────────────────────────────────
+# ============================================================================
+# MAIN EXECUTION FUNCTION
+# ============================================================================
 
-def run_builder(
-    source_root=None,
-    backgrounds_root=None,
-    output_root=None,
-    threshold=0.52,
-    weak_threshold=0.34,
-    window_sec=1.25,
-    hop_sec=0.35,
-    augments_per_segment=4,
-    val_frac=0.15,
-    freesound_api_key: str = "",
-    use_urbansound8k: bool = False,
-    urbansound8k_auto_download: bool = False,
-    use_synth_fallback: bool = True,
-):
+def run_builder(source_root=None, backgrounds_root=None, output_root=None, 
+                threshold=0.52, weak_threshold=0.34, window_sec=1.25, 
+                hop_sec=0.35, augments_per_segment=4, val_frac=0.15, 
+                test_frac=0.10, freesound_api_key: str = "", 
+                use_urbansound8k: bool = False, urbansound8k_auto_download: bool = False, 
+                use_synth_fallback: bool = True, include_test_split: bool = True):
     """
-    Main entry point.
-
-    Background sources (tried in order, all results pooled):
-      1. Freesound.org  – pass freesound_api_key or set FREESOUND_API_KEY env var
-      2. UrbanSound8K   – set use_urbansound8k=True; the dataset must already be
-                          extracted at <backgrounds_root>/urbansound8k/, unless
-                          you also pass urbansound8k_auto_download=True (~6 GB)
-      3. Synthetic      – always-available coloured-noise fallback (use_synth_fallback=True)
-      4. Any audio files you manually drop into <backgrounds_root>/
-
-    Parameters
-    ----------
-    freesound_api_key : str
-        API key for Freesound. Free at https://freesound.org/apiv2/apply/
-        Can also be set via the FREESOUND_API_KEY environment variable.
-    use_urbansound8k : bool
-        Whether to try importing clips from UrbanSound8K.
-    urbansound8k_auto_download : bool
-        If True, downloads UrbanSound8K automatically when not present (~6 GB).
-    use_synth_fallback : bool
-        Generate synthetic noise backgrounds when the real pool is thin.
+    Main function to run the complete dataset building pipeline.
+    
+    Args:
+        source_root: Directory containing source drone recordings
+        backgrounds_root: Directory containing background audio files
+        output_root: Directory for output files
+        threshold: Detection threshold for drone segments
+        weak_threshold: Weak detection threshold
+        window_sec: Window size for analysis (seconds)
+        hop_sec: Hop length for sliding window (seconds)
+        augments_per_segment: Number of augmentations per clean segment
+        val_frac: Fraction of data for validation
+        test_frac: Fraction of data for testing
+        freesound_api_key: API key for Freesound (or set FREESOUND_API_KEY env var)
+        use_urbansound8k: Whether to use UrbanSound8K dataset
+        urbansound8k_auto_download: Auto-download UrbanSound8K if missing
+        use_synth_fallback: Generate synthetic backgrounds if needed
+        include_test_split: Whether to create a test split
+    
+    Returns:
+        Dictionary with statistics about the build process
     """
     cfg = BuilderConfig(
         detect_threshold=threshold,
@@ -1516,313 +1719,241 @@ def run_builder(
         segment_hop_sec=hop_sec,
         augments_per_segment=augments_per_segment,
         val_fraction=val_frac,
+        test_fraction=test_frac,
         freesound_api_key=freesound_api_key or os.environ.get("FREESOUND_API_KEY", ""),
         use_urbansound8k=use_urbansound8k,
+        include_test_split=include_test_split,
     )
-
+    
     builder = CustomDroneDatasetBuilder(cfg)
-
-    # Only fall back to Colab/Drive-based dirs when paths were not supplied AND
-    # we are actually inside Colab. On a normal local machine we use the paths
-    # exactly as given (main() already resolves sensible script-relative defaults).
-    if source_root is None or backgrounds_root is None or output_root is None:
-        if running_in_colab():
-            dirs = get_project_dirs()
-            source_root      = source_root      or dirs["source"]
-            backgrounds_root = backgrounds_root or dirs["backgrounds"]
-            output_root      = output_root      or dirs["output"]
-        else:
-            # Shouldn't normally reach here – main() always supplies all three.
-            # Provide safe local fallbacks for when run_builder() is called directly.
-            script_dir = Path(__file__).resolve().parent
-            source_root      = source_root      or script_dir / "source"
-            backgrounds_root = backgrounds_root or script_dir / "backgrounds"
-            output_root      = output_root      or script_dir / "output"
-
-    source_root      = Path(source_root)
-    backgrounds_root = Path(backgrounds_root)
-    output_root      = Path(output_root)
-
-    ensure_dir(output_root)
-    clean_dir     = output_root / "clean_drone_segments"
-    debug_dir     = output_root / "analysis_debug"
-    bg_pool_dir   = output_root / "background_pool"
-    train_dir     = output_root / "train" / "drone"
-    val_dir       = output_root / "val"   / "drone"
-    plots_dir     = output_root / "plots"
-    mix_plots_dir = plots_dir  / "mixes"
-    manifest_path = output_root / "augmentation_manifest.json"
-    for p in [clean_dir, debug_dir, bg_pool_dir, train_dir, val_dir, plots_dir, mix_plots_dir]:
-        ensure_dir(p)
-
+    dirs = get_project_dirs()
+    
+    # Setup paths
+    source_root = Path(source_root) if source_root else dirs["source"]
+    backgrounds_root = Path(backgrounds_root) if backgrounds_root else dirs["backgrounds"]
+    
+    if output_root is not None:
+        output_root = Path(output_root)
+        ensure_dir(output_root)
+        clean_dir = output_root / "clean_drone_segments"
+        quarantine_dir = output_root / "quarantine_uncertain"
+        rejected_speech_dir = output_root / "rejected_speech"
+        rejected_silence_dir = output_root / "rejected_silence"
+        debug_dir = output_root / "analysis_debug"
+        bg_pool_dir = output_root / "background_pool"
+        train_dir = output_root / "train" / "drone"
+        val_dir = output_root / "val" / "drone"
+        test_dir = output_root / "test" / "drone"
+        plots_dir = output_root / "plots"
+        mix_plots_dir = plots_dir / "mixes"
+        manifest_path = output_root / "augmentation_manifest.json"
+        
+        for p in [clean_dir, quarantine_dir, rejected_speech_dir, rejected_silence_dir,
+                  debug_dir, bg_pool_dir, train_dir, val_dir, test_dir, 
+                  plots_dir, mix_plots_dir]:
+            ensure_dir(p)
+    else:
+        output_root = dirs["output_v3"]
+        clean_dir = dirs["clean"]
+        quarantine_dir = dirs["quarantine"]
+        rejected_speech_dir = dirs["rejected_speech"]
+        rejected_silence_dir = dirs["rejected_silence"]
+        debug_dir = dirs["debug"]
+        bg_pool_dir = dirs["background_pool"]
+        train_dir = dirs["train"]
+        val_dir = dirs["val"]
+        test_dir = dirs["test"]
+        plots_dir = dirs["plots"]
+        mix_plots_dir = dirs["mix_plots"]
+        manifest_path = dirs["manifest"]
+    
     print("=" * 70)
     print("  CUSTOM DRONE DATASET BUILDER")
     print("=" * 70)
     print(f"📁 Source       : {source_root}")
     print(f"📁 Backgrounds  : {backgrounds_root}")
     print(f"📁 Output       : {output_root}")
-
-    # ── Step 1: extract clean drone segments ──────────────────────────────────
+    
+    # Extract drone segments
     ext_stats = builder.extract_from_folder(
-        source_root=source_root,
-        clean_out_dir=clean_dir,
-        debug_out_dir=debug_dir,
-        recursive=True,
+        source_root=source_root, 
+        clean_out_dir=clean_dir, 
+        debug_out_dir=debug_dir, 
+        recursive=True
     )
-
-    # ── Step 2: Freesound backgrounds ─────────────────────────────────────────
+    
+    # Download backgrounds from Freesound
     freesound_dir = backgrounds_root / "freesound"
     freesound = FreesoundBackgroundDownloader(cfg)
     freesound_stats = freesound.download_backgrounds(
-        save_dir=freesound_dir,
-        max_total=cfg.freesound_max_total_backgrounds,
+        save_dir=freesound_dir, 
+        max_total=cfg.freesound_max_total_backgrounds
     )
-
-    # ── Step 3: UrbanSound8K ──────────────────────────────────────────────────
+    
+    # Import UrbanSound8K
     us8k_stats = {"imported": 0, "scanned": 0}
     if cfg.use_urbansound8k:
-        # Accept the dataset at either:
-        #   <backgrounds>/urbansound8k/   (explicit subfolder – most common)
-        #   <backgrounds>/                (user pointed --backgrounds straight at the dataset)
+        urbansound_root = backgrounds_root / "urbansound8k"
         us8k = UrbanSound8KImporter(cfg)
-        _us8k_candidates = [
-            backgrounds_root / "urbansound8k",
-            backgrounds_root,
-        ]
-        urbansound_root = next(
-            (p for p in _us8k_candidates if us8k._detect_layout(p)[0] is not None),
-            backgrounds_root / "urbansound8k",   # fallback for auto-download
-        )
-        print(f"\n🗂️  UrbanSound8K root resolved to: {urbansound_root}")
         us8k_stats = us8k.import_backgrounds(
-            dataset_root=urbansound_root,
-            save_dir=backgrounds_root / "urbansound8k_imported",
-            max_total=cfg.urbansound8k_max_total_backgrounds,
-            auto_download=urbansound8k_auto_download,
+            dataset_root=urbansound_root, 
+            save_dir=backgrounds_root / "urbansound8k_imported", 
+            max_total=cfg.urbansound8k_max_total_backgrounds, 
+            auto_download=urbansound8k_auto_download
         )
-
-    # ── Step 4: Synthetic fallback if pool is still thin ──────────────────────
+    
+    # Generate synthetic fallback backgrounds
     synth_stats = {"generated": 0}
     if use_synth_fallback:
         existing_bg = list(backgrounds_root.rglob("*"))
-        existing_count = sum(
-            1 for f in existing_bg if f.is_file() and f.suffix.lower() in AUDIO_EXTS
-        )
+        existing_count = sum(1 for f in existing_bg 
+                           if f.is_file() and f.suffix.lower() in AUDIO_EXTS)
         if existing_count < cfg.synth_fallback_count:
             synth_dir = backgrounds_root / "synthetic"
             gen = SyntheticBackgroundGenerator(cfg)
             synth_clips = gen.generate(save_dir=synth_dir)
             synth_stats["generated"] = len(synth_clips)
-            print(
-                f"ℹ️  Real background pool has {existing_count} files – "
-                f"added {len(synth_clips)} synthetic clips."
-            )
-
-    # ── Step 5: Build capped background pool ──────────────────────────────────
+            print(f"ℹ️  Real background pool has {existing_count} files – "
+                  f"added {len(synth_clips)} synthetic clips.")
+    
+    # Build background pool
     builder.build_background_pool(
-        background_source_dir=backgrounds_root,
-        background_pool_dir=bg_pool_dir,
-        max_total=cfg.max_background_pool_total,
+        background_source_dir=backgrounds_root, 
+        background_pool_dir=bg_pool_dir, 
+        max_total=cfg.max_background_pool_total
     )
-
-    # ── Step 6: Augment ───────────────────────────────────────────────────────
+    
+    # Create augmented dataset
     aug_stats = builder.augment_clean_segments(
-        clean_drone_dir=clean_dir,
-        background_pool_dir=bg_pool_dir,
-        train_out_dir=train_dir,
-        val_out_dir=val_dir,
-        manifest_path=manifest_path,
-        plot_dir=mix_plots_dir,
-        max_plot_examples=24,
+        clean_drone_dir=clean_dir, 
+        background_pool_dir=bg_pool_dir, 
+        train_out_dir=train_dir, 
+        val_out_dir=val_dir, 
+        test_out_dir=test_dir, 
+        manifest_path=manifest_path, 
+        plot_dir=mix_plots_dir, 
+        max_plot_examples=24
     )
-
+    
+    # Print final summary
     print("\n📊 Final summary")
     print(f"   files analyzed      : {ext_stats.get('files', 0)}")
     print(f"   segments detected   : {ext_stats.get('segments', 0)}")
     print(f"   clean clips saved   : {ext_stats.get('saved', 0)}")
+    print(f"   quarantine clips    : {ext_stats.get('quarantine', 0)}")
+    print(f"   rejected speech     : {ext_stats.get('rejected_speech', 0)}")
+    print(f"   rejected silence    : {ext_stats.get('rejected_silence', 0)}")
     print(f"   freesound downloads : {freesound_stats.get('downloaded', 0)}")
     print(f"   us8k imported       : {us8k_stats.get('imported', 0)}")
     print(f"   synth clips added   : {synth_stats.get('generated', 0)}")
     print(f"   train augmented     : {aug_stats.get('train', 0)}")
     print(f"   val augmented       : {aug_stats.get('val', 0)}")
+    print(f"   test augmented      : {aug_stats.get('test', 0)}")
     print(f"   clean copies        : {aug_stats.get('clean', 0)}")
     print(f"   output root         : {output_root}")
-
+    
     return {
-        "extract": ext_stats,
-        "augment": aug_stats,
-        "freesound": freesound_stats,
-        "urbansound8k": us8k_stats,
+        "extract": ext_stats, 
+        "augment": aug_stats, 
+        "freesound": freesound_stats, 
+        "urbansound8k": us8k_stats, 
         "synth": synth_stats,
-        "output_root": str(output_root),
-        "clean_dir": str(clean_dir),
-        "debug_dir": str(debug_dir),
+        "output_root": str(output_root), 
+        "clean_dir": str(clean_dir), 
+        "debug_dir": str(debug_dir), 
         "background_pool_dir": str(bg_pool_dir),
-        "train_dir": str(train_dir),
-        "val_dir": str(val_dir),
-        "plots_dir": str(plots_dir),
+        "train_dir": str(train_dir), 
+        "val_dir": str(val_dir), 
+        "test_dir": str(test_dir), 
+        "plots_dir": str(plots_dir), 
         "manifest_path": str(manifest_path),
     }
 
 
 def main(argv=None):
-    # Resolve the directory the script itself lives in so that relative-path
-    # defaults ("source", "backgrounds", "output") are anchored there rather
-    # than wherever the user happens to call the script from.
-    script_dir = Path(__file__).resolve().parent
-
+    """Command-line entry point."""
     parser = argparse.ArgumentParser(
-        description="Standalone custom drone sound extractor and augmenter",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            "When --source / --backgrounds / --output are omitted the script\n"
-            "looks for  <script_dir>/source  and  <script_dir>/backgrounds  and\n"
-            "writes results to  <script_dir>/output  automatically.\n\n"
-            "Examples:\n"
-            "  # All folders next to the script (simplest)\n"
-            "  python custom_drone_dataset_builder.py\n\n"
-            "  # Explicit paths\n"
-            "  python custom_drone_dataset_builder.py \\\n"
-            "    --source ./my_drones --backgrounds ./my_bg --output ./out\n\n"
-            "  # With Freesound downloads\n"
-            "  python custom_drone_dataset_builder.py \\\n"
-            "    --freesound-api-key YOUR_KEY\n"
-        ),
+        description="Standalone custom drone sound extractor and augmenter (purity-aware)"
     )
-
-    parser.add_argument(
-        "--source",
-        default=None,
-        help=f"Folder with source drone recordings  [default: <script_dir>/source]",
-    )
-    parser.add_argument(
-        "--backgrounds",
-        default=None,
-        help=f"Folder with background/noise recordings  [default: <script_dir>/backgrounds]",
-    )
-    parser.add_argument(
-        "--output",
-        default=None,
-        help="Output root folder  [default: <script_dir>/output]",
-    )
-    parser.add_argument("--threshold",            type=float, default=0.52,
-                        help="Drone detection score threshold  [default: 0.52]")
-    parser.add_argument("--weak-threshold",       type=float, default=0.34,
-                        help="Weak detection threshold  [default: 0.34]")
-    parser.add_argument("--window-sec",           type=float, default=1.25,
-                        help="Analysis window size in seconds  [default: 1.25]")
-    parser.add_argument("--hop-sec",              type=float, default=0.35,
-                        help="Analysis hop size in seconds  [default: 0.35]")
-    parser.add_argument("--augments-per-segment", type=int,   default=4,
-                        help="Number of augmented copies per clean segment  [default: 4]")
-    parser.add_argument("--val-frac",             type=float, default=0.15,
-                        help="Fraction of augmented clips sent to validation  [default: 0.15]")
-    parser.add_argument(
-        "--freesound-api-key",
-        default="",
-        help=(
-            "Freesound API key (or set FREESOUND_API_KEY env var). "
-            "Free at https://freesound.org/apiv2/apply/"
-        ),
-    )
-    parser.add_argument(
-        "--use-urbansound8k",
-        action="store_true",
-        help="Import UrbanSound8K backgrounds from <backgrounds>/urbansound8k/",
-    )
-    parser.add_argument(
-        "--urbansound8k-auto-download",
-        action="store_true",
-        help="Auto-download UrbanSound8K from Zenodo if not found (~6 GB).",
-    )
-    parser.add_argument(
-        "--no-synth-fallback",
-        action="store_true",
-        help="Disable synthetic noise background generation.",
-    )
-
+    parser.add_argument("--source", help="Folder with long source recordings")
+    parser.add_argument("--backgrounds", help="Folder with background/noise recordings")
+    parser.add_argument("--output_v3", help="Output root folder")
+    parser.add_argument("--threshold", type=float, default=0.52)
+    parser.add_argument("--weak-threshold", type=float, default=0.34)
+    parser.add_argument("--window-sec", type=float, default=1.25)
+    parser.add_argument("--hop-sec", type=float, default=0.35)
+    parser.add_argument("--augments-per-segment", type=int, default=4)
+    parser.add_argument("--val-frac", type=float, default=0.15)
+    parser.add_argument("--test-frac", type=float, default=0.10)
+    parser.add_argument("--freesound-api-key", default="")
+    parser.add_argument("--use-urbansound8k", action="store_true")
+    parser.add_argument("--urbansound8k-auto-download", action="store_true")
+    parser.add_argument("--no-synth-fallback", action="store_true")
+    parser.add_argument("--no-test-split", action="store_true")
+    parser.add_argument("--min-drone-window-ratio", type=float, default=0.72)
+    parser.add_argument("--max-speech-window-ratio", type=float, default=0.12)
+    parser.add_argument("--max-silence-window-ratio", type=float, default=0.18)
+    
     args, unknown = parser.parse_known_args(argv)
-
-    if unknown:
+    if unknown and not running_in_notebook():
         print(f"⚠️  Ignoring unknown arguments: {unknown}")
-
-    # ── resolve paths, falling back to script-relative defaults ──────────────
-    # Relative paths are resolved relative to the script's directory so the
-    # command works the same regardless of where the user calls it from.
-    def _resolve(arg, default_name):
-        p = Path(arg) if arg else Path(default_name)
-        return p if p.is_absolute() else (script_dir / p).resolve()
-
-    source_root      = _resolve(args.source,      "source")
-    backgrounds_root = _resolve(args.backgrounds, "backgrounds")
-    output_root      = _resolve(args.output,      "output")
-
-    # Warn clearly if the source folder looks empty / missing
-    if not source_root.exists():
-        print(f"⚠️  Source folder not found, creating it: {source_root}")
-        source_root.mkdir(parents=True, exist_ok=True)
-        print(
-            "   Drop your drone recording files into that folder and re-run.\n"
-            "   Supported formats: .wav .mp3 .ogg .flac .aif .aiff .m4a"
-        )
-
-    if not backgrounds_root.exists():
-        print(f"ℹ️  Backgrounds folder not found, creating it: {backgrounds_root}")
-        backgrounds_root.mkdir(parents=True, exist_ok=True)
-
+    
+    # Update config with command-line arguments
+    cfg_updates = {
+        "min_drone_window_ratio": args.min_drone_window_ratio,
+        "max_speech_window_ratio": args.max_speech_window_ratio,
+        "max_silence_window_ratio": args.max_silence_window_ratio,
+    }
+    # Note: In a full implementation, you'd update BuilderConfig here
+    
     common_kwargs = dict(
-        source_root=source_root,
-        backgrounds_root=backgrounds_root,
-        output_root=output_root,
         threshold=args.threshold,
         weak_threshold=args.weak_threshold,
         window_sec=args.window_sec,
         hop_sec=args.hop_sec,
         augments_per_segment=args.augments_per_segment,
         val_frac=args.val_frac,
+        test_frac=args.test_frac,
         freesound_api_key=args.freesound_api_key,
         use_urbansound8k=args.use_urbansound8k,
         urbansound8k_auto_download=args.urbansound8k_auto_download,
         use_synth_fallback=not args.no_synth_fallback,
+        include_test_split=not args.no_test_split,
     )
-
-    # Notebook / Colab: honour Drive-based project dirs if inside Colab;
-    # otherwise use the resolved paths above.
-    if running_in_colab():
-        print("\n🧭 Google Colab detected – using Drive-based project folders.")
-        dirs = get_project_dirs()
-        print(f"📁 Source folder      : {dirs['source']}")
-        print(f"📁 Backgrounds folder : {dirs['backgrounds']}")
-        print(f"📁 Output folder      : {dirs['output']}")
-        print("\nUseful helpers:")
-        print("  upload_sources_to_persistent_drive()")
-        print("  upload_backgrounds_to_persistent_drive()")
-        print("  clear_project_inputs()  /  clear_project_output()")
-        print("  run_builder(freesound_api_key='YOUR_KEY')")
-        common_kwargs.update(
-            source_root=dirs["source"],
-            backgrounds_root=dirs["backgrounds"],
-            output_root=dirs["output"],
+    
+    if args.source and args.backgrounds and args.output_v3:
+        return run_builder(
+            source_root=args.source, 
+            backgrounds_root=args.backgrounds, 
+            output_root=args.output_v3, 
+            **common_kwargs
         )
-
-    return run_builder(**common_kwargs)
+    
+    if running_in_notebook():
+        dirs = get_project_dirs()
+        return run_builder(
+            source_root=dirs["source"], 
+            backgrounds_root=dirs["backgrounds"], 
+            output_root=dirs["output_v3"], 
+            **common_kwargs
+        )
+    
+    parser.error("--source, --backgrounds, and --output are required when not running interactively.")
 
 
 if __name__ == "__main__":
     main()
 
-# Usage
-# # Simplest — just drop files in source/ and backgrounds/ next to the script
-# python custom_drone_dataset_builder.py
+# # Usage
 
-# # With explicit source + backgrounds, auto output
-# python custom_drone_dataset_builder.py --source source --backgrounds backgrounds
+# python custom_drone_dataset_builder.py --source ./drone_recordings --backgrounds ./backgrounds --output ./dataset
 
-# # Fully explicit
+# or, with all options:
 # python custom_drone_dataset_builder.py \
-#   --source source --backgrounds backgrounds --output output
-
-# # With UrbanSound8K you've already downloaded
-# python custom_drone_dataset_builder.py \
+#   --source source \
+#   --backgrounds backgrounds \
+#   --output output_v3 \
 #   --use-urbansound8k \
-#   --source source --backgrounds backgrounds
+#   --augments-per-segment 4 \
+#   --val-frac 0.15 \
+#   --test-frac 0.10

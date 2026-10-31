@@ -265,7 +265,7 @@ class Config:
         # ── Dunakeszi audio format details (used by dunakeszi_nextcloud.py) ───────────
         #
         # POLYWAV:  192 kHz, 14 ch, float32, 4 GB each → already defined above as DUNAKESZI_ORIG_SR
-        # MEMS:     format verified by dunakeszi_ground_truth_fixed.verify_mems_format()
+        # MEMS:     format verified by dunakeszi_ground_truth.verify_mems_format()
         #           defaults here match the 133.1 MB / (4ch × 3B × 48kHz) = 242 s estimate
 
         self.MEMS_SR       = 48_000   # best-guess sample rate; verify from WAV header

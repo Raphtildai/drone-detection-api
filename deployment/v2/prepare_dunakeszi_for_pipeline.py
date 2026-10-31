@@ -87,7 +87,7 @@ def convert_label(raw: dict, max_dist: float) -> Optional[dict]:
     """
     Convert a Dunakeszi extractor label JSON to the pipeline's flat format.
 
-    Input (from dunakeszi_segment_extractor_fixed.py make_label_json):
+    Input (from dunakeszi_segment_extractor.py make_label_json):
       {
         "drone": {"azimuth": <bearing_deg>, "distance": <m>, "height": <m>},
         "segment_id": ..., "session": ..., "maneuver_type": ...,

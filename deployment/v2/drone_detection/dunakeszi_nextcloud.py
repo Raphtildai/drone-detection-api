@@ -982,12 +982,12 @@ def stream_segment_from_local_polywav(
     (channels, label) or None
     """
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
-            log.error("dunakeszi_ground_truth_fixed not importable")
+            log.error("dunakeszi_ground_truth not importable")
             return None
 
     seg = next((s for s in gt.MANEUVER_SEGMENTS if s["id"] == segment_id), None)
@@ -1149,13 +1149,13 @@ def iter_local_polywav_segments(
     array             : "BK-6-E" | "BK-6-W"
     """
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
             raise RuntimeError(
-                "dunakeszi_ground_truth_fixed not importable — cannot iterate "
+                "dunakeszi_ground_truth not importable — cannot iterate "
                 "local polywav segments without the ground-truth metadata module."
             )
 
@@ -1393,7 +1393,7 @@ def build_segment_browser_response(
     """
     Build the complete response for the /api/v2/repository/segments endpoint.
 
-    Merges ground-truth metadata (from dunakeszi_ground_truth_fixed.py) with
+    Merges ground-truth metadata (from dunakeszi_ground_truth.py) with
     local pipeline-ready file availability (DUNAKESZI_LOCAL_PATH).
 
     Returns a dict with:
@@ -1404,12 +1404,12 @@ def build_segment_browser_response(
     """
     # Import the ground-truth module.  It lives alongside this file.
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
-            log.warning("dunakeszi_ground_truth_fixed not importable — falling back to local index")
+            log.warning("dunakeszi_ground_truth not importable — falling back to local index")
             return _build_from_local_index(cfg, split_filter, session_filter)
 
     # Build enriched sessions and segments
@@ -1601,12 +1601,12 @@ def stream_segment_from_nextcloud(
     Returns None if the segment cannot be loaded.
     """
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
-            log.error("dunakeszi_ground_truth_fixed not importable")
+            log.error("dunakeszi_ground_truth not importable")
             return None
 
     # Look up the segment
@@ -1630,7 +1630,7 @@ def stream_segment_from_nextcloud(
     # The polywav chunks are contiguous from t=0 of the recording, so
     # onset_from_rec_s maps directly onto (chunk_idx, offset_in_chunk).
     # This is correct as long as gt.RECORDING_REF_LOCAL_S and PW_CHUNK_DUR_S
-    # are calibrated to the polywav clock (verified in dunakeszi_ground_truth_fixed).
+    # are calibrated to the polywav clock (verified in dunakeszi_ground_truth).
     onset_s    = enriched["onset_from_rec_s"]  # seconds from polywav t=0
     duration_s = float(enriched.get("duration_s") or 3.0)
 
@@ -1774,9 +1774,9 @@ def stream_segment_from_mems(
     _enriched: Optional[dict] = None,   # skip re-derivation when caller already has it
 ) -> Optional[Tuple[np.ndarray, int, dict]]:
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
-        import dunakeszi_ground_truth_fixed as gt
+        import dunakeszi_ground_truth as gt
 
     if _enriched is not None:
         enriched = _enriched
@@ -1863,9 +1863,9 @@ def iter_mems_segments(
 ) -> Generator[Tuple[np.ndarray, int, dict], None, None]:
     _auth(cfg)
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
-        import dunakeszi_ground_truth_fixed as gt
+        import dunakeszi_ground_truth as gt
 
     sessions_by_id = {s["session_id"]: s for s in gt._enrich_sessions(gt.SESSIONS)}
     all_segs = [s for s in gt._enrich_segments(gt.MANEUVER_SEGMENTS, sessions_by_id)
@@ -1951,13 +1951,13 @@ def iter_nextcloud_segments(
     _auth(cfg)   # raises RemoteUnavailableError if not configured
 
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
             raise RuntimeError(
-                "dunakeszi_ground_truth_fixed not importable — cannot iterate "
+                "dunakeszi_ground_truth not importable — cannot iterate "
                 "Nextcloud segments without the ground-truth metadata module."
             )
 
@@ -2028,10 +2028,10 @@ def polywav_file_info(cfg) -> List[Dict[str, Any]]:
     ground-truth POLYWAV_FILES list with remote_available=None.
     """
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
             return []
 
@@ -2087,10 +2087,10 @@ def mems_file_info(cfg) -> List[Dict[str, Any]]:
     which segments it covers, and remote availability.
     """
     try:
-        from . import dunakeszi_ground_truth_fixed as gt
+        from . import dunakeszi_ground_truth as gt
     except ImportError:
         try:
-            import dunakeszi_ground_truth_fixed as gt
+            import dunakeszi_ground_truth as gt
         except ImportError:
             return []
 

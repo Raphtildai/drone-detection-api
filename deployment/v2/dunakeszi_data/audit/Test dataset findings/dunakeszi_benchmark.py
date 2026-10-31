@@ -392,41 +392,144 @@ def parse_mems_start(path: Path, fallback: datetime) -> datetime:
 
 
 # =============================================================================
-#  HEURISTIC SCORING  (no librosa dependency)
+#  HEURISTIC SCORING  — faithful port of v15 heuristic_detect()
 # =============================================================================
 
+def _per_frame_entropy(S: np.ndarray, min_energy_fraction: float = 0.01) -> np.ndarray:
+    """Normalised spectral entropy per STFT frame (mirrors v15 exactly)."""
+    S = np.asarray(S, dtype=np.float64) + 1e-10
+    frame_energy = S.sum(axis=0)
+    energy_gate  = frame_energy.max() * min_energy_fraction
+    active       = frame_energy >= energy_gate
+    P      = S / frame_energy[np.newaxis, :]
+    H      = -np.sum(P * np.log2(P + 1e-12), axis=0)
+    H_norm = (H / math.log2(S.shape[0])).astype(np.float32)
+    H_norm[~active] = np.nan
+    return H_norm
+
+
+def _harmonic_comb_score(y: np.ndarray, sr: int,
+                          f0_min: float = 80.0, f0_max: float = 350.0,
+                          n_harmonics: int = 6) -> float:
+    """Harmonic comb score (mirrors v15 _harmonic_comb_score)."""
+    if not LIBROSA_OK:
+        return 0.0
+    try:
+        S = np.abs(librosa.stft(y, n_fft=2048, hop_length=512))
+        S_mean = S.mean(axis=1)
+        freqs  = librosa.fft_frequencies(sr=sr, n_fft=2048)
+        best = 0.0
+        for f0 in np.linspace(f0_min, f0_max, 30):
+            harmonic_energy = 0.0
+            for k in range(1, n_harmonics + 1):
+                target = f0 * k
+                if target > sr / 2:
+                    break
+                idx = int(np.argmin(np.abs(freqs - target)))
+                w   = max(1, int(20 / (freqs[1] - freqs[0])))
+                harmonic_energy += float(S_mean[max(0, idx-w):idx+w+1].max())
+            total = float(S_mean.sum()) + 1e-10
+            score = harmonic_energy / (total * n_harmonics) * n_harmonics
+            if score > best:
+                best = score
+        return float(min(best, 1.0))
+    except Exception:
+        return 0.0
+
+
 def heuristic_score(y: np.ndarray, sr: int) -> float:
+    """
+    Port of v15 heuristic_detect() — includes:
+      • absolute-energy-gated per-frame entropy (silence / narrow-band veto)
+      • high-crest-factor veto (impulse / horn rejection)
+      • pyin F0 tracking  (if librosa available)
+      • harmonic comb score  (if librosa available)
+      • 9-component weighted score matching v15 weights exactly
+    Falls back gracefully to Welch-only scoring when librosa is absent.
+    """
     if len(y) == 0:
         return 0.0
-    y = y.astype(np.float64)
-    rms    = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
-    peak   = float(np.max(np.abs(y)) + 1e-8)
-    rms_db = 20.0 * math.log10(rms)
-    cf     = peak / rms                        # crest factor
+    y = np.asarray(y, dtype=np.float32)
 
-    if cf > 8.5:                               # impulsive → not drone
+    rms    = float(np.sqrt(np.mean(y ** 2)) + 1e-8)
+    rms_db = 20.0 * math.log10(rms + 1e-8)
+    peak   = float(np.max(np.abs(y)) + 1e-8)
+    cf     = peak / rms
+
+    # ── Spectral features ────────────────────────────────────────────────────
+    centroid = rolloff = bandwidth = 0.0
+    median_ent = p10_ent = 0.5
+
+    if LIBROSA_OK:
+        try:
+            S = np.abs(librosa.stft(y, n_fft=1024, hop_length=256))
+            centroid  = float(np.mean(librosa.feature.spectral_centroid(S=S, sr=sr)))
+            rolloff   = float(np.mean(librosa.feature.spectral_rolloff(
+                S=S, sr=sr, roll_percent=0.85)))
+            bandwidth = float(np.mean(librosa.feature.spectral_bandwidth(S=S, sr=sr)))
+
+            frame_ent  = _per_frame_entropy(S, min_energy_fraction=0.01)
+            voiced_ent = frame_ent[~np.isnan(frame_ent)]
+            if len(voiced_ent) == 0:
+                return 0.0
+            median_ent = float(np.median(voiced_ent))
+            p10_ent    = float(np.percentile(voiced_ent, 10))
+        except Exception:
+            pass
+    else:
+        # Welch-only fallback
+        nperseg  = min(512, max(32, len(y) // 4))
+        f, psd   = sp_signal.welch(y.astype(np.float64), fs=sr, nperseg=nperseg)
+        total    = psd.sum() + 1e-10
+        centroid = float(np.sum(f * psd) / total)
+
+    # ── Veto 1: narrow-band / low-entropy (matches v15 threshold 0.38) ───────
+    if median_ent < 0.38:
+        return float(np.clip(median_ent / 0.38 * 0.25, 0.0, 0.25))
+
+    # ── Veto 2: impulsive + narrow-band ──────────────────────────────────────
+    if cf > 8.5 and median_ent < 0.52:
         return 0.10
 
-    nperseg = min(512, max(32, len(y) // 4))
-    f, psd  = sp_signal.welch(y, fs=sr, nperseg=nperseg)
-    total   = psd.sum() + 1e-10
-    centroid = float(np.sum(f * psd) / total)
-    flatness = float(np.exp(np.mean(np.log(psd + 1e-10))) / np.mean(psd + 1e-10))
+    # ── F0 via pyin ──────────────────────────────────────────────────────────
+    voiced_ratio = f0_med = f0_std = 0.0
+    if LIBROSA_OK:
+        try:
+            f0, _, _ = librosa.pyin(
+                y, fmin=50.0, fmax=500.0, sr=sr,
+                hop_length=256, fill_na=0.0)
+            f0 = np.nan_to_num(f0, nan=0.0)
+            voiced_ratio = float(np.mean(f0 > 0.0))
+            vf = f0[f0 > 0.0]
+            f0_med = float(np.median(vf)) if len(vf) else 0.0
+            f0_std = float(np.std(vf))    if len(vf) else 0.0
+        except Exception:
+            pass
 
-    band = (f >= 80) & (f <= 2500)
-    drone_ratio = float(psd[band].sum() / total) if band.any() else 0.0
+    # ── Harmonic comb ────────────────────────────────────────────────────────
+    comb = _harmonic_comb_score(y, sr) if (LIBROSA_OK and len(y) >= sr) else 0.0
 
-    dom_freq = float(f[np.argmax(psd)])
+    # ── Component scores (v15 weights) ───────────────────────────────────────
+    energy_score    = float(np.clip((rms_db + 45.0) / 25.0, 0.0, 1.0))
+    f0_score        = (1.0 if 80.0 <= f0_med <= 350.0 else
+                       0.3 if 50.0 <= f0_med <   80.0 else 0.0)
+    voiced_score    = float(np.clip(voiced_ratio / 0.50, 0.0, 1.0))
+    stability_score = (1.0 - float(np.clip(f0_std / 80.0, 0.0, 1.0))
+                       if f0_med > 0 else 0.2)
+    centroid_score  = 1.0 if 120.0 <= centroid <= 4000.0 else 0.35
+    rolloff_score   = 1.0 if 300.0 <= rolloff  <= 8000.0 else 0.4
+    bandwidth_score = 1.0 if 150.0 <= bandwidth <= 4000.0 else 0.5
+    entropy_score   = float(np.clip((median_ent - 0.35) / 0.35, 0.0, 1.0))
+    comb_score      = float(np.clip(comb * 3.0, 0.0, 1.0))
 
-    e_sc  = float(np.clip((rms_db + 45) / 25, 0, 1))
-    c_sc  = 1.0 if 120 <= centroid <= 4000 else 0.35
-    fl_sc = float(np.clip(1 - flatness / 0.6, 0, 1))
-    d_sc  = 1.0 if 70 <= dom_freq <= 600 else 0.3
-    b_sc  = float(np.clip(drone_ratio / 0.45, 0, 1))
+    score = (0.14 * energy_score   + 0.16 * f0_score      +
+             0.10 * voiced_score   + 0.08 * stability_score +
+             0.10 * centroid_score + 0.07 * rolloff_score  +
+             0.07 * bandwidth_score+ 0.16 * entropy_score  +
+             0.12 * comb_score)
 
-    raw  = 0.25*e_sc + 0.20*c_sc + 0.15*fl_sc + 0.20*d_sc + 0.20*b_sc
-    prob = 1.0 / (1.0 + math.exp(-8.0 * (raw - 0.50)))
-    return float(np.clip(prob, 0, 1))
+    prob = 1.0 / (1.0 + math.exp(-8.0 * (score - 0.50)))
+    return float(np.clip(prob, 0.0, 1.0))
 
 
 # =============================================================================
@@ -478,22 +581,67 @@ def load_model(model_dir: Optional[Path]):
     m.load_state_dict(data["model_state"])
     m.eval()
     thr  = float(data.get("best_threshold", 0.62))
+    f1   = data.get("best_val_f1",  data.get("best_val_acc", "?"))
+    auroc= data.get("val_metrics",  {}).get("auroc", "?")
     print(f"  ✅ Model loaded  ep={data.get('epoch','?')}  "
-          f"f1={data.get('best_val_f1','?')}  thr={thr:.3f}")
+          f"f1={f1}  auroc={auroc}  thr={thr:.3f}")
     _model_cache[str(ckpt)] = (m, dev, thr)
     return m, dev, thr
 
 
-def cnn_score(y: np.ndarray, sr: int, model, dev) -> float:
+def _safe_standardize(x: np.ndarray) -> np.ndarray:
+    """Per-channel standardisation — mirrors v15 safe_standardize()."""
+    x = np.asarray(x, dtype=np.float32)
+    return ((x - x.mean()) / (x.std() + 1e-6)).astype(np.float32)
+
+
+def feature_stack_v15(y: np.ndarray, sr: int) -> Optional[np.ndarray]:
+    """
+    Reproduce v15 AudioProcessor.feature_stack() exactly:
+      ch0 = standardised log-mel
+      ch1 = standardised PCEN
+      ch2 = standardised delta-mel  (np.diff along time axis, prepend first col)
+    Returns float32 array of shape (3, n_mels, T) or None on failure.
+    This MUST match what MelCacheManager.build() wrote into the .npy training cache.
+    """
+    if not LIBROSA_OK:
+        return None
     try:
-        import torch
-        mel = librosa.feature.melspectrogram(
+        # --- channel 0: log-mel (power_to_db) ---
+        M = librosa.feature.melspectrogram(
             y=y, sr=sr, n_fft=1024, hop_length=256, n_mels=64,
             fmin=20, fmax=min(8000, sr // 2))
-        m = librosa.power_to_db(mel, ref=np.max).astype(np.float32)
-        m = (m - m.mean()) / (m.std() + 1e-6)
-        t = torch.tensor(np.stack([m, m, m]), dtype=torch.float32
-                         ).unsqueeze(0).to(dev)
+        m = librosa.power_to_db(M, ref=np.max).astype(np.float32)
+        ch0 = _safe_standardize(m)
+
+        # --- channel 1: PCEN ---
+        pcen = librosa.pcen(
+            M, sr=sr, hop_length=256,
+            gain=0.8, bias=10.0, power=0.25,
+            time_constant=0.4, eps=1e-6).astype(np.float32)
+        ch1 = _safe_standardize(pcen)
+
+        # --- channel 2: delta-mel ---
+        delta = np.diff(m, axis=1, prepend=m[:, :1]).astype(np.float32)
+        ch2 = _safe_standardize(delta)
+
+        return np.stack([ch0, ch1, ch2], axis=0)
+    except Exception:
+        return None
+
+
+def cnn_score(y: np.ndarray, sr: int, model, dev) -> float:
+    """
+    Run DetectionCNN on one segment.
+    Uses feature_stack_v15() so input distribution matches what the model
+    was trained on (v15 MelCacheManager writes [mel, pcen, delta-mel]).
+    """
+    feat = feature_stack_v15(y, sr)
+    if feat is None:
+        return 0.0
+    try:
+        import torch
+        t = torch.tensor(feat, dtype=torch.float32).unsqueeze(0).to(dev)
         with torch.no_grad():
             return float(torch.softmax(model(t), dim=1)[0, 1].item())
     except Exception:
@@ -510,10 +658,17 @@ def score_segment(y: np.ndarray, sr: int,
             fused = min(1.0, fused + 0.06)
     else:
         c, fused = float("nan"), h
+    c_val = None if (isinstance(c, float) and math.isnan(c)) else round(c, 5)
+    f_val = round(float(np.clip(fused, 0, 1)), 5)
     return {
+        # Primary names used internally by this benchmark
         "heuristic_prob": round(h, 5),
-        "cnn_prob":       None if math.isnan(c) else round(c, 5),
-        "fused_prob":     round(float(np.clip(fused, 0, 1)), 5),
+        "cnn_prob":        c_val,
+        "fused_prob":      f_val,
+        # Aliases matching v15 detect() output key names — safe to pass downstream
+        "heuristic_probability": round(h, 5),
+        "cnn_probability":       c_val,
+        "probability":           f_val,
     }
 
 

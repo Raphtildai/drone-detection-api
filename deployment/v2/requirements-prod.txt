@@ -1,6 +1,6 @@
 # Production requirements for shared cPanel hosting (Truehost "Setup Python App").
 #
-# Differences from requirements_v2.txt:
+# Differences from requirements.txt:
 #   - torch / torchaudio pulled from the CPU-only wheel index. The default
 #     PyPI wheels bundle CUDA and are several GB each — they will blow a
 #     shared-hosting disk quota and can time out mid-download. The CPU

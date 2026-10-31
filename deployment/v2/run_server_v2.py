@@ -14,7 +14,7 @@ Directory layout expected:
             ├── app_v2.py
             ├── realtime_sessions.py
             ├── real_time_audio_v2.py
-            ├── requirements_v2.txt
+            ├── requirements.txt
             ├── models/
             │   ├── best_detection.pth
             │   └── best_localization.pth
@@ -198,7 +198,7 @@ def main() -> int:
         from app_v2 import app, socketio
     except ImportError as exc:
         print(f"❌ Failed to import app_v2: {exc}")
-        print("   Run:  pip install -r requirements_v2.txt")
+        print("   Run:  pip install -r requirements.txt")
         return 1
 
     print("✅ app_v2 loaded successfully")

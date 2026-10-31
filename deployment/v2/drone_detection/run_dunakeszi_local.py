@@ -16,7 +16,7 @@ Stages
 directly at any existing flat segment directory, regardless of which script
 produced it.  Both CSV formats are accepted:
 
-  Extractor format  (dunakeszi_segment_extractor_fixed.py output)
+  Extractor format  (dunakeszi_segment_extractor.py output)
     columns: azimuth_at_clip_mid_deg, distance_xy_at_mid_m, altitude_at_mid_m
     → bearing-from-North convention; converted to pipeline math angle here
 
@@ -216,7 +216,7 @@ def resolve_labels_csv(segment_dir: Path) -> tuple:
     if not raw.exists():
         print(f"  ✗  No labels.csv found in: {segment_dir}")
         print("     The directory must contain a labels.csv produced by")
-        print("     dunakeszi_segment_extractor_fixed.py or")
+        print("     dunakeszi_segment_extractor.py or")
         print("     prepare_dunakeszi_for_pipeline.py")
         sys.exit(1)
 
@@ -246,14 +246,14 @@ def resolve_labels_csv(segment_dir: Path) -> tuple:
 
 def stage_ground_truth(args, dirs: dict):
     _header("Stage 1 — Ground truth")
-    script = Path(__file__).parent / "dunakeszi_ground_truth_fixed.py"
+    script = Path(__file__).parent / "dunakeszi_ground_truth.py"
     _check_file(script, "ground truth script")
 
     cmd = [sys.executable, script, "--out_dir", dirs["gt"]]
     if args.verify_mems:
         cmd += ["--verify_mems", args.verify_mems]
 
-    _run(cmd, "dunakeszi_ground_truth_fixed.py")
+    _run(cmd, "dunakeszi_ground_truth.py")
     _check_file(dirs["gt"] / "ground_truth_segments.json", "segments JSON")
     print(f"\n  Ground truth written to: {dirs['gt']}")
 
@@ -275,7 +275,7 @@ def stage_extract(args, dirs: dict):
         print(f"  ✗  --wav-dir not found: {wav_dir}")
         sys.exit(1)
 
-    script = Path(__file__).parent / "dunakeszi_segment_extractor_fixed.py"
+    script = Path(__file__).parent / "dunakeszi_segment_extractor.py"
     _check_file(script, "extractor script")
 
     cmd = [
@@ -296,7 +296,7 @@ def stage_extract(args, dirs: dict):
     if args.no_zip:
         cmd.append("--no-zip")
 
-    _run(cmd, "dunakeszi_segment_extractor_fixed.py")
+    _run(cmd, "dunakeszi_segment_extractor.py")
     print(f"\n  Extracted {len(list(ext_dir.glob('*_ch0.wav')))} segment(s) to: {ext_dir}")
 
 
