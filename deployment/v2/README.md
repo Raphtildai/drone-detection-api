@@ -1,9 +1,9 @@
 # Drone Detection System — v2 Deployment
 ### Pipeline: `drone_detection` (v15)
 
-Independent deployment of the v15 ML pipeline.
-Lives in `deployment/v2/` alongside the original deployment in `deployment/v1/`.
-**Both can run simultaneously on different ports.**
+Deployment of the thesis pipeline (the `drone_detection` package) as a Flask
+dashboard and REST/Socket.IO API. See the repository [README](../../README.md)
+for how the code maps onto the thesis.
 
 ---
 
@@ -83,11 +83,6 @@ sidebar, listing the pipeline correctness fixes currently in effect
 
 ```
 deployment/
-├── v1/                              ← original deployment (unchanged, port 5000)
-│   ├── app.py
-│   ├── run_server.py
-│   └── ...
-│
 └── v2/                              ← THIS directory (port 5001)
     ├── app_v2.py                    Flask app (all routes under /api/v2/)
     ├── run_server_v2.py             Local dev entry point (socketio.run())
@@ -114,9 +109,8 @@ deployment/
     └── static/
 ```
 
-The v2 app imports exclusively from the `drone_detection` package (v15) at the
-repo root. It has no dependency on v1 modules, `drone_detection_v2_fixes.py`,
-or any external patch files — all v15 fixes are integrated into the package.
+The v2 app imports exclusively from the `drone_detection` package. It has no
+dependency on external patch files — all v15 fixes are integrated into the package.
 
 ---
 
@@ -294,23 +288,6 @@ per-request with the `threshold` form field.
 `LocalizationCNN` is the only localization model class — `LocalizationCNNLite`
 and `USE_LITE_LOC` have been removed as the checkpoint architecture matches
 `LocalizationCNN` exactly.
-
----
-
-## Running both versions simultaneously
-
-```bash
-# Terminal 1 — v1 (original)
-cd deployment/v1
-python run_server.py          # → http://localhost:5000
-
-# Terminal 2 — v2 (v15 pipeline)
-cd deployment/v2
-python run_server_v2.py       # → http://localhost:5001
-```
-
-Both share the same model files but have completely independent Flask apps,
-SocketIO instances, and runtime state.
 
 ---
 
