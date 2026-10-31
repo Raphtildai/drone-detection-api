@@ -191,7 +191,7 @@ class SimulatedRealtimeSession:
 
     def __init__(self, config, socketio, n_drones: int = 1,
                  patterns: Optional[List[str]] = None,
-                 tick_rate: float = 1.0, threshold: float = 0.70,
+                 tick_rate: float = 1.0, threshold: float = 0.945,
                  noise_level: float = 0.05, spread: float = 1.5) -> None:
         self.config      = config
         self.socketio    = socketio
@@ -419,7 +419,7 @@ class RealRealtimeSession:
     Falls back gracefully when PyAudio is unavailable.
     """
 
-    def __init__(self, config, socketio, threshold: float = 0.70,
+    def __init__(self, config, socketio, threshold: float = 0.945,
                  segment_dur: float = 3.0,
                  device_indices: Optional[List[int]] = None) -> None:
         self.config         = config
@@ -571,7 +571,7 @@ class RepositoryRealtimeSession:
     array           : Dunakeszi array name
     max_dist        : MAX_LOCALIZATION_DIST for label normalisation
     tick_rate       : Frames streamed per second (throttle; default 1.0)
-    threshold       : Detection confidence threshold (default 0.70)
+    threshold       : Detection confidence threshold (default 0.945, thesis tau)
     allow_download  : Allow full ZIP download fallback
     allow_synthetic_fallback : Yield synthetic data when repo unreachable
     n_synthetic     : Synthetic segment count used as fallback
@@ -588,7 +588,7 @@ class RepositoryRealtimeSession:
         array: str = "BK-6-E",
         max_dist: float = 100.0,
         tick_rate: float = 1.0,
-        threshold: float = 0.70,
+        threshold: float = 0.945,
         allow_download: bool = True,
         allow_synthetic_fallback: bool = True,
         n_synthetic: int = 200,

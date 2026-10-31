@@ -204,7 +204,12 @@ class Config:
         self.GRAD_CLIP    = 1.0    # tighter than 2.0
 
         # ── Detection thresholds ──────────────────────────────────────────
-        self.DETECTION_THRESHOLD      = 0.60
+        # Deployment threshold tau on the fused probability (thesis: 0.945,
+        # selected from the validation F1 sweep at epoch 8 and confirmed at
+        # epochs 38, 45 and 49). Fixed here rather than taken from the
+        # checkpoint: the saved best-F1 checkpoint (epoch 113) is so confident
+        # that its sweep is flat and records the lowest candidate, 0.055.
+        self.DETECTION_THRESHOLD      = 0.945
         self.DETECTION_THRESHOLD_LOW  = 0.35
         self.DETECTION_THRESHOLD_WEAK = 0.18
         self.CNN_WEIGHT               = 0.80

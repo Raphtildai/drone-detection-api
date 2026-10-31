@@ -134,13 +134,14 @@ def load_detection_model(cfg: Optional[Config] = None) -> DetectionCNN:
     m    = DetectionCNN().to(dev)
     m.load_state_dict(data["model_state"])
     m.eval()
-    cfg.DETECTION_THRESHOLD = float(
-        data.get("best_threshold", cfg.DETECTION_THRESHOLD)
-    )
+    # Kept for reference only: the deployment threshold is
+    # cfg.DETECTION_THRESHOLD (see config.py), not the checkpoint's sweep value.
+    cfg.CHECKPOINT_VAL_THRESHOLD = data.get("best_threshold")
     _det_model = m
     print(
         f"✅ Detection model loaded  (ep={data.get('epoch','?')}, "
-        f"f1={data.get('best_val_f1','?')}, thr={cfg.DETECTION_THRESHOLD:.3f})"
+        f"f1={data.get('best_val_f1','?')}, thr={cfg.DETECTION_THRESHOLD:.3f}, "
+        f"checkpoint val-sweep thr={cfg.CHECKPOINT_VAL_THRESHOLD})"
     )
     return m
 
@@ -347,7 +348,7 @@ def detect(
     veto = heur["features"].get("veto")
 
     # ── Threshold roles (NEW) ──────────────────────────────────────
-    TH_HIGH = cfg.DETECTION_THRESHOLD       # e.g. 0.60
+    TH_HIGH = cfg.DETECTION_THRESHOLD       # thesis tau = 0.945
     TH_MID  = 0.60                          # agreement threshold
     TH_LOW  = 0.40                          # weak confidence
 

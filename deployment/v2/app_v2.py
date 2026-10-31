@@ -1031,7 +1031,7 @@ def repo_start_segment():
     array      = request.form.get("array",           "BK-6-E")
     session_id = request.form.get("session_id",      "default")
     tick_rate  = float(request.form.get("tick_rate",  1.0))
-    threshold  = float(request.form.get("threshold",  0.70))
+    threshold  = float(request.form.get("threshold",  _repo_cfg.DETECTION_THRESHOLD))
 
     nc_url   = request.form.get("nextcloud_url")   or None
     nc_token = request.form.get("nextcloud_token") or None
