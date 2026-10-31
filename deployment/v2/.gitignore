@@ -1,2 +1,24 @@
 # Ignore all .env files (they contain secrets)
 .env
+# Dunakeszi field-measurement data belongs to the HUN-REN EK Nanosensors Lab
+# (Prof. János Volk). Kept locally for training/evaluation, never committed;
+# the code reads it from Nextcloud (NEXTCLOUD_BASE_URL / NEXTCLOUD_SHARE_TOKEN).
+/collmot_dron_meres_20251020/
+/DRON-GPX/
+/new_ground_truth/
+/dunakeszi_test_segments/
+/dunakeszi_test_segments_B/
+/dunakeszi_test_segments_P/
+/dunakeszi_test_segments_U_and_J/
+/dunakeszi_pipeline_ready_B/
+/dunakeszi_pipeline_ready_P_and_Q/
+/dunakeszi_pipeline_ready_U_and_J/
+/segs_E_for_B/
+/segs_E_for_P/
+/dunakeszi_data/dunakeszi_audit_output/
+/dunakeszi_data/audit/dunakeszi_audit_output/
+/Multidrónos akusztikus mérés - 251020.pdf
+/notes_2025-10-20_16-33-21 volk janos.md
+!/dunakeszi_test_segments_B/
+/dunakeszi_test_segments_B/*
+!/dunakeszi_test_segments_B/results/
