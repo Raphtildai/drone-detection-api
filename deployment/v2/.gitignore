@@ -22,3 +22,6 @@
 !/dunakeszi_test_segments_B/
 /dunakeszi_test_segments_B/*
 !/dunakeszi_test_segments_B/results/
+
+# Office lock files
+.~lock.*#

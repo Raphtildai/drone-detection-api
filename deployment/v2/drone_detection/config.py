@@ -143,14 +143,16 @@ class Config:
         # or the raw polywav layout with a GPX/ subfolder.
         # Leave as None to fall back to synthetic data automatically.
         self.DUNAKESZI_ZIP_URL  = None   # e.g. "https://your-server.com/dunakeszi.zip"
-        self.DUNAKESZI_LOCAL_PATH = "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/dunakeszi_pipeline_ready_B"
+        self.DUNAKESZI_LOCAL_PATH = os.environ.get(
+            "DUNAKESZI_LOCAL_PATH", str(Path(__file__).parent.parent / "dunakeszi_pipeline_ready_B")
+        )
         # Directory containing locally downloaded raw polywav files
         # (e.g. 251020VITEMOROM1AT01.wav, 251020VITEMOROM1AT01B.wav, …).
         # Set via env var DUNAKESZI_LOCAL_POLYWAV_DIR or override directly.
         # When set, the pipeline reads these local files instead of streaming
         # from Nextcloud — no credentials or network access required.
         self.DUNAKESZI_LOCAL_POLYWAV_DIR = os.environ.get(
-            "DUNAKESZI_LOCAL_POLYWAV_DIR", "/home/tildai/Desktop/Development/drone-detection-api/deployment/v2/wavs"
+            "DUNAKESZI_LOCAL_POLYWAV_DIR", str(Path(__file__).parent.parent / "wavs")
         )
         self.DUNAKESZI_ORIG_SR  = 192_000
         # Polywav channel groups: array name → 0-indexed channel list
