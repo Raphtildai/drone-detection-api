@@ -96,7 +96,7 @@ class Config:
         if self.IN_COLAB:
             self._mount_drive()
         self._setup_paths()
-        self.FREESOUND_API_KEY = "jHEYKlwOKQgQ8CX2nuoNR6vGkqZW0nnGlA5nBXxQ"
+        self.FREESOUND_API_KEY = os.environ.get("FREESOUND_API_KEY", "")  # optional
         self.GITHUB_ZIP_URL = "https://github.com/saraalemadi/DroneAudioDataset/archive/refs/heads/master.zip"
         self.SR = 22050
         self.TARGET_DURATION = 3.0
